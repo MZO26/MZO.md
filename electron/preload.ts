@@ -8,8 +8,7 @@ contextBridge.exposeInMainWorld("api", {
 });
 contextBridge.exposeInMainWorld("electronAPI", {
   getTheme: () => ipcRenderer.invoke("get-theme"),
-  setTheme: (theme: "dark" | "light") => ipcRenderer.invoke("set-theme", theme),
-  toggleTheme: () => ipcRenderer.invoke("toggle-theme"),
+  setTheme: (theme: Theme) => ipcRenderer.invoke("set-theme", theme),
   onThemeChanged: (callback: (theme: "dark" | "light") => void) =>
     ipcRenderer.on("theme-changed", (_event, theme) => callback(theme)),
 });

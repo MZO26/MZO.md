@@ -87,21 +87,12 @@ app.whenReady().then(async () => {
     return `Node.js Version: ${process.versions.node}, Electron: ${process.versions.electron}`;
   });
 
-  ipcMain.handle("get-theme", async () => {
+  ipcMain.handle("get-theme", () => {
     return nativeTheme.shouldUseDarkColors ? "dark" : "light";
   });
 
   ipcMain.handle("set-theme", async (_event, theme: Theme) => {
     nativeTheme.themeSource = theme;
-    if (win) {
-      win.setTitleBarOverlay(getTitleBarOverlay());
-    }
-    return nativeTheme.shouldUseDarkColors ? "dark" : "light";
-  });
-
-  ipcMain.handle("toggle-theme", async () => {
-    nativeTheme.themeSource =
-      nativeTheme.themeSource === "light" ? "dark" : "light";
     if (win) {
       win.setTitleBarOverlay(getTitleBarOverlay());
     }

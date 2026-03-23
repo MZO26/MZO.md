@@ -3,11 +3,12 @@ import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
+import { TaskItem, TaskList } from "@tiptap/extension-list";
+import PlaceHolder from "@tiptap/extension-placeholder";
 import { Table } from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
-import TextAlign from "@tiptap/extension-text-align";
 import StarterKit from "@tiptap/starter-kit";
 import css from "highlight.js/lib/languages/css";
 import java from "highlight.js/lib/languages/java";
@@ -47,6 +48,13 @@ const initEditor = (selector: string): Editor | null => {
   editor = new Editor({
     element: element as HTMLElement,
     extensions: [
+      PlaceHolder.configure({
+        placeholder: "Start writing your note...",
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
       Image.configure({
         allowBase64: true,
         resize: {
@@ -56,14 +64,17 @@ const initEditor = (selector: string): Editor | null => {
           alwaysPreserveAspectRatio: true,
         },
       }),
-      Table.configure({ resizable: true }),
+      Table.configure({
+        resizable: true,
+        allowTableNodeSelection: true,
+        lastColumnResizable: true,
+        handleWidth: 5,
+      }),
       TableRow,
       TableHeader,
       TableCell,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight.configure({ multicolor: true }),
       StarterKit.configure({
-        code: false,
         codeBlock: false,
         link: false,
       }),
@@ -83,6 +94,7 @@ const initEditor = (selector: string): Editor | null => {
           rel: "noopener noreferrer",
         },
       }),
+
       FileHandler.configure({
         allowedMimeTypes: [
           "image/png",

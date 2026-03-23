@@ -8,6 +8,7 @@ const setupToolbar = (editor: Editor) => {
   const btnBold = getElement<HTMLButtonElement>("#btn-bold");
   const btnItalic = getElement<HTMLButtonElement>("#btn-italic");
   const btnStrike = getElement<HTMLButtonElement>("#btn-strike");
+  const btnUnderline = getElement<HTMLButtonElement>("#btn-underline");
 
   const btnH1 = getElement<HTMLButtonElement>("#btn-h1");
   const btnH2 = getElement<HTMLButtonElement>("#btn-h2");
@@ -15,11 +16,13 @@ const setupToolbar = (editor: Editor) => {
 
   const btnBullet = getElement<HTMLButtonElement>("#btn-bullet");
   const btnOrdered = getElement<HTMLButtonElement>("#btn-ordered");
+  const btnTask = getElement<HTMLButtonElement>("#btn-task");
   const btnQuote = getElement<HTMLButtonElement>("#btn-quote");
+
+  const btnCode = getElement<HTMLButtonElement>("#btn-code");
   const btnCodeBlock = getElement<HTMLButtonElement>("#btn-codeblock");
   const btnHr = getElement<HTMLButtonElement>("#btn-hr");
 
-  const btnUnderline = getElement<HTMLButtonElement>("#btn-underline");
   const btnHighlight = getElement<HTMLButtonElement>("#btn-highlight");
   const btnTable = getElement<HTMLButtonElement>("#btn-table");
 
@@ -35,6 +38,10 @@ const setupToolbar = (editor: Editor) => {
   btnStrike.addEventListener("click", () =>
     editor.chain().focus().toggleStrike().run(),
   );
+  btnUnderline.addEventListener("click", () =>
+    editor.chain().focus().toggleUnderline().run(),
+  );
+
   btnH1.addEventListener("click", () =>
     editor.chain().focus().toggleHeading({ level: 1 }).run(),
   );
@@ -51,17 +58,20 @@ const setupToolbar = (editor: Editor) => {
   btnOrdered.addEventListener("click", () =>
     editor.chain().focus().toggleOrderedList().run(),
   );
+  btnTask.addEventListener("click", () =>
+    editor.chain().focus().toggleTaskList().run(),
+  );
   btnQuote.addEventListener("click", () =>
     editor.chain().focus().toggleBlockquote().run(),
+  );
+  btnCode.addEventListener("click", () =>
+    editor.chain().focus().toggleCode().run(),
   );
   btnCodeBlock.addEventListener("click", () =>
     editor.chain().focus().toggleCodeBlock().run(),
   );
   btnHr.addEventListener("click", () =>
     editor.chain().focus().setHorizontalRule().run(),
-  );
-  btnUnderline.addEventListener("click", () =>
-    editor.chain().focus().toggleUnderline().run(),
   );
 
   btnHighlight.addEventListener("click", () =>
@@ -83,6 +93,7 @@ const setupToolbar = (editor: Editor) => {
     btnBold.classList.toggle("is-active", editor.isActive("bold"));
     btnItalic.classList.toggle("is-active", editor.isActive("italic"));
     btnStrike.classList.toggle("is-active", editor.isActive("strike"));
+    btnUnderline.classList.toggle("is-active", editor.isActive("underline"));
 
     btnH1.classList.toggle(
       "is-active",
@@ -99,9 +110,11 @@ const setupToolbar = (editor: Editor) => {
 
     btnBullet.classList.toggle("is-active", editor.isActive("bulletList"));
     btnOrdered.classList.toggle("is-active", editor.isActive("orderedList"));
+    btnTask.classList.toggle("is-active", editor.isActive("taskList"));
     btnQuote.classList.toggle("is-active", editor.isActive("blockquote"));
+    btnCode.classList.toggle("is-active", editor.isActive("code"));
     btnCodeBlock.classList.toggle("is-active", editor.isActive("codeBlock"));
-    btnUnderline.classList.toggle("is-active", editor.isActive("underline"));
+
     btnHighlight.classList.toggle("is-active", editor.isActive("highlight"));
     btnTable.classList.toggle("is-active", editor.isActive("table"));
   });

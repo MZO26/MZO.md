@@ -12,6 +12,7 @@ const applyAppTheme = async (
     const MOON_ICON = `<i data-lucide="moon"></i>`;
     if (button) {
       if (theme === "dark") {
+        // if the theme is dark, show the moon icon, otherwise show the sun icon
         button.innerHTML = MOON_ICON;
       } else {
         button.innerHTML = SUN_ICON;
@@ -25,10 +26,13 @@ const applyAppTheme = async (
   }
 };
 
-const toggleAppTheme = async (button: HTMLButtonElement) => {
+const setAppTheme = async (button: HTMLButtonElement) => {
   // toggles between light and dark theme
   try {
-    const newTheme = await window.electronAPI.toggleTheme();
+    const currentTheme = await window.electronAPI.getTheme();
+    const newTheme: Theme = currentTheme === "light" ? "dark" : "light";
+    await window.electronAPI.setTheme(newTheme);
+    // sets the theme in the main process, which will trigger the theme-changed event
     await applyAppTheme(button, newTheme);
   } catch (error) {
     console.error("Failed to get current theme:", error);
@@ -36,4 +40,4 @@ const toggleAppTheme = async (button: HTMLButtonElement) => {
   }
 };
 
-export { applyAppTheme, toggleAppTheme };
+export { applyAppTheme, setAppTheme };

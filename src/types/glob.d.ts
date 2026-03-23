@@ -13,8 +13,7 @@ declare global {
     };
     electronAPI: {
       getTheme: () => Promise<Theme>;
-      setTheme: (theme: Theme) => Promise<void>;
-      toggleTheme: () => Promise<Theme>;
+      setTheme: (theme: Theme) => Promise<Theme>;
       onThemeChanged: (callback: (theme: Theme) => void) => void;
     };
     notesAPI: {

@@ -84,6 +84,10 @@ body {
   padding: 0 10px;
 }
 
+.bar-bottom button {
+  height: 20px;
+}
+
 .zoom-controls {
   height: 20px;
   display: flex;
@@ -164,7 +168,7 @@ body {
   background-color: var(--note);
   border-radius: 20px;
   height: 60vh;
-  width: 60vw;
+  width: 80vw;
   overflow: hidden;
   background-color: var(--bg-editor);
   box-shadow: var(--shadow);

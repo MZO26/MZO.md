@@ -1,6 +1,7 @@
 import {
   Bold,
   Bookmark,
+  Code,
   CodeXml,
   createIcons,
   Download,
@@ -60,6 +61,7 @@ function renderIcons() {
       ListOrdered,
       ListTodo,
       TextQuote,
+      Code,
       CodeXml,
       SeparatorHorizontal,
       Underline,

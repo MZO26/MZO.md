@@ -4,14 +4,14 @@ import { openModal } from "./handlers/settings";
 import { createNote } from "./notes/renderNotes";
 import { getElement } from "./utils/helpers";
 import { renderIcons } from "./utils/icons";
-import { applyAppTheme, toggleAppTheme } from "./utils/theme";
+import { applyAppTheme, setAppTheme } from "./utils/theme";
 
 document.addEventListener("DOMContentLoaded", async () => {
   renderIcons();
   const darkModeBtn = getElement<HTMLButtonElement>(".dark-mode-btn");
-  applyAppTheme(darkModeBtn);
+  await applyAppTheme(darkModeBtn);
   darkModeBtn.addEventListener("click", async () => {
-    await toggleAppTheme(darkModeBtn);
+    await setAppTheme(darkModeBtn);
   });
   window.electronAPI.onThemeChanged(async (theme) => {
     await applyAppTheme(darkModeBtn, theme);
