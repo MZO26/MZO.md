@@ -2,11 +2,14 @@
 
 * {
   box-sizing: border-box;
+  --app-font:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantall, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -14,7 +17,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--tag-bg);
+  background-color: var(--text-muted);
   border-radius: 8px;
   border: 2px solid var(--bg-sidebar);
 }
@@ -83,4 +86,15 @@
   --tag-color: #1976d2;
   --tag-bg: #e3f2fd;
   --shadow: 0 0 0 1px rgba(212, 212, 216, 0.8), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.lucide {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.5px;
+  stroke: currentColor;
+  transition:
+    stroke 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }

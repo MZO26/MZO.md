@@ -141,12 +141,12 @@
 .tiptap table .selectedCell {
   background-color: var(--tag-bg);
 }
+
 .toolbar {
   flex-shrink: 0;
   display: flex;
   gap: 2px;
   align-items: center;
-  padding: 0 8px;
   background: var(--bg-sidebar);
   flex-wrap: wrap;
   overflow-x: auto;

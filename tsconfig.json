@@ -34,6 +34,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "electron/**/*"],
+  "include": ["src/**/*.ts", "types/**/*.d.ts", "electron/**/*.ts"],
   "exclude": ["node_modules", "dist", "dist-electron"]
 }

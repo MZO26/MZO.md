@@ -9,7 +9,7 @@ import {
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import db from "../src/database";
+import db from "./database";
 import { registerFileSystemHandlers } from "./fileSystem";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,12 +24,12 @@ type TitleBarOverlayOptions = {
   height: number;
 };
 
-type Theme = "light" | "dark" | "system";
-
 let win: BrowserWindow | null = null;
 nativeTheme.themeSource = "system";
 
-function getTitleBarOverlay(isDark: boolean): TitleBarOverlayOptions {
+function getTitleBarOverlay(): TitleBarOverlayOptions {
+  let isDark = nativeTheme.shouldUseDarkColors;
+  //boolean to check if the system theme is dark or light, used to set the title bar overlay colors accordingly
   return isDark
     ? { color: "#18181b", symbolColor: "#d4d4d8", height: 30 }
     : {
@@ -43,7 +43,6 @@ function createWindow() {
   const preloadPath = path.join(__dirname, "../preload/preload.js");
   console.log("__dirname:", __dirname);
   console.log("preload path:", preloadPath);
-  console.log("nativeTheme:", nativeTheme.shouldUseDarkColors);
 
   win = new BrowserWindow({
     minHeight: 600,
@@ -51,7 +50,8 @@ function createWindow() {
     width: 800,
     height: 600,
     titleBarStyle: "hidden",
-    titleBarOverlay: getTitleBarOverlay(nativeTheme.shouldUseDarkColors),
+    titleBarOverlay: getTitleBarOverlay(),
+
     webPreferences: {
       preload: preloadPath,
       nodeIntegration: false,
@@ -78,42 +78,45 @@ function createWindow() {
 app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
   try {
-    const db = await import("../src/database");
+    const db = await import("./database");
     console.log("Database loaded successfully:", db);
   } catch (error) {
     console.error("Failed to load database:", error);
   }
-  nativeTheme.on("updated", () => {
-    if (win) {
-      win.setTitleBarOverlay(
-        getTitleBarOverlay(nativeTheme.shouldUseDarkColors),
-      );
-    }
-  });
   ipcMain.handle("get-system-info", () => {
     return `Node.js Version: ${process.versions.node}, Electron: ${process.versions.electron}`;
   });
 
-  ipcMain.handle("get-theme", () => {
+  ipcMain.handle("get-theme", async () => {
     return nativeTheme.shouldUseDarkColors ? "dark" : "light";
   });
 
-  ipcMain.handle(
-    "set-theme",
-    async (_event, theme: Theme): Promise<boolean> => {
-      nativeTheme.themeSource = theme;
-      if (win) {
-        const isDark =
-          theme === "system"
-            ? nativeTheme.shouldUseDarkColors
-            : theme === "dark";
+  ipcMain.handle("set-theme", async (_event, theme: Theme) => {
+    nativeTheme.themeSource = theme;
+    if (win) {
+      win.setTitleBarOverlay(getTitleBarOverlay());
+    }
+    return nativeTheme.shouldUseDarkColors ? "dark" : "light";
+  });
 
-        win.setTitleBarOverlay(getTitleBarOverlay(isDark));
-        return true;
-      }
-      return false;
-    },
-  );
+  ipcMain.handle("toggle-theme", async () => {
+    nativeTheme.themeSource =
+      nativeTheme.themeSource === "light" ? "dark" : "light";
+    if (win) {
+      win.setTitleBarOverlay(getTitleBarOverlay());
+    }
+    return nativeTheme.shouldUseDarkColors ? "dark" : "light";
+  });
+
+  nativeTheme.on("updated", () => {
+    if (win) {
+      win.setTitleBarOverlay(getTitleBarOverlay());
+    }
+    win?.webContents.send(
+      "theme-changed",
+      nativeTheme.shouldUseDarkColors ? "dark" : "light",
+    );
+  });
 
   ipcMain.handle("notes:getAll", () => {
     const notes = db.getAll();

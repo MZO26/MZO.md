@@ -2,6 +2,7 @@ export {};
 
 declare module "*.css";
 declare global {
+  type Theme = "light" | "dark";
   interface Window {
     api: {
       openFile: () => Promise<{ path: string; content: string } | null>;
@@ -11,8 +12,10 @@ declare global {
       }) => Promise<string | boolean>;
     };
     electronAPI: {
-      getTheme: () => Promise<"dark" | "light">;
-      setTheme: (theme: "dark" | "light" | "system") => void;
+      getTheme: () => Promise<Theme>;
+      setTheme: (theme: Theme) => Promise<void>;
+      toggleTheme: () => Promise<Theme>;
+      onThemeChanged: (callback: (theme: Theme) => void) => void;
     };
     notesAPI: {
       getAll: () => Promise<Note[]>;

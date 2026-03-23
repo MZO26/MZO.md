@@ -1,4 +1,4 @@
-import { getElement, getElementOrNull } from "./helpers";
+import { getElement, getElementOrNull } from "../utils/helpers";
 
 function updateDateTime() {
   const displayElement = getElementOrNull<HTMLDivElement>("#datetime-display");

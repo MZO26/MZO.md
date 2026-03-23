@@ -1,4 +1,4 @@
-import { getElement } from "./helpers";
+import { getElement } from "../utils/helpers";
 
 const openModal = (): void => {
   const overlay = getElement<HTMLDivElement>(".overlay");

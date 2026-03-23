@@ -16,10 +16,10 @@ import python from "highlight.js/lib/languages/python";
 import ts from "highlight.js/lib/languages/typescript";
 import html from "highlight.js/lib/languages/xml"; // HTML ist in highlight.js unter 'xml'
 import { createLowlight } from "lowlight";
-import { FileHandler } from "./../node_modules/@tiptap/extension-file-handler/src/fileHandler";
+import { FileHandler } from "../../node_modules/@tiptap/extension-file-handler/src/fileHandler";
+import { compressImage } from "../utils/image";
 import { setupZoomBar, updateStats } from "./editorFooter";
 import { setupToolbar } from "./editorHeader";
-import { compressImage } from "./utils/image";
 
 let editor: Editor | null = null;
 

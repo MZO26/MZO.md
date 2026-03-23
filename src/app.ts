@@ -1,15 +1,20 @@
-import { initEditor } from "./editor";
-import { updateDateTime } from "./editorFooter";
-import { getElement } from "./helpers";
-import { createNote } from "./renderNotes";
-import { openModal } from "./settings";
+import { initEditor } from "./components/editor";
+import { updateDateTime } from "./components/editorFooter";
+import { openModal } from "./handlers/settings";
+import { createNote } from "./notes/renderNotes";
+import { getElement } from "./utils/helpers";
+import { renderIcons } from "./utils/icons";
 import { applyAppTheme, toggleAppTheme } from "./utils/theme";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  renderIcons();
   const darkModeBtn = getElement<HTMLButtonElement>(".dark-mode-btn");
   applyAppTheme(darkModeBtn);
   darkModeBtn.addEventListener("click", async () => {
     await toggleAppTheme(darkModeBtn);
+  });
+  window.electronAPI.onThemeChanged(async (theme) => {
+    await applyAppTheme(darkModeBtn, theme);
   });
   const settingsBtn = getElement<HTMLButtonElement>(".settings-btn");
   settingsBtn.addEventListener("click", () => {

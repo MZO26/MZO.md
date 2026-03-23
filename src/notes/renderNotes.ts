@@ -1,7 +1,7 @@
-import type { Note } from "./database";
-import { initEditor } from "./editor";
-import { debounce } from "./helpers";
-import { clearSavedItemId, setSavedItemId } from "./sharedStates";
+import type { Note } from "../../electron/database";
+import { initEditor } from "../components/editor";
+import { clearSavedItemId, setSavedItemId } from "../store/sharedStates";
+import { debounce } from "../utils/helpers";
 
 const renderNote = (note: Note) => {
   const container = document.querySelector(".notes-container") as HTMLElement;

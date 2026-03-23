@@ -8,7 +8,10 @@ contextBridge.exposeInMainWorld("api", {
 });
 contextBridge.exposeInMainWorld("electronAPI", {
   getTheme: () => ipcRenderer.invoke("get-theme"),
-  setTheme: (theme: "dark" | "light") => ipcRenderer.send("set-theme", theme),
+  setTheme: (theme: "dark" | "light") => ipcRenderer.invoke("set-theme", theme),
+  toggleTheme: () => ipcRenderer.invoke("toggle-theme"),
+  onThemeChanged: (callback: (theme: "dark" | "light") => void) =>
+    ipcRenderer.on("theme-changed", (_event, theme) => callback(theme)),
 });
 contextBridge.exposeInMainWorld("notesAPI", {
   getAll: () => ipcRenderer.invoke("notes:getAll"),
