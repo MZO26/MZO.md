@@ -1,4 +1,5 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
+import type { Theme } from "../src/shared/types";
 console.log("--- PRELOAD AKTIV ---");
 
 contextBridge.exposeInMainWorld("api", {
@@ -7,28 +8,19 @@ contextBridge.exposeInMainWorld("api", {
   saveFile: (daten: any) => ipcRenderer.invoke("file-save", daten),
 });
 contextBridge.exposeInMainWorld("electronAPI", {
-  getTheme: () => ipcRenderer.invoke("get-theme"),
-  setTheme: (theme: Theme) => ipcRenderer.invoke("set-theme", theme),
-  onThemeChanged: (
-    callback: (
-      theme:
-        | "dark"
-        | "light"
-        | "dark-glass"
-        | "light-glass"
-        | "paper"
-        | "nord"
-        | "sepia"
-        | "lavender",
-    ) => void,
-  ) => ipcRenderer.on("theme-changed", (_event, theme) => callback(theme)),
+  getTheme: () => ipcRenderer.invoke("get:theme"),
+  setTheme: (theme: Theme) => ipcRenderer.invoke("set:theme", theme),
+  onThemeChanged: (callback: (response: any) => void) =>
+    ipcRenderer.on("theme:changed", (_event: IpcRendererEvent, response: any) =>
+      callback(response),
+    ),
 });
-contextBridge.exposeInMainWorld("notesAPI", {
-  getAll: () => ipcRenderer.invoke("notes:getAll"),
-  create: (title: string, content: string) =>
-    ipcRenderer.invoke("notes:create", title, content),
-  update: (id: string, title: string, content: string) =>
-    ipcRenderer.invoke("notes:update", id, title, content),
-  delete: (id: string) => ipcRenderer.invoke("notes:delete", id),
-  getById: (id: string) => ipcRenderer.invoke("notes:getById", id),
+contextBridge.exposeInMainWorld("noteAPI", {
+  getAll: () => ipcRenderer.invoke("note:getAll"),
+  create: (title: string, content: string, tags: string[] = []) =>
+    ipcRenderer.invoke("note:create", title, content, tags),
+  update: (id: string, title: string, content: string, tags: string[] = []) =>
+    ipcRenderer.invoke("note:update", id, title, content, tags),
+  delete: (id: string) => ipcRenderer.invoke("note:delete", id),
+  getById: (id: string) => ipcRenderer.invoke("note:getById", id),
 });

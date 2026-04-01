@@ -89,7 +89,6 @@ const initEditor = (selector: string): Editor | null => {
       TableCell,
       Highlight.configure({ multicolor: true }),
       StarterKit.configure({
-        heading: false,
         codeBlock: false,
         link: false,
       }),
@@ -131,6 +130,22 @@ const initEditor = (selector: string): Editor | null => {
         },
       }),
     ],
+    editorProps: {
+      handleDOMEvents: {
+        dragover: (view, event) => {
+          const editorBounds = view.dom.getBoundingClientRect();
+          const mouseNextToTop = event.clientY - editorBounds.top;
+          if (mouseNextToTop < 40) {
+            const scrollContainer = view.dom.parentElement;
+            scrollContainer?.scrollBy({
+              top: -10,
+              behavior: "auto",
+            });
+          }
+          return false;
+        },
+      },
+    },
     content: "",
     autofocus: true,
   });

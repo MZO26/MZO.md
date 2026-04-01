@@ -1,7 +1,7 @@
 import { initEditor } from "./components/editor";
 import { updateDateTime } from "./components/editorFooter";
 import { openModal } from "./handlers/settings";
-import { createNote } from "./notes/renderNotes";
+import { reloadNoteList } from "./notes/renderNotes";
 import { getSelectedFont } from "./utils/font";
 import { getElement, getElementOrNull } from "./utils/helpers";
 import { renderIcons } from "./utils/icons";
@@ -9,8 +9,9 @@ import { applyAppTheme, setAppTheme } from "./utils/theme";
 
 document.addEventListener("DOMContentLoaded", async () => {
   renderIcons();
-  const themeDropdown = getElement("#theme-dropdown") as HTMLSelectElement;
-  const fontSelect = getElementOrNull("#font-dropdown") as HTMLSelectElement;
+  await reloadNoteList();
+  const themeDropdown = getElement<HTMLSelectElement>("#theme-dropdown");
+  const fontSelect = getElementOrNull<HTMLSelectElement>("#font-dropdown");
 
   if (themeDropdown) {
     themeDropdown.addEventListener("change", setAppTheme);
@@ -34,12 +35,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   initEditor("#editor");
 
   updateDateTime();
-
-  document
-    .querySelector(".add-note-btn")
-    ?.addEventListener("click", async () => {
-      await createNote();
-    });
 
   document.querySelectorAll(".categoryItem")?.forEach((item) => {
     item.addEventListener("click", () => {

@@ -1,26 +1,19 @@
-type Theme =
-  | "light"
-  | "dark"
-  | "dark-glass"
-  | "light-glass"
-  | "paper"
-  | "nord"
-  | "sepia"
-  | "lavender"
-  | "system";
+import type { Theme } from "../shared/types";
+import { getValue, setValue } from "../store/storage";
 
 const applyAppTheme = async (
   selectElement?: HTMLSelectElement,
   themeOverride?: Theme,
 ) => {
   try {
-    const theme: Theme = themeOverride || (await window.electronAPI.getTheme());
+    const theme: Theme = themeOverride || getValue("theme") || "system";
     console.log("Applying theme:", theme);
     document.documentElement.setAttribute("data-theme", theme);
     if (selectElement) {
       selectElement.value = theme;
     }
     window.electronAPI.setTheme(theme);
+    setValue<"theme">("theme", theme);
   } catch (error) {
     console.error("Failed to get system theme:", error);
     return;

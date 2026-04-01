@@ -34,7 +34,7 @@ button:hover {
 
 button:active {
   transform: scale(0.95);
-  background: var(--accent-hover);
+  background: var(--bg-button);
 }
 
 .closeModal-btn {
@@ -46,13 +46,4 @@ button:active {
 .hidden {
   pointer-events: none;
   display: none;
-}
-
-.dark-mode-btn {
-  transition: opacity 0.2s ease;
-}
-
-.dark-mode-btn svg {
-  opacity: 1;
-  transition: opacity 0.2s ease;
 }

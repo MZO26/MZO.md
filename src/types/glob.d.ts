@@ -1,17 +1,14 @@
 export {};
 
 declare module "*.css";
+
+interface IpcResponse<T = void> {
+  success: boolean;
+  message?: string;
+  data?: T;
+}
+
 declare global {
-  type Theme =
-    | "light"
-    | "dark"
-    | "dark-glass"
-    | "light-glass"
-    | "paper"
-    | "nord"
-    | "sepia"
-    | "lavender"
-    | "system";
   interface Window {
     api: {
       openFile: () => Promise<{ path: string; content: string } | null>;
@@ -21,16 +18,27 @@ declare global {
       }) => Promise<string | boolean>;
     };
     electronAPI: {
-      getTheme: () => Promise<Theme>;
-      setTheme: (theme: Theme) => Promise<Theme>;
-      onThemeChanged: (callback: (theme: Theme) => void) => void;
+      getTheme: () => Promise<IpcResponse<Theme>>;
+      setTheme: (theme: Theme) => Promise<IpcResponse<Theme>>;
+      onThemeChanged: (
+        callback: (response: IpcResponse<Theme>) => void,
+      ) => void;
     };
-    notesAPI: {
-      getAll: () => Promise<Note[]>;
-      create: (title: string, content: string) => Promise<string>;
-      update: (id: string, title: string, content: string) => Promise<boolean>;
-      delete: (id: string) => Promise<boolean>;
-      getById: (id: string) => Promise<Note | undefined>;
+    noteAPI: {
+      getAll: () => Promise<IpcResponse<Note[]>>;
+      getById: (id: string) => Promise<IpcResponse<Note>>;
+      create: (
+        title: string,
+        content: string,
+        tags?: string[],
+      ) => Promise<IpcResponse<string>>;
+      update: (
+        id: string,
+        title: string,
+        content: string,
+        tags?: string[],
+      ) => Promise<IpcResponse<boolean>>;
+      delete: (id: string) => Promise<IpcResponse<boolean>>;
     };
   }
 }

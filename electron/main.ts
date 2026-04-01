@@ -1,17 +1,8 @@
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  Menu,
-  nativeTheme,
-  shell,
-} from "electron";
-import * as fs from "fs";
+import { app, BrowserWindow, Menu, nativeTheme, shell } from "electron";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import db from "./database";
-import { registerFileSystemHandlers } from "./fileSystem";
+import { registerIpcHandlers } from "./ipcHandlers";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env["DIST"] = path.join(__dirname, "../dist");
@@ -39,69 +30,7 @@ function getTitleBarOverlay(): TitleBarOverlayOptions {
         height: 30,
       };
 }
-// 1. Define the exact path where the settings will be saved
-let configPath = "";
 
-// Helper function to read the theme from the hard drive
-function getSavedTheme(): string {
-  try {
-    // Check if the file exists before trying to read it
-    if (fs.existsSync(configPath)) {
-      const data = fs.readFileSync(configPath, "utf-8");
-      const parsedData = JSON.parse(data);
-      return parsedData.theme || "dark";
-    }
-  } catch (error) {
-    console.error("Could not read theme file, defaulting to dark:", error);
-  }
-  return "dark"; // The default fallback if no file exists
-}
-
-// Helper function to write the theme to the hard drive
-function saveTheme(theme: string) {
-  try {
-    const dataToSave = JSON.stringify({ theme: theme });
-    fs.writeFileSync(configPath, dataToSave, "utf-8");
-  } catch (error) {
-    console.error("Failed to save the theme:", error);
-  }
-}
-
-function setupThemeHandlers() {
-  ipcMain.handle("get-theme", () => {
-    return getSavedTheme();
-  });
-
-  ipcMain.handle("set-theme", (_, theme: string) => {
-    const validThemes = [
-      "light",
-      "dark",
-      "dark-glass",
-      "light-glass",
-      "paper",
-      "nord",
-      "sepia",
-      "lavender",
-      "system",
-    ];
-    if (validThemes.includes(theme)) {
-      saveTheme(theme);
-    }
-    if (theme === "system") {
-      nativeTheme.themeSource = "system";
-    } else if (
-      theme.includes("light") ||
-      theme === "paper" ||
-      theme === "sepia" ||
-      theme === "nord" ||
-      theme === "lavender"
-    ) {
-      nativeTheme.themeSource = "light";
-    } else if (theme.includes("dark")) {
-      nativeTheme.themeSource = "dark";
-    }
-  });
-}
 function createWindow() {
   const preloadPath = path.join(__dirname, "../preload/preload.js");
   console.log("__dirname:", __dirname);
@@ -142,48 +71,13 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
-  configPath = path.join(app.getPath("userData"), "theme-settings.json");
-  setupThemeHandlers();
-  nativeTheme.themeSource = getSavedTheme() === "light" ? "light" : "dark";
   try {
     const db = await import("./database");
     console.log("Database loaded successfully:", db);
   } catch (error) {
     console.error("Failed to load database:", error);
   }
-  ipcMain.handle("get-system-info", () => {
-    return `Node.js Version: ${process.versions.node}, Electron: ${process.versions.electron}`;
-  });
-
-  ipcMain.handle("notes:getAll", () => {
-    const notes = db.getAll();
-    return notes;
-  });
-
-  ipcMain.handle("notes:create", (_event, title: string, content: string) => {
-    const id = db.create(title, content);
-    return id;
-  });
-
-  ipcMain.handle(
-    "notes:update",
-    (_event, id: string, title: string, content: string) => {
-      const success = db.update(id, title, content);
-      return success;
-    },
-  );
-
-  ipcMain.handle("notes:delete", (_event, id: string) => {
-    const success = db.delete(id);
-    return success;
-  });
-
-  ipcMain.handle("notes:getById", (_event, id: string) => {
-    const note = db.getById(id);
-    return note;
-  });
-
-  registerFileSystemHandlers(win!);
+  registerIpcHandlers();
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

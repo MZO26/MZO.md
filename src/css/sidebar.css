@@ -62,6 +62,12 @@
   padding: 12px;
 }
 
+.noteItem:active,
+.categoryItem:active {
+  transform: scale(0.95);
+  background: var(--accent-hover);
+}
+
 .note-content {
   flex: 1;
   display: flex;
@@ -107,10 +113,6 @@
 
 .delete-btn:hover {
   background: var(--accent-hover);
-}
-
-.delete-btn:hover svg {
-  fill: #dc3545;
 }
 
 .delete-btn:active {

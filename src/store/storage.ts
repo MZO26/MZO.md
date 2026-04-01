@@ -1,10 +1,12 @@
+import type { Theme } from "../shared/types";
+
 const StorageKeys = {
   THEME: "theme",
   NOTE_ID: "noteId",
 } as const;
 
 interface StorageData {
-  [StorageKeys.THEME]: "light" | "dark" | "system";
+  [StorageKeys.THEME]: Theme;
   [StorageKeys.NOTE_ID]: string | null;
 }
 
