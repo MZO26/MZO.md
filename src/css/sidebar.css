@@ -55,11 +55,16 @@
 }
 
 .noteItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 30px 20px 30px;
+  min-height: 80px;
+  gap: 4px;
+  transition:
+    transform 0.1s ease-in-out,
+    background-color 0.1s ease-in-out;
+  overflow: hidden;
+  padding: 8px;
 }
 
 .noteItem:active,
@@ -68,41 +73,50 @@
   background: var(--accent-hover);
 }
 
-.note-content {
-  flex: 1;
+.noteItem.active,
+.categoryItem.active {
+  background: var(--accent-hover);
+}
+
+.note-header {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .note-title {
-  margin: 3px 0;
+  margin: 0;
+  font-weight: bold;
 }
 
 .note-date {
-  margin: 3px 0;
   font-size: 0.85em;
   color: var(--text-muted);
-  order: 2;
+  display: flex;
+  align-items: center;
 }
 
 .note-tags {
+  padding-top: 4px;
   display: flex;
-  flex-wrap: wrap;
   gap: 4px;
-  order: 3;
-  max-width: 100%;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .tag {
   background: var(--tag-bg);
   color: var(--tag-color);
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: 10px;
   font-size: 0.75em;
+  white-space: nowrap;
 }
 
 .delete-btn {
+  flex-shrink: 0;
+  grid-column: 2;
   margin: 0;
   padding: 4px;
   background: none;

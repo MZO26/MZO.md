@@ -4,7 +4,6 @@ console.log("--- PRELOAD AKTIV ---");
 
 contextBridge.exposeInMainWorld("api", {
   openFile: () => ipcRenderer.invoke("file-open"),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   saveFile: (daten: any) => ipcRenderer.invoke("file-save", daten),
 });
 contextBridge.exposeInMainWorld("electronAPI", {

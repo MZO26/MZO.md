@@ -11,8 +11,8 @@ function registerIpcHandlers() {
 
   ipcMain.handle("note:getAll", () => {
     try {
-      const notes = db.getAll();
-      return { success: true, notes };
+      const data = db.getAll();
+      return { success: true, data };
     } catch (error) {
       console.error("Failed to get all notes:", error);
       return { success: false, message: "Failed to get all notes" };
@@ -23,8 +23,8 @@ function registerIpcHandlers() {
     "note:create",
     (_event, title: string, content: string, tags: string[]) => {
       try {
-        const id = db.create(title, content, tags);
-        return { success: true, id };
+        const data = db.create(title, content, tags);
+        return { success: true, data };
       } catch (error) {
         console.error("Failed to create note:", error);
         return { success: false, message: "Failed to create note" };
@@ -63,11 +63,11 @@ function registerIpcHandlers() {
 
   ipcMain.handle("note:getById", (_event, id: string) => {
     try {
-      const note = db.getById(id);
-      if (!note) {
+      const data = db.getById(id);
+      if (!data) {
         return { success: false, message: "Note not found" };
       }
-      return { success: true, note };
+      return { success: true, data };
     } catch (error) {
       console.error("Failed to get note by ID", error);
       return { success: false, message: "Failed to get note by ID" };

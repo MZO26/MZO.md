@@ -34,7 +34,7 @@ import {
   X,
 } from "lucide";
 
-function renderIcons() {
+function renderIcons(scope: Document | HTMLElement = document): void {
   createIcons({
     icons: {
       Sun,
@@ -70,6 +70,7 @@ function renderIcons() {
       Grid2x2,
       X,
     },
+    root: scope,
   });
 }
 

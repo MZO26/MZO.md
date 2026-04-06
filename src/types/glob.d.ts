@@ -1,4 +1,5 @@
 export {};
+import { Note } from "../shared/types";
 
 declare module "*.css";
 
@@ -31,7 +32,7 @@ declare global {
         title: string,
         content: string,
         tags?: string[],
-      ) => Promise<IpcResponse<string>>;
+      ) => Promise<IpcResponse<Note>>;
       update: (
         id: string,
         title: string,

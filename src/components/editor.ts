@@ -29,7 +29,7 @@ import { compressImage } from "../utils/image";
 import { setupZoomBar, updateStats } from "./editorFooter";
 import { setupToolbar } from "./editorHeader";
 
-let editor: Editor | null = null;
+export let editor: Editor | null = null;
 
 const lowlight = createLowlight();
 
@@ -49,14 +49,14 @@ lowlight.register("json", json);
 lowlight.registerAlias("javascript", "js");
 lowlight.registerAlias("typescript", "ts");
 
-const initEditor = (selector: string): Editor | null => {
+const initEditor = (selector: string): Editor => {
   const element = document.querySelector(selector);
   if (editor) {
     return editor;
   }
   if (!element) {
     console.error(`element with "${selector}" was not found.`);
-    return null;
+    throw new Error(`element with "${selector}" was not found.`);
   }
 
   editor = new Editor({
@@ -159,20 +159,6 @@ const initEditor = (selector: string): Editor | null => {
   return editor;
 };
 
-// document.addEventListener("keydown", async (e) => {
-//   if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-//     e.preventDefault();
-//     const id = getSavedItemId();
-//     if (id) {
-//       const notes = await window.notesAPI.getAll();
-//       const note = notes.find((n) => n.id === id);
-//       updateNote(note.id, note.title, note.content);
-//       console.log(`Note with ID ${note.id} successfully saved.`);
-//     } else {
-//       console.warn("No note found to save.");
-//     }
-//   }
-// });
 window.addEventListener("dragover", (e) => e.preventDefault());
 window.addEventListener("drop", (e) => e.preventDefault());
 

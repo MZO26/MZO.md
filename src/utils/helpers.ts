@@ -16,17 +16,33 @@ function getElementOrNull<T extends HTMLElement>(selector: string): T | null {
   return document.querySelector<T>(selector);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  return (...args: Parameters<T>): void => {
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(() => {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  let lastArgs: Parameters<T> | null = null;
+
+  const debounced = (...args: Parameters<T>) => {
+    lastArgs = args; // Saves the last arguments for potential immediate execution
+    if (timeout) clearTimeout(timeout);
+
+    timeout = setTimeout(() => {
       func(...args);
+      // After execution, clean up the timeout and last arguments
+      timeout = null;
+      lastArgs = null;
     }, wait);
   };
+
+  // Add a flush method to allow immediate execution of the last call if it is pending
+  debounced.flush = () => {
+    if (timeout && lastArgs) {
+      clearTimeout(timeout);
+      func(...lastArgs);
+      timeout = null;
+      lastArgs = null;
+    }
+  };
+
+  return debounced;
 }
 
 export { debounce, getElement, getElementOrNull, truncate };

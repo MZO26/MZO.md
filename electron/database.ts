@@ -45,8 +45,9 @@ class NoteDB {
   // run() for inserting a new note into the database. It executes the prepared statement with the provided parameters (id, title, content, and tags) to add a new record to the "notes" table. The run() method is used for executing SQL statements that modify the database but do not return any data, such as INSERT, UPDATE, or DELETE statements.
   // get() is used to retrieve a single row of data from the database. It executes a prepared statement and returns the first row that matches the query. The get() method is used for executing SQL statements that return a single row of data, such as SELECT statements that are expected to return only one result. If searching for a single ID and it is not found, get() will return undefined, which is why the return type of getById is Note | undefined.
   // all() is used to retrieve multiple rows of data from the database. It executes a prepared statement and returns an array of all rows that match the query. The all() method is used for executing SQL statements that return multiple rows of data, such as SELECT statements that are expected to return more than one result. In the getAll() method, all() is used to retrieve all notes from the "notes" table, and then for each note, it retrieves the associated tags using another prepared statement and all() again to get all tags for that note. The result is an array of Note objects, each containing its associated tags. If nothing is found, all() will return an empty array, which is why the return type of getAll is Note[].
-  create(title: string, content: string, tags: string[] = []): string {
+  create(title: string, content: string, tags: string[] = []): Note {
     const id = crypto.randomUUID();
+    const created_at = Date.now();
     // Using a transaction to ensure that both the note and its tags are inserted together, maintaining data integrity. If any part of the transaction fails, the entire transaction will be rolled back, preventing partial data from being saved.
     if (tags.length > 0) {
       tags = tags.slice(0, 3); // Limit to 3 tags per note
@@ -54,8 +55,10 @@ class NoteDB {
     const insertTransaction = this.db.transaction(() => {
       // Save the note itself
       this.db
-        .prepare("INSERT INTO notes (id, title, content) VALUES (?, ?, ?)")
-        .run(id, title, content);
+        .prepare(
+          "INSERT INTO notes (id, title, content, created_at) VALUES (?, ?, ?, ?)",
+        )
+        .run(id, title, content, created_at);
       // Save the tags for the note
       const insertTag = this.db.prepare(
         "INSERT INTO note_tags (note_id, tag_name) VALUES (?, ?)",
@@ -67,7 +70,7 @@ class NoteDB {
     });
     // Execute the transaction to insert the note and its tags into the database
     insertTransaction();
-    return id;
+    return { id, title, content, tags, created_at };
   }
 
   update(
@@ -110,15 +113,23 @@ class NoteDB {
 
   getAll(): Note[] {
     // no transaction because it is only critical for writing and updating. Reading operations don't need it
-    const result = this.db
+    const allNotes = this.db
       .prepare("SELECT * FROM notes ORDER BY created_at DESC")
       .all() as Note[];
-    const getTags = this.db.prepare(
-      "SELECT tag_name FROM note_tags WHERE note_id = ?",
-    );
-    result.forEach((note) => {
-      const tagsObject = getTags.all(note.id) as { tag_name: string }[];
-      return { ...note, tags: tagsObject.map((t) => t.tag_name) };
+    const noteIds = allNotes.map((note) => note.id);
+    const placeholders = noteIds.map(() => "?").join(",");
+    const allTags = this.db
+      .prepare(
+        `SELECT note_id, tag_name FROM note_tags WHERE note_id IN (${placeholders})`,
+      )
+      .all(...noteIds) as { note_id: string; tag_name: string }[];
+    const result = allNotes.map((note) => {
+      return {
+        ...note,
+        tags: allTags
+          .filter((t) => t.note_id === note.id)
+          .map((t) => t.tag_name),
+      };
     });
     return result;
   }

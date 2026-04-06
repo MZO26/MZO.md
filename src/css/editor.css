@@ -100,11 +100,6 @@
   white-space: nowrap;
 }
 
-:root[data-theme="dark"] .tiptap code {
-  background-color: var(--bg-button);
-  color: var(--tag-color);
-}
-
 .tiptap img {
   max-width: 100%;
   height: auto;

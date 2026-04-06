@@ -1,3 +1,54 @@
-/dist
-/dist-electron
-/node_modules
+# =========================
+# Dependencies
+# =========================
+node_modules/
+
+# =========================
+# Logs
+# =========================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Vite & TypeScript
+# =========================
+
+dist/
+dist-electron/
+.vite/
+*.tsbuildinfo
+
+# =========================
+# Electron Packaging Outputs
+# =========================
+
+release/
+out/
+make/
+*.exe
+*.dmg
+*.AppImage
+*.zip
+
+# =========================
+# Environment Variables (Security!)
+# =========================
+
+.env
+.env.*
+!.env.example          # Keep the example file so others know what variables are needed
+
+# =========================
+# Editor & OS Files
+# =========================
+
+.DS_Store              # macOS folder attributes
+Thumbs.db              # Windows image cache
+.idea/                 # WebStorm/IntelliJ workspace
+.vscode/*              # Ignore personal VS Code settings...
+!.vscode/extensions.json # ...but keep recommended extensions for the project
+!.vscode/settings.json   # ...and keep shared project settings (optional)

@@ -1,10 +1,11 @@
 import type { Editor } from "@tiptap/core";
-import { createIcons, Trash2 } from "lucide";
 import { initEditor } from "../components/editor";
 import type { Note } from "../shared/types";
 import { getSavedItemId, setSavedItemId } from "../store/sharedStates";
-import { getElement } from "../utils/helpers";
+import { debounce, getElement } from "../utils/helpers";
+import { renderIcons } from "../utils/icons";
 import { noteItemTemplate } from "../utils/templates";
+import { updateNoteInList } from "./noteItemHandlers";
 
 // separation of concerns: renderNote, viewNote, saveNote, deleteNote, reloadNotesList, updateNote
 // renderNote needs the Template of the noteItem and creates it. It should return the created noteItem. It also should add the event listener for the click on noteItem and the delete button.
@@ -15,44 +16,53 @@ import { noteItemTemplate } from "../utils/templates";
 
 const editor = initEditor("#editor");
 let editorAbortController: AbortController | null = null;
-let saveTimeout: NodeJS.Timeout | null = null;
 
 function renderNote(note: Note): HTMLDivElement | undefined {
   const noteElement = document.createElement("div");
   noteElement.classList.add("noteItem");
   noteElement.dataset["id"] = note.id;
-  noteElement.innerHTML = noteItemTemplate(
-    note.title,
-    new Date(note.created_at).toLocaleString("de-DE", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    note.tags || [],
-  );
-  createIcons({
-    icons: {
-      Trash2,
-    },
-  });
+  noteElement.innerHTML = noteItemTemplate(note);
+  renderIcons(noteElement);
   return noteElement;
 }
 
 async function deleteNote(id: string, noteElement: HTMLElement): Promise<void> {
-  const result = await window.noteAPI.delete(id);
-  if (result.success) {
-    noteElement.remove();
-    if (getSavedItemId() === id) {
-      editor?.commands.clearContent();
+  try {
+    const result = await window.noteAPI.delete(id);
+    if (result.success) {
+      noteElement.remove();
+      if (getSavedItemId() === id) {
+        editor?.commands.clearContent();
+      }
     }
+  } catch (error) {
+    console.error("Failed to delete note:", error);
+    return;
   }
 }
 
-async function createNote(note: Partial<Note>): Promise<string | undefined> {
+async function getNoteById(id: string): Promise<Note | undefined> {
+  try {
+    const result = await window.noteAPI.getById(id);
+    console.log("Get note by ID result: ", result);
+    if (!result.success) {
+      console.warn(`Note with ID ${id} not found.`);
+      return undefined;
+    }
+    return result.data;
+  } catch (error) {
+    console.error(`Error fetching note with ID ${id}: `, error);
+    return undefined;
+  }
+}
+
+async function createNote(note: Partial<Note>): Promise<Note | undefined> {
   const result = await window.noteAPI.create(
     note.title || "New note",
     note.content || "",
     note.tags || [],
   );
+  console.log("Create note result: ", result);
   if (!result.success) {
     console.warn("Failed to create note: ", result.message);
     return undefined;
@@ -63,12 +73,14 @@ async function createNote(note: Partial<Note>): Promise<string | undefined> {
 async function saveNote(note: Partial<Note>): Promise<void> {
   const currentId = getSavedItemId();
   if (currentId === null) {
-    const newId = await createNote(note);
-    if (newId) {
-      setSavedItemId(newId);
+    const newNote = await createNote(note);
+    renderNote(newNote as Note);
+    if (newNote) {
+      setSavedItemId(newNote.id);
     }
   } else {
     await updateNote({ ...note, id: currentId });
+    updateNoteInList(currentId, note.title || "New note", note.tags || []);
   }
 }
 
@@ -78,13 +90,14 @@ async function reloadNoteList(): Promise<boolean> {
   container.innerHTML = "";
   try {
     const result = await window.noteAPI.getAll();
+    console.log("Reload notes result: ", result);
     if (!result.success) {
       return false;
     }
-    const notes = result.data;
     const fragment = document.createDocumentFragment();
-    if (!notes) return false;
-    notes.forEach((note: Note) => {
+    const note = result.data as Note[];
+    console.log("Notes to reload: ", result.data);
+    note.forEach((note: Note) => {
       const noteElement = renderNote(note);
       if (noteElement) {
         fragment.appendChild(noteElement);
@@ -112,6 +125,7 @@ async function updateNote(
       console.warn(`Note with ID ${note.id} not found for update.`);
       return false;
     }
+
     console.log(`Note with ID ${note.id} updated successfully.`);
     return true;
   } catch (error) {
@@ -120,14 +134,14 @@ async function updateNote(
   }
 }
 
-function extractNoteDataFromEditor(editor: Editor) {
-  const plainText = editor?.getText();
-  const content = editor?.getHTML();
+function extractNoteDataFromEditor(editor: Editor | null) {
+  const plainText = editor?.getText() ?? "";
+  const content = editor?.getHTML() ?? "";
   const lines = plainText
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
-  const title = lines.length > 0 ? lines[0] : "New note";
+  const title: string = lines[0] ?? "New note";
   const tagMatches = plainText.match(/#[\p{L}\p{N}_]+/gu);
   const tags = tagMatches
     ? Array.from(new Set(tagMatches.map((tag) => tag.slice(1))))
@@ -136,34 +150,35 @@ function extractNoteDataFromEditor(editor: Editor) {
 }
 
 async function viewNote(note: Note, editor: Editor): Promise<void> {
+  if (!editor) return;
   if (editorAbortController) {
     editorAbortController.abort();
   }
   editorAbortController = new AbortController();
   const signal = editorAbortController.signal;
   setSavedItemId(note.id);
-  editor?.commands.setContent(note.content);
-  const handleEditorUpdate = async () => {
-    if (saveTimeout) clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => {
-      const { title, content, tags } = extractNoteDataFromEditor(editor);
-      saveNote({
-        id: note.id,
-        title: title || "New note",
-        content: content || "",
-        tags: tags || [],
-      });
-    }, 1000);
+  editor.commands.setContent(note.content);
+  const saveCurrentNote = async () => {
+    const { title, content, tags } = extractNoteDataFromEditor(editor);
+    await saveNote({
+      id: note.id,
+      title: title || "New note",
+      content: content || "",
+      tags: tags || [],
+    });
   };
-
-  editor.on("update", handleEditorUpdate);
+  const debouncedSave = debounce(saveCurrentNote, 2000);
+  editor.on("update", debouncedSave);
   signal.addEventListener("abort", () => {
-    editor.off("update", handleEditorUpdate);
+    editor.off("update", debouncedSave);
+    debouncedSave.flush();
   });
 }
 export {
   createNote,
   deleteNote,
+  extractNoteDataFromEditor,
+  getNoteById,
   reloadNoteList,
   renderNote,
   updateNote,
