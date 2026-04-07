@@ -16,6 +16,15 @@ function getElementOrNull<T extends HTMLElement>(selector: string): T | null {
   return document.querySelector<T>(selector);
 }
 
+function setActiveItem(element: HTMLElement) {
+  if (!element || !element.parentElement) return;
+  const currentlyActive = element.parentElement.querySelector(".active");
+  if (currentlyActive) {
+    currentlyActive.classList.remove("active");
+  }
+  element.classList.add("active");
+}
+
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   let lastArgs: Parameters<T> | null = null;
@@ -45,4 +54,4 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
   return debounced;
 }
 
-export { debounce, getElement, getElementOrNull, truncate };
+export { debounce, getElement, getElementOrNull, setActiveItem, truncate };

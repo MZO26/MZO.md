@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { THEME_MAP } from "../src/constants/themes";
 import type { Theme } from "../src/shared/types";
 import db from "./database";
+import { store } from "./store";
 
 function registerIpcHandlers() {
   ipcMain.handle("get:system-info", () => {
@@ -96,7 +97,7 @@ function registerIpcHandlers() {
     return null;
   });
 
-  ipcMain.handle("file-save", async (_event, { pfad, inhalt, win }) => {
+  ipcMain.handle("file-save", async (_, { pfad, inhalt, win }) => {
     if (pfad) {
       fs.writeFileSync(pfad, inhalt, "utf-8");
       return true;
@@ -110,6 +111,29 @@ function registerIpcHandlers() {
       }
     }
     return false;
+  });
+
+  ipcMain.handle("electron-store:get", async (_, key: string) => {
+    try {
+      const value = store.get(key);
+      return { success: true, data: value };
+    } catch (error) {
+      console.error(`[IPC] Error while loading key "${key}":`, error);
+      return { success: false, message: "Error while loading" };
+    }
+  });
+
+  ipcMain.handle("electron-store:set", async (_, key: string, val: any) => {
+    try {
+      store.set(key, val);
+      return { success: true };
+    } catch (error) {
+      console.error(`[IPC] Error saving key "${key}:`, error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
   });
 }
 

@@ -17,4 +17,18 @@ type Theme =
   | "lavender"
   | "system";
 
-export type { Note, Theme };
+type Font =
+  | "system"
+  | "arial"
+  | "verdana"
+  | "trebuchet"
+  | "georgia"
+  | "courier"
+  | "times"
+  | "palpatino"
+  | "garamond"
+  | "tahoma"
+  | "century"
+  | "consolas";
+
+export type { Font, Note, Theme };

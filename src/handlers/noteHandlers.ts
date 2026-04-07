@@ -1,11 +1,11 @@
 import type { Editor } from "@tiptap/core";
 import { initEditor } from "../components/editor";
+import { updateNoteInList } from "../components/sidebarNotes";
+import { getSavedItemId, setSavedItemId } from "../shared/sharedStates";
 import type { Note } from "../shared/types";
-import { getSavedItemId, setSavedItemId } from "../store/sharedStates";
 import { debounce, getElement } from "../utils/helpers";
 import { renderIcons } from "../utils/icons";
 import { noteItemTemplate } from "../utils/templates";
-import { updateNoteInList } from "./noteItemHandlers";
 
 // separation of concerns: renderNote, viewNote, saveNote, deleteNote, reloadNotesList, updateNote
 // renderNote needs the Template of the noteItem and creates it. It should return the created noteItem. It also should add the event listener for the click on noteItem and the delete button.
@@ -56,7 +56,7 @@ async function getNoteById(id: string): Promise<Note | undefined> {
   }
 }
 
-async function createNote(note: Partial<Note>): Promise<Note | undefined> {
+async function createNote(note: Partial<Note> = {}): Promise<Note | undefined> {
   const result = await window.noteAPI.create(
     note.title || "New note",
     note.content || "",

@@ -1,8 +1,13 @@
-import { editor } from "../components/editor";
+import {
+  deleteNote,
+  getNoteById,
+  renderNote,
+  viewNote,
+} from "../handlers/noteHandlers";
+import { setSavedItemId } from "../shared/sharedStates";
 import type { Note } from "../shared/types";
-import { setSavedItemId } from "../store/sharedStates";
-import { getElement, truncate } from "../utils/helpers";
-import { deleteNote, getNoteById, renderNote, viewNote } from "./noteHandlers";
+import { getElement, setActiveItem, truncate } from "../utils/helpers";
+import { editor } from "./editor";
 
 async function initializeContainer(): Promise<void> {
   const container = getElement<HTMLDivElement>(".notes-container");
@@ -28,10 +33,7 @@ async function initializeContainer(): Promise<void> {
       console.log("Editor instance: ", editor);
       if (note && editor) {
         await viewNote(note, editor);
-        document.querySelectorAll(".noteItem").forEach((n) => {
-          n.classList.remove("active");
-        });
-        noteItem.classList.add("active");
+        setActiveItem(noteItem);
         return;
       }
     }
@@ -44,6 +46,7 @@ function addNoteToList(note: Note): void {
   console.log("Adding note to list: ", note);
   if (noteElement) {
     container.prepend(noteElement);
+    setActiveItem(noteElement);
   }
 }
 
@@ -64,15 +67,17 @@ function updateNoteInList(
     ".note-tags",
   ) as HTMLDivElement;
   const truncatedTitle = truncate(newTitle, 20);
-  tagContainer.innerHTML = "";
   const limitedTags = newTags.slice(0, 3);
-  limitedTags.forEach((tag) => {
-    const tagElement = document.createElement("span");
-    tagElement.classList.add("tag");
-    tagElement.textContent = `#${tag}`;
-    tagContainer.appendChild(tagElement);
+  document.startViewTransition(() => {
+    tagContainer.innerHTML = "";
+    limitedTags.forEach((tag) => {
+      const tagElement = document.createElement("span");
+      tagElement.classList.add("tag");
+      tagElement.textContent = `#${tag}`;
+      tagContainer.appendChild(tagElement);
+    });
+    titleElement.textContent = truncatedTitle;
   });
-  titleElement.textContent = truncatedTitle;
 }
 
 function removeNoteFromList(id: string) {

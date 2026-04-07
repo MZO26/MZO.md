@@ -41,6 +41,7 @@ function setValue<K extends StorageKey>(
   value: StorageData[K],
   delay = 100,
 ) {
+  if (cache[key] === value) return;
   cache[key] = value;
   if (timers[key]) {
     clearTimeout(timers[key]);

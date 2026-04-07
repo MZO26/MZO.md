@@ -38,8 +38,8 @@ function createWindow() {
 
   win = new BrowserWindow({
     minHeight: 600,
-    minWidth: 725,
-    width: 800,
+    minWidth: 1000,
+    width: 1000,
     height: 600,
     titleBarStyle: "hidden",
     titleBarOverlay: getTitleBarOverlay(),

@@ -33,11 +33,6 @@ export default defineConfig({
   },
   renderer: {
     root: resolve(__dirname, "."),
-    resolve: {
-      alias: {
-        "@": resolve(__dirname, "src"),
-      },
-    },
     build: {
       outDir: "dist",
       emptyOutDir: true,

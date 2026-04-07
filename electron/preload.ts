@@ -23,3 +23,8 @@ contextBridge.exposeInMainWorld("noteAPI", {
   delete: (id: string) => ipcRenderer.invoke("note:delete", id),
   getById: (id: string) => ipcRenderer.invoke("note:getById", id),
 });
+contextBridge.exposeInMainWorld("storeApi", {
+  getSettings: (key: string) => ipcRenderer.invoke("electron-store:get", key),
+  setSettings: (key: string, value: any) =>
+    ipcRenderer.invoke("electron-store:set", key, value),
+});

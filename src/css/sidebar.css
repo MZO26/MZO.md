@@ -59,6 +59,7 @@
   grid-template-columns: 1fr;
   grid-template-rows: 30px 20px 30px;
   min-height: 80px;
+  width: 100%;
   gap: 4px;
   transition:
     transform 0.1s ease-in-out,
@@ -82,11 +83,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .note-title {
   margin: 0;
+  max-width: 85%;
   font-weight: bold;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .note-date {
@@ -115,6 +122,9 @@
 }
 
 .delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   grid-column: 2;
   margin: 0;

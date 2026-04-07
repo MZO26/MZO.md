@@ -1,35 +1,21 @@
-import { editor, initEditor } from "./components/editor";
+import { initEditor } from "./components/editor";
 import { updateDateTime } from "./components/editorFooter";
-import { openModal } from "./handlers/settings";
-import {
-  createNote,
-  extractNoteDataFromEditor,
-  reloadNoteList,
-} from "./notes/noteHandlers";
-import { addNoteToList, initializeContainer } from "./notes/noteItemHandlers";
-import { getSelectedFont } from "./utils/font";
+import { initializeContainer } from "./components/sidebarNotes";
+import { addNoteBtnHandler } from "./handlers/buttonHandlers";
+import { reloadNoteList } from "./handlers/noteHandlers";
+import { getSelectedFont, setSelectedFont } from "./settings/appearance/font";
+import { applyAppTheme, setAppTheme } from "./settings/appearance/theme";
+import { openModal } from "./settings/settings";
 import { getElement, getElementOrNull } from "./utils/helpers";
 import { renderIcons } from "./utils/icons";
-import { applyAppTheme, setAppTheme } from "./utils/theme";
 
 document.addEventListener("DOMContentLoaded", async () => {
   initEditor("#editor");
   renderIcons();
   await initializeContainer();
   await reloadNoteList();
-  const addNoteBtn = document.querySelector(".add-note-btn");
-  if (addNoteBtn) {
-    addNoteBtn.addEventListener("click", async () => {
-      console.log("Add note button clicked");
-      console.log(editor);
-      const data = extractNoteDataFromEditor(editor);
-      console.log("Extracted note data: ", data);
-      const note = await createNote(data);
-      if (!note) return;
-      console.log("adding note to list: ", note);
-      addNoteToList(note);
-    });
-  }
+  const addNoteBtn = getElement(".add-note-btn");
+  addNoteBtn.addEventListener("click", addNoteBtnHandler);
 
   const themeDropdown = getElement<HTMLSelectElement>("#theme-dropdown");
   const fontSelect = getElementOrNull<HTMLSelectElement>("#font-dropdown");
@@ -39,7 +25,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     applyAppTheme(themeDropdown);
   }
   if (fontSelect) {
-    fontSelect.addEventListener("change", getSelectedFont);
+    fontSelect.addEventListener("change", setSelectedFont);
+    getSelectedFont(fontSelect);
   }
   const settingsBtn = getElement<HTMLButtonElement>(".settings-btn");
   settingsBtn.addEventListener("click", () => {

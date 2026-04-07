@@ -41,5 +41,9 @@ declare global {
       ) => Promise<IpcResponse<boolean>>;
       delete: (id: string) => Promise<IpcResponse<boolean>>;
     };
+    storeApi: {
+      getSettings: <T = any>(key: string) => Promise<IpcResponse<T>>;
+      setSettings: (key: string, val: any) => Promise<IpcResponse>;
+    };
   }
 }

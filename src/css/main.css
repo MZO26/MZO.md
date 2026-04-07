@@ -16,13 +16,13 @@
   width: 100%;
   height: 100%;
   grid-template-rows: minmax(30px, 30px) minmax(120px, 1fr);
-  grid-template-columns: minmax(150px, 400px) minmax(0, 1fr);
+  grid-template-columns: minmax(180px, 450px) minmax(0, 1fr);
   transition: grid-template-columns 0.3s ease-in-out;
   overflow: hidden;
 }
 
 .app-container.collapsed {
-  grid-template-columns: minmax(150px, 150px) minmax(0, 1fr);
+  grid-template-columns: minmax(180px, 180px) minmax(0, 1fr);
 }
 
 .sidebar-notes.collapsed {
@@ -35,7 +35,7 @@
   display: grid;
   grid-column: 1;
   grid-row: 2;
-  grid-template-columns: 150px 250px;
+  grid-template-columns: 180px 270px;
   min-height: 0;
   overflow: hidden;
 }
