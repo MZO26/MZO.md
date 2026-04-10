@@ -1,7 +1,11 @@
 import { dialog, ipcMain, nativeTheme } from "electron";
 import fs from "node:fs";
 import { THEME_MAP } from "../src/constants/themes";
-import type { Theme } from "../src/shared/types";
+import type {
+  CreateNotePayload,
+  Theme,
+  UpdateNotePayload,
+} from "../src/shared/types";
 import db from "./database";
 import { store } from "./store";
 
@@ -20,34 +24,25 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle(
-    "note:create",
-    (_event, title: string, content: string, tags: string[]) => {
-      try {
-        const data = db.create(title, content, tags);
-        return { success: true, data };
-      } catch (error) {
-        console.error("Failed to create note:", error);
-        return { success: false, message: "Failed to create note" };
-      }
-    },
-  );
+  ipcMain.handle("note:create", (_event, payload: CreateNotePayload) => {
+    try {
+      const data = db.create(payload);
+      return { success: true, data };
+    } catch (error) {
+      console.error("Failed to create note:", error);
+      return { success: false, message: "Failed to create note" };
+    }
+  });
 
-  ipcMain.handle(
-    "note:update",
-    (_event, id: string, title: string, content: string, tags: string[]) => {
-      try {
-        const success = db.update(id, title, content, tags);
-        if (!success) {
-          return { success: false, message: "Note not found" };
-        }
-        return { success: success, id };
-      } catch (error) {
-        console.error("Failed to update note:", error);
-        return { success: false, message: "Failed to update note" };
-      }
-    },
-  );
+  ipcMain.handle("note:update", (_event, payload: UpdateNotePayload) => {
+    try {
+      const data = db.update(payload);
+      return { success: true, data };
+    } catch (error) {
+      console.error("Failed to update note:", error);
+      return { success: false, message: "Note not found" };
+    }
+  });
 
   ipcMain.handle("note:delete", (_event, id: string) => {
     try {
@@ -75,7 +70,17 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle("set:theme", (_, theme: Theme) => {
+  ipcMain.handle("note:search", async (_event, searchTerm: string) => {
+    try {
+      const result = db.searchNotes(searchTerm);
+      return result;
+    } catch (error) {
+      console.error("Failed to search note", error);
+      return [];
+    }
+  });
+
+  ipcMain.handle("set:theme", (_event, theme: Theme) => {
     if (theme in THEME_MAP) {
       const validTheme = theme as Theme;
       nativeTheme.themeSource = THEME_MAP[validTheme];
@@ -97,7 +102,7 @@ function registerIpcHandlers() {
     return null;
   });
 
-  ipcMain.handle("file-save", async (_, { pfad, inhalt, win }) => {
+  ipcMain.handle("file-save", async (_event, { pfad, inhalt, win }) => {
     if (pfad) {
       fs.writeFileSync(pfad, inhalt, "utf-8");
       return true;
@@ -113,7 +118,7 @@ function registerIpcHandlers() {
     return false;
   });
 
-  ipcMain.handle("electron-store:get", async (_, key: string) => {
+  ipcMain.handle("electron-store:get", async (_event, key: string) => {
     try {
       const value = store.get(key);
       return { success: true, data: value };
@@ -123,18 +128,21 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle("electron-store:set", async (_, key: string, val: any) => {
-    try {
-      store.set(key, val);
-      return { success: true };
-    } catch (error) {
-      console.error(`[IPC] Error saving key "${key}:`, error);
-      return {
-        success: false,
-        message: error instanceof Error ? error.message : "Unknown error",
-      };
-    }
-  });
+  ipcMain.handle(
+    "electron-store:set",
+    async (_event, key: string, val: any) => {
+      try {
+        store.set(key, val);
+        return { success: true };
+      } catch (error) {
+        console.error(`[IPC] Error saving key "${key}:`, error);
+        return {
+          success: false,
+          message: error instanceof Error ? error.message : "Unknown error",
+        };
+      }
+    },
+  );
 }
 
 export { registerIpcHandlers };

@@ -81,8 +81,11 @@
         <div class="sidebar-notes">
           <div class="sidebar-header">
             <div class="note-info">
-              <p>Notes</p>
-              <span id="notes-count">3</span>
+              <input
+                type="search"
+                id="searchInput"
+                placeholder="search notes or tags"
+              />
             </div>
             <div class="sidebar-header-btns">
               <button class="add-note-btn" title="add new note">
@@ -91,22 +94,7 @@
             </div>
           </div>
 
-          <div class="notes-container">
-            <div class="noteItem">
-              <div class="note-header">
-                <span class="note-title">Mein Notiz-Titel</span>
-                <button class="delete-btn">
-                  <i data-lucide="trash-2"></i>
-                </button>
-              </div>
-              <div class="note-date">06. April 2026</div>
-              <div class="note-tags">
-                <span class="tag">Wichtig</span>
-                <span class="tag">Idee</span>
-                <span class="tag">Idee</span>
-              </div>
-            </div>
-          </div>
+          <div class="notes-container"></div>
 
           <div class="sidebar-footer">
             <button class="bookmark-btn">
@@ -272,19 +260,17 @@
               </select>
             </div>
           </div>
-          <div class="settings-item">Layout</div>
-        </div>
-        <div class="settings-panel" id="editor-settings">
-          <h2 class="modal-heading">Editor</h2>
-          <div class="settings-item">Tab Size</div>
-          <div class="settings-item">Line Numbers</div>
-          <div class="settings-item">Auto-Save</div>
+          <div class="settings-item">CodeBlock Theme</div>
+          <div class="settings-item">Highlighter Color</div>
+          <div class="settings-item">Line Height</div>
         </div>
         <div class="settings-panel" id="storage-settings">
           <h2 class="modal-heading">Storage</h2>
-          <div class="settings-item">Notes Directory</div>
+          <div class="settings-item">Database location</div>
           <div class="settings-item">Backup Options</div>
           <div class="settings-item">Default Export Format</div>
+          <div class="settings-item">Autosave</div>
+          <div class="settings-item">Trash Retention</div>
         </div>
         <div class="settings-panel" id="tags-search-settings">
           <h2 class="modal-heading">Tags & Search</h2>
@@ -292,12 +278,12 @@
           <div class="settings-item">Search Settings</div>
           <div class="settings-item">Filter Options</div>
         </div>
-
         <div class="settings-panel" id="advanced-settings">
           <h2 class="modal-heading">Advanced</h2>
           <div class="settings-item">Custom Keybindings</div>
-          <div class="settings-item">Experimental Features</div>
+          <div class="settings-item">Start options</div>
           <div class="settings-item">Reset Settings</div>
+          <div class="settings-item">Markdown Auto Formatting</div>
         </div>
         <div class="settings-panel" id="about-settings">
           <h2 class="modal-heading">About</h2>

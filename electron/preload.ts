@@ -1,5 +1,9 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
-import type { Theme } from "../src/shared/types";
+import type {
+  CreateNotePayload,
+  Theme,
+  UpdateNotePayload,
+} from "../src/shared/types";
 console.log("--- PRELOAD AKTIV ---");
 
 contextBridge.exposeInMainWorld("api", {
@@ -16,12 +20,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
 });
 contextBridge.exposeInMainWorld("noteAPI", {
   getAll: () => ipcRenderer.invoke("note:getAll"),
-  create: (title: string, content: string, tags: string[] = []) =>
-    ipcRenderer.invoke("note:create", title, content, tags),
-  update: (id: string, title: string, content: string, tags: string[] = []) =>
-    ipcRenderer.invoke("note:update", id, title, content, tags),
+  create: (payload: CreateNotePayload) =>
+    ipcRenderer.invoke("note:create", payload),
+  update: (payload: UpdateNotePayload) =>
+    ipcRenderer.invoke("note:update", payload),
   delete: (id: string) => ipcRenderer.invoke("note:delete", id),
   getById: (id: string) => ipcRenderer.invoke("note:getById", id),
+  searchNotes: (searchTerm: string) =>
+    ipcRenderer.invoke("note:search", searchTerm),
 });
 contextBridge.exposeInMainWorld("storeApi", {
   getSettings: (key: string) => ipcRenderer.invoke("electron-store:get", key),

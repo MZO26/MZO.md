@@ -1,4 +1,4 @@
-import { getElement, getElementOrNull } from "../utils/helpers";
+import { debounce, getElement, getElementOrNull } from "../utils/helpers";
 
 function updateDateTime() {
   const displayElement = getElementOrNull<HTMLDivElement>("#datetime-display");
@@ -21,9 +21,10 @@ function updateDateTime() {
   }
 }
 
-const updateStats = (text: string) => {
-  const charCount = text.length;
-  const words = text.trim().match(/\S+/g);
+const updateStats = debounce((text: string) => {
+  const chars = text.match(/[\p{L}\p{N}]/gu);
+  const charCount = chars ? chars.length : 0;
+  const words = text.match(/[\p{L}\d]+(?:['’]\p{L}+)*/gu);
   const wordCount = words ? words.length : 0;
 
   const charCountEl = getElementOrNull<HTMLDivElement>("#char-count");
@@ -39,7 +40,7 @@ const updateStats = (text: string) => {
       wordCountEl.innerText = `${wordCount} words`;
     }
   }
-};
+}, 200);
 
 function setupZoomBar() {
   const btnIn = getElement<HTMLButtonElement>("#btn-zoom-in");

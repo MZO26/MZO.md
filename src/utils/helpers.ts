@@ -1,8 +1,4 @@
-function truncate(str: string, max = 10): string {
-  if (str.length > max) {
-    return str.slice(0, max) + "...";
-  } else return str;
-}
+import type { JSONContent } from "@tiptap/core";
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -51,7 +47,45 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
     }
   };
 
+  debounced.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+      lastArgs = null;
+    }
+  };
+
   return debounced;
 }
 
-export { debounce, getElement, getElementOrNull, setActiveItem, truncate };
+function formatNoteDate(isoString: string) {
+  const date = new Date(isoString);
+  return new Intl.DateTimeFormat("de-DE", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function safeParse(content: string) {
+  let jsonObj: JSONContent;
+  try {
+    if (content.trim() === "") {
+      jsonObj = { type: "doc", content: [] };
+    } else {
+      jsonObj = JSON.parse(content);
+    }
+  } catch (error) {
+    console.warn("Couldn't parse note as json, loading empty document", error);
+    jsonObj = { type: "doc", content: [] };
+  }
+  return jsonObj;
+}
+
+export {
+  debounce,
+  formatNoteDate,
+  getElement,
+  getElementOrNull,
+  safeParse,
+  setActiveItem,
+};

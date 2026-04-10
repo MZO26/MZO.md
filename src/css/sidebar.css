@@ -13,6 +13,45 @@
   border-right: 1px solid var(--border-color);
 }
 
+.sidebar-notes.collapsed {
+  overflow: hidden;
+  border: none;
+  box-shadow: none;
+}
+
+.sidebar-container {
+  display: grid;
+  grid-column: 1;
+  grid-row: 2;
+  grid-template-columns: 180px 270px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#searchInput {
+  width: 100%;
+  background-color: var(--bg-sidebar);
+  border: none;
+  font-family: inherit;
+  font-size: 0.9em;
+  color: var(--text-main);
+}
+
+#searchInput:hover {
+  box-shadow: var(--shadow);
+}
+
+#searchInput:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+#searchInput::-webkit-search-cancel-button {
+  cursor: pointer !important;
+  fill: var(--text-main);
+}
+
 .sidebar-section {
   border: none;
   border-top: 1px solid var(--border-color);
@@ -55,22 +94,19 @@
 }
 
 .noteItem {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 30px 20px 30px;
-  min-height: 80px;
+  min-height: 100px;
+  max-height: 100px;
   width: 100%;
-  gap: 4px;
   transition:
     transform 0.1s ease-in-out,
     background-color 0.1s ease-in-out;
-  overflow: hidden;
   padding: 8px;
+  overflow: hidden;
+  border: 1px solid var(--shadow);
 }
 
 .noteItem:active,
 .categoryItem:active {
-  transform: scale(0.95);
   background: var(--accent-hover);
 }
 
@@ -80,36 +116,55 @@
 }
 
 .note-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
+  height: fit-content;
+}
+
+.note-metadata {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .note-title {
   margin: 0;
-  max-width: 85%;
+  font-size: 0.9rem;
   font-weight: bold;
   text-overflow: ellipsis;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 .note-date {
   font-size: 0.85em;
   color: var(--text-muted);
-  display: flex;
   align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .note-tags {
-  padding-top: 4px;
   display: flex;
   gap: 4px;
-  align-items: flex-start;
   overflow-x: auto;
   overflow-y: hidden;
+  flex-wrap: nowrap;
+}
+
+.note-content {
+  display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  margin-top: 7px;
 }
 
 .tag {

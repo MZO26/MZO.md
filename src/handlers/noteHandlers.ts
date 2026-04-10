@@ -1,37 +1,32 @@
 import type { Editor } from "@tiptap/core";
-import { initEditor } from "../components/editor";
-import { updateNoteInList } from "../components/sidebarNotes";
-import { getSavedItemId, setSavedItemId } from "../shared/sharedStates";
-import type { Note } from "../shared/types";
-import { debounce, getElement } from "../utils/helpers";
-import { renderIcons } from "../utils/icons";
-import { noteItemTemplate } from "../utils/templates";
-
-// separation of concerns: renderNote, viewNote, saveNote, deleteNote, reloadNotesList, updateNote
-// renderNote needs the Template of the noteItem and creates it. It should return the created noteItem. It also should add the event listener for the click on noteItem and the delete button.
-// viewNote should take an ID as param and display the saved note from the database on the editor
-// deleteNote should take the noteItem as param and select the delete button on it. It should also delete the entry from the database and remove the noteItem from the notes list. If the deleted note is currently open in the editor, it should clear the editor.
-// reloadNotesList should reload the notes if one gets rendered or updated
-// updateNote should check if note exists and if yes, call the update function from the database. If it doesn't exist call saveNote to create a new one. It should also update the noteItem in the notes list if it exists. It should be debounced to not call the database on every keystroke, but only after the user stopped typing for a certain amount of time (e.g. 5 seconds). To unite the update and create function, the saveNote function should be able to handle both cases, if the note exists or not. If it doesn't exist, it should create a new one and return the id of the created note. If it exists, it should update the existing note and return the id of the updated note. The updateNote function should then check if the noteItem exists in the notes list and if yes, update it with the new title and tags. If it doesn't exist, it should call renderNote to create a new noteItem in the notes list.
-
-const editor = initEditor("#editor");
-let editorAbortController: AbortController | null = null;
-
-function renderNote(note: Note): HTMLDivElement | undefined {
-  const noteElement = document.createElement("div");
-  noteElement.classList.add("noteItem");
-  noteElement.dataset["id"] = note.id;
-  noteElement.innerHTML = noteItemTemplate(note);
-  renderIcons(noteElement);
-  return noteElement;
-}
+import { editor, positionManager } from "../components/editor";
+import {
+  addManyNotesToList,
+  addOneNoteToList,
+  updateNoteInList,
+} from "../components/sidebarNotes";
+import type {
+  CreateNotePayload,
+  Note,
+  NoteData,
+  UpdateNotePayload,
+} from "../shared/types";
+import {
+  abortCurrentSave,
+  setupAutoSave,
+  startNewSaveCycle,
+} from "../utils/autoSave";
+import { getValue, removeValue, setValue, StorageKeys } from "../utils/cache";
+import { getElement, safeParse } from "../utils/helpers";
 
 async function deleteNote(id: string, noteElement: HTMLElement): Promise<void> {
   try {
     const result = await window.noteAPI.delete(id);
     if (result.success) {
       noteElement.remove();
-      if (getSavedItemId() === id) {
+      const noteID = getValue(StorageKeys.NOTE_ID);
+      if (noteID === id) {
+        removeValue(StorageKeys.NOTE_ID);
         editor?.commands.clearContent();
       }
     }
@@ -56,13 +51,14 @@ async function getNoteById(id: string): Promise<Note | undefined> {
   }
 }
 
-async function createNote(note: Partial<Note> = {}): Promise<Note | undefined> {
-  const result = await window.noteAPI.create(
-    note.title || "New note",
-    note.content || "",
-    note.tags || [],
-  );
-  console.log("Create note result: ", result);
+async function createNote(note: CreateNotePayload): Promise<Note | undefined> {
+  const payload: CreateNotePayload = {
+    title: note.title || "New note",
+    content: note.content || '{"type": "doc", "content": []}',
+    snippet: note.snippet || "",
+    tags: note.tags || [],
+  };
+  const result = await window.noteAPI.create(payload);
   if (!result.success) {
     console.warn("Failed to create note: ", result.message);
     return undefined;
@@ -70,17 +66,19 @@ async function createNote(note: Partial<Note> = {}): Promise<Note | undefined> {
   return result.data;
 }
 
-async function saveNote(note: Partial<Note>): Promise<void> {
-  const currentId = getSavedItemId();
+async function saveNote(noteData: NoteData, id?: string | null): Promise<void> {
+  const currentId = id !== undefined ? id : getValue(StorageKeys.NOTE_ID);
   if (currentId === null) {
-    const newNote = await createNote(note);
-    renderNote(newNote as Note);
-    if (newNote) {
-      setSavedItemId(newNote.id);
-    }
+    const newNote = await createNote(noteData);
+    console.log("new note created");
+    if (!newNote) return;
+    addOneNoteToList(newNote);
+    setValue(StorageKeys.NOTE_ID, newNote.id);
   } else {
-    await updateNote({ ...note, id: currentId });
-    updateNoteInList(currentId, note.title || "New note", note.tags || []);
+    const updatePayload: UpdateNotePayload = { ...noteData, id: currentId };
+    const updatedNote = await updateNote(updatePayload);
+    if (!updatedNote) return;
+    updateNoteInList(updatedNote);
   }
 }
 
@@ -94,16 +92,8 @@ async function reloadNoteList(): Promise<boolean> {
     if (!result.success) {
       return false;
     }
-    const fragment = document.createDocumentFragment();
-    const note = result.data as Note[];
-    console.log("Notes to reload: ", result.data);
-    note.forEach((note: Note) => {
-      const noteElement = renderNote(note);
-      if (noteElement) {
-        fragment.appendChild(noteElement);
-      }
-    });
-    container.appendChild(fragment);
+    const notes = result.data as Note[];
+    addManyNotesToList(notes);
     return true;
   } catch (error) {
     console.error("Error loading notes:", error);
@@ -111,32 +101,37 @@ async function reloadNoteList(): Promise<boolean> {
   }
 }
 
-async function updateNote(
-  note: Partial<Note> & { id: string },
-): Promise<boolean> {
+async function updateNote(note: UpdateNotePayload): Promise<Note | undefined> {
   try {
-    const result = await window.noteAPI.update(
-      note.id,
-      note.title || "",
-      note.content || "",
-      note.tags || [],
-    );
+    const payload: UpdateNotePayload = {
+      id: note.id,
+      title: note.title || "",
+      content: note.content || '{"type": "doc", "content": []}',
+      snippet: note.snippet || "",
+      tags: note.tags || [],
+    };
+    const result = await window.noteAPI.update(payload);
     if (!result.success) {
       console.warn(`Note with ID ${note.id} not found for update.`);
-      return false;
+      return undefined;
     }
 
     console.log(`Note with ID ${note.id} updated successfully.`);
-    return true;
+    return result.data;
   } catch (error) {
     console.error(`Error updating note with ID ${note.id}: `, error);
-    return false;
+    return undefined;
   }
 }
 
 function extractNoteDataFromEditor(editor: Editor | null) {
   const plainText = editor?.getText() ?? "";
-  const content = editor?.getHTML() ?? "";
+  const jsonObj = editor?.getJSON() ?? { type: "doc", content: [] };
+  const content = JSON.stringify(jsonObj);
+  const snippet = plainText
+    .replace(/#[\p{L}\p{N}_]+/gu, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
   const lines = plainText
     .split("\n")
     .map((line) => line.trim())
@@ -146,41 +141,31 @@ function extractNoteDataFromEditor(editor: Editor | null) {
   const tags = tagMatches
     ? Array.from(new Set(tagMatches.map((tag) => tag.slice(1))))
     : [];
-  return { title, content, tags };
+  return { title, content, snippet, tags };
 }
 
 async function viewNote(note: Note, editor: Editor): Promise<void> {
   if (!editor) return;
-  if (editorAbortController) {
-    editorAbortController.abort();
-  }
-  editorAbortController = new AbortController();
-  const signal = editorAbortController.signal;
-  setSavedItemId(note.id);
-  editor.commands.setContent(note.content);
-  const saveCurrentNote = async () => {
-    const { title, content, tags } = extractNoteDataFromEditor(editor);
-    await saveNote({
-      id: note.id,
-      title: title || "New note",
-      content: content || "",
-      tags: tags || [],
-    });
-  };
-  const debouncedSave = debounce(saveCurrentNote, 2000);
-  editor.on("update", debouncedSave);
-  signal.addEventListener("abort", () => {
-    editor.off("update", debouncedSave);
-    debouncedSave.flush();
+  abortCurrentSave();
+  positionManager.save(editor); // save position from old note
+  const content = safeParse(note.content);
+  editor.commands.setContent(content, { emitUpdate: false });
+  positionManager.restore(editor, note.id); // moves cursor and updates id
+  const newController = startNewSaveCycle();
+  setupAutoSave({
+    editor,
+    signal: newController.signal,
   });
 }
+
 export {
   createNote,
   deleteNote,
   extractNoteDataFromEditor,
   getNoteById,
   reloadNoteList,
-  renderNote,
+  safeParse,
+  saveNote,
   updateNote,
   viewNote,
 };

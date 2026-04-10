@@ -25,21 +25,6 @@
   grid-template-columns: minmax(180px, 180px) minmax(0, 1fr);
 }
 
-.sidebar-notes.collapsed {
-  overflow: hidden;
-  border: none;
-  box-shadow: none;
-}
-
-.sidebar-container {
-  display: grid;
-  grid-column: 1;
-  grid-row: 2;
-  grid-template-columns: 180px 270px;
-  min-height: 0;
-  overflow: hidden;
-}
-
 .editor-container {
   display: grid;
   grid-column: 2;

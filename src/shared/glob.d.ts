@@ -1,13 +1,12 @@
 export {};
-import { Note } from "../shared/types";
+import {
+  IpcResponse,
+  Note,
+  type CreateNotePayload,
+  type UpdateNotePayload,
+} from "../shared/types";
 
 declare module "*.css";
-
-interface IpcResponse<T = void> {
-  success: boolean;
-  message?: string;
-  data?: T;
-}
 
 declare global {
   interface Window {
@@ -28,18 +27,10 @@ declare global {
     noteAPI: {
       getAll: () => Promise<IpcResponse<Note[]>>;
       getById: (id: string) => Promise<IpcResponse<Note>>;
-      create: (
-        title: string,
-        content: string,
-        tags?: string[],
-      ) => Promise<IpcResponse<Note>>;
-      update: (
-        id: string,
-        title: string,
-        content: string,
-        tags?: string[],
-      ) => Promise<IpcResponse<boolean>>;
+      create: (payload: CreateNotePayload) => Promise<IpcResponse<Note>>;
+      update: (payload: UpdateNotePayload) => Promise<IpcResponse<Note>>;
       delete: (id: string) => Promise<IpcResponse<boolean>>;
+      searchNotes: (searchTerm: string) => Promise<IpcResponse<[]>>;
     };
     storeApi: {
       getSettings: <T = any>(key: string) => Promise<IpcResponse<T>>;

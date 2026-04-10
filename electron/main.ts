@@ -1,8 +1,9 @@
-import { app, BrowserWindow, Menu, nativeTheme, shell } from "electron";
+import { app, BrowserWindow, Menu, shell } from "electron";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { registerIpcHandlers } from "./ipcHandlers";
+import { getTitleBarOverlay } from "./titlebar";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env["DIST"] = path.join(__dirname, "../dist");
@@ -10,26 +11,7 @@ process.env["VITE_PUBLIC"] = app.isPackaged
   ? process.env["DIST"]
   : path.join(process.env["DIST"], "../public");
 
-type TitleBarOverlayOptions = {
-  color: string;
-  symbolColor: string;
-  height: number;
-};
-
 let win: BrowserWindow | null = null;
-nativeTheme.themeSource = "system";
-
-function getTitleBarOverlay(): TitleBarOverlayOptions {
-  let isDark = nativeTheme.shouldUseDarkColors;
-  //boolean to check if the system theme is dark or light, used to set the title bar overlay colors accordingly
-  return isDark === true
-    ? { color: "#00000000", symbolColor: "#a1a1aa", height: 30 }
-    : {
-        color: "#00000000",
-        symbolColor: "#71717a",
-        height: 30,
-      };
-}
 
 function createWindow() {
   const preloadPath = path.join(__dirname, "../preload/preload.js");
@@ -38,8 +20,8 @@ function createWindow() {
 
   win = new BrowserWindow({
     minHeight: 600,
-    minWidth: 1000,
-    width: 1000,
+    minWidth: 1100,
+    width: 1100,
     height: 600,
     titleBarStyle: "hidden",
     titleBarOverlay: getTitleBarOverlay(),
@@ -54,6 +36,7 @@ function createWindow() {
       webSecurity: true,
     },
   });
+
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith("https:") || url.startsWith("http:")) {
       shell.openExternal(url);

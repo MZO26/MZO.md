@@ -1,7 +1,7 @@
 import type { Editor } from "@tiptap/core";
 import { getElement } from "../utils/helpers";
 
-const setupToolbar = (editor: Editor) => {
+function setupToolbar(editor: Editor) {
   const btnUndo = getElement<HTMLButtonElement>("#btn-undo");
   const btnRedo = getElement<HTMLButtonElement>("#btn-redo");
 
@@ -118,6 +118,6 @@ const setupToolbar = (editor: Editor) => {
     btnHighlight.classList.toggle("is-active", editor.isActive("highlight"));
     btnTable.classList.toggle("is-active", editor.isActive("table"));
   });
-};
+}
 
 export { setupToolbar };

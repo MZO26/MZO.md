@@ -1,8 +1,8 @@
-const compressImage = (
+function compressImage(
   file: File,
   maxWidth = 800,
   quality = 0.8,
-): Promise<string> => {
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -25,6 +25,6 @@ const compressImage = (
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-};
+}
 
 export { compressImage };

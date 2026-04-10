@@ -1,16 +1,21 @@
 import { initEditor } from "./components/editor";
 import { updateDateTime } from "./components/editorFooter";
 import { initializeContainer } from "./components/sidebarNotes";
-import { addNoteBtnHandler } from "./handlers/buttonHandlers";
+import {
+  addNoteBtnHandler,
+  handleSearchInput,
+} from "./handlers/buttonHandlers";
+import { setupEditorHandlers } from "./handlers/editorHandlers";
 import { reloadNoteList } from "./handlers/noteHandlers";
 import { getSelectedFont, setSelectedFont } from "./settings/appearance/font";
 import { applyAppTheme, setAppTheme } from "./settings/appearance/theme";
 import { openModal } from "./settings/settings";
-import { getElement, getElementOrNull } from "./utils/helpers";
+import { debounce, getElement, getElementOrNull } from "./utils/helpers";
 import { renderIcons } from "./utils/icons";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  initEditor("#editor");
+  const editor = initEditor("#editor");
+  setupEditorHandlers(editor);
   renderIcons();
   await initializeContainer();
   await reloadNoteList();
@@ -19,7 +24,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const themeDropdown = getElement<HTMLSelectElement>("#theme-dropdown");
   const fontSelect = getElementOrNull<HTMLSelectElement>("#font-dropdown");
-
+  const searchInput = getElement<HTMLInputElement>("#searchInput");
+  const notesContainer = getElement<HTMLDivElement>(".notes-container");
+  if (searchInput && notesContainer) {
+    const debouncedSearch = debounce(async () => {
+      await handleSearchInput(searchInput, notesContainer);
+    }, 300);
+    searchInput.addEventListener("input", debouncedSearch);
+  }
   if (themeDropdown) {
     themeDropdown.addEventListener("change", setAppTheme);
     applyAppTheme(themeDropdown);

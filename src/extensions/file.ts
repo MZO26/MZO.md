@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/core";
 
-const exportFile = async (editor: Editor) => {
+async function exportFile(editor: Editor) {
   let path: string | null = null;
   const content = editor.getHTML();
   const result = await window.api.saveFile({
@@ -14,6 +14,6 @@ const exportFile = async (editor: Editor) => {
   } else if (result === true) {
     console.log("Changes saved successfully.");
   }
-};
+}
 
 export { exportFile };

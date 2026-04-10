@@ -1,10 +1,31 @@
+import type { Editor } from "@tiptap/core";
+
 interface Note {
   id: string;
   title: string;
   content: string;
-  created_at: number;
+  snippet: string;
+  created_at: string;
+  updated_at: string;
   tags: string[];
 }
+
+interface IpcResponse<T = void> {
+  success: boolean;
+  message?: string;
+  data?: T;
+}
+
+interface AutoSaveConfig {
+  editor: Editor;
+  signal: AbortSignal;
+}
+
+type CreateNotePayload = Omit<Note, "id" | "created_at" | "updated_at">;
+type UpdateNotePayload = Omit<Note, "created_at" | "updated_at">;
+type NoteData = Omit<Note, "id" | "created_at" | "updated_at">;
+
+type SavedPosition = number | { from: number; to: number };
 
 type Theme =
   | "light"
@@ -31,4 +52,14 @@ type Font =
   | "century"
   | "consolas";
 
-export type { Font, Note, Theme };
+export type {
+  AutoSaveConfig,
+  CreateNotePayload,
+  Font,
+  IpcResponse,
+  Note,
+  NoteData,
+  SavedPosition,
+  Theme,
+  UpdateNotePayload,
+};

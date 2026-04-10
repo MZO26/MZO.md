@@ -5,22 +5,22 @@ import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
-import PlaceHolder from "@tiptap/extension-placeholder";
 import { Table } from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import StarterKit from "@tiptap/starter-kit";
-
 import { compressImage } from "../extensions/image";
 import { lowlight } from "../extensions/lowlight";
+import { Placeholder } from "../extensions/placeholder";
 import { NoteTag } from "../extensions/tag";
-import { setupZoomBar, updateStats } from "./editorFooter";
-import { setupToolbar } from "./editorHeader";
+import { PositionManager } from "../handlers/editorHandlers";
+import { updateStats } from "./editorFooter";
 
-export let editor: Editor | null = null;
+let editor: Editor | null = null;
+const positionManager = new PositionManager();
 
-const initEditor = (selector: string): Editor => {
+function initEditor(selector: string): Editor {
   const element = document.querySelector(selector);
   if (editor) {
     return editor;
@@ -33,9 +33,7 @@ const initEditor = (selector: string): Editor => {
   editor = new Editor({
     element: element as HTMLElement,
     extensions: [
-      PlaceHolder.configure({
-        placeholder: "Start writing your note...",
-      }),
+      Placeholder,
       TaskList,
       TaskItem.configure({
         nested: true,
@@ -126,12 +124,10 @@ const initEditor = (selector: string): Editor => {
     const text = editor.getText();
     updateStats(text);
   });
-  setupToolbar(editor);
-  setupZoomBar();
   return editor;
-};
+}
 
 window.addEventListener("dragover", (e) => e.preventDefault());
 window.addEventListener("drop", (e) => e.preventDefault());
 
-export { initEditor };
+export { editor, initEditor, positionManager };

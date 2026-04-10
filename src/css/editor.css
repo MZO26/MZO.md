@@ -7,15 +7,31 @@
   height: 100%;
   width: 100%;
   min-height: 0;
+  padding: 2em;
 }
 
 .ProseMirror {
   --zoom: 100;
   font-size: calc(16px * (var(--zoom) / 100));
-  padding: 2em;
   color: var(--text-main);
   outline: none;
   transition: font-size 0.2s ease-out;
+}
+
+.tiptap {
+  position: relative;
+}
+
+.tiptap.is-editor-empty::before {
+  content: attr(data-placeholder);
+  position: absolute; /* Absolut statt float */
+  top: 0.2em;
+  left: 0;
+  color: #adb5bd;
+  pointer-events: none;
+  font-style: italic;
+  line-height: inherit;
+  user-select: none;
 }
 
 .tiptap h1 {

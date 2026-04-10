@@ -1,18 +1,27 @@
-import type { Theme } from "../shared/types";
+import type { SavedPosition } from "../shared/types";
 
 const StorageKeys = {
-  THEME: "theme",
-  NOTE_ID: "noteId",
+  NOTE_ID: "noteID",
+  SIDEBAR_STATE: "sidebarState",
+  ZOOM_LEVEL: "zoomLevel",
+  EDITOR_POS: "editorPos",
+  SORT_ORDER: "sortOrder",
 } as const;
 
 interface StorageData {
-  [StorageKeys.THEME]: Theme;
   [StorageKeys.NOTE_ID]: string | null;
+  [StorageKeys.SIDEBAR_STATE]: boolean;
+  [StorageKeys.ZOOM_LEVEL]: number;
+  [StorageKeys.EDITOR_POS]: Record<string, SavedPosition>;
+  [StorageKeys.SORT_ORDER]: string;
 }
 
 const defaultValues: StorageData = {
-  [StorageKeys.THEME]: "system",
   [StorageKeys.NOTE_ID]: null,
+  [StorageKeys.SIDEBAR_STATE]: true,
+  [StorageKeys.ZOOM_LEVEL]: 100,
+  [StorageKeys.EDITOR_POS]: {},
+  [StorageKeys.SORT_ORDER]: "",
 };
 
 type StorageKey = keyof StorageData;
