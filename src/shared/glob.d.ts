@@ -1,8 +1,10 @@
 export {};
 import {
   IpcResponse,
-  Note,
   type CreateNotePayload,
+  type NoteResponse,
+  type NotesReponse,
+  type Theme,
   type UpdateNotePayload,
 } from "../shared/types";
 
@@ -11,6 +13,14 @@ declare module "*?raw" {
   const content: string;
   export default content;
 }
+
+type IpcResponse<T> =
+  | { success: true; data: T }
+  | {
+      success: false;
+      message: string;
+      errors?: Record<string, string[] | undefined>;
+    };
 
 declare global {
   interface Window {
@@ -29,19 +39,21 @@ declare global {
       ) => void;
     };
     noteAPI: {
-      getAll: () => Promise<IpcResponse<Note[]>>;
-      getById: (id: string) => Promise<IpcResponse<Note>>;
-      create: (payload: CreateNotePayload) => Promise<IpcResponse<Note>>;
-      update: (payload: UpdateNotePayload) => Promise<IpcResponse<Note>>;
+      getAll: () => Promise<NotesReponse>;
+      getById: (id: string) => Promise<NoteResponse>;
+      create: (payload: CreateNotePayload) => Promise<NoteResponse>;
+      update: (payload: UpdateNotePayload) => Promise<NoteResponse>;
       delete: (id: string) => Promise<IpcResponse<boolean>>;
-      searchNotes: (
-        searchTerm: string,
-        limit?: number,
-      ) => Promise<IpcResponse<Note[]>>;
+      searchNotes: (searchTerm: string, limit: number) => Promise<NotesReponse>;
     };
     storeApi: {
-      getSettings: <T = any>(key: string) => Promise<IpcResponse<T>>;
-      setSettings: (key: string, val: any) => Promise<IpcResponse>;
+      getSettings: <K extends keyof Settings>(
+        key: K,
+      ) => Promise<IpcResponse<Settings[K]>>;
+      setSettings: <K extends keyof Settings>(
+        key: K,
+        value: Settings[K],
+      ) => Promise<IpcResponse<boolean>>;
     };
   }
 }

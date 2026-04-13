@@ -1,4 +1,4 @@
-import { debounce, getElement, getElementOrNull } from "../utils/helpers";
+import { debounce, getElement, getElementOrNull } from "../../utils/helpers";
 
 function updateDateTime() {
   const displayElement = getElementOrNull<HTMLDivElement>("#datetime-display");
@@ -40,7 +40,7 @@ const updateStats = debounce((text: string) => {
       wordCountEl.innerText = `${wordCount} words`;
     }
   }
-}, 200);
+}, 500);
 
 function setupZoomBar() {
   const btnIn = getElement<HTMLButtonElement>("#btn-zoom-in");

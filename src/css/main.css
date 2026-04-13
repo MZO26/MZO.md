@@ -96,19 +96,6 @@
   height: 20px;
 }
 
-.search-highlight {
-  font-weight: bold;
-  padding: 0 2px; /* Adds a tiny, invisible space on the left and right */
-  display: inline-block; /* Forces the browser to respect the padding */
-}
-
-.editor-search-highlight {
-  background-color: #ffe066; /* The classic TipTap/HTML <mark> yellow */
-  color: inherit;
-  border-radius: 2px;
-  padding: 0 2px;
-}
-
 .zoom-controls {
   height: 20px;
   display: flex;

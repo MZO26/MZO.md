@@ -1,9 +1,12 @@
-import { initEditor } from "./components/editor";
-import { updateDateTime } from "./components/editorFooter";
-import { initNotesSidebar, reloadNoteList } from "./components/sidebarNotes";
+import { initEditor } from "./components/editor/editor";
+import { updateDateTime } from "./components/editor/editorFooter";
+import { initEditorHandlers } from "./components/editor/editorHandlers";
+import {
+  initNotesSidebar,
+  reloadNoteList,
+} from "./components/sidebar2/sidebarNotes";
 import { handleSearchInput } from "./features/search/searchInputHandler";
-import { addNoteBtnHandler } from "./handlers/buttonHandlers";
-import { initEditorHandlers } from "./handlers/editorHandlers";
+import { addNoteBtnHandler, closeModal } from "./handlers/buttonHandlers";
 import { getSelectedFont, setSelectedFont } from "./settings/appearance/font";
 import { applyAppTheme, setAppTheme } from "./settings/appearance/theme";
 import { openModal } from "./settings/settings";
@@ -15,8 +18,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const editor = initEditor("#editor");
   initEditorHandlers(editor);
   renderIcons();
-  await initNotesSidebar();
+  initNotesSidebar();
   await reloadNoteList();
+  updateDateTime();
   const addNoteBtn = getElement(".add-note-btn");
   addNoteBtn.addEventListener("click", addNoteBtnHandler);
 
@@ -44,14 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   const closeModalBtn = getElement<HTMLButtonElement>(".closeModal-btn");
-  closeModalBtn.addEventListener("click", () => {
-    const overlay = getElement<HTMLDivElement>(".overlay");
-    const modal = getElement<HTMLDivElement>(".modal");
-    overlay.classList.remove("show");
-    modal.classList.remove("show");
-  });
-
-  updateDateTime();
+  closeModalBtn.addEventListener("click", closeModal);
 
   document.querySelectorAll(".categoryItem").forEach((item) => {
     item.addEventListener("click", () => {
@@ -68,6 +65,5 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   });
-
   setInterval(updateDateTime, 60000);
 });

@@ -66,12 +66,9 @@ class FTS5 {
 `);
   }
 
-  searchNotes(searchTerm: string, limit = 20) {
-    const trimmed = searchTerm.trim();
-    if (!trimmed) return [];
+  searchNotes(searchTerm: string, limit: number) {
     const cleanSearch = searchTerm.replace(/[^\p{L}\p{N}\s]/gu, " ");
     const ftsQuery = cleanSearch
-      .trim()
       .split(/\s+/)
       .filter((word: string) => word.length > 0)
       .map((word: string) => `"${word}"*`)

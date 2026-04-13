@@ -1,9 +1,10 @@
 import type { Editor } from "@tiptap/core";
-import { setupZoomBar } from "../components/editorFooter";
-import { setupToolbar } from "../components/editorHeader";
-import { getValue, setValue, StorageKeys } from "../utils/cache";
-import { getElement } from "../utils/helpers";
-import { generateSnippet, showEditorEmptyState } from "../utils/templates";
+import { getValue, setValue, StorageKeys } from "../../utils/cache";
+import { getElement } from "../../utils/helpers";
+import { generateSnippet } from "../../utils/templates";
+import { showEditorEmptyState } from "./editorEmptyState";
+import { setupZoomBar } from "./editorFooter";
+import { setupToolbar } from "./editorHeader";
 
 function initEditorHandlers(editor: Editor) {
   setupToolbar(editor);
@@ -13,8 +14,10 @@ function initEditorHandlers(editor: Editor) {
 
 function extractNoteDataFromEditor(editor: Editor | null) {
   const plainText = editor?.getText() ?? "";
-  const jsonObj = editor?.getJSON() ?? '{"type": "doc", "content": []}';
-  const content = JSON.stringify(jsonObj);
+  const content = editor?.getJSON() ?? {
+    type: "doc",
+    content: [{ type: "paragraph" }],
+  };
   const snippet = generateSnippet(plainText);
   const lines = plainText
     .split("\n")

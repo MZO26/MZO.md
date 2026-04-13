@@ -1,4 +1,4 @@
-import type { JSONContent } from "@tiptap/core";
+import type { Result } from "../shared/types";
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -57,19 +57,21 @@ function formatNoteDate(isoString: string) {
   }).format(date);
 }
 
-function safeParse(content: string) {
-  let jsonObj: JSONContent;
+async function safeIpcCall<T>(
+  ipcPromise: Promise<Result<T>>,
+): Promise<Result<T>> {
   try {
-    if (content.trim() === "") {
-      jsonObj = { type: "doc", content: [] };
-    } else {
-      jsonObj = JSON.parse(content);
-    }
+    return await ipcPromise;
   } catch (error) {
-    console.warn("Couldn't parse note as json, loading empty document", error);
-    jsonObj = { type: "doc", content: [] };
+    console.error("IPC error: ", error);
+
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "An unknown communication error occurred";
+
+    return { success: false, message: errorMessage };
   }
-  return jsonObj;
 }
 
 export {
@@ -77,6 +79,6 @@ export {
   formatNoteDate,
   getElement,
   getElementOrNull,
-  safeParse,
+  safeIpcCall,
   setActiveItem,
 };

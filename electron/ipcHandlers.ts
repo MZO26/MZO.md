@@ -1,11 +1,13 @@
 import { dialog, ipcMain, nativeTheme } from "electron";
 import fs from "node:fs";
 import { THEME_MAP } from "../src/constants/themes";
-import type {
-  CreateNotePayload,
-  Theme,
-  UpdateNotePayload,
-} from "../src/shared/types";
+import type { Theme } from "../src/shared/types";
+import {
+  validateCreate,
+  validateId,
+  validateSearch,
+  validateUpdate,
+} from "../src/shared/validation";
 import db from "./database";
 import { store } from "./store";
 
@@ -24,9 +26,13 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle("note:create", (_event, payload: CreateNotePayload) => {
+  ipcMain.handle("note:create", (_event, payload: unknown) => {
+    const result = validateCreate(payload);
+    if (!result.success) {
+      return result;
+    }
     try {
-      const data = db.create(payload);
+      const data = db.create(result.data);
       return { success: true, data };
     } catch (error) {
       console.error("Failed to create note:", error);
@@ -34,9 +40,13 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle("note:update", (_event, payload: UpdateNotePayload) => {
+  ipcMain.handle("note:update", (_event, payload: unknown) => {
+    const result = validateUpdate(payload);
+    if (!result.success) {
+      return result;
+    }
     try {
-      const data = db.update(payload);
+      const data = db.update(result.data);
       return { success: true, data };
     } catch (error) {
       console.error("Failed to update note:", error);
@@ -44,22 +54,30 @@ function registerIpcHandlers() {
     }
   });
 
-  ipcMain.handle("note:delete", (_event, id: string) => {
+  ipcMain.handle("note:delete", (_event, id: unknown) => {
+    const result = validateId(id);
+    if (!result.success) {
+      return result;
+    }
     try {
-      const success = db.delete(id);
+      const success = db.delete(result.data);
       if (!success) {
         return { success: false, message: "Note not found" };
       }
-      return { success: success, id };
+      return { success: success };
     } catch (error) {
       console.error("Failed to delete note", error);
       return { success: false, message: "Failed to delete note" };
     }
   });
 
-  ipcMain.handle("note:getById", (_event, id: string) => {
+  ipcMain.handle("note:getById", (_event, id: unknown) => {
+    const result = validateId(id);
+    if (!result.success) {
+      return result;
+    }
     try {
-      const data = db.getById(id);
+      const data = db.getById(result.data);
       if (!data) {
         return { success: false, message: "Note not found" };
       }
@@ -72,9 +90,15 @@ function registerIpcHandlers() {
 
   ipcMain.handle(
     "note:search",
-    async (_event, searchTerm: string, limit?: number) => {
+    async (_event, searchTerm: string, limit: number) => {
+      const result = validateSearch(searchTerm, limit);
+
+      if (!result.success) {
+        return result;
+      }
+      const { searchTerm: validSearchTerm, limit: validLimit } = result.data;
       try {
-        const data = db.search.searchNotes(searchTerm, limit);
+        const data = db.search.searchNotes(validSearchTerm, validLimit);
         return { success: true, data };
       } catch (error) {
         console.error("Failed to search note", error);

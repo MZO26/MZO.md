@@ -1,21 +1,17 @@
 import type { Editor } from "@tiptap/core";
-
-interface Note {
-  id: string;
-  title: string;
-  content: string;
-  snippet: string;
-  plainText: string;
-  created_at: string;
-  updated_at: string;
-  tags: string[];
-}
-
-interface IpcResponse<T = void> {
-  success: boolean;
-  message?: string;
-  data?: T;
-}
+import type z from "zod";
+import type { EditorDocSchema } from "./schemas/editorSchema";
+import type {
+  NoteResponseSchema,
+  NotesResponseSchema,
+} from "./schemas/ipcSchema";
+import type {
+  CreateNotePayloadSchema,
+  FTSRowsSchema,
+  NoteSchema,
+  UpdateNotePayloadSchema,
+} from "./schemas/noteSchema";
+import type { SettingsSchema } from "./schemas/settingsSchema";
 
 interface AutoSaveConfig {
   editor: Editor;
@@ -23,9 +19,6 @@ interface AutoSaveConfig {
   noteID?: string;
 }
 
-type CreateNotePayload = Omit<Note, "id" | "created_at" | "updated_at">;
-type UpdateNotePayload = Omit<Note, "created_at" | "updated_at">;
-type FTSRows = Omit<Note, "tags"> & { tags: string };
 type SavedPosition = number | { from: number; to: number };
 type NoteItemElements = {
   containers: {
@@ -36,6 +29,18 @@ type NoteItemElements = {
   };
   tags: string[];
 };
+
+type NoteResponse = z.infer<typeof NoteResponseSchema>;
+type NotesReponse = z.infer<typeof NotesResponseSchema>;
+type FTSRows = z.infer<typeof FTSRowsSchema>;
+type Note = z.infer<typeof NoteSchema>;
+type UpdateNotePayload = z.infer<typeof UpdateNotePayloadSchema>;
+type CreateNotePayload = z.infer<typeof CreateNotePayloadSchema>;
+type EditorDoc = z.infer<typeof EditorDocSchema>;
+type Settings = z.infer<typeof SettingsSchema>;
+type Result<T> =
+  | { success: true; data: T }
+  | { success: false; message: string };
 
 type Theme =
   | "light"
@@ -65,12 +70,16 @@ type Font =
 export type {
   AutoSaveConfig,
   CreateNotePayload,
+  EditorDoc,
   Font,
   FTSRows,
-  IpcResponse,
   Note,
   NoteItemElements,
+  NoteResponse,
+  NotesReponse,
+  Result,
   SavedPosition,
+  Settings,
   Theme,
   UpdateNotePayload,
 };

@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/core";
-import { getElement } from "../utils/helpers";
+import { getElement } from "../../utils/helpers";
 
 function setupToolbar(editor: Editor) {
   const btnUndo = getElement<HTMLButtonElement>("#btn-undo");

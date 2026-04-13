@@ -2,7 +2,7 @@ import {
   addManyNotesToList,
   handleSidebarEmptyState,
   reloadNoteList,
-} from "../../components/sidebarNotes";
+} from "../../components/sidebar2/sidebarNotes";
 import { renderIcons } from "../../utils/icons";
 import { searchNotes } from "./searchAPI";
 

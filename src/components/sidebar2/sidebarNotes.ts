@@ -1,13 +1,16 @@
-import { deleteNote, getAll, getNoteById } from "../features/notes/noteAPI";
-import { viewNote } from "../features/notes/noteHandlers";
-import { handleEditorEmptyState } from "../handlers/editorHandlers";
-import type { Note, NoteItemElements } from "../shared/types";
-import { setValue, StorageKeys } from "../utils/cache";
-import { formatNoteDate, getElement, setActiveItem } from "../utils/helpers";
-import { getNoteItemUI, showSidebarEmptyState } from "../utils/templates";
-import { editor } from "./editor";
+import { getAll } from "../../features/notes/noteAPI";
+import { noteItemHandler } from "../../features/notes/noteHandlers";
+import { deleteBtnHandler } from "../../handlers/buttonHandlers";
+import type { Note, NoteItemElements } from "../../shared/types";
+import { setValue, StorageKeys } from "../../utils/cache";
+import { formatNoteDate, getElement } from "../../utils/helpers";
+import { getNoteItemUI } from "../../utils/templates";
+import { showToast } from "../../utils/toast";
+import { editor } from "../editor/editor";
+import { handleEditorEmptyState } from "../editor/editorHandlers";
+import { handleSidebarEmptyState } from "./sidebarEmptyState";
 
-async function initNotesSidebar(): Promise<void> {
+function initNotesSidebar() {
   const container = getElement<HTMLDivElement>(".notes-container");
   if (!container) return;
   container.addEventListener("click", async (event) => {
@@ -15,46 +18,15 @@ async function initNotesSidebar(): Promise<void> {
 
     const deleteBtn = target.closest<HTMLButtonElement>(".delete-btn");
     if (deleteBtn) {
-      const noteElement = deleteBtn.closest<HTMLDivElement>(".noteItem");
-      const noteID = noteElement?.dataset["id"];
-      if (!noteID) return;
-      await deleteNote(noteID, noteElement);
-      handleSidebarEmptyState(container);
-      handleEditorEmptyState();
+      await deleteBtnHandler(deleteBtn, container);
       return;
     }
     const noteItem = target.closest<HTMLDivElement>(".noteItem");
-    const noteID = noteItem?.dataset["id"];
-    if (!noteID) return;
-    const note = await getNoteById(noteID);
-    if (note && editor) {
-      setValue(StorageKeys.NOTE_ID, noteID);
-      viewNote(note, editor);
-      console.log("Viewing note with content: ", note.snippet);
-      setActiveItem(noteItem, container);
+    if (noteItem && editor) {
+      await noteItemHandler(noteItem, container, editor);
       return;
     }
   });
-}
-
-function handleSidebarEmptyState(
-  container: HTMLDivElement,
-  searchInput?: string | undefined,
-) {
-  if (container.childElementCount === 0) {
-    const emptyStateNode = showSidebarEmptyState(searchInput);
-    container.appendChild(emptyStateNode);
-    return;
-  } else if (
-    container.childElementCount === 1 &&
-    container.firstElementChild?.classList.contains("sidebar-empty-state")
-  ) {
-    return;
-  }
-  const existingEmptyState = container.querySelector(".sidebar-empty-state");
-  if (existingEmptyState) {
-    existingEmptyState.remove();
-  }
 }
 
 function addOneNoteToList(note: Note): HTMLDivElement | undefined {
@@ -63,10 +35,7 @@ function addOneNoteToList(note: Note): HTMLDivElement | undefined {
   if (noteElement) {
     container.prepend(noteElement);
     handleSidebarEmptyState(container);
-    const noteID = noteElement.dataset["id"];
-    if (noteID) {
-      setValue(StorageKeys.NOTE_ID, noteID);
-    }
+    setValue(StorageKeys.NOTE_ID, note.id);
     return noteElement;
   }
   return undefined;
@@ -100,7 +69,7 @@ function updateNoteInList(note: Note): void {
     noteElement.querySelector<HTMLDivElement>(".note-content");
   const tagContainer = noteElement.querySelector<HTMLDivElement>(".note-tags");
   const dateContainer = noteElement.querySelector<HTMLDivElement>(".note-date");
-  const tags = note.tags.slice(0, 3);
+  const tags = note.tags && note.tags.slice(0, 3);
   updateTransition(
     {
       containers: {
@@ -141,13 +110,12 @@ async function reloadNoteList(): Promise<void> {
   if (!container) return;
   container.innerHTML = "";
   try {
-    const response = await getAll();
-    if (!response) {
-      console.warn("Attempted to reload missing notes");
+    const result = await getAll();
+    if (!result.success) {
+      showToast(result.message);
       return;
     }
-    addManyNotesToList(response);
-    return;
+    addManyNotesToList(result.data);
   } catch (error) {
     console.error("Error loading notes:", error);
     return;
