@@ -1,12 +1,117 @@
 .drag-region {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 30px;
-  flex-shrink: 0;
   -webkit-app-region: drag;
   background-color: var(--bg-sidebar);
   width: 100%;
   grid-column: 1 / -1;
   grid-row: 1;
-  padding-right: 140px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.toolbar {
+  flex-shrink: 0;
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+  flex-direction: row;
+}
+
+.divider {
+  width: 2px;
+  height: 25px;
+  background-color: var(--border-color);
+  margin: 4px;
+  flex-shrink: 0;
+}
+
+.toolbar button:hover {
+  background: var(--bg-button);
+  border-color: var(--border-color);
+  color: var(--text-main);
+  box-shadow: var(--shadow);
+}
+
+#editor {
+  grid-row: 2;
+  box-sizing: border-box;
+  background-color: var(--bg-editor);
+  color: var(--text-main);
+  overflow: auto;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  padding: 1em;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.save-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.5rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  line-height: 1;
+  opacity: 1;
+}
+
+.save-indicator.hidden {
+  display: none;
+}
+
+.save-indicator-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.save-indicator-icon.hidden {
+  display: none;
+}
+
+.save-indicator-text {
+  white-space: nowrap;
+}
+
+.save-indicator.success,
+.save-indicator.saving,
+.save-indicator.error {
+  color: var(--text-muted);
+  background-color: var(--shadow);
+}
+
+.save-indicator.auto-hide {
+  animation: save-indicator-fade 2s ease forwards;
+}
+
+@keyframes save-indicator-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.status-indicator {
+  color: var(--text-muted);
+  font-size: 0.9em;
 }
 
 .app-container {

@@ -16,6 +16,7 @@ import {
 import { setValue, StorageKeys } from "../../utils/cache";
 import { updateNotePayload } from "../../utils/factory";
 import { setActiveItem } from "../../utils/helpers";
+import { showSaveIndicator } from "../../utils/savingStatus";
 import { showToast } from "../../utils/toast";
 import { getNoteById, updateNote } from "./noteAPI";
 
@@ -49,13 +50,16 @@ async function saveNote(id: string): Promise<void> {
   try {
     const result = await updateNote(payload);
     if (!result.success) {
-      showToast(result.message);
+      showSaveIndicator("error");
       return;
     }
-    console.log(result.data);
     updateNoteInList(result.data);
     setValue(StorageKeys.NOTE_ID, id);
+    document.startViewTransition(() => {
+      showSaveIndicator("success");
+    });
   } catch (error) {
+    showSaveIndicator("error");
     console.error("(noteHandler): Failed saving note: ", error);
   }
 }

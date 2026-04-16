@@ -1,6 +1,11 @@
 import { Editor } from "@tiptap/core";
+import BubbleMenu from "@tiptap/extension-bubble-menu";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { FileHandler } from "@tiptap/extension-file-handler";
+import {
+  Details,
+  DetailsContent,
+  DetailsSummary,
+} from "@tiptap/extension-details";
 import Focus from "@tiptap/extension-focus";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
@@ -10,19 +15,22 @@ import { Table } from "@tiptap/extension-table";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
+import TextAlign from "@tiptap/extension-text-align";
 import StarterKit from "@tiptap/starter-kit";
+import { DragAutoScroll } from "../../extensions/autoScroll";
 import BubbleMenuManager from "../../extensions/bubbleMenu";
-import { compressImage } from "../../extensions/image";
 import { lowlight } from "../../extensions/lowlight";
 import { Placeholder } from "../../extensions/placeholder";
 import { NoteTag } from "../../extensions/tag";
 import { Typography } from "../../extensions/typography";
+import { getElement } from "../../utils/helpers";
 import { updateStats } from "./editorFooter";
 import { PositionManager } from "./editorHandlers";
 
 let editor: Editor | null = null;
+const bubbleMenuElement = getElement(".bubble-menu");
 const positionManager = new PositionManager();
-const bubbleMenuManager = new BubbleMenuManager();
+const bubbleMenuManager = new BubbleMenuManager(bubbleMenuElement);
 
 function initEditor(selector: string): Editor {
   const element = document.querySelector(selector);
@@ -40,6 +48,12 @@ function initEditor(selector: string): Editor {
     editorProps: {
       handleDOMEvents: {
         dragover: (view, event) => {
+          if (event.dataTransfer?.types?.includes("Files")) {
+            event.dataTransfer.dropEffect = "none";
+            event.preventDefault();
+
+            return true;
+          }
           const editorBounds = view.dom.getBoundingClientRect();
           const mouseNextToTop = event.clientY - editorBounds.top;
           if (mouseNextToTop < 40) {
@@ -48,6 +62,14 @@ function initEditor(selector: string): Editor {
               top: -10,
               behavior: "auto",
             });
+          }
+          return false;
+        },
+        dragenter: (_view, event) => {
+          if (event.dataTransfer?.types?.includes("Files")) {
+            event.dataTransfer.dropEffect = "none";
+            event.preventDefault();
+            return true;
           }
           return false;
         },
@@ -71,7 +93,29 @@ function initEditor(selector: string): Editor {
 function getNoteEditorExtensions() {
   return [
     Typography,
-    bubbleMenuManager.getExtension(),
+    Details,
+    DetailsSummary,
+    DetailsContent,
+    DragAutoScroll.configure({
+      getScrollContainer: () => getElement(".editor-container"),
+      edge: 60,
+      maxSpeed: 10,
+    }),
+    TextAlign.configure({
+      types: ["heading", "paragraph", "blockquote", "listItem", "codeBlock"],
+      alignments: ["start", "center", "end", "justify"],
+      defaultAlignment: "start",
+    }),
+    BubbleMenu.configure({
+      element: document.querySelector(".bubble-menu") as HTMLElement,
+      options: {
+        placement: "top",
+        offset: 15,
+        flip: true,
+        shift: true,
+      },
+      shouldShow: ({ from, to }) => from !== to,
+    }),
     Focus.configure({
       className: "has-focus",
       mode: "shallowest",
@@ -119,21 +163,6 @@ function getNoteEditorExtensions() {
       HTMLAttributes: {
         target: "_blank",
         rel: "noopener noreferrer",
-      },
-    }),
-    FileHandler.configure({
-      allowedMimeTypes: ["image/png", "image/jpeg", "image/gif", "image/webp"],
-      onDrop: async (editor, files) => {
-        for (const file of files) {
-          const src = await compressImage(file);
-          editor.chain().setImage({ src }).focus().run();
-        }
-      },
-      onPaste: async (editor, files) => {
-        for (const file of files) {
-          const src = await compressImage(file);
-          editor.chain().setImage({ src }).focus().run();
-        }
       },
     }),
   ];

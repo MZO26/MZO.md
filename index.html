@@ -10,6 +10,7 @@
     <meta name="description" content="notetaking app" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="src/css/global.css" />
+    <link rel="stylesheet" href="src/css/code.css" />
     <link rel="stylesheet" href="src/css/main.css" />
     <link rel="stylesheet" href="src/css/buttons.css" />
     <link rel="stylesheet" href="src/css/sidebar.css" />
@@ -18,7 +19,12 @@
   </head>
   <body>
     <div class="app-container">
-      <div class="drag-region"></div>
+      <div class="drag-region">
+        <div class="save-indicator hidden">
+          <i data-lucide="circle-check" class="save-indicator-icon hidden"></i>
+          <span class="save-indicator-text"></span>
+        </div>
+      </div>
       <div class="sidebar-container">
         <div class="sidebar-categories">
           <div class="sidebar-header">
@@ -113,69 +119,105 @@
         <div class="editor-view hidden">
           <div class="editor-header">
             <div id="toolbar" class="toolbar">
-              <button id="btn-undo" title="Rückgängig">
+              <button id="btn-undo" data-action="undo">
                 <i data-lucide="undo2"></i>
               </button>
-              <button id="btn-redo" title="Wiederholen">
+              <button id="btn-redo" data-action="redo">
                 <i data-lucide="redo2"></i>
               </button>
               <div class="divider"></div>
 
-              <button id="btn-bold">
+              <button id="btn-bold" data-action="bold">
                 <i data-lucide="bold"></i>
               </button>
-              <button id="btn-italic">
+              <button id="btn-italic" data-action="italic">
                 <i data-lucide="italic"></i>
               </button>
-              <button id="btn-strike">
+              <button id="btn-strike" data-action="strike">
                 <i data-lucide="strikethrough"></i>
               </button>
-              <button id="btn-underline" title="Unterstreichen">
+              <button id="btn-underline" data-action="underline">
                 <i data-lucide="underline"></i>
               </button>
               <div class="divider"></div>
 
-              <button id="btn-h1">
+              <button id="btn-h1" data-action="h1">
                 <i data-lucide="heading-1"></i>
               </button>
-              <button id="btn-h2">
+              <button id="btn-h2" data-action="h2">
                 <i data-lucide="heading-2"></i>
               </button>
-              <button id="btn-h3">
+              <button id="btn-h3" data-action="h3">
                 <i data-lucide="heading-3"></i>
               </button>
 
               <div class="divider"></div>
 
-              <button id="btn-bullet">
+              <button id="btn-bullet" data-action="bullet">
                 <i data-lucide="list"></i>
               </button>
-              <button id="btn-ordered">
+              <button id="btn-ordered" data-action="ordered">
                 <i data-lucide="list-ordered"></i>
               </button>
-              <button id="btn-task">
+              <button id="btn-task" data-action="task">
                 <i data-lucide="list-todo"></i>
               </button>
-              <button id="btn-quote">
+              <button id="btn-quote" data-action="quote">
                 <i data-lucide="text-quote"></i>
               </button>
+              <button id="btn-details" data-action="details">
+                <i data-lucide="list-collapse"></i>
+              </button>
               <div class="divider"></div>
-              <button id="btn-code" title="Inline code">
+              <button id="btn-code" data-action="code">
                 <i data-lucide="code"></i>
               </button>
-              <button id="btn-codeblock">
+              <button id="btn-codeblock" data-action="codeblock">
                 <i data-lucide="code-xml"></i>
               </button>
-              <button id="btn-hr">
+              <button id="btn-hr" data-action="hr">
                 <i data-lucide="separator-horizontal"></i>
               </button>
-              <div class="divider"></div>
-              <button id="btn-highlight" title="Highlight">
+              <div class="divider" data-action="divider"></div>
+              <button id="btn-highlight" data-action="highlight">
                 <i data-lucide="highlighter"></i>
               </button>
-              <button id="btn-table">
+              <button id="btn-table" data-action="table">
                 <i data-lucide="grid-2x2"></i>
               </button>
+              <button id="btn-image" data-action="image">
+                <i data-lucide="image"></i>
+              </button>
+            </div>
+            <div class="bubble-menu" style="visibility: hidden">
+              <div id="format-tools" style="display: none">
+                <button id="copy" data-action="copy">
+                  <i data-lucide="copy"></i>
+                </button>
+                <button id="align-start" data-action="alignStart">
+                  <i data-lucide="text-align-start"></i>
+                </button>
+                <button id="align-center" data-action="alignCenter">
+                  <i data-lucide="text-align-center"></i>
+                </button>
+                <button id="align-end" data-action="alignEnd">
+                  <i data-lucide="text-align-end"></i>
+                </button>
+                <button id="align-justify" data-action="alignJustify">
+                  <i data-lucide="text-align-justify"></i>
+                </button>
+              </div>
+              <div id="table-tools" style="display: none">
+                <button id="add-row-after" data-action="addRowAfter">
+                  <i data-lucide="between-vertical-end"></i>
+                </button>
+                <button id="add-column-after" data-action="addColumnAfter">
+                  <i data-lucide="between-horizontal-end"></i>
+                </button>
+                <button id="delete-table" data-action="deleteTable">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              </div>
             </div>
           </div>
           <div id="editor"></div>
@@ -239,9 +281,11 @@
                 <option value="dark-glass">Dark-Glass</option>
                 <option value="light-glass">Light-Glass</option>
                 <option value="paper">Paper</option>
-                <option value="nord">Nord</option>
-                <option value="zinc">Zinc</option>
-                <option value="lavender">Lavender</option>
+                <option value="cappucino">Cappucino</option>
+                <option value="rainy-slate">Rainy-Slate</option>
+                <option value="night-pine">Night-Pine</option>
+                <option value="ashfall">Ashfall</option>
+                <option value="bronze">Bronze</option>
               </select>
             </div>
           </div>
@@ -264,7 +308,24 @@
               </select>
             </div>
           </div>
-          <div class="settings-item">CodeBlock Theme</div>
+          <div class="settings-item">
+            Code-Block Theme:
+            <div class="theme-selector">
+              <select id="code-theme-dropdown" class="theme-select">
+                <option value="system">System Default</option>
+                <option value="atom-one-dark">Atom One Dark</option>
+                <option value="atom-one-light">Atom One Light</option>
+                <option value="dracula">Dracula</option>
+                <option value="monokai">Monokai</option>
+                <option value="vs2015">vs2015</option>
+                <option value="zenburn">Zenburn</option>
+                <option value="a11y-dark">a11y dark</option>
+                <option value="a11y-light">a11y light</option>
+                <option value="docco">Docco</option>
+                <option value="xcode">Xcode</option>
+              </select>
+            </div>
+          </div>
           <div class="settings-item">Highlighter Color</div>
           <div class="settings-item">Line Height</div>
         </div>

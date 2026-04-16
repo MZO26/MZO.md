@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/core";
+import { promptImageUpload } from "../../extensions/image";
 import { getElement } from "../../utils/helpers";
 
 function setupToolbar(editor: Editor) {
@@ -18,6 +19,7 @@ function setupToolbar(editor: Editor) {
   const btnOrdered = getElement<HTMLButtonElement>("#btn-ordered");
   const btnTask = getElement<HTMLButtonElement>("#btn-task");
   const btnQuote = getElement<HTMLButtonElement>("#btn-quote");
+  const btnDetails = getElement<HTMLButtonElement>("#btn-details");
 
   const btnCode = getElement<HTMLButtonElement>("#btn-code");
   const btnCodeBlock = getElement<HTMLButtonElement>("#btn-codeblock");
@@ -25,10 +27,10 @@ function setupToolbar(editor: Editor) {
 
   const btnHighlight = getElement<HTMLButtonElement>("#btn-highlight");
   const btnTable = getElement<HTMLButtonElement>("#btn-table");
+  const btnImage = getElement<HTMLButtonElement>("#btn-image");
 
   btnUndo.addEventListener("click", () => editor.chain().focus().undo().run());
   btnRedo.addEventListener("click", () => editor.chain().focus().redo().run());
-
   btnBold.addEventListener("click", () =>
     editor.chain().focus().toggleBold().run(),
   );
@@ -41,7 +43,6 @@ function setupToolbar(editor: Editor) {
   btnUnderline.addEventListener("click", () =>
     editor.chain().focus().toggleUnderline().run(),
   );
-
   btnH1.addEventListener("click", () =>
     editor.chain().focus().toggleHeading({ level: 1 }).run(),
   );
@@ -51,7 +52,6 @@ function setupToolbar(editor: Editor) {
   btnH3.addEventListener("click", () =>
     editor.chain().focus().toggleHeading({ level: 3 }).run(),
   );
-
   btnBullet.addEventListener("click", () =>
     editor.chain().focus().toggleBulletList().run(),
   );
@@ -64,6 +64,13 @@ function setupToolbar(editor: Editor) {
   btnQuote.addEventListener("click", () =>
     editor.chain().focus().toggleBlockquote().run(),
   );
+  btnDetails.addEventListener("click", () => {
+    editor
+      .chain()
+      .focus(undefined, { scrollIntoView: false })
+      .setDetails()
+      .run();
+  });
   btnCode.addEventListener("click", () =>
     editor.chain().focus().toggleCode().run(),
   );
@@ -73,11 +80,9 @@ function setupToolbar(editor: Editor) {
   btnHr.addEventListener("click", () =>
     editor.chain().focus().setHorizontalRule().run(),
   );
-
   btnHighlight.addEventListener("click", () =>
     editor.chain().focus().toggleHighlight().run(),
   );
-
   btnTable.addEventListener("click", () =>
     editor
       .chain()
@@ -85,6 +90,9 @@ function setupToolbar(editor: Editor) {
       .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
       .run(),
   );
+  btnImage.addEventListener("click", () => {
+    promptImageUpload(editor);
+  });
 
   editor.on("transaction", () => {
     if (btnUndo) btnUndo.disabled = !editor.can().undo();
@@ -117,6 +125,7 @@ function setupToolbar(editor: Editor) {
 
     btnHighlight.classList.toggle("is-active", editor.isActive("highlight"));
     btnTable.classList.toggle("is-active", editor.isActive("table"));
+    btnImage.classList.toggle("is-active", editor.isActive("image"));
   });
 }
 

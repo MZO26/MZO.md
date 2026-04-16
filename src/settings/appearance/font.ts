@@ -15,8 +15,10 @@ async function setSelectedFont(event: Event) {
 
 async function getSelectedFont(selectElement: HTMLSelectElement | undefined) {
   try {
-    const response = await window.storeApi.getSettings<Font>("font");
-    const font = response.data;
+    let font;
+    const response = await window.storeApi.getSettings("font");
+    if (!response.success) return;
+    font = response.data;
     document.documentElement.setAttribute("data-font", font as Font);
     if (selectElement) {
       selectElement.value = font as Font;

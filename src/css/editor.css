@@ -1,43 +1,27 @@
-#editor {
-  grid-row: 2;
-  box-sizing: border-box;
-  background-color: var(--bg-editor);
-  color: var(--text-main);
-  overflow: auto;
-  height: 100%;
-  width: 100%;
-  min-height: 0;
-  padding: 2em;
-}
-
 .ProseMirror {
   --zoom: 100;
   font-size: calc(16px * (var(--zoom) / 100));
   color: var(--text-main);
   outline: none;
   transition: font-size 0.2s ease-out;
-}
-
-.tiptap {
   position: relative;
 }
 
-.tiptap > * {
+.ProseMirror > * {
   padding: 3px;
   border-radius: 6px;
   background-color: transparent;
   box-shadow: 0 0 0 0 transparent;
   outline: 1px solid transparent;
-  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.tiptap .has-focus {
-  background-color: var(--bg-button);
+.ProseMirror .has-focus {
+  background-color: var(--bg-sidebar);
   box-shadow: var(--shadow);
   outline-color: var(--border-color);
 }
 
-.tiptap.is-editor-empty::before {
+.ProseMirror.is-editor-empty::before {
   content: attr(data-placeholder);
   position: absolute;
   top: 0.45em;
@@ -51,6 +35,9 @@
 
 .bubble-menu {
   display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
   gap: 4px;
   padding: 4px;
   background-color: var(--bg-sidebar);
@@ -86,7 +73,7 @@
   color: var(--tag-color);
 }
 
-.tiptap h1 {
+.ProseMirror h1 {
   font-size: 2.25em;
   line-height: 1.2;
   font-weight: 800;
@@ -94,7 +81,7 @@
   margin-bottom: 0.67em;
 }
 
-.tiptap h2 {
+.ProseMirror h2 {
   font-size: 1.75em;
   line-height: 1.25;
   font-weight: 700;
@@ -103,7 +90,7 @@
   letter-spacing: -0.01em;
 }
 
-.tiptap h3 {
+.ProseMirror h3 {
   font-size: 1.35em;
   line-height: 1.4;
   font-weight: 600;
@@ -111,7 +98,7 @@
   margin-bottom: 0.5em;
 }
 
-.tiptap p {
+.ProseMirror p {
   font-size: 1em;
   line-height: 1.6;
   margin-top: 0;
@@ -119,20 +106,20 @@
   color: var(--text-main);
 }
 
-.tiptap mark {
+.ProseMirror mark {
   background-color: var(--tag-bg);
   color: var(--tag-color);
   padding: 0.125em 0.25em;
   border-radius: 0.25em;
 }
 
-.tiptap u {
+.ProseMirror u {
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
   text-decoration-color: var(--text-muted);
 }
 
-.tiptap a {
+.ProseMirror a {
   color: var(--tag-color);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -140,11 +127,11 @@
   transition: opacity 0.2s ease;
 }
 
-.tiptap a:hover {
+.ProseMirror a:hover {
   opacity: 0.8;
 }
 
-.tiptap blockquote {
+.ProseMirror blockquote {
   margin: 1.5em 0;
   padding-left: 1.25em;
   border-left: 4px solid var(--border-color);
@@ -152,11 +139,147 @@
   font-style: italic;
 }
 
-.tiptap blockquote p {
+.ProseMirror blockquote p {
   margin-bottom: 0;
 }
 
-.tiptap code {
+.ProseMirror div[data-type="details"] {
+  background-color: var(--bg-editor);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin: 1.5rem 0;
+  box-shadow: var(--shadow);
+  position: relative;
+  padding: 0.2rem 0;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.ProseMirror
+  div[data-type="details"]:has(div[data-type="detailsContent"]:not([hidden])) {
+  background-color: var(--bg-sidebar);
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow);
+}
+
+.ProseMirror div[data-type="details"] > button {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  z-index: 10;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ProseMirror div[data-type="details"] > button::before {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+  transform: rotate(-45deg);
+  transition: transform 0.2s ease;
+  margin-left: -2px;
+}
+
+.ProseMirror
+  div[data-type="details"]:has(div[data-type="detailsContent"]:not([hidden]))
+  > button::before {
+  transform: rotate(45deg);
+  margin-left: 0;
+  margin-top: -2px;
+}
+
+.ProseMirror div[data-type="details"] summary {
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 1em;
+  outline: none;
+  margin: 0;
+  cursor: text;
+  list-style: none;
+  transition: color 0.2s ease;
+  display: block;
+  width: 100%;
+  padding: 0.5rem 3rem;
+}
+
+.ProseMirror div[data-type="details"] summary::marker,
+.ProseMirror div[data-type="details"] summary::-webkit-details-marker {
+  display: none;
+}
+
+.ProseMirror
+  div[data-type="details"]:has(div[data-type="detailsContent"]:not([hidden]))
+  summary {
+  color: var(--accent-primary);
+}
+
+.ProseMirror div[data-type="detailsContent"] {
+  color: var(--text-main);
+  margin: 0 0.75rem 0.5rem 3rem;
+  padding-top: 0.25rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border-color);
+  transition: border-left-color 0.2s ease;
+}
+
+.ProseMirror div[data-type="detailsContent"]:hover {
+  border-left-color: var(--accent-primary);
+}
+
+.ProseMirror div[data-type="detailsContent"] > p:first-child {
+  margin-top: 0;
+}
+
+.ProseMirror div[data-type="detailsContent"] > p:last-child {
+  margin-bottom: 0;
+}
+
+.ProseMirror div[data-type="detailsContent"][hidden] {
+  display: none;
+}
+
+.ProseMirror
+  div[data-type="details"]:has(
+    > div > div[data-type="detailsContent"]:not([hidden])
+  ) {
+  background-color: var(--bg-sidebar);
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow);
+}
+
+.ProseMirror
+  div[data-type="details"]:has(
+    > div > div[data-type="detailsContent"]:not([hidden])
+  )
+  > button::before {
+  transform: rotate(45deg);
+  border-color: var(--accent-primary);
+  margin-left: 0;
+  margin-top: -2px;
+}
+
+.ProseMirror
+  div[data-type="details"]:has(
+    > div > div[data-type="detailsContent"]:not([hidden])
+  )
+  > div
+  > summary {
+  color: var(--accent-primary);
+}
+
+.ProseMirror code {
   color: var(--text-main);
   background-color: var(--bg-button);
   padding: 0.15em 0.4em;
@@ -168,7 +291,7 @@
   white-space: pre-wrap;
 }
 
-.tiptap img {
+.ProseMirror img {
   max-width: 100%;
   height: auto;
   border-radius: 0.5em;
@@ -177,70 +300,97 @@
   border: 1px solid var(--border-color);
 }
 
-.tiptap p.is-editor-empty:first-child::before {
+.ProseMirror p.is-editor-empty:first-child::before {
   color: var(--text-muted);
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
 }
-
-.tiptap table {
-  border-collapse: collapse;
+.ProseMirror .tableWrapper {
   margin: 1.5em 0;
-  width: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.ProseMirror table {
+  border-collapse: collapse;
+  margin: 0;
+  width: 100%;
   min-width: 100px;
   max-width: 100%;
   table-layout: fixed;
-  overflow: hidden;
+  background: var(--bg-editor);
+  color: var(--text-main);
 }
 
-.tiptap table th,
-.tiptap table td {
-  border: 1px solid var(--accent-primary);
+.ProseMirror th,
+.ProseMirror td {
+  border: 2px solid var(--border-color);
   padding: 0.5em 0.75em;
   vertical-align: top;
   text-align: left;
   position: relative;
-  box-sizing: border-box;
   word-break: break-word;
   min-width: 25px;
   width: 150px;
-}
-
-.tiptap table th {
-  background-color: var(--bg-button);
-  font-weight: 600;
+  background: var(--bg-sidebar);
   color: var(--text-main);
 }
 
-.tiptap table .selectedCell {
-  background-color: var(--tag-bg);
+.ProseMirror th {
+  background: var(--bg-editor);
+  color: var(--text-main);
+  font-weight: 600;
 }
 
-.tiptap .column-resize-handle {
+.ProseMirror .selectedCell {
+  background: var(--tag-bg);
+}
+
+.ProseMirror .selectedCell::after {
+  content: "";
   position: absolute;
-  right: -2px;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--tag-color);
+}
+
+.ProseMirror .column-resize-handle {
+  position: absolute;
   top: 0;
+  right: -2px;
   bottom: 0;
   width: 4px;
-  background-color: var(--accent-primary);
-  opacity: 1;
-  z-index: 20;
+  background: var(--border-color);
   pointer-events: none;
 }
 
-.tiptap.resize-cursor {
-  cursor: col-resize !important;
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
 }
 
-.tiptap .ProseMirror-gapcursor {
+.ProseMirror table p {
+  margin: 0;
+}
+
+.ProseMirror table a {
+  color: var(--tag-color);
+}
+
+.ProseMirror table a:hover {
+  color: var(--text-main);
+}
+
+.ProseMirror-gapcursor {
   display: none;
   pointer-events: none;
   position: absolute;
 }
 
-.tiptap .ProseMirror-gapcursor:after {
+.ProseMirror-gapcursor:after {
   content: "";
   display: block;
   position: absolute;
@@ -257,18 +407,8 @@
   }
 }
 
-.tiptap.ProseMirror-focused .ProseMirror-gapcursor {
+.ProseMirror-focused {
   display: block;
-}
-
-.toolbar {
-  flex-shrink: 0;
-  display: flex;
-  gap: 5px;
-  margin-bottom: 5px;
-  align-items: flex-end;
-  flex-wrap: nowrap;
-  flex-direction: row;
 }
 
 .ProseMirror hr {
@@ -278,36 +418,16 @@
   margin: 1.5rem 0;
 }
 
-.ProseMirror hr.ProseMirror-selectednode {
+.ProseMirror hr .ProseMirror-selectednode {
   border-top-color: var(--tag-color);
 }
 
-.toolbar button:hover {
-  background: var(--bg-button);
-  border-color: var(--border-color);
-  color: var(--text-main);
-}
-
-button.is-active {
-  background-color: var(--bg-button);
-  color: var(--text-muted);
-  border-color: var(--accent-primary);
-  font-weight: bold;
-}
-
-.divider {
-  width: 2px;
-  height: 25px;
-  background-color: var(--border-color);
-  margin: 4px;
-  flex-shrink: 0;
-}
-
-.tiptap pre {
-  background-color: transparent;
+.ProseMirror pre {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--code-shell-border);
   border-radius: 0.5em;
+  color: var(--hljs-fg);
   box-shadow: var(--shadow);
-  color: #e4e4e7;
   padding: 1em;
   margin: 1em 0;
   font-family: monospace;
@@ -315,19 +435,29 @@ button.is-active {
   overflow-wrap: break-word;
 }
 
-.tiptap pre code {
-  background: none;
-  color: inherit;
+.ProseMirror pre code {
+  background: var(--hljs-bg);
+  border: 1px solid var(--hljs-border);
+  color: var(--hljs-fg);
   padding: 0;
   font-size: 0.9em;
   white-space: inherit;
 }
 
-.tiptap img {
+.ProseMirror img {
   max-width: 100%;
   border-radius: 4px;
   display: block;
   margin: 1em 0;
+}
+
+.ProseMirror li {
+  list-style-position: inside;
+}
+
+.ProseMirror li p {
+  display: inline;
+  margin: 0;
 }
 
 ul[data-type="taskList"] {
@@ -367,4 +497,11 @@ ul[data-type="taskList"] li[data-checked="true"] > div > p {
   text-decoration: line-through;
   text-decoration-thickness: 2px;
   color: var(--text-muted);
+}
+
+ul[data-type="taskList"]
+  li[data-checked="true"]
+  > label
+  input[type="checkbox"] {
+  accent-color: var(--tag-color);
 }

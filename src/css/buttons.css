@@ -37,6 +37,13 @@ button:active {
   background: var(--bg-button);
 }
 
+button.is-active {
+  background-color: var(--bg-button);
+  color: var(--text-muted);
+  border-color: var(--accent-primary);
+  font-weight: bold;
+}
+
 .closeModal-btn {
   position: absolute;
   top: 8px;

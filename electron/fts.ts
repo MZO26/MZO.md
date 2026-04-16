@@ -76,8 +76,7 @@ class FTS5 {
       highlight(notes_fts, 1, '<b>', '</b>') AS title, 
       --index 1 -> second column
       n.content,
-      snippet(notes_fts, 2, '<b class="search-highlight">', '</b>', '...', 50) as snippet,
-      plainText,
+      snippet(notes_fts, 2, '<b class="search-highlight">', '</b>', '...', 50) as plainText,
       (
         SELECT json_group_array(tag_name)
         FROM note_tags

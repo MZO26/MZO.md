@@ -7,11 +7,15 @@ import {
 } from "./components/sidebar2/sidebarNotes";
 import { handleSearchInput } from "./features/search/searchInputHandler";
 import { addNoteBtnHandler, closeModal } from "./handlers/buttonHandlers";
+import {
+  getSelectedCodeTheme,
+  setSelectedCodeTheme,
+} from "./settings/appearance/code";
 import { getSelectedFont, setSelectedFont } from "./settings/appearance/font";
 import { applyAppTheme, setAppTheme } from "./settings/appearance/theme";
 import { openModal } from "./settings/settings";
 import { setValue, StorageKeys } from "./utils/cache";
-import { debounce, getElement, getElementOrNull } from "./utils/helpers";
+import { debounce, getElement } from "./utils/helpers";
 import { renderIcons } from "./utils/icons";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -25,7 +29,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   addNoteBtn.addEventListener("click", addNoteBtnHandler);
 
   const themeDropdown = getElement<HTMLSelectElement>("#theme-dropdown");
-  const fontSelect = getElementOrNull<HTMLSelectElement>("#font-dropdown");
+  const fontSelect = getElement<HTMLSelectElement>("#font-dropdown");
+  const codeThemeSelect = getElement<HTMLSelectElement>("#code-theme-dropdown");
   const searchInput = getElement<HTMLInputElement>("#searchInput");
   const notesContainer = getElement<HTMLDivElement>(".notes-container");
   if (searchInput && notesContainer) {
@@ -41,6 +46,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (fontSelect) {
     fontSelect.addEventListener("change", setSelectedFont);
     getSelectedFont(fontSelect);
+  }
+  if (codeThemeSelect) {
+    codeThemeSelect.addEventListener("change", setSelectedCodeTheme);
+    getSelectedCodeTheme(codeThemeSelect);
   }
   const settingsBtn = getElement<HTMLButtonElement>(".settings-btn");
   settingsBtn.addEventListener("click", () => {

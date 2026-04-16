@@ -1,5 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import type z from "zod";
+import type { THEME_MAP } from "../constants/themes";
 import type { EditorDocSchema } from "./schemas/editorSchema";
 import type {
   NoteResponseSchema,
@@ -19,6 +20,15 @@ interface AutoSaveConfig {
   noteID?: string;
 }
 
+type Actions = Record<
+  string,
+  {
+    run: () => void;
+    isActive?: () => boolean;
+    isDisabled?: () => boolean;
+  }
+>;
+
 type SavedPosition = number | { from: number; to: number };
 type NoteItemElements = {
   containers: {
@@ -29,6 +39,7 @@ type NoteItemElements = {
   };
   tags: string[];
 };
+type SaveState = "hidden" | "saving" | "success" | "error";
 
 type NoteResponse = z.infer<typeof NoteResponseSchema>;
 type NotesReponse = z.infer<typeof NotesResponseSchema>;
@@ -41,17 +52,27 @@ type Settings = z.infer<typeof SettingsSchema>;
 type Result<T> =
   | { success: true; data: T }
   | { success: false; message: string };
+type AutoScrollOptions = {
+  getScrollContainer: (editorRoot: HTMLElement) => HTMLElement;
+  edge?: number;
+  maxSpeed?: number;
+};
 
-type Theme =
-  | "light"
-  | "dark"
-  | "dark-glass"
-  | "light-glass"
-  | "paper"
-  | "nord"
-  | "sepia"
-  | "lavender"
-  | "system";
+type Theme = "system" | keyof typeof THEME_MAP;
+
+type Code =
+  | "github-light"
+  | "github-dark"
+  | "atom-one-light"
+  | "atom-one-dark"
+  | "dracula"
+  | "monokai"
+  | "vs2015"
+  | "zenburn"
+  | "a11y-dark"
+  | "a11y-light"
+  | "xcode"
+  | "docco";
 
 type Font =
   | "system"
@@ -68,7 +89,10 @@ type Font =
   | "consolas";
 
 export type {
+  Actions,
   AutoSaveConfig,
+  AutoScrollOptions,
+  Code,
   CreateNotePayload,
   EditorDoc,
   Font,
@@ -79,6 +103,7 @@ export type {
   NotesReponse,
   Result,
   SavedPosition,
+  SaveState,
   Settings,
   Theme,
   UpdateNotePayload,

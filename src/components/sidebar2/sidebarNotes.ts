@@ -87,11 +87,11 @@ function updateNoteInList(note: Note): void {
 function updateTransition(data: NoteItemElements, note: Note) {
   const { tagContainer, snippetContainer, dateContainer, titleContainer } =
     data.containers;
+
   if (!tagContainer || !snippetContainer || !dateContainer || !titleContainer) {
     console.warn("Missing elements, skipping transition.");
     return;
   }
-  console.log(`Transition elements: ${note.snippet}`);
   document.startViewTransition(() => {
     tagContainer.innerHTML = "";
     data.tags.forEach((tagItem) => {
