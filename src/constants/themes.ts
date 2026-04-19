@@ -16,24 +16,28 @@ const THEME_MAP = {
 } as const;
 
 const THEME_DATA = {
-  light: { color: "#fcfcfc", symbolColor: "#18181b", isDark: false },
-  dark: { color: "#1e1e21", symbolColor: "#d4d4d8", isDark: true },
+  light: { color: "#f8f8f8", symbolColor: "#18181b", isDark: false },
+  dark: { color: "#18181b", symbolColor: "#d4d4d8", isDark: true },
   "dark-glass": {
-    color: "rgba(24, 24, 27, 0.25)",
+    color: "rgba(18, 18, 20, 0.45)",
     symbolColor: "#e4e4e7",
     isDark: true,
   },
   "light-glass": {
-    color: "rgba(226, 228, 232, 0.42)",
+    color: "rgba(214, 217, 222, 0.52)",
     symbolColor: "#202024",
     isDark: false,
   },
-  paper: { color: "#f4efe4", symbolColor: "#2b2723", isDark: false },
-  cappucino: { color: "#f2ebe2", symbolColor: "#2e2823", isDark: false },
-  "rainy-slate": { color: "#f3f1f6", symbolColor: "#27252d", isDark: false },
-  "night-pine": { color: "#1d2321", symbolColor: "#d9e2dd", isDark: true },
-  ashfall: { color: "#1c1f24", symbolColor: "#d9d4c9", isDark: true },
-  bronze: { color: "#211f1d", symbolColor: "#e2dad2", isDark: true },
+  paper: { color: "#e7dfd1", symbolColor: "#2b2723", isDark: false },
+  cappucino: {
+    color: "#e5dbcf",
+    symbolColor: "#2e2823",
+    isDark: false,
+  },
+  "rainy-slate": { color: "#e7e3ed", symbolColor: "#27252d", isDark: false },
+  "night-pine": { color: "#171c1a", symbolColor: "#d9e2dd", isDark: true },
+  ashfall: { color: "#171a1e", symbolColor: "#d9d4c9", isDark: true },
+  bronze: { color: "#1a1817", symbolColor: "#e2dad2", isDark: true },
 } satisfies Record<string, ThemeConfig>;
 
 export { THEME_DATA, THEME_MAP };

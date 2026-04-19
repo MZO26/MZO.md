@@ -1,22 +1,17 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
+import { contextBridge, ipcRenderer } from "electron";
 import type {
   CreateNotePayload,
   Theme,
   UpdateNotePayload,
 } from "../src/shared/types";
-console.log("--- PRELOAD AKTIV ---");
+console.log("--- PRELOAD ACTIVE ---");
 
 contextBridge.exposeInMainWorld("api", {
   openFile: () => ipcRenderer.invoke("file-open"),
   saveFile: (daten: any) => ipcRenderer.invoke("file-save", daten),
 });
 contextBridge.exposeInMainWorld("electronAPI", {
-  getTheme: () => ipcRenderer.invoke("get:theme"),
   setTheme: (theme: Theme) => ipcRenderer.invoke("set:theme", theme),
-  onThemeChanged: (callback: (response: any) => void) =>
-    ipcRenderer.on("theme:changed", (_event: IpcRendererEvent, response: any) =>
-      callback(response),
-    ),
   saveImage: (imageData: string | ArrayBuffer, extension: string) =>
     ipcRenderer.invoke("saveImage", imageData, extension),
 });

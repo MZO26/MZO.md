@@ -33,9 +33,6 @@ declare global {
     };
     electronAPI: {
       setTheme: (theme: Theme) => Promise<IpcResponse<Theme>>;
-      onThemeChanged: (
-        callback: (response: IpcResponse<Theme>) => void,
-      ) => void;
       saveImage: (
         imageData: Uint8Array,
         extension: string,

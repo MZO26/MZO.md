@@ -1,8 +1,8 @@
-import { app, BrowserWindow, ipcMain, nativeTheme } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { THEME_DATA } from "../src/constants/themes";
-import type { Theme, ThemeConfig } from "../src/shared/types";
+import type { Theme } from "../src/shared/types";
 import {
   validateCreate,
   validateId,
@@ -11,7 +11,7 @@ import {
 } from "../src/shared/validation";
 import db from "./database";
 import { store } from "./store";
-import { getTitleBarOverlay } from "./titlebar";
+import { getTitleBarOverlay, initTheme } from "./titlebar";
 
 function registerIpcHandlers() {
   ipcMain.handle("get:system-info", () => {
@@ -93,13 +93,13 @@ function registerIpcHandlers() {
   ipcMain.handle(
     "note:search",
     async (_event, searchTerm: unknown, limit: unknown) => {
-      const result = validateSearch(searchTerm, limit);
-
-      if (!result.success) {
-        return result;
-      }
-      const { searchTerm: validSearchTerm, limit: validLimit } = result.data;
       try {
+        const result = validateSearch(searchTerm, limit);
+
+        if (!result.success) {
+          return { success: false, message: "[IPC] Validation failed" };
+        }
+        const { searchTerm: validSearchTerm, limit: validLimit } = result.data;
         const data = db.search.searchNotes(validSearchTerm, validLimit);
         return { success: true, data };
       } catch (error) {
@@ -110,28 +110,20 @@ function registerIpcHandlers() {
   );
 
   ipcMain.handle("set:theme", (_event, theme: Theme) => {
-    if (theme !== "system" && !(theme in THEME_DATA)) {
-      return { success: false, message: "Invalid theme" };
-    }
-    if (theme === "system") {
-      nativeTheme.themeSource = "system";
-      const activeTheme = nativeTheme.shouldUseDarkColors ? "dark" : "light";
-      BrowserWindow.getAllWindows().forEach((win) => {
-        win.setTitleBarOverlay(getTitleBarOverlay(activeTheme));
-      });
-      return { success: true };
-    }
-    if (theme in THEME_DATA) {
-      const validTheme = theme as keyof typeof THEME_DATA;
-      const selectedTheme = THEME_DATA[validTheme] as ThemeConfig;
-      nativeTheme.themeSource = selectedTheme.isDark ? "dark" : "light";
-      const overlayOptions = getTitleBarOverlay(validTheme);
+    try {
+      if (theme !== "system" && !(theme in THEME_DATA)) {
+        return { success: false, message: "[IPC] Invalid Theme" };
+      }
+      const activeTheme = initTheme(theme);
+      const overlayOptions = getTitleBarOverlay(activeTheme);
       BrowserWindow.getAllWindows().forEach((win) => {
         win.setTitleBarOverlay(overlayOptions);
       });
       return { success: true };
+    } catch (error) {
+      console.error("Failed to set theme");
+      return { success: false, message: "[IPC] Failed to set theme" };
     }
-    return { success: false, message: "[IPC] Invalid theme" };
   });
 
   ipcMain.handle("saveImage", async (_event, imageData, extension) => {
@@ -151,7 +143,7 @@ function registerIpcHandlers() {
       return { success: true, imageSrc: `appimg:///${fileName}` };
     } catch (error) {
       console.error("Failed to save image:", error);
-      return { success: false, error };
+      return { success: false, message: "[IPC] Failed to save image" };
     }
   });
 
