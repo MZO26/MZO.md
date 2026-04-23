@@ -3,10 +3,11 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { registerIpcHandlers } from "./ipcHandlers";
+import { navigationHandler } from "./navigationHandler";
+import { setPermissions } from "./permissions";
 import { registerCustomProtocol, setupLocalImageProtocol } from "./protocol";
 import { store } from "./store";
 import { getTitleBarOverlay, initTheme } from "./titlebar";
-import { navigationHandler } from "./windowPolicies";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env["DIST"] = path.join(__dirname, "../dist");
@@ -71,6 +72,7 @@ app.whenReady().then(async () => {
     console.error("Failed to load database:", error);
   }
   setupLocalImageProtocol();
+  setPermissions();
   registerIpcHandlers();
   createWindow();
   app.on("activate", () => {
