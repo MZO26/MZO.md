@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/core";
-import { promptImageUpload } from "../../extensions/image";
+import { promptImageUpload } from "../../extensions/image/image";
 import { getElement } from "../../utils/helpers";
 
 function setupToolbar(editor: Editor) {

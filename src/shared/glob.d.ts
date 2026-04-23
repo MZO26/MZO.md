@@ -8,6 +8,7 @@ import {
   type Theme,
   type UpdateNotePayload,
 } from "../shared/types";
+import type { Settings } from "./schemas/storeSchema";
 
 declare module "*.css";
 declare module "*?raw" {
@@ -35,7 +36,10 @@ declare global {
       getAll: () => Promise<NotesReponse>;
       getById: (id: string) => Promise<NoteResponse>;
       create: (payload: CreateNotePayload) => Promise<NoteResponse>;
-      update: (payload: UpdateNotePayload) => Promise<NoteResponse>;
+      update: (
+        payload: UpdateNotePayload,
+        flush: boolean,
+      ) => Promise<NoteResponse>;
       delete: (id: string) => Promise<IpcResponse<void>>;
       searchNotes: (searchTerm: string, limit: number) => Promise<NotesReponse>;
     };
@@ -43,10 +47,9 @@ declare global {
       getSettings: <K extends keyof Settings>(
         key: K,
       ) => Promise<IpcResponse<Settings[K]>>;
-      setSettings: <K extends keyof Settings>(
-        key: K,
-        value: Settings[K],
-      ) => Promise<IpcResponse<Settings[K]>>;
+      setSettings: (
+        settings: Partial<Settings>,
+      ) => Promise<IpcResponse<Settings>>;
     };
   }
 }

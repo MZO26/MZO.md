@@ -37,10 +37,10 @@ async function noteItemHandler(
   setActiveItem(noteItem, container);
 }
 
-async function saveNote(id: string): Promise<void> {
+async function saveNote(id: string, flush: boolean = false): Promise<void> {
   const editorData = extractNoteDataFromEditor(editor);
   const payload = updateNotePayload({ id, ...editorData });
-  const result = await updateNote(payload);
+  const result = await updateNote(payload, flush);
   if (!result.success) {
     showToast("Save failed");
     return;

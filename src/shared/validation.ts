@@ -34,15 +34,13 @@ function validateSearch(searchTerm: unknown, limit: unknown) {
   return validation(SearchSchema, { searchTerm, limit });
 }
 
-function validateStore(key: unknown, val: unknown) {
-  const keyValidation = StoreSchema.keyof().safeParse(key);
-  if (!keyValidation.success) {
-    console.error("Validation failed:", z.treeifyError(keyValidation.error));
-    throw keyValidation.error;
+function validateStore(settings: unknown) {
+  const storeValidation = StoreSchema.safeParse(settings);
+  if (!storeValidation.success) {
+    console.error("Validation failed:", z.treeifyError(storeValidation.error));
+    throw storeValidation.error;
   }
-  const safeKey = keyValidation.data;
-  const validObject = validation(StoreSchema.partial(), { [safeKey]: val });
-  return validObject[safeKey];
+  return storeValidation.data;
 }
 
 function validateTheme(theme: unknown) {

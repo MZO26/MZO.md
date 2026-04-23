@@ -25,10 +25,12 @@ function createWindow() {
   const activeTheme = initTheme(store.get("theme"));
 
   win = new BrowserWindow({
+    show: false,
     width: 1100,
     height: 600,
     titleBarStyle: "hidden",
     titleBarOverlay: getTitleBarOverlay(activeTheme),
+    autoHideMenuBar: true,
     transparent: false,
     backgroundMaterial: "acrylic",
     backgroundColor: "#00000000",
@@ -38,15 +40,27 @@ function createWindow() {
       contextIsolation: true,
       sandbox: true,
       webSecurity: true,
+      webviewTag: false,
+      navigateOnDragDrop: false,
+      allowRunningInsecureContent: false,
+      safeDialogs: true,
+      nodeIntegrationInWorker: false,
+      nodeIntegrationInSubFrames: false,
+      spellcheck: false,
+      zoomFactor: 1.0,
     },
   });
   navigationHandler(win);
   win.webContents.openDevTools();
+  win.setMenuBarVisibility(false);
   if (process.env["ELECTRON_RENDERER_URL"]) {
     win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
   } else {
     win.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
+  win.once("ready-to-show", () => {
+    win?.show();
+  });
 }
 
 app.whenReady().then(async () => {

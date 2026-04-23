@@ -96,6 +96,9 @@ type ThemeConfig = {
 };
 
 type ResolvedTheme = "light" | "dark";
+type WorkerResult =
+  | { success: true; data: Uint8Array }
+  | { success: false; message: string };
 
 export type {
   Actions,
@@ -120,4 +123,5 @@ export type {
   ThemeConfig,
   TitleBarOverlayOptions,
   UpdateNotePayload,
+  WorkerResult,
 };

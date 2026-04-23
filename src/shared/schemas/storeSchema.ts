@@ -36,8 +36,8 @@ const StoreSchema = z.object({
     .enum(["focus", "balanced", "eye-comfort"])
     .default("balanced"),
 });
-export type StoreType = z.infer<typeof StoreSchema>;
-export type AppTheme = StoreType["theme"];
-export type AppFont = StoreType["font"];
-export type CodeThemePreference = StoreType["code-theme"];
+export type Settings = z.infer<typeof StoreSchema>;
+export type AppTheme = Settings["theme"];
+export type AppFont = Settings["font"];
+export type CodeThemePreference = Settings["code-theme"];
 export { StoreSchema };

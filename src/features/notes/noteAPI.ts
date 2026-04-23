@@ -10,8 +10,11 @@ async function createNote(payload: CreateNotePayload): Promise<Result<Note>> {
   return safeIpcCall(window.noteAPI.create(payload));
 }
 
-async function updateNote(note: UpdateNotePayload): Promise<Result<Note>> {
-  return safeIpcCall(window.noteAPI.update(note));
+async function updateNote(
+  note: UpdateNotePayload,
+  flush: boolean,
+): Promise<Result<Note>> {
+  return safeIpcCall(window.noteAPI.update(note, flush));
 }
 
 async function deleteNote(id: string): Promise<Result<void>> {

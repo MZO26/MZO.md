@@ -35,11 +35,8 @@ const applyAppTheme = async (
     selectElement.value = theme; // update select value to selected theme
   }
   const preference = setCodeTheme(codeThemeSelect);
-  await Promise.all([
-    window.electronAPI.setTheme(theme), // api call for theme to resolve electrons internal theme
-    window.storeApi.setSettings("theme", theme),
-    window.storeApi.setSettings("code-theme", preference),
-  ]);
+  await window.electronAPI.setTheme(theme); // api call for theme to resolve electrons internal theme
+  await window.storeApi.setSettings({ theme: theme, "code-theme": preference });
 };
 
 function getDefaultCodeTheme(
