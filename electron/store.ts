@@ -1,6 +1,6 @@
 import Store from "electron-store";
 import z from "zod";
-import { StoreSchema, type Settings } from "../src/shared/schemas/storeSchema";
+import { StoreSchema, type Settings } from "../shared/schemas/storeSchema";
 
 export const store = new Store<Settings>();
 

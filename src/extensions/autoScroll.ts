@@ -1,6 +1,6 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import type { AutoScrollOptions } from "../shared/types";
+import type { AutoScrollOptions } from "../../shared/types";
 
 export const DragAutoScroll = Extension.create<AutoScrollOptions>({
   name: "dragAutoScroll",

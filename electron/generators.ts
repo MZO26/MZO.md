@@ -1,7 +1,7 @@
 import type { JSONContent } from "@tiptap/core";
-import { generateSnippet } from "../src/shared/generationHelpers.ts/snippet";
-import { generateTags } from "../src/shared/generationHelpers.ts/tags";
-import { generateTitle } from "../src/shared/generationHelpers.ts/title";
+import { generateSnippet } from "../shared/generationHelpers.ts/snippet";
+import { generateTags } from "../shared/generationHelpers.ts/tags";
+import { generateTitle } from "../shared/generationHelpers.ts/title";
 
 interface NoteData {
   title: string;

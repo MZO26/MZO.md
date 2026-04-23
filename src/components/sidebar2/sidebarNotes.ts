@@ -1,7 +1,7 @@
+import type { Note, NoteItemElements } from "../../../shared/types";
 import { getAll } from "../../features/notes/noteAPI";
 import { noteItemHandler } from "../../features/notes/noteHandlers";
 import { deleteBtnHandler } from "../../handlers/buttonHandlers";
-import type { Note, NoteItemElements } from "../../shared/types";
 import { setValue, StorageKeys } from "../../utils/cache";
 import { formatNoteDate, getElement } from "../../utils/helpers";
 import { getNoteItemUI } from "../../utils/templates";

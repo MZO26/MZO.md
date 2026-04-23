@@ -1,5 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import { EditorState } from "@tiptap/pm/state";
+import type { Note } from "../../../shared/types";
 import { editor, positionManager } from "../../components/editor/editor";
 import { updateStats } from "../../components/editor/editorFooter";
 import {
@@ -7,7 +8,6 @@ import {
   handleEditorEmptyState,
 } from "../../components/editor/editorHandlers";
 import { updateNoteInList } from "../../components/sidebar2/sidebarNotes";
-import type { Note } from "../../shared/types";
 import {
   abortCurrentSave,
   setupAutoSave,

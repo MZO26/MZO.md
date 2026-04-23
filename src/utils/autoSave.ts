@@ -1,5 +1,5 @@
+import type { AutoSaveConfig } from "../../shared/types";
 import { saveNote } from "../features/notes/noteHandlers";
-import type { AutoSaveConfig } from "../shared/types";
 import { getValue, StorageKeys } from "./cache";
 import { debounce } from "./helpers";
 

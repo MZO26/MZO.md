@@ -19,7 +19,7 @@ const CustomCodeBlockLowlight = CodeBlockLowlight.extend({
   },
 });
 
-function detectCodeBlockLanguage(editor: Editor): string | null {
+function detectCodeBlockLanguage(editor: Editor): string {
   const { $from } = editor.state.selection;
 
   for (let depth = $from.depth; depth >= 0; depth--) {
@@ -27,7 +27,7 @@ function detectCodeBlockLanguage(editor: Editor): string | null {
 
     if (node.type.name === "codeBlock") {
       const code = node.textContent;
-      if (!code.trim()) return null;
+      if (!code.trim()) return "plaintext";
 
       const result = lowlight.highlightAuto(code, {
         subset: [
@@ -44,19 +44,32 @@ function detectCodeBlockLanguage(editor: Editor): string | null {
           "rust",
           "powershell",
           "json",
+          "bash",
+          "markdown",
+          "yaml",
+          "go",
+          "php",
+          "c",
+          "dockerfile",
         ],
       });
-      return result?.data?.language ?? null;
+
+      const language = result.data?.language;
+      const relevance = result.data?.relevance ?? 0;
+
+      if (!language || relevance < 5) {
+        return "plaintext";
+      }
+
+      return language;
     }
   }
 
-  return null;
+  return "plaintext";
 }
-
 const updateDetectCodeLanguage = debounce((editor: Editor) => {
   if (!editor.isActive("codeBlock")) return;
   const attrs = editor.getAttributes("codeBlock");
-  if (!attrs["showLanguage"]) return;
 
   const detectedLanguage = detectCodeBlockLanguage(editor);
 
@@ -65,7 +78,7 @@ const updateDetectCodeLanguage = debounce((editor: Editor) => {
       language: detectedLanguage,
     });
   }
-}, 1000);
+}, 500);
 
 export {
   CustomCodeBlockLowlight,

@@ -1,4 +1,4 @@
-import type { AppFont } from "../../shared/schemas/storeSchema";
+import type { AppFont } from "../../../shared/schemas/storeSchema";
 import { showToast } from "../../utils/toast";
 
 async function setSelectedFont(event: Event) {

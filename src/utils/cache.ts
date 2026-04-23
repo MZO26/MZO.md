@@ -1,4 +1,4 @@
-import type { SavedPosition } from "../shared/types";
+import type { SavedPosition } from "../../shared/types";
 
 const StorageKeys = {
   NOTE_ID: "noteID",
@@ -78,14 +78,4 @@ function removeValue<K extends StorageKey>(key: K): void {
   }
 }
 
-function updateStorage<K extends keyof StorageData>(
-  key: K,
-  updater: (currentData: StorageData[K]) => StorageData[K],
-): StorageData[K] {
-  const currentData = getValue(key);
-  const newData = updater(currentData);
-  setValue(key, newData);
-  return newData;
-}
-
-export { getValue, removeValue, setValue, StorageKeys, updateStorage };
+export { getValue, removeValue, setValue, StorageKeys };

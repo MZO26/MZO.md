@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/core";
-import { EditorDocSchema } from "../../shared/schemas/editorSchema";
-import { PlainTextSchema } from "../../shared/schemas/noteSchema";
+import { EditorDocSchema } from "../../../shared/schemas/editorSchema";
+import { PlainTextSchema } from "../../../shared/schemas/noteSchema";
 import { getValue, setValue, StorageKeys } from "../../utils/cache";
 import { getElement } from "../../utils/helpers";
 import { showEditorEmptyState } from "./editorEmptyState";

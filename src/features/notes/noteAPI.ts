@@ -3,7 +3,7 @@ import type {
   Note,
   Result,
   UpdateNotePayload,
-} from "../../shared/types";
+} from "../../../shared/types";
 import { safeIpcCall } from "../../utils/helpers";
 
 async function createNote(payload: CreateNotePayload): Promise<Result<Note>> {

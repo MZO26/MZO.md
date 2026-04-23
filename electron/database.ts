@@ -1,12 +1,12 @@
 import BetterSqlite from "better-sqlite3";
 import { app } from "electron";
 import path from "path";
-import { NoteFromDbSchema } from "../src/shared/schemas/noteSchema";
+import { NoteFromDbSchema } from "../shared/schemas/noteSchema";
 import type {
   CreateNotePayload,
   Note,
   UpdateNotePayload,
-} from "../src/shared/types";
+} from "../shared/types";
 import { FTS5 } from "./fts";
 import { getNoteData } from "./generators";
 import { createNoteTransactions, type NoteTransactions } from "./transactions";

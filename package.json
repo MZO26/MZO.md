@@ -1,7 +1,7 @@
 {
   "name": "mdeditor",
   "version": "1.0.0",
-  "description": "MDEditor is a markdown editor built with Electron and Milkdown. It provides a seamless writing experience with support for various markdown features, making it an ideal tool for note-taking, documentation, and content creation.",
+  "description": "MDEditor is a handcrafted note-taking app built with Electron and Tiptap, focused on a fast, distraction-free writing experience for notes, documentation, and personal knowledge.",
   "main": "dist-electron/main/main.js",
   "scripts": {
     "typecheck": "npx tsc --noEmit",
@@ -15,13 +15,16 @@
     "url": "git+https://github.com/MZO26/MDEditor.git"
   },
   "keywords": [
-    "markdown",
+    "note-taking-app",
+    "local-first-notes",
+    "offline-first",
+    "developer-notes",
     "editor",
     "electron",
     "tiptap",
-    "note-taking",
-    "documentation",
-    "content creation"
+    "sqlite",
+    "desktop-app",
+    "documentation"
   ],
   "author": "MZO26",
   "license": "ISC",

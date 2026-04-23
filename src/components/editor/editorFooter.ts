@@ -1,8 +1,8 @@
 import type { Editor } from "@tiptap/core";
-import { debounce, getElement, getElementOrNull } from "../../utils/helpers";
+import { debounce, getElement } from "../../utils/helpers";
 
 function updateDateTime() {
-  const displayElement = getElementOrNull<HTMLDivElement>("#datetime-display");
+  const displayElement = getElement<HTMLDivElement>("#datetime-display");
 
   if (displayElement) {
     const now = new Date();
@@ -57,7 +57,7 @@ function setupZoomBar() {
   const applyZoom = (newZoom: number) => {
     currentZoom = Math.max(MIN_ZOOM, Math.min(newZoom, MAX_ZOOM));
 
-    const editorEl = getElementOrNull<HTMLElement>("#editor .ProseMirror");
+    const editorEl = getElement<HTMLElement>("#editor .ProseMirror");
     if (editorEl) {
       const scaledSize = (BASE_FONT_SIZE * currentZoom) / 100;
       editorEl.style.setProperty("--editor-font-size", `${scaledSize}px`);

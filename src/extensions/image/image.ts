@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/core";
-import type { WorkerResult } from "../../shared/types";
+import type { WorkerResult } from "../../../shared/types";
 import { showToast } from "../../utils/toast";
 import { compressImage } from "./image-utils";
 

@@ -6,7 +6,7 @@ import {
   StoreSchema,
   type AppTheme,
   type Settings,
-} from "../src/shared/schemas/storeSchema";
+} from "../shared/schemas/storeSchema";
 import {
   validateCreate,
   validateId,
@@ -15,7 +15,7 @@ import {
   validateStore,
   validateTheme,
   validateUpdate,
-} from "../src/shared/validation";
+} from "../shared/validation";
 import db from "./database";
 import { checkRateLimit, tryExec } from "./ipcValidation";
 import { store } from "./store";

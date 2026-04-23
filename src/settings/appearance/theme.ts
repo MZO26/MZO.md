@@ -1,9 +1,9 @@
-import { CODE_THEME_MAP, THEME_MAP } from "../../constants/themes";
 import type {
   AppTheme,
   CodeThemePreference,
-} from "../../shared/schemas/storeSchema";
-import type { Code, ResolvedTheme } from "../../shared/types";
+} from "../../../shared/schemas/storeSchema";
+import type { Code, ResolvedTheme } from "../../../shared/types";
+import { CODE_THEME_MAP, THEME_MAP } from "../../constants/themes";
 import { getElement } from "../../utils/helpers";
 import { showToast } from "../../utils/toast";
 

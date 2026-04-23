@@ -1,8 +1,8 @@
 import type {
   AppTheme,
   CodeThemePreference,
-} from "../shared/schemas/storeSchema";
-import type { Code, ResolvedTheme } from "../shared/types";
+} from "../../shared/schemas/storeSchema";
+import type { Code, ResolvedTheme } from "../../shared/types";
 
 // This file defines a mapping between the themes available in the application and the corresponding system theme that should be applied. This is used to determine which system theme (light or dark) should be applied based on the user's selected theme in the application.
 const THEME_MAP = {
@@ -54,6 +54,6 @@ const THEME_DATA: Record<
   "night-pine": { color: "#171c1a", symbolColor: "#d9e2dd", isDark: true },
   ashfall: { color: "#171a1e", symbolColor: "#d9d4c9", isDark: true },
   bronze: { color: "#1a1817", symbolColor: "#e2dad2", isDark: true },
-};
+} as const;
 
 export { CODE_THEME_MAP, THEME_DATA, THEME_MAP };

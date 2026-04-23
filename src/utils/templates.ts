@@ -1,6 +1,6 @@
 import DOMPurify from "dompurify";
 
-import type { Note } from "../shared/types";
+import type { Note } from "../../shared/types";
 import { formatNoteDate } from "./helpers";
 import { renderIcons } from "./icons";
 

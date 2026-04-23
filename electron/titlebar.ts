@@ -1,7 +1,7 @@
 import { nativeTheme } from "electron";
+import type { AppTheme } from "../shared/schemas/storeSchema";
+import type { TitleBarOverlayOptions } from "../shared/types";
 import { THEME_DATA } from "../src/constants/themes";
-import type { AppTheme } from "../src/shared/schemas/storeSchema";
-import type { TitleBarOverlayOptions } from "../src/shared/types";
 
 // updates the title bar overlay accordingly
 function getTitleBarOverlay(

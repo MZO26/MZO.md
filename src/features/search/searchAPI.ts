@@ -1,4 +1,4 @@
-import type { Note, Result } from "../../shared/types";
+import type { Note, Result } from "../../../shared/types";
 import { safeIpcCall } from "../../utils/helpers";
 
 async function searchNotes(

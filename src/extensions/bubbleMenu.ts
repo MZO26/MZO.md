@@ -1,6 +1,6 @@
 import { Editor, getMarkRange } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
-import type { BubbleMenuCommands } from "../shared/types";
+import type { BubbleMenuCommands } from "../../shared/types";
 import { showToast } from "../utils/toast";
 import { detectCodeBlockLanguage } from "./languages";
 

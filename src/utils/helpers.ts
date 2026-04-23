@@ -1,4 +1,4 @@
-import type { Result } from "../shared/types";
+import type { Result } from "../../shared/types";
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -6,10 +6,6 @@ function getElement<T extends HTMLElement>(selector: string): T {
     throw new Error(`Element not found: "${selector}"`);
   }
   return element;
-}
-
-function getElementOrNull<T extends HTMLElement>(selector: string): T | null {
-  return document.querySelector<T>(selector);
 }
 
 function setActiveItem(element: HTMLElement, parent: HTMLElement) {
@@ -74,11 +70,4 @@ async function safeIpcCall<T>(
   }
 }
 
-export {
-  debounce,
-  formatNoteDate,
-  getElement,
-  getElementOrNull,
-  safeIpcCall,
-  setActiveItem,
-};
+export { debounce, formatNoteDate, getElement, safeIpcCall, setActiveItem };
