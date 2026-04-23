@@ -2,10 +2,13 @@ import { app, BrowserWindow } from "electron";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { registerIpcHandlers } from "./ipcHandlers";
-import { navigationHandler } from "./navigationHandler";
+import { registerIpcHandlers } from "./ipc/ipcHandlers";
+import {
+  navigationHandler,
+  registerCustomProtocol,
+  setupLocalImageProtocol,
+} from "./navigationHandler";
 import { setPermissions } from "./permissions";
-import { registerCustomProtocol, setupLocalImageProtocol } from "./protocol";
 import { store } from "./store";
 import { getTitleBarOverlay, initTheme } from "./titlebar";
 
@@ -48,7 +51,6 @@ function createWindow() {
       nodeIntegrationInWorker: false,
       nodeIntegrationInSubFrames: false,
       spellcheck: false,
-      zoomFactor: 1.0,
     },
   });
   navigationHandler(win);
@@ -66,7 +68,7 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   try {
-    const db = await import("./database");
+    const db = await import("./db/database");
     console.log("Database loaded successfully:", db);
   } catch (error) {
     console.error("Failed to load database:", error);

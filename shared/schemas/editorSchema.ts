@@ -48,4 +48,6 @@ const DbContentSchema = z
 
 //input gets validated -> processed into parsed object -> piped to validate output against EditorDocSchema
 
-export { DbContentSchema, EditorDocSchema };
+type EditorDoc = z.infer<typeof EditorDocSchema>;
+
+export { DbContentSchema, EditorDocSchema, type EditorDoc };

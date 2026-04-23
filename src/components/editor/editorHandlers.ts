@@ -1,19 +1,10 @@
 import type { Editor } from "@tiptap/core";
-import { EditorDocSchema } from "../../../shared/schemas/editorSchema";
-import { PlainTextSchema } from "../../../shared/schemas/noteSchema";
 import { getElement } from "../../utils/helpers";
 import { showEditorEmptyState } from "./editorEmptyState";
-import { setupZoomBar } from "./editorFooter";
-import { setupToolbar } from "./editorHeader";
 
-function initEditorHandlers(editor: Editor) {
-  setupToolbar(editor);
-  setupZoomBar();
-}
-
-function extractNoteDataFromEditor(editor: Editor | null) {
-  const plainText = PlainTextSchema.parse(editor?.getText());
-  const content = EditorDocSchema.parse(editor?.getJSON());
+function extractNoteDataFromEditor(editor: Editor) {
+  const plainText = editor.getText();
+  const content = editor.getJSON();
   return { content, plainText };
 }
 
@@ -42,8 +33,4 @@ function handleEditorEmptyState(ID?: string | undefined | null) {
   }
 }
 
-export {
-  extractNoteDataFromEditor,
-  handleEditorEmptyState,
-  initEditorHandlers,
-};
+export { extractNoteDataFromEditor, handleEditorEmptyState };

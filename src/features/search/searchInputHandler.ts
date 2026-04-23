@@ -25,7 +25,7 @@ async function handleSearchInput(
   }
   const response = await searchNotes(searchInput, 20);
   if (!response.success) {
-    showToast("Search failed");
+    showToast(response.message);
     handleEditorEmptyState();
     handleSidebarEmptyState(notesContainer, searchInput);
     return;

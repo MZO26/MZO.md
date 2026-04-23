@@ -9,4 +9,6 @@ const ImagePayloadSchema = z.object({
     .refine((buffer) => buffer.length <= MAX_FILE_SIZE),
 });
 
-export { ImagePayloadSchema };
+type ImagePayload = z.infer<typeof ImagePayloadSchema>;
+
+export { ImagePayloadSchema, type ImagePayload };

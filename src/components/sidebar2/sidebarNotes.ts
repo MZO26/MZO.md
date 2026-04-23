@@ -1,8 +1,9 @@
-import type { Note, NoteItemElements } from "../../../shared/types";
+import type { Note } from "../../../shared/schemas/noteSchema";
+import type { NoteItemElements } from "../../../shared/types";
 import { getAll } from "../../features/notes/noteAPI";
 import { noteItemHandler } from "../../features/notes/noteHandlers";
 import { deleteBtnHandler } from "../../handlers/buttonHandlers";
-import { setValue, StorageKeys } from "../../utils/cache";
+import { getValue, setValue, StorageKeys } from "../../utils/cache";
 import { formatNoteDate, getElement } from "../../utils/helpers";
 import { getNoteItemUI } from "../../utils/templates";
 import { showToast } from "../../utils/toast";
@@ -11,8 +12,13 @@ import { handleEditorEmptyState } from "../editor/editorHandlers";
 import { handleSidebarEmptyState } from "./sidebarEmptyState";
 
 function initNotesSidebar() {
+  const appContainer = getElement(".app-container");
+  void appContainer.offsetWidth;
+  appContainer.classList.remove("no-transition");
+  const storedValue = getValue(StorageKeys.SIDEBAR_COLLAPSED);
+  const isCollapsed = storedValue === true;
+  appContainer.classList.toggle("sidebar-collapsed", isCollapsed);
   const container = getElement<HTMLDivElement>(".notes-container");
-  if (!container) return;
   container.addEventListener("click", async (event) => {
     const target = event.target as HTMLElement;
 
@@ -27,6 +33,14 @@ function initNotesSidebar() {
       return;
     }
   });
+}
+
+function collapseSidebar(): void {
+  const appContainer = getElement<HTMLDivElement>(".app-container");
+  const currentState = appContainer.classList.contains("sidebar-collapsed");
+  const newState = !currentState;
+  appContainer.classList.toggle("sidebar-collapsed", newState);
+  setValue(StorageKeys.SIDEBAR_COLLAPSED, newState);
 }
 
 function addOneNoteToList(note: Note): HTMLDivElement | undefined {
@@ -111,12 +125,12 @@ async function reloadNoteList(): Promise<void> {
   if (!container) return;
   container.innerHTML = "";
   try {
-    const result = await getAll();
-    if (!result.success) {
-      showToast(result.message);
+    const response = await getAll();
+    if (!response.success) {
+      showToast(response.message);
       return;
     }
-    addManyNotesToList(result.data);
+    addManyNotesToList(response.data);
   } catch (error) {
     console.error("Error loading notes:", error);
     return;
@@ -126,6 +140,7 @@ async function reloadNoteList(): Promise<void> {
 export {
   addManyNotesToList,
   addOneNoteToList,
+  collapseSidebar,
   handleSidebarEmptyState,
   initNotesSidebar,
   reloadNoteList,

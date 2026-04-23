@@ -1,7 +1,10 @@
 import type { Database as DatabaseType } from "better-sqlite3";
-import { generateFtsQuery } from "../shared/generators/ftsQuery";
-import { NoteFromDbSchema } from "../shared/schemas/noteSchema";
-import type { FTSRows, Note } from "../shared/types";
+import { generateFtsQuery } from "../../shared/generators/ftsQuery";
+import {
+  NoteFromDbSchema,
+  type FTSRows,
+  type Note,
+} from "../../shared/schemas/noteSchema";
 
 class FTS5 {
   private db: DatabaseType;

@@ -46,11 +46,3 @@ button.is-active {
   top: 8px;
   right: 3px;
 }
-
-.collapse-btn .collapse-icon {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.collapse-btn.collapsed .collapse-icon {
-  transform: rotate(180deg);
-}

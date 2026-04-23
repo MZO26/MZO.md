@@ -6,7 +6,7 @@ import {
   StoreSchema,
   type AppTheme,
   type Settings,
-} from "../shared/schemas/storeSchema";
+} from "../../shared/schemas/storeSchema";
 import {
   validateCreate,
   validateId,
@@ -15,11 +15,11 @@ import {
   validateStore,
   validateTheme,
   validateUpdate,
-} from "../shared/validation";
-import db from "./database";
+} from "../../shared/validation";
+import db from "../db/database";
+import { store } from "../store";
+import { getTitleBarOverlay, initTheme } from "../titlebar";
 import { checkRateLimit, tryExec } from "./ipcValidation";
-import { store } from "./store";
-import { getTitleBarOverlay, initTheme } from "./titlebar";
 
 const LIMITS = {
   WRITE_HEAVY: 2000, // saveImage

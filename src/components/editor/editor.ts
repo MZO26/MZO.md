@@ -30,7 +30,8 @@ import { NoteTag } from "../../extensions/tag";
 import { Typography } from "../../extensions/typography";
 import { getElement } from "../../utils/helpers";
 import { renderIcons } from "../../utils/icons";
-import { updateStats } from "./editorFooter";
+import { setupZoomBar, updateStats } from "./editorFooter";
+import { setupToolbar } from "./editorHeader";
 
 let editor: Editor | null = null;
 const bubbleMenuElement = getElement(".bubble-menu");
@@ -67,6 +68,8 @@ function initEditor(selector: string): Editor {
   });
   renderIcons(bubbleMenuElement);
   bubbleMenuManager.attach(editor);
+  setupToolbar(editor);
+  setupZoomBar();
   editor.view.dom.style.setProperty("--editor-font-size", "0.875em");
   editor.view.dom.style.setProperty("--editor-line-height", "1.5");
   return editor;

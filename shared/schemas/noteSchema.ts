@@ -79,6 +79,11 @@ const UpdateNotePayloadSchema = NoteSchema.omit({
   updated_at: true,
 });
 
+type UpdateNotePayload = z.infer<typeof UpdateNotePayloadSchema>;
+type CreateNotePayload = z.infer<typeof CreateNotePayloadSchema>;
+type FTSRows = z.infer<typeof FTSRowsSchema>;
+type Note = z.infer<typeof NoteSchema>;
+
 export {
   CreateNotePayloadSchema,
   EditorDocSchema,
@@ -94,4 +99,8 @@ export {
   TagsSchema,
   TitleSchema,
   UpdateNotePayloadSchema,
+  type CreateNotePayload,
+  type FTSRows,
+  type Note,
+  type UpdateNotePayload,
 };

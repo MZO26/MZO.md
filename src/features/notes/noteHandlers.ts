@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import { EditorState } from "@tiptap/pm/state";
-import type { Note } from "../../../shared/types";
+import type { Note } from "../../../shared/schemas/noteSchema";
 import { editor } from "../../components/editor/editor";
 import { updateStats } from "../../components/editor/editorFooter";
 import {
@@ -38,6 +38,7 @@ async function noteItemHandler(
 }
 
 async function saveNote(id: string, flush: boolean = false): Promise<void> {
+  if (!editor) return;
   const editorData = extractNoteDataFromEditor(editor);
   const payload = updateNotePayload({ id, ...editorData });
   const response = await updateNote(payload, flush);

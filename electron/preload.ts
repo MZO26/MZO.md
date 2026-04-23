@@ -1,11 +1,11 @@
-import { contextBridge, ipcRenderer } from "electron";
-import type { AppTheme } from "../shared/schemas/storeSchema";
+import { contextBridge, ipcRenderer, type Settings } from "electron";
+import type { ImagePayload } from "../shared/schemas/imageSchema";
 import type {
   CreateNotePayload,
-  ImagePayload,
-  Settings,
   UpdateNotePayload,
-} from "../shared/types";
+} from "../shared/schemas/noteSchema";
+import type { AppTheme } from "../shared/schemas/storeSchema";
+
 console.log("--- PRELOAD ACTIVE ---");
 
 contextBridge.exposeInMainWorld("electronAPI", {

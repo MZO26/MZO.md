@@ -1,6 +1,6 @@
 import { getElement } from "./helpers";
 
-const showToast = (value: string, duration = 2000): void => {
+function showToast(value: string, duration = 2000): void {
   const container = getElement<HTMLDivElement>(".toast-container");
   if (!container) return;
   const toast = document.createElement("div");
@@ -24,6 +24,6 @@ const showToast = (value: string, duration = 2000): void => {
       { once: true },
     );
   }, duration);
-};
+}
 
 export { showToast };

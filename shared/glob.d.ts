@@ -3,11 +3,10 @@ import {
   IpcResponse,
   type CreateNotePayload,
   type ImagePayload,
-  type NoteResponse,
-  type NotesReponse,
   type Theme,
   type UpdateNotePayload,
 } from "../shared/types";
+import type { Note } from "./schemas/noteSchema";
 import type { Settings } from "./schemas/storeSchema";
 
 declare module "*.css";
@@ -25,15 +24,18 @@ declare global {
       ) => Promise<IpcResponse<{ imageSrc: string }>>;
     };
     noteAPI: {
-      getAll: () => Promise<NotesReponse>;
-      getById: (id: string) => Promise<NoteResponse>;
-      create: (payload: CreateNotePayload) => Promise<NoteResponse>;
+      getAll: () => Promise<IpcResponse<Note[]>>;
+      getById: (id: string) => Promise<IpcResponse<Note>>;
+      create: (payload: CreateNotePayload) => Promise<IpcResponse<Note>>;
       update: (
         payload: UpdateNotePayload,
         flush: boolean,
-      ) => Promise<NoteResponse>;
+      ) => Promise<IpcResponse<Note>>;
       delete: (id: string) => Promise<IpcResponse<void>>;
-      searchNotes: (searchTerm: string, limit: number) => Promise<NotesReponse>;
+      searchNotes: (
+        searchTerm: string,
+        limit: number,
+      ) => Promise<IpcResponse<Note[]>>;
     };
     storeApi: {
       getSettings: <K extends keyof Settings>(

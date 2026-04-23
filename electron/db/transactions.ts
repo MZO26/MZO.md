@@ -1,5 +1,5 @@
 import type { Database as DatabaseType, Transaction } from "better-sqlite3";
-import type { Note } from "../shared/types";
+import type { Note } from "../../shared/schemas/noteSchema";
 
 export interface NoteTransactions {
   safeCreate: Transaction<(params: CreateTransactionParams) => Note>;

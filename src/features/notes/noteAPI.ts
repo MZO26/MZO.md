@@ -1,9 +1,9 @@
 import type {
   CreateNotePayload,
-  IpcResponse,
   Note,
   UpdateNotePayload,
-} from "../../../shared/types";
+} from "../../../shared/schemas/noteSchema";
+import type { IpcResponse } from "../../../shared/types";
 import { safeIpcCall } from "../../utils/helpers";
 
 async function createNote(

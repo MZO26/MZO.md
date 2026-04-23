@@ -1,4 +1,10 @@
-import type { IpcResponse } from "../../shared/types";
+import type { JSONContent } from "@tiptap/core";
+import {
+  snippetGenerator,
+  tagsGenerator,
+  titleGenerator,
+} from "../../shared/generators/generators";
+import type { IpcResponse, NoteData } from "../../shared/types";
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -53,6 +59,23 @@ function formatNoteDate(isoString: string) {
   }).format(date);
 }
 
+function getNoteData(
+  content: {
+    type: "doc";
+    content: JSONContent[];
+    attrs?: Record<string, unknown> | undefined;
+  },
+  plainText: unknown,
+): NoteData {
+  return {
+    title: titleGenerator(plainText),
+    snippet: snippetGenerator(plainText),
+    tags: tagsGenerator(plainText),
+    stringifiedContent: JSON.stringify(content),
+    now: new Date().toISOString(),
+  };
+}
+
 async function safeIpcCall<T>(
   ipcPromise: Promise<IpcResponse<T>>,
 ): Promise<IpcResponse<T>> {
@@ -70,4 +93,11 @@ async function safeIpcCall<T>(
   }
 }
 
-export { debounce, formatNoteDate, getElement, safeIpcCall, setActiveItem };
+export {
+  debounce,
+  formatNoteDate,
+  getElement,
+  getNoteData,
+  safeIpcCall,
+  setActiveItem,
+};

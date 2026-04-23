@@ -1,7 +1,7 @@
 import { initEditor } from "./components/editor/editor";
 import { updateDateTime } from "./components/editor/editorFooter";
-import { initEditorHandlers } from "./components/editor/editorHandlers";
 import {
+  collapseSidebar,
   initNotesSidebar,
   reloadNoteList,
 } from "./components/sidebar2/sidebarNotes";
@@ -14,13 +14,11 @@ import {
   setCodeTheme,
 } from "./settings/appearance/theme";
 import { openModal } from "./settings/settings";
-import { setValue, StorageKeys } from "./utils/cache";
 import { debounce, getElement } from "./utils/helpers";
 import { renderIcons } from "./utils/icons";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const editor = initEditor("#editor");
-  initEditorHandlers(editor);
+  initEditor("#editor");
   renderIcons();
   initNotesSidebar();
   await reloadNoteList();
@@ -61,19 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   closeModalBtn.addEventListener("click", closeModal);
 
   const collapseBtn = getElement<HTMLButtonElement>(".collapse-btn");
-  collapseBtn.addEventListener("click", () => {
-    const sidebar = getElement<HTMLDivElement>(".sidebar-notes");
-    const appContainer = getElement<HTMLDivElement>(".app-container");
-    const editor = getElement<HTMLDivElement>("#editor");
-    sidebar.classList.toggle("collapsed");
-    appContainer.classList.toggle("collapsed");
-    editor.classList.toggle("collapsed");
-    collapseBtn.classList.toggle("collapsed");
-    if (sidebar.classList.contains("collapsed")) {
-      setValue(StorageKeys.SIDEBAR_COLLAPSED, true);
-    } else {
-      setValue(StorageKeys.SIDEBAR_COLLAPSED, false);
-    }
-  });
+  collapseBtn.addEventListener("click", collapseSidebar);
 });
+
 setInterval(updateDateTime, 60000);

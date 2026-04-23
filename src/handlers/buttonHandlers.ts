@@ -19,7 +19,7 @@ async function addNoteBtnHandler() {
   const response = await createNote(payload);
   showToast("New note created!");
   if (!response.success) {
-    showToast("Failed to create new note");
+    showToast(response.message);
     return;
   }
   if (editor) {
@@ -39,7 +39,7 @@ async function deleteBtnHandler(
   if (!id) return;
   const response = await deleteNote(id);
   if (!response.success) {
-    showToast("Failed to delete note");
+    showToast(response.message);
     return;
   }
   deleteBtn.disabled = true;

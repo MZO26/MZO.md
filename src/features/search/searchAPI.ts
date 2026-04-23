@@ -1,4 +1,5 @@
-import type { IpcResponse, Note } from "../../../shared/types";
+import type { Note } from "../../../shared/schemas/noteSchema";
+import type { IpcResponse } from "../../../shared/types";
 import { safeIpcCall } from "../../utils/helpers";
 
 async function searchNotes(

@@ -12,12 +12,6 @@
   border-right: 1px solid var(--border-color);
 }
 
-.sidebar-notes.collapsed {
-  overflow: hidden;
-  border: none;
-  box-shadow: none;
-}
-
 .sidebar-container {
   display: grid;
   grid-column: 1;
