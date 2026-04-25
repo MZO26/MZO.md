@@ -23,7 +23,7 @@ button {
 }
 
 button:hover {
-  background: var(--bg-button);
+  background-color: var(--tag-bg);
   border-color: var(--border-color);
   color: var(--text-main);
   box-shadow: var(--shadow);

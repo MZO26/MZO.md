@@ -6,31 +6,14 @@ const StoreSchema = z.object({
       "system",
       "light",
       "dark",
-      "dark-glass",
-      "light-glass",
-      "paper",
       "cappuccino",
-      "rainy-slate",
       "night-pine",
       "ashfall",
       "bronze",
     ])
     .default("system"),
   font: z
-    .enum([
-      "system",
-      "arial",
-      "verdana",
-      "trebuchet",
-      "georgia",
-      "courier",
-      "times",
-      "palatino",
-      "garamond",
-      "tahoma",
-      "century",
-      "consolas",
-    ])
+    .enum(["system", "arial", "verdana", "georgia", "garamond", "tahoma"])
     .default("system"),
   "code-theme": z
     .enum(["focus", "balanced", "eye-comfort"])

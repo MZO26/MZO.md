@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, Menu } from "electron";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -24,8 +24,6 @@ let win: BrowserWindow | null = null;
 
 function createWindow() {
   const preloadPath = path.join(__dirname, "../preload/preload.js");
-  console.log("__dirname:", __dirname);
-  console.log("preload path:", preloadPath);
   const activeTheme = initTheme(store.get("theme"));
 
   win = new BrowserWindow({
@@ -36,7 +34,7 @@ function createWindow() {
     titleBarOverlay: getTitleBarOverlay(activeTheme),
     autoHideMenuBar: true,
     transparent: false,
-    backgroundMaterial: "acrylic",
+    backgroundMaterial: "mica",
     backgroundColor: "#00000000",
     webPreferences: {
       preload: preloadPath,
@@ -67,6 +65,7 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  Menu.setApplicationMenu(null);
   try {
     const db = await import("./db/database");
     console.log("Database loaded successfully:", db);

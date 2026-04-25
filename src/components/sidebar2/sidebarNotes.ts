@@ -49,6 +49,7 @@ function addOneNoteToList(note: Note) {
   container.prepend(noteElement);
   handleSidebarEmptyState(container);
   setValue(StorageKeys.NOTE_ID, note.id);
+  return noteElement;
 }
 
 function addManyNotesToList(notes: Note[]) {

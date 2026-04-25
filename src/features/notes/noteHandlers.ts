@@ -9,6 +9,7 @@ import {
 } from "../../components/editor/editorHandlers";
 import { updateNoteInList } from "../../components/sidebar2/sidebarNotes";
 import { debouncedTagUpdate } from "../../extensions/tag";
+import { debouncedToDoUpdate } from "../../extensions/toDoBar";
 import {
   abortCurrentSave,
   setupAutoSave,
@@ -35,6 +36,7 @@ async function noteItemHandler(
   setValue(StorageKeys.NOTE_ID, noteID);
   viewNote(response.data, editor);
   debouncedTagUpdate(response.data.tags);
+  debouncedToDoUpdate(editor);
   updateStats(editor);
   setActiveItem(noteItem, container);
 }
@@ -56,7 +58,7 @@ function viewNote(note: Note, editor: Editor): void {
   if (!editor) return;
   abortCurrentSave();
   handleEditorEmptyState(note.id);
-  editor.commands.setContent(note.content);
+  editor.commands.setContent(note.content, { emitUpdate: false });
   const newState = EditorState.create({
     doc: editor.state.doc,
     plugins: editor.state.plugins,

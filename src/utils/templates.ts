@@ -1,33 +1,45 @@
 import type { Note } from "../../shared/schemas/noteSchema";
 import { formatNoteDate } from "./helpers";
-import { renderIcons } from "./icons";
+
+// builds skeleton once
+
+const baseNoteItem = document.createElement("div");
+baseNoteItem.className = "noteItem";
+
+const baseHeader = document.createElement("div");
+baseHeader.className = "note-header";
+
+const baseTitle = document.createElement("span");
+baseTitle.className = "note-title";
+
+const baseDeleteBtn = document.createElement("button");
+baseDeleteBtn.className = "delete-btn";
+const baseDots = document.createElement("span");
+baseDots.className = "dots";
+baseDeleteBtn.append(baseDots);
+
+baseHeader.append(baseTitle, baseDeleteBtn);
+
+const baseMetadata = document.createElement("div");
+baseMetadata.className = "note-metadata";
+const baseDate = document.createElement("div");
+baseDate.className = "note-date";
+baseMetadata.append(baseDate);
+
+const baseContent = document.createElement("div");
+baseContent.className = "note-content";
+
+baseNoteItem.append(baseHeader, baseMetadata, baseContent);
 
 function createNoteItem(note: Note): HTMLDivElement {
-  const item = document.createElement("div");
-  item.className = "noteItem";
+  // true to clone everything inside it too
+  const item = baseNoteItem.cloneNode(true) as HTMLDivElement;
   item.dataset["id"] = note.id;
-  const header = document.createElement("div");
-  header.className = "note-header";
-  const title = document.createElement("span");
-  title.className = "note-title";
-  title.textContent = note.title;
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "delete-btn";
-  const dots = document.createElement("span");
-  dots.className = "dots";
-  deleteBtn.append(dots);
-  header.append(title, deleteBtn);
-  const metadata = document.createElement("div");
-  metadata.className = "note-metadata";
-  const date = document.createElement("div");
-  date.className = "note-date";
-  date.textContent = formatNoteDate(note.updated_at);
-  metadata.append(date);
-  const content = document.createElement("div");
-  content.className = "note-content";
-  content.textContent = note.snippet;
-  item.append(header, metadata, content);
-  renderIcons(item);
+  item.querySelector(".note-title")!.textContent = note.title;
+  item.querySelector(".note-date")!.textContent = formatNoteDate(
+    note.updated_at,
+  );
+  item.querySelector(".note-content")!.textContent = note.snippet;
   return item;
 }
 

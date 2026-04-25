@@ -1,4 +1,4 @@
-import { initEditor } from "./components/editor/editor";
+import { editor, initEditor } from "./components/editor/editor";
 import { updateDateTime } from "./components/editor/editorFooter";
 import {
   collapseSidebar,
@@ -13,7 +13,6 @@ import {
   setAppTheme,
   setCodeTheme,
 } from "./settings/appearance/theme";
-import { openModal } from "./settings/settings";
 import { debounce, getElement } from "./utils/helpers";
 import { renderIcons } from "./utils/icons";
 
@@ -29,7 +28,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const infoSidebarToggle = getElement<HTMLButtonElement>(
     ".info-sidebar-toggle",
   );
-
   infoSidebarToggle.addEventListener("click", () => {
     infoSidebar.classList.toggle("off");
   });
@@ -65,16 +63,31 @@ document.addEventListener("DOMContentLoaded", async () => {
       setCodeTheme(codeThemeSelect);
     });
   }
-  const settingsBtn = getElement<HTMLButtonElement>(".settings-btn");
-  settingsBtn.addEventListener("click", () => {
-    openModal();
+  const readOnlyBtn = getElement(".read-only-btn");
+  readOnlyBtn.addEventListener("click", () => {
+    editor?.setEditable(!editor.isEditable);
   });
-
+  const widths = ["comfortable", "normal", "wide"] as const;
+  const editorWidthBtn = getElement(".editor-width-btn");
+  editorWidthBtn.addEventListener("click", () => {
+    const current = editorEl.dataset["width"] || "normal";
+    const index = widths.indexOf(current as (typeof widths)[number]);
+    const next = widths[(index + 1) % widths.length];
+    editorEl.dataset["width"] = next;
+  });
   const closeModalBtn = getElement<HTMLButtonElement>(".closeModal-btn");
   closeModalBtn.addEventListener("click", closeModal);
 
   const collapseBtn = getElement<HTMLButtonElement>(".collapse-btn");
   collapseBtn.addEventListener("click", collapseSidebar);
+  document.addEventListener("keydown", (event) => {
+    const isCmdOrCtrl = event.ctrlKey || event.metaKey;
+
+    if (isCmdOrCtrl && event.key.toLowerCase() === "o") {
+      event.preventDefault();
+      collapseSidebar();
+    }
+  });
 });
 
 setInterval(updateDateTime, 60000);

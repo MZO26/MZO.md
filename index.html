@@ -21,7 +21,6 @@
     <meta name="description" content="notetaking app" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="src/css/global.css" />
-    <link rel="stylesheet" href="src/css/code.css" />
     <link rel="stylesheet" href="src/css/buttons.css" />
     <link rel="stylesheet" href="src/css/sidebar.css" />
     <link rel="stylesheet" href="src/css/main.css" />
@@ -29,7 +28,17 @@
   </head>
   <body>
     <div class="app-container">
-      <div class="drag-region"></div>
+      <div class="drag-region">
+        <div class="toolbar-hover-zone">
+          <div class="top-toolbar">
+            <button class="read-only-btn"><i data-lucide="glasses"></i></button>
+            <button class="focus-btn"><i data-lucide="focus"></i></button>
+            <button class="editor-width-btn">
+              <i data-lucide="ruler-dimension-line"></i>
+            </button>
+          </div>
+        </div>
+      </div>
       <div class="sidebar-container">
         <div class="sidebar-notes">
           <div class="sidebar-header">
@@ -42,21 +51,25 @@
                 placeholder="search notes"
               />
             </div>
-            <button class="bookmark-btn">
-              <i data-lucide="bookmark"></i>
-            </button>
             <button class="add-note-btn" title="add new note">
               <i data-lucide="plus"></i>
             </button>
           </div>
           <div class="notes-container"></div>
           <div class="sidebar-footer">
-            <button class="settings-btn">
+            <button
+              popovertarget="settings-panel"
+              class="tooltip"
+              data-tooltip="settings"
+              data-position="top-right"
+            >
               <i data-lucide="sliders-horizontal"></i>
             </button>
-
-            <button class="export-btn">
-              <i data-lucide="download"></i>
+            <button
+              popovertarget="smart-views-popover"
+              class="sidebar-trigger-btn"
+            >
+              <i data-lucide="list-filter"></i>
             </button>
           </div>
         </div>
@@ -286,88 +299,69 @@
       </div>
       <div class="toast-container"></div>
     </div>
-
+    <div id="settings-panel" class="settings-p" popover class="settings-p">
+      <div class="settings-p-header">
+        <div class="settings-title">Settings</div>
+      </div>
+      <div class="settings-p-body">
+        <div class="settings-field">
+          <label for="theme">Theme:</label>
+          <select id="theme-dropdown" class="theme-select">
+            <optgroup label="standard (high contrast)">
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </optgroup>
+            <optgroup label="ergonomic (low blue light)">
+              <option value="cappuccino">Cappucino</option>
+              <option value="bronze">Bronze</option>
+            </optgroup>
+            <optgroup label="deep work (focussed)">
+              <option value="night-pine">Night-Pine</option>
+              <option value="ashfall">Ashfall</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="settings-field">
+          <label for="code-theme">Code-Theme:</label>
+          <select id="code-theme-dropdown" class="theme-select">
+            <option value="focus">Focus</option>
+            <option value="balanced">Balanced</option>
+            <option value="eye-comfort">Eye Comfort</option>
+          </select>
+        </div>
+      </div>
+      <div class="settings-section"></div>
+      <div class="settings-p-body">
+        <div class="settings-field">
+          <label for="font">Font:</label>
+          <select id="font-dropdown" class="theme-select">
+            <option value="system">System</option>
+            <option value="arial">Arial</option>
+            <option value="verdana">Verdana</option>
+            <option value="georgia">Georgia</option>
+            <option value="garamond">Garamond</option>
+            <option value="tahoma">Tahoma</option>
+          </select>
+        </div>
+      </div>
+      <div class="settings-section"></div>
+      <div class="settings-p-body"></div>
+    </div>
+    <div id="smart-views-popover" popover>
+      <ul class="smart-view-list">
+        <li><button>All Notes</button></li>
+        <li><button>Recently Edited</button></li>
+        <li><button>Bookmarked</button></li>
+        <li><button>Pending Todos</button></li>
+        <li><button>Last Deleted</button></li>
+      </ul>
+    </div>
     <div class="overlay"></div>
     <div class="modal">
       <button class="closeModal-btn" title="close modal">
         <i data-lucide="x"></i>
       </button>
-      <div class="sidebar-modal">
-        <h2 class="modal-heading">Settings</h2>
-        <button
-          class="settings-nav-item active"
-          data-section="appearance-settings"
-        >
-          Appearance
-        </button>
-        <button class="settings-nav-item" data-section="editor-settings">
-          Editor
-        </button>
-        <button class="settings-nav-item" data-section="storage-settings">
-          Storage
-        </button>
-        <button class="settings-nav-item" data-section="tags-search-settings">
-          Tags & Search
-        </button>
-        <button class="settings-nav-item" data-section="advanced-settings">
-          Advanced
-        </button>
-        <button class="settings-nav-item" data-section="about-settings">
-          About
-        </button>
-      </div>
-      <div class="settings-content">
-        <div class="settings-panel active" id="appearance-settings">
-          <h2 class="modal-heading">Appearance</h2>
-          <div class="settings-item">
-            Theme:
-            <div class="theme-selector">
-              <select id="theme-dropdown" class="theme-select">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-                <option value="dark-glass">Dark-Glass</option>
-                <option value="light-glass">Light-Glass</option>
-                <option value="paper">Paper</option>
-                <option value="cappuccino">Cappucino</option>
-                <option value="rainy-slate">Rainy-Slate</option>
-                <option value="night-pine">Night-Pine</option>
-                <option value="ashfall">Ashfall</option>
-                <option value="bronze">Bronze</option>
-              </select>
-            </div>
-          </div>
-          <div class="settings-item">
-            Font Family:
-            <div class="theme-selector">
-              <select id="font-dropdown" class="theme-select">
-                <option value="system">System</option>
-                <option value="arial">Arial</option>
-                <option value="verdana">Verdana</option>
-                <option value="trebuchet">Trebuchet</option>
-                <option value="georgia">Georgia</option>
-                <option value="courier">Courier</option>
-                <option value="times">Times New Roman</option>
-                <option value="palatino">Palatino</option>
-                <option value="garamond">Garamond</option>
-                <option value="tahoma">Tahoma</option>
-                <option value="century">Century Gothic</option>
-                <option value="consolas">Consolas (Code)</option>
-              </select>
-            </div>
-          </div>
-          <div class="settings-item">
-            Code-Block Theme:
-            <div class="theme-selector">
-              <select id="code-theme-dropdown" class="theme-select">
-                <option value="focus">Focus</option>
-                <option value="balanced">Balanced</option>
-                <option value="eye-comfort">Eye Comfort</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="settings-panel" id="storage-settings"></div>
-      </div>
     </div>
     <script type="module" src="src/app.ts" defer></script>
   </body>

@@ -23,20 +23,6 @@ type Code =
   | "everforest-dark"
   | "everforest-light";
 
-type Font =
-  | "system"
-  | "arial"
-  | "verdana"
-  | "trebuchet"
-  | "georgia"
-  | "courier"
-  | "times"
-  | "palpatino"
-  | "garamond"
-  | "tahoma"
-  | "century"
-  | "consolas";
-
 type IpcResponse<T> =
   | { success: true; data: T }
   | {
@@ -83,7 +69,6 @@ export type {
   AutoScrollOptions,
   BubbleMenuCommands,
   Code,
-  Font,
   IpcResponse,
   NoteData,
   NoteItemElements,

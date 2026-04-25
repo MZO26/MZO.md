@@ -14,7 +14,9 @@ import {
   CopyPlus,
   createIcons,
   Download,
+  Focus,
   Folder,
+  Glasses,
   Grid2x2,
   Hash,
   Heading1,
@@ -26,6 +28,7 @@ import {
   Italic,
   List,
   ListCollapse,
+  ListFilter,
   ListOrdered,
   ListTodo,
   Moon,
@@ -33,6 +36,7 @@ import {
   Plus,
   Redo2,
   Repeat,
+  RulerDimensionLine,
   Search,
   SeparatorHorizontal,
   SlidersHorizontal,
@@ -54,6 +58,10 @@ import {
 function renderIcons(scope: Document | HTMLElement = document): void {
   createIcons({
     icons: {
+      RulerDimensionLine,
+      Focus,
+      Glasses,
+      ListFilter,
       Sun,
       Moon,
       NotebookPen,
