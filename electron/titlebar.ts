@@ -1,4 +1,5 @@
 import { BrowserWindow, nativeTheme } from "electron";
+import type { Settings } from "../shared/schemas/storeSchema";
 import { StoreSchema, type AppTheme } from "../shared/schemas/storeSchema";
 import type { NativeWindowColors } from "../shared/types";
 import { THEME_DATA } from "../src/constants/themes";
@@ -6,12 +7,13 @@ import { THEME_DATA } from "../src/constants/themes";
 // updates the title bar overlay accordingly
 function getTitleBarOverlay(
   themeName: Exclude<AppTheme, "system">, // exclude for union types (|) and Omit for object types ({})
+  focus?: boolean,
 ): NativeWindowColors {
   const theme = THEME_DATA[themeName];
   return {
     backgroundColor: theme.background,
     overlayOptions: {
-      color: theme.color,
+      color: focus ? theme.focus : theme.color,
       symbolColor: theme.symbolColor,
       height: 30,
     },
@@ -36,14 +38,19 @@ function initTheme(savedTheme: unknown): Exclude<AppTheme, "system"> {
   return theme;
 }
 
-nativeTheme.on("updated", () => {
-  if (nativeTheme.themeSource === "system") {
-    const activeTheme = initTheme("system");
-    const windowTheme = getTitleBarOverlay(activeTheme);
-    BrowserWindow.getAllWindows().forEach((win) => {
-      win.setTitleBarOverlay?.(windowTheme.overlayOptions);
-    });
-  }
-});
+function onOSThemeChange(win: BrowserWindow, store: Settings["theme"]) {
+  const savedTheme = store;
+  if (savedTheme === "system") {
+    const newActiveTheme = initTheme("system");
+    const newWindowTheme = getTitleBarOverlay(newActiveTheme);
 
-export { getTitleBarOverlay, initTheme };
+    if (win && !win.isDestroyed()) {
+      win.setBackgroundColor(newWindowTheme.backgroundColor);
+      win.setTitleBarOverlay(newWindowTheme.overlayOptions);
+      const resolvedTheme = nativeTheme.shouldUseDarkColors ? "dark" : "light";
+      win.webContents.send("theme-changed", resolvedTheme);
+    }
+  }
+}
+
+export { getTitleBarOverlay, initTheme, onOSThemeChange };

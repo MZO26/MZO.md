@@ -24,31 +24,41 @@ const CODE_THEME_MAP: Record<
 
 const THEME_DATA: Record<
   Exclude<AppTheme, "system">,
-  { color: string; symbolColor: string; background: string; isDark: boolean }
+  {
+    color: string;
+    symbolColor: string;
+    background: string;
+    isDark: boolean;
+    focus: string;
+  }
 > = {
   light: {
-    color: "#f1f1f2",
-    symbolColor: "#18181b",
-    background: "#fcfcfc",
+    color: "#f8f8f8", // --bg-sidebar
+    symbolColor: "#18181b", // --text-main
+    background: "#fcfcfc", // --bg-editor
     isDark: false,
+    focus: "#fcfcfc", // --bg-editor
   },
   dark: {
-    color: "#121214",
-    symbolColor: "#d4d4d8",
+    color: "#111115",
+    symbolColor: "#a1a1aa",
     background: "#1e1e21",
     isDark: true,
+    focus: "#1e1e21",
   },
   "light-warm": {
-    color: "#ddcfc1",
-    symbolColor: "#2e2823",
-    background: "#f2ebe2",
+    color: "#f8f7f3",
+    symbolColor: "#1c1917",
+    background: "#f8f7f3",
     isDark: false,
+    focus: "#f8f7f3",
   },
   "dark-warm": {
-    color: "#141211",
-    symbolColor: "#e2dad2",
-    background: "#211f1d",
+    color: "#110f0b",
+    symbolColor: "#d4cfc5",
+    background: "#1e1b17",
     isDark: true,
+    focus: "#1e1b17",
   },
 } as const;
 

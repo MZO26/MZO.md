@@ -9,7 +9,8 @@ import type { AppTheme } from "../shared/schemas/storeSchema";
 console.log("--- PRELOAD ACTIVE ---");
 
 contextBridge.exposeInMainWorld("electronAPI", {
-  setTheme: (theme: AppTheme) => ipcRenderer.invoke("set:theme", theme),
+  setTheme: (theme: AppTheme, focus?: boolean) =>
+    ipcRenderer.invoke("set:theme", theme, focus),
   onThemeChanged: (callback: (theme: AppTheme) => void) => {
     ipcRenderer.on("theme-changed", (_event, theme) => callback(theme));
   },

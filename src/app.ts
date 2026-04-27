@@ -1,3 +1,4 @@
+import type { AppTheme } from "../shared/schemas/storeSchema";
 import { editor, initEditor } from "./components/editor/editor";
 import { updateDateTime } from "./components/editor/editorFooter";
 import {
@@ -90,19 +91,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const focusBtn = getElement(".focus-btn");
-  focusBtn.addEventListener("click", () => {
+  focusBtn.addEventListener("click", async () => {
+    const theme = document.body.dataset["theme"] as AppTheme;
     const appContainer = getElement<HTMLDivElement>(".app-container");
     const editorHeader = getElement(".editor-header");
     const currentState = appContainer.classList.contains("focus");
     const dragRegion = getElement(".drag-region");
+    const frameLeft = getElement(".frame-left");
+    const frameRight = getElement(".frame-right");
     const editorContainer = getElement(".editor-container");
     editorHeader.classList.toggle("focus");
     infoSidebarToggle.classList.toggle("focus");
     dragRegion.classList.toggle("focus");
     editorContainer.classList.toggle("focus");
     infoSidebar.classList.toggle("focus");
+    frameLeft.classList.toggle("focus");
+    frameRight.classList.toggle("focus");
     const newState = !currentState;
     appContainer.classList.toggle("focus", newState);
+    await window.electronAPI.setTheme(theme, newState);
   });
 
   const readOnlyBtn = getElement(".read-only-btn");
@@ -119,7 +126,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   const closeModalBtn = getElement<HTMLButtonElement>(".closeModal-btn");
   closeModalBtn.addEventListener("click", closeModal);
-
+  const focusEditorBtn = getElement(".focus-editor-btn");
+  focusEditorBtn.addEventListener("click", () => {
+    const editorElement = document.querySelector(".ProseMirror");
+    if (editorElement) {
+      editorElement.classList.toggle("focus-mode-active");
+    }
+  });
   const collapseBtn = getElement<HTMLButtonElement>(".collapse-btn");
   collapseBtn.addEventListener("click", collapseSidebar);
   document.addEventListener("keydown", (event) => {

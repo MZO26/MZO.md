@@ -11,6 +11,7 @@ type TitleBarOverlayOptions = {
   color: string;
   symbolColor: string;
   height: number;
+  focus?: boolean;
 };
 
 type ResolvedTheme = "light" | "dark";

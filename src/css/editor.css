@@ -17,10 +17,13 @@
   outline: 1px solid transparent;
 }
 
-.ProseMirror .has-focus {
+.ProseMirror.focus-mode-active .has-focus {
   background-color: var(--bg-sidebar);
   box-shadow: var(--shadow);
   outline-color: var(--border-color);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .ProseMirror.is-editor-empty::before {

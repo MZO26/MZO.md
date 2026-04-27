@@ -14,7 +14,7 @@
   --border-color: #d4d4d8;
   --tag-color: #1976d2;
   --tag-bg: #e3f2fd;
-  --shadow: 0 0 0 1px rgba(212, 212, 216, 0.8), 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow: 0 0 0 1px rgba(200, 200, 205, 0.8), 0 1px 3px rgba(0, 0, 0, 0.08);
 
   /* Font families */
   --font-system:
@@ -36,47 +36,46 @@
 
 :root[data-theme="dark"] {
   --bg-editor: #1e1e21;
-  --bg-sidebar: #18181b;
-  --bg-sidebar-section: #121214;
+  --bg-sidebar: #111115;
+  --bg-sidebar-section: #09090c;
   --bg-button: #2d2d30;
   --text-main: #d4d4d8;
   --text-muted: #a1a1aa;
   --accent-primary: #a1a1aa;
-  --accent-hover: #1e1e21;
-  --border-color: #313135;
+  --accent-hover: #28282c;
+  --border-color: #2a2a2d;
   --tag-color: #4fc3f7;
   --tag-bg: #1e293b;
   --shadow: 0 0 0 1px rgba(49, 49, 53, 0.8), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="light-warm"] {
-  --bg-editor: #f2ebe2;
-  --bg-sidebar: #e5dbcf;
-  --bg-sidebar-section: #ddcfc1;
-  --bg-button: #d8ccbe;
-  --text-main: #2e2823;
-  --text-muted: #675f57;
-  --accent-primary: #7a6555;
-  --accent-hover: #d0c2b4;
-  --border-color: #ae9f92;
-  --tag-color: #6c5f56;
-  --tag-bg: #e7ddd5;
-  --shadow:
-    0 0 0 1px rgba(174, 159, 146, 0.85), 0 1px 3px rgba(46, 40, 35, 0.08);
+  --bg-editor: #f8f7f3;
+  --bg-sidebar: #eceae3;
+  --bg-sidebar-section: #e0ded6;
+  --bg-button: #e0ded6;
+  --text-main: #1c1917;
+  --text-muted: #6b6560;
+  --accent-primary: #44403c;
+  --accent-hover: #e2e0d8;
+  --border-color: #cbc8c0;
+  --tag-color: #1456a8;
+  --tag-bg: #dbeafe;
+  --shadow: 0 0 0 1px rgba(203, 200, 192, 0.8), 0 1px 3px rgba(0, 0, 0, 0.07);
 }
 
 [data-theme="dark-warm"] {
-  --bg-editor: #211f1d;
-  --bg-sidebar: #1a1817;
-  --bg-sidebar-section: #141211;
-  --bg-button: #322d2a;
-  --text-main: #e2dad2;
-  --text-muted: #b1a59a;
-  --accent-primary: #b28a64;
-  --accent-hover: #433c38;
-  --border-color: #504843;
-  --tag-color: #c39a73;
-  --tag-bg: #322d2a;
+  --bg-editor: #1e1b17;
+  --bg-sidebar: #110f0b;
+  --bg-sidebar-section: #090807;
+  --bg-button: #2d2920;
+  --text-main: #d4cfc5;
+  --text-muted: #9e9890;
+  --accent-primary: #9e9890;
+  --accent-hover: #28231c;
+  --border-color: #2a2520;
+  --tag-color: #5bc3f5;
+  --tag-bg: #1c2030;
   --shadow: 0 0 0 1px rgba(80, 72, 67, 0.85), 0 1px 3px rgba(0, 0, 0, 0.32);
 }
 

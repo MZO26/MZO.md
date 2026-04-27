@@ -55,10 +55,14 @@ const applyAppTheme = async (
   document.documentElement.setAttribute("data-theme", resolved); // set selected theme as background and fallback for system
   if (selectElement && !onOSchange) {
     selectElement.value = theme; // update select value to selected theme
-  } else selectElement.value = "system";
-  const preference = setCodeTheme(codeThemeSelect);
-  await window.electronAPI.setTheme(theme); // api call for theme to resolve electrons internal theme
-  await window.storeApi.setSettings({ theme: theme, "code-theme": preference });
+    // api call for theme to resolve electrons internal theme
+    const preference = setCodeTheme(codeThemeSelect);
+    await window.storeApi.setSettings({
+      theme: theme,
+      "code-theme": preference,
+    });
+  } else selectElement.value = "system"; // does not set theme because it was triggered by theme-changed callback and should not be overwritten
+  await window.electronAPI.setTheme(theme);
 };
 
 function getDefaultCodeTheme(

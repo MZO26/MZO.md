@@ -17,7 +17,10 @@ declare module "*?raw" {
 declare global {
   interface Window {
     electronAPI: {
-      setTheme: (theme: AppTheme) => Promise<IpcResponse<AppTheme>>;
+      setTheme: (
+        theme: AppTheme,
+        focus?: boolean,
+      ) => Promise<IpcResponse<AppTheme>>;
       saveImage: (
         payload: ImagePayload,
       ) => Promise<IpcResponse<{ imageSrc: string }>>;

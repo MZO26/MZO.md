@@ -37,11 +37,13 @@ function initNotesSidebar() {
 
 function collapseSidebar(): void {
   const appContainer = getElement<HTMLDivElement>(".app-container");
+  const frameLeft = getElement(".frame-left");
   const currentState = appContainer.classList.contains("sidebar-collapsed");
   const editorContainer = getElement(".editor-container");
-  editorContainer.classList.toggle("sidebar-collapsed");
   const newState = !currentState;
   appContainer.classList.toggle("sidebar-collapsed", newState);
+  frameLeft.classList.toggle("sidebar-collapsed", newState);
+  editorContainer.classList.toggle("sidebar-collapsed", newState);
   setValue(StorageKeys.SIDEBAR_COLLAPSED, newState);
 }
 

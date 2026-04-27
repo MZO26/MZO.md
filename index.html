@@ -29,13 +29,18 @@
   <body>
     <div class="app-container">
       <div class="drag-region">
-        <div class="toolbar-hover-zone">
-          <div class="top-toolbar">
-            <button class="read-only-btn"><i data-lucide="glasses"></i></button>
-            <button class="focus-btn"><i data-lucide="focus"></i></button>
-            <button class="editor-width-btn">
-              <i data-lucide="ruler-dimension-line"></i>
-            </button>
+        <div class="frame-left"><time id="datetime-display"></time></div>
+        <div class="frame-right">
+          <div class="toolbar-hover-zone">
+            <div class="top-toolbar">
+              <button class="read-only-btn">
+                <i data-lucide="glasses"></i>
+              </button>
+              <button class="focus-btn"><i data-lucide="focus"></i></button>
+              <button class="editor-width-btn">
+                <i data-lucide="ruler-dimension-line"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -280,19 +285,11 @@
               <div class="sidebar-section"></div>
               <span class="info-span">Tags: </span>
               <div class="tag-container"></div>
-            </div>
-          </div>
-          <div class="bar-bottom">
-            <time id="datetime-display"></time>
-            <div class="stats">
-              <span id="word-count">0 words</span>
-              <span><span id="char-count">0</span> characters</span>
-            </div>
-            <div class="spacer"></div>
-            <div class="zoom-controls">
-              <button id="btn-zoom-out" title="Zoom Out">-</button>
-              <span id="zoom-level">100%</span>
-              <button id="btn-zoom-in" title="Zoom In">+</button>
+
+              <div class="stats">
+                <span id="word-count">0 words</span>
+                <span><span id="char-count">0</span> characters</span>
+              </div>
             </div>
           </div>
         </div>
@@ -338,7 +335,18 @@
         </div>
       </div>
       <div class="settings-section"></div>
-      <div class="settings-p-body"></div>
+      <div class="settings-p-body">
+        <div class="settings-field">
+          <button class="focus-editor-btn">Focus</button>
+        </div>
+      </div>
+      <div class="settings-p-body">
+        <div class="zoom-controls">
+          <button id="btn-zoom-out" title="Zoom Out">-</button>
+          <span id="zoom-level">100%</span>
+          <button id="btn-zoom-in" title="Zoom In">+</button>
+        </div>
+      </div>
     </div>
     <div id="smart-views-popover" popover>
       <ul class="smart-view-list">

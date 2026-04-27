@@ -123,13 +123,15 @@ function registerIpcHandlers() {
     });
   });
 
-  ipcMain.handle("set:theme", (event, theme: AppTheme) => {
+  ipcMain.handle("set:theme", (event, theme: AppTheme, focus?: boolean) => {
     return tryExec(event, async () => {
       if (!checkRateLimit("set:theme", LIMITS.WRITE_LIGHT))
         throw new Error("RATE_LIMIT");
       const validatedData = validateTheme(theme);
       const activeTheme = initTheme(validatedData);
-      const windowTheme = getTitleBarOverlay(activeTheme);
+      const windowTheme = focus
+        ? getTitleBarOverlay(activeTheme, true)
+        : getTitleBarOverlay(activeTheme, false);
       BrowserWindow.getAllWindows().forEach((win) => {
         win.setTitleBarOverlay?.(windowTheme.overlayOptions);
       });

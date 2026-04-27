@@ -10,7 +10,7 @@ import {
 } from "./navigationHandler";
 import { setPermissions } from "./permissions";
 import { store } from "./store";
-import { getTitleBarOverlay, initTheme } from "./titlebar";
+import { getTitleBarOverlay, initTheme, onOSThemeChange } from "./titlebar";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env["DIST"] = path.join(__dirname, "../dist");
@@ -59,31 +59,6 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
-  nativeTheme.on("updated", () => {
-    const savedTheme = store.get("theme");
-
-    // We ONLY want to update the app if the user is relying on the OS "system" setting
-    if (savedTheme === "system") {
-      // 1. Recalculate your custom Electron title bar colors
-      const newActiveTheme = initTheme("system");
-      const newWindowTheme = getTitleBarOverlay(newActiveTheme);
-
-      if (win && !win.isDestroyed()) {
-        // 2. Update the native Electron window background and title bar
-        win.setBackgroundColor(newWindowTheme.backgroundColor);
-        win.setTitleBarOverlay(newWindowTheme.overlayOptions);
-
-        // 3. Resolve "system" into an actual color scheme for your frontend CSS
-        // Since it's set to "system", the actual applied theme will be "dark" or "light"
-        const resolvedTheme = nativeTheme.shouldUseDarkColors
-          ? "dark"
-          : "light";
-        console.log("SENDING THEME TO FRONTEND:", resolvedTheme); // Add this!
-        // Send the strictly typed string to the frontend
-        win.webContents.send("theme-changed", resolvedTheme);
-      }
-    }
-  });
   win.once("ready-to-show", () => {
     win?.show();
   });
@@ -95,6 +70,9 @@ app.whenReady().then(async () => {
   setupLocalImageProtocol();
   setPermissions();
   registerIpcHandlers();
+  nativeTheme.on("updated", () => {
+    if (win) onOSThemeChange(win, store.get("theme"));
+  });
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
