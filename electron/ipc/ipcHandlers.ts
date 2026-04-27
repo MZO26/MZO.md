@@ -99,17 +99,39 @@ function registerIpcHandlers() {
     },
   );
 
+  ipcMain.handle("views:get", (event, view) => {
+    let result;
+    return tryExec(event, async () => {
+      if (!checkRateLimit(`get:view:${view}`, LIMITS.READ_HEAVY))
+        throw new Error("RATE_LIMIT");
+      switch (view) {
+        case "bookmarked":
+          result = db.views.getBookmarkedNotes();
+          break;
+        case "pinned":
+          result = db.views.getPinnedNotes();
+          break;
+        case "todos":
+          result = db.views.getNotesWithActionItems();
+          break;
+        case "all":
+          return db.getAll();
+        default:
+          throw new Error("INVALID_VIEW");
+      }
+      return result;
+    });
+  });
+
   ipcMain.handle("set:theme", (event, theme: AppTheme) => {
     return tryExec(event, async () => {
       if (!checkRateLimit("set:theme", LIMITS.WRITE_LIGHT))
         throw new Error("RATE_LIMIT");
       const validatedData = validateTheme(theme);
       const activeTheme = initTheme(validatedData);
-      const overlayOptions = getTitleBarOverlay(activeTheme);
+      const windowTheme = getTitleBarOverlay(activeTheme);
       BrowserWindow.getAllWindows().forEach((win) => {
-        if (typeof win.setTitleBarOverlay === "function") {
-          win.setTitleBarOverlay(overlayOptions);
-        }
+        win.setTitleBarOverlay?.(windowTheme.overlayOptions);
       });
       return theme;
     });

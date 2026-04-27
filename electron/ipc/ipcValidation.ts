@@ -7,6 +7,7 @@ enum AppError {
   RateLimitError = "RATE_LIMIT",
   SenderError = "UNAUTHORIZED_SENDER",
   UnknownError = "UNKNOWN_ERROR",
+  InvalidViewError = "INVALID_VIEW",
 }
 
 function validateSender(event: IpcMainInvokeEvent) {
@@ -68,6 +69,9 @@ function handleIpcError(err: unknown): { success: false; message: string } {
 
     case AppError.DBError:
       return { success: false, message: "Requested item could not be found." };
+
+    case AppError.InvalidViewError:
+      return { success: false, message: "View not found." };
 
     case AppError.UnknownError:
     default:

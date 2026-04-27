@@ -9,4 +9,8 @@ async function searchNotes(
   return safeIpcCall(window.noteAPI.searchNotes(searchInput, limit));
 }
 
-export { searchNotes };
+async function getViews(view: string): Promise<IpcResponse<Note[]>> {
+  return safeIpcCall(window.noteAPI.getViews(view));
+}
+
+export { getViews, searchNotes };

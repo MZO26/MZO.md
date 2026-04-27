@@ -10,6 +10,9 @@ console.log("--- PRELOAD ACTIVE ---");
 
 contextBridge.exposeInMainWorld("electronAPI", {
   setTheme: (theme: AppTheme) => ipcRenderer.invoke("set:theme", theme),
+  onThemeChanged: (callback: (theme: AppTheme) => void) => {
+    ipcRenderer.on("theme-changed", (_event, theme) => callback(theme));
+  },
   saveImage: (payload: ImagePayload) =>
     ipcRenderer.invoke("saveImage", payload),
 });
@@ -23,6 +26,7 @@ contextBridge.exposeInMainWorld("noteAPI", {
   getById: (id: string) => ipcRenderer.invoke("note:getById", id),
   searchNotes: (searchTerm: string) =>
     ipcRenderer.invoke("note:search", searchTerm),
+  getViews: (view: string) => ipcRenderer.invoke("views:get", view),
 });
 contextBridge.exposeInMainWorld("storeApi", {
   getSettings: (key: string) => ipcRenderer.invoke("electron-store:get", key),

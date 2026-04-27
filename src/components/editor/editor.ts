@@ -66,7 +66,8 @@ function initEditor(selector: string): Editor {
   });
   editor.on("update", () => {
     if (!editor) return;
-    debouncedToDoUpdate(editor);
+    const content = editor.getJSON();
+    debouncedToDoUpdate(content);
     updateDetectCodeLanguage(editor);
     updateStats(editor);
   });

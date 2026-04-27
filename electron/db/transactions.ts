@@ -13,6 +13,9 @@ export interface UpdateTransactionParams {
   stringifiedContent: string;
   plainText: string;
   snippet: string;
+  bookmarked?: boolean;
+  pinned?: boolean;
+  todos_left: number;
   updated_at: string;
   tags: string[];
 }
@@ -22,6 +25,9 @@ export interface CreateTransactionParams {
   title: string;
   stringifiedContent: string;
   plainText: string;
+  todos_left?: number;
+  bookmarked?: boolean;
+  pinned?: boolean;
   snippet: string;
   created_at: string;
   updated_at: string;
@@ -34,9 +40,9 @@ function createNoteTransactions(db: DatabaseType): NoteTransactions {
   );
   const selectNoteStmt = db.prepare("SELECT id FROM notes WHERE id = ?");
   const deleteNoteStmt = db.prepare("DELETE FROM notes WHERE id = ?");
-  const deleteTagsStmt = db.prepare("DELETE FROM note_tags WHERE note_id = ? ");
+  const deleteTagsStmt = db.prepare("DELETE FROM note_tags WHERE note_id = ?");
   const updateNoteStmt = db.prepare(
-    "UPDATE notes SET title = ?, content = ?, plainText = ?, snippet = ?, updated_at = ? WHERE id = ? RETURNING *",
+    "UPDATE notes SET title = ?, content = ?, plainText = ?, snippet = ?, todos_left = ?, updated_at = ? WHERE id = ? RETURNING *",
   );
   const insertTagsStmt = db.prepare(
     "INSERT INTO note_tags (note_id, tag_name) VALUES (?, ?)",
@@ -84,6 +90,7 @@ function createNoteTransactions(db: DatabaseType): NoteTransactions {
         stringifiedContent,
         plainText,
         snippet,
+        todos_left,
         updated_at,
         tags,
       } = params;
@@ -93,6 +100,7 @@ function createNoteTransactions(db: DatabaseType): NoteTransactions {
         stringifiedContent,
         plainText,
         snippet,
+        todos_left,
         updated_at,
         id,
       );

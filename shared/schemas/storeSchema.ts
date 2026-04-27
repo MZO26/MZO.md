@@ -2,15 +2,7 @@ import z from "zod";
 
 const StoreSchema = z.object({
   theme: z
-    .enum([
-      "system",
-      "light",
-      "dark",
-      "cappuccino",
-      "night-pine",
-      "ashfall",
-      "bronze",
-    ])
+    .enum(["system", "light", "dark", "light-warm", "dark-warm"])
     .default("system"),
   font: z
     .enum(["system", "arial", "verdana", "georgia", "garamond", "tahoma"])

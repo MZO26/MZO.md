@@ -78,7 +78,7 @@ const updateDetectCodeLanguage = debounce((editor: Editor) => {
       language: detectedLanguage,
     });
   }
-}, 500);
+}, 1000);
 
 export {
   CustomCodeBlockLowlight,

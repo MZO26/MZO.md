@@ -4,15 +4,19 @@ import {
   collapseSidebar,
   initNotesSidebar,
   reloadNoteList,
-} from "./components/sidebar2/sidebarNotes";
-import { handleSearchInput } from "./features/search/searchInputHandler";
+} from "./components/sidebar/sidebarNotes";
+import {
+  handleSearchInput,
+  handleViews,
+} from "./features/search/searchHandlers";
 import { addNoteBtnHandler, closeModal } from "./handlers/buttonHandlers";
-import { getSelectedFont, setSelectedFont } from "./settings/appearance/font";
 import {
   applyAppTheme,
+  getSelectedFont,
   setAppTheme,
   setCodeTheme,
-} from "./settings/appearance/theme";
+  setSelectedFont,
+} from "./settings/settings-service";
 import { debounce, getElement } from "./utils/helpers";
 import { renderIcons } from "./utils/icons";
 
@@ -22,6 +26,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   initNotesSidebar();
   await reloadNoteList();
   updateDateTime();
+
+  const themeDropdown = getElement<HTMLSelectElement>("#theme-dropdown");
+  window.electronAPI.onThemeChanged(async (newTheme) => {
+    console.log("FRONTEND RECEIVED THEME:", newTheme);
+    await applyAppTheme(themeDropdown, newTheme, true);
+  });
   const addNoteBtn = getElement(".add-note-btn");
   addNoteBtn.addEventListener("click", addNoteBtnHandler);
   const infoSidebar = getElement<HTMLElement>(".info-sidebar");
@@ -31,16 +41,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   infoSidebarToggle.addEventListener("click", () => {
     infoSidebar.classList.toggle("off");
   });
-
   const editorEl = getElement<HTMLElement>("#editor");
   editorEl.addEventListener("mousedown", () => {
     if (!infoSidebar.classList.contains("off")) {
       infoSidebar.classList.add("off");
     }
   });
-  const themeDropdown = getElement<HTMLSelectElement>("#theme-dropdown");
-  const fontSelect = getElement<HTMLSelectElement>("#font-dropdown");
-  const codeThemeSelect = getElement<HTMLSelectElement>("#code-theme-dropdown");
+
   const searchInput = getElement<HTMLInputElement>("#searchInput");
   const notesContainer = getElement<HTMLDivElement>(".notes-container");
   if (searchInput && notesContainer) {
@@ -50,19 +57,54 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, 500);
     searchInput.addEventListener("input", debouncedSearch);
   }
-  if (themeDropdown) {
-    themeDropdown.addEventListener("change", setAppTheme);
-    applyAppTheme(themeDropdown);
-  }
+
+  const smartViewContainer = document.querySelector(".smart-view-list");
+
+  smartViewContainer?.addEventListener("click", async (event) => {
+    const target = (event.target as HTMLButtonElement).closest(
+      "button[data-view]",
+    ) as HTMLButtonElement | null;
+    const view = target?.dataset["view"];
+    if (!view) return;
+    await handleViews(view);
+  });
+
+  const fontSelect = getElement<HTMLSelectElement>("#font-dropdown");
+
   if (fontSelect) {
     fontSelect.addEventListener("change", setSelectedFont);
     getSelectedFont(fontSelect);
   }
+
+  const codeThemeSelect = getElement<HTMLSelectElement>("#code-theme-dropdown");
+
+  if (themeDropdown) {
+    themeDropdown.addEventListener("change", setAppTheme);
+    applyAppTheme(themeDropdown);
+  }
+
   if (codeThemeSelect) {
     codeThemeSelect.addEventListener("change", async () => {
       setCodeTheme(codeThemeSelect);
     });
   }
+
+  const focusBtn = getElement(".focus-btn");
+  focusBtn.addEventListener("click", () => {
+    const appContainer = getElement<HTMLDivElement>(".app-container");
+    const editorHeader = getElement(".editor-header");
+    const currentState = appContainer.classList.contains("focus");
+    const dragRegion = getElement(".drag-region");
+    const editorContainer = getElement(".editor-container");
+    editorHeader.classList.toggle("focus");
+    infoSidebarToggle.classList.toggle("focus");
+    dragRegion.classList.toggle("focus");
+    editorContainer.classList.toggle("focus");
+    infoSidebar.classList.toggle("focus");
+    const newState = !currentState;
+    appContainer.classList.toggle("focus", newState);
+  });
+
   const readOnlyBtn = getElement(".read-only-btn");
   readOnlyBtn.addEventListener("click", () => {
     editor?.setEditable(!editor.isEditable);

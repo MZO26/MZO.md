@@ -3,7 +3,7 @@ import { handleEditorEmptyState } from "../components/editor/editorHandlers";
 import {
   addOneNoteToList,
   handleSidebarEmptyState,
-} from "../components/sidebar2/sidebarNotes";
+} from "../components/sidebar/sidebarNotes";
 import { createNote, deleteNote } from "../features/notes/noteAPI";
 import { viewNote } from "../features/notes/noteHandlers";
 import { getValue, removeValue, StorageKeys } from "../utils/cache";

@@ -5,6 +5,7 @@ import {
   titleGenerator,
 } from "../../shared/generators/generators";
 import type { IpcResponse, NoteData } from "../../shared/types";
+import { getTodoStats } from "../extensions/toDoBar";
 
 function getElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -67,9 +68,11 @@ function getNoteData(
   },
   plainText: unknown,
 ): NoteData {
+  const { left } = getTodoStats(content);
   return {
     title: titleGenerator(plainText),
     snippet: snippetGenerator(plainText),
+    todos_left: left,
     tags: tagsGenerator(plainText),
     stringifiedContent: JSON.stringify(content),
     now: new Date().toISOString(),

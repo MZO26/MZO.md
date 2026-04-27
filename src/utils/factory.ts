@@ -1,7 +1,4 @@
-import type {
-  CreateNotePayload,
-  UpdateNotePayload,
-} from "../../shared/schemas/noteSchema";
+import type { CreateNotePayload } from "../../shared/schemas/noteSchema";
 
 function createNotePayload(data?: CreateNotePayload): CreateNotePayload {
   return {
@@ -13,10 +10,4 @@ function createNotePayload(data?: CreateNotePayload): CreateNotePayload {
   };
 }
 
-function updateNotePayload(data: UpdateNotePayload): UpdateNotePayload {
-  return {
-    ...data,
-  };
-}
-
-export { createNotePayload, updateNotePayload };
+export { createNotePayload };

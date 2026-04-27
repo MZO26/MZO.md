@@ -3,10 +3,9 @@ import {
   addManyNotesToList,
   handleSidebarEmptyState,
   reloadNoteList,
-} from "../../components/sidebar2/sidebarNotes";
-import { renderIcons } from "../../utils/icons";
+} from "../../components/sidebar/sidebarNotes";
 import { showToast } from "../../utils/toast";
-import { searchNotes } from "./searchAPI";
+import { getViews, searchNotes } from "./searchAPI";
 
 async function handleSearchInput(
   searchInput: string,
@@ -30,11 +29,15 @@ async function handleSearchInput(
     return;
   }
   addManyNotesToList(response.data);
-  const newNoteElements =
-    notesContainer.querySelectorAll<HTMLDivElement>(".noteItem");
-  newNoteElements.forEach((noteElement) => {
-    renderIcons(noteElement);
-  });
 }
 
-export { handleSearchInput };
+async function handleViews(view: string) {
+  const response = await getViews(view);
+  if (!response.success) {
+    showToast(response.message);
+    return;
+  }
+  reloadNoteList(response.data);
+}
+
+export { handleSearchInput, handleViews };

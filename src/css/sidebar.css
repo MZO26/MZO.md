@@ -76,12 +76,12 @@
 
 .info-sidebar-toggle {
   position: absolute;
-  top: 87px;
+  top: 80px;
   right: 15px;
   z-index: 9999;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--text-main);
 }
 
@@ -91,7 +91,7 @@
   right: 2px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dots {
@@ -117,7 +117,7 @@
   top: 70px;
   right: 0;
   bottom: 20px;
-  width: 300px;
+  width: 280px;
   background: transparent;
   backdrop-filter: blur(6px);
   box-shadow: var(--shadow);
@@ -126,7 +126,7 @@
   z-index: 9998;
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    visibility 0.3s;
+    visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateX(0);
   visibility: visible;
 }
@@ -160,7 +160,7 @@
   font-size: 14px;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   line-height: 1.5;
   white-space: nowrap;
   overflow: hidden;
@@ -210,6 +210,9 @@
 
 .todo-progress-container,
 .tag-container {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
   padding: 20px;
 }
 
@@ -245,7 +248,7 @@
   display: flex;
   border-radius: 10px;
   border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .input-wrapper:hover {
@@ -363,7 +366,7 @@
 
 .noteItem.active {
   background: var(--accent-hover);
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.3s ease-in-out;
 }
 
 .note-header {

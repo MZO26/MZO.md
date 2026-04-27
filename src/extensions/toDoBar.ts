@@ -1,29 +1,63 @@
-import type { Editor } from "@tiptap/core";
+import type { JSONContent } from "@tiptap/core";
 import { debounce, getElement } from "../utils/helpers";
 
-function calculateToDos(editor: Editor) {
-  const container = getElement(".todo-progress-container");
-  let tasks = 0;
+function getTodoStats(content: {
+  type: "doc";
+  content: JSONContent[];
+  attrs?: Record<string, unknown> | undefined;
+}) {
+  let total = 0;
   let completed = 0;
-
-  editor.state.doc.descendants((node) => {
-    if (node.type.name === "taskItem") {
-      tasks++;
-      if (node.attrs["checked"]) completed++;
+  if (!content) {
+    return { total, completed, left: 0 };
+  }
+  const stack: JSONContent[] = [content];
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    if (node.type === "taskItem") {
+      total++;
+      if (node.attrs?.["checked"]) {
+        completed++;
+      }
     }
-  });
-  if (tasks === 0) {
+    const content = node.content;
+    if (content) {
+      for (let i = 0, len = content.length; i < len; i++) {
+        const child = content[i];
+        if (child) {
+          stack.push(child);
+        }
+      }
+    }
+  }
+  return {
+    total,
+    completed,
+    left: total - completed,
+  };
+}
+
+function calculateToDos(content: {
+  type: "doc";
+  content: JSONContent[];
+  attrs?: Record<string, unknown> | undefined;
+}) {
+  const stats = getTodoStats(content);
+  const container = getElement(".todo-progress-container");
+  if (stats.total === 0) {
     if (container.style.display !== "none") container.style.display = "none";
     return;
   }
+
   if (container.style.display !== "block") container.style.display = "block";
 
   const countLabel = document.querySelector<HTMLElement>("#todo-count");
   const progressBar = document.querySelector<HTMLElement>("#todo-progress");
-  if (countLabel) countLabel.innerText = `${completed}/${tasks}`;
+
+  if (countLabel) countLabel.innerText = `${stats.completed}/${stats.total}`;
 
   if (progressBar) {
-    const percentage = (completed / tasks) * 100;
+    const percentage = (stats.completed / stats.total) * 100;
     progressBar.style.width = `${percentage}%`;
     progressBar.style.backgroundColor =
       percentage === 100 ? "var(--tag-color)" : "var(--text-muted)";
@@ -32,4 +66,4 @@ function calculateToDos(editor: Editor) {
 
 const debouncedToDoUpdate = debounce(calculateToDos, 500);
 
-export { debouncedToDoUpdate };
+export { debouncedToDoUpdate, getTodoStats };

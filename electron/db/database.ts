@@ -10,24 +10,29 @@ import {
 import { getNoteData } from "../../src/utils/helpers";
 import { FTS5 } from "./fts";
 import { createNoteTransactions, type NoteTransactions } from "./transactions";
+import { Views } from "./views";
 
 class NoteDB {
   private db: BetterSqlite.Database;
   private transactions: NoteTransactions;
   public search: FTS5;
+  public views: Views;
   private getAllNotesStmt: BetterSqlite.Statement;
   private getNoteByIdStmt: BetterSqlite.Statement;
   private getAllTagsStmt: BetterSqlite.Statement;
-  private getTagsById: BetterSqlite.Statement;
+  private getTagsByIdStmt: BetterSqlite.Statement;
+  private toggleBookmarkStmt: BetterSqlite.Statement;
+  private togglePinStmt: BetterSqlite.Statement;
   constructor() {
     const dbPath = path.join(app.getPath("userData"), "notes.db");
     this.db = new BetterSqlite(dbPath);
-    this.search = new FTS5(this.db);
     console.log(`Database initialized at: ${dbPath}`);
     this.db.pragma("journal_mode = WAL");
     this.db.pragma("foreign_keys = ON");
     this.createTables();
     this.transactions = createNoteTransactions(this.db);
+    this.search = new FTS5(this.db);
+    this.views = new Views(this.db);
     this.search.setupFullTextSearch();
     this.search.populateInitialFTSIndex();
     // predefined statements to prevent parsing them for every transaction
@@ -38,9 +43,19 @@ class NoteDB {
     this.getAllTagsStmt = this.db.prepare(
       "SELECT note_id, tag_name FROM note_tags",
     );
-    this.getTagsById = this.db.prepare(
+    this.getTagsByIdStmt = this.db.prepare(
       "SELECT tag_name FROM note_tags WHERE note_id = ?",
     );
+    this.toggleBookmarkStmt = this.db.prepare(`
+      UPDATE notes 
+      SET bookmarked = NOT bookmarked, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = ?
+    `);
+    this.togglePinStmt = this.db.prepare(`
+      UPDATE notes 
+      SET pinned = NOT pinned, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = ?
+    `);
   }
 
   private createTables() {
@@ -50,6 +65,9 @@ class NoteDB {
         title TEXT NOT NULL CHECK(length(title) > 0),
         content TEXT NOT NULL,
         plainText TEXT,
+        bookmarked INTEGER NOT NULL DEFAULT 0,
+        pinned INTEGER NOT NULL DEFAULT 0,
+        todos_left INTEGER NOT NULL DEFAULT 0,
         snippet TEXT DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -97,6 +115,7 @@ class NoteDB {
       title: noteData.title,
       stringifiedContent: noteData.stringifiedContent,
       snippet: noteData.snippet,
+      todos_left: noteData.todos_left,
       tags: noteData.tags,
       plainText,
       updated_at: now,
@@ -137,7 +156,7 @@ class NoteDB {
 
   getById(id: string): Note {
     const note = this.getNoteByIdStmt.get(id) as Note;
-    const tags = this.getTagsById.all(id) as { tag_name: string }[];
+    const tags = this.getTagsByIdStmt.all(id) as { tag_name: string }[];
     if (!note) {
       throw new Error("NOT_FOUND");
     }
@@ -145,6 +164,14 @@ class NoteDB {
       ...note,
       tags: tags.map((t) => t.tag_name),
     });
+  }
+
+  toggleBookmark(id: string) {
+    this.toggleBookmarkStmt.run(id);
+  }
+
+  togglePin(id: string) {
+    this.togglePinStmt.run(id);
   }
 }
 

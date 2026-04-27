@@ -1,16 +1,16 @@
 import type { Editor } from "@tiptap/core";
 import type { Settings } from "http2";
+import type { Views } from "../electron/db/views";
+
+type NativeWindowColors = {
+  backgroundColor: string;
+  overlayOptions: TitleBarOverlayOptions;
+};
 
 type TitleBarOverlayOptions = {
   color: string;
   symbolColor: string;
   height: number;
-};
-
-type ThemeConfig = {
-  color: string; // background
-  symbolColor: string; // button color
-  isDark: boolean;
 };
 
 type ResolvedTheme = "light" | "dark";
@@ -20,8 +20,8 @@ type Code =
   | "github-dark"
   | "atom-one-light"
   | "atom-one-dark"
-  | "everforest-dark"
-  | "everforest-light";
+  | "solarized-dark"
+  | "solarized-light";
 
 type IpcResponse<T> =
   | { success: true; data: T }
@@ -60,6 +60,7 @@ type NoteData = {
   title: string;
   snippet: string;
   tags: string[];
+  todos_left: number;
   stringifiedContent: string;
   now: string;
 };
@@ -70,11 +71,12 @@ export type {
   BubbleMenuCommands,
   Code,
   IpcResponse,
+  NativeWindowColors,
   NoteData,
   NoteItemElements,
   ResolvedTheme,
   Settings,
-  ThemeConfig,
   TitleBarOverlayOptions,
+  Views,
   WorkerResult,
 };

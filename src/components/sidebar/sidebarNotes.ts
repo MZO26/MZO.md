@@ -38,6 +38,8 @@ function initNotesSidebar() {
 function collapseSidebar(): void {
   const appContainer = getElement<HTMLDivElement>(".app-container");
   const currentState = appContainer.classList.contains("sidebar-collapsed");
+  const editorContainer = getElement(".editor-container");
+  editorContainer.classList.toggle("sidebar-collapsed");
   const newState = !currentState;
   appContainer.classList.toggle("sidebar-collapsed", newState);
   setValue(StorageKeys.SIDEBAR_COLLAPSED, newState);
@@ -96,10 +98,15 @@ function updateTransition(containers: NoteItemElements, note: Note) {
   });
 }
 
-async function reloadNoteList(): Promise<void> {
+async function reloadNoteList(notes?: Note[]): Promise<void> {
   const container = getElement<HTMLDivElement>(".notes-container");
   if (!container) return;
   container.innerHTML = "";
+  if (notes) {
+    addManyNotesToList(notes);
+    return;
+  }
+
   try {
     const response = await getAll();
     if (!response.success) {

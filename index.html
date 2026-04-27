@@ -307,19 +307,11 @@
         <div class="settings-field">
           <label for="theme">Theme:</label>
           <select id="theme-dropdown" class="theme-select">
-            <optgroup label="standard (high contrast)">
-              <option value="system">System</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </optgroup>
-            <optgroup label="ergonomic (low blue light)">
-              <option value="cappuccino">Cappucino</option>
-              <option value="bronze">Bronze</option>
-            </optgroup>
-            <optgroup label="deep work (focussed)">
-              <option value="night-pine">Night-Pine</option>
-              <option value="ashfall">Ashfall</option>
-            </optgroup>
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="light-warm">Light (Warm)</option>
+            <option value="dark">Dark</option>
+            <option value="dark-warm">Dark (Warm)</option>
           </select>
         </div>
         <div class="settings-field">
@@ -350,11 +342,10 @@
     </div>
     <div id="smart-views-popover" popover>
       <ul class="smart-view-list">
-        <li><button>All Notes</button></li>
-        <li><button>Recently Edited</button></li>
-        <li><button>Bookmarked</button></li>
-        <li><button>Pending Todos</button></li>
-        <li><button>Last Deleted</button></li>
+        <li><button data-view="all">All Notes</button></li>
+        <li><button data-view="bookmarked">Bookmarked</button></li>
+        <li><button data-view="pinned">Pinned</button></li>
+        <li><button data-view="todos">Pending Todos</button></li>
       </ul>
     </div>
     <div class="overlay"></div>

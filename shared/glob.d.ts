@@ -3,11 +3,10 @@ import {
   IpcResponse,
   type CreateNotePayload,
   type ImagePayload,
-  type Theme,
   type UpdateNotePayload,
 } from "../shared/types";
 import type { Note } from "./schemas/noteSchema";
-import type { Settings } from "./schemas/storeSchema";
+import type { AppTheme, Settings } from "./schemas/storeSchema";
 
 declare module "*.css";
 declare module "*?raw" {
@@ -18,10 +17,11 @@ declare module "*?raw" {
 declare global {
   interface Window {
     electronAPI: {
-      setTheme: (theme: Theme) => Promise<IpcResponse<Theme>>;
+      setTheme: (theme: AppTheme) => Promise<IpcResponse<AppTheme>>;
       saveImage: (
         payload: ImagePayload,
       ) => Promise<IpcResponse<{ imageSrc: string }>>;
+      onThemeChanged: (callback: (theme: AppTheme) => void) => () => void;
     };
     noteAPI: {
       getAll: () => Promise<IpcResponse<Note[]>>;
@@ -36,6 +36,7 @@ declare global {
         searchTerm: string,
         limit: number,
       ) => Promise<IpcResponse<Note[]>>;
+      getViews: (view) => Promise<IpcResponse<Note[]>>;
     };
     storeApi: {
       getSettings: <K extends keyof Settings>(
