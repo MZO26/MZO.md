@@ -3,6 +3,7 @@ import { handleEditorEmptyState } from "../components/editor/editorHandlers";
 import {
   addOneNoteToList,
   handleSidebarEmptyState,
+  reloadNoteList,
 } from "../components/sidebar/sidebarNotes";
 import { createNote, deleteNote } from "../features/notes/noteAPI";
 import { viewNote } from "../features/notes/noteHandlers";
@@ -12,7 +13,7 @@ import { getElement, setActiveItem } from "../utils/helpers";
 import { showToast } from "../utils/toast";
 
 async function addNoteBtnHandler() {
-  const container = getElement(".notes-container");
+  const container = getElement<HTMLDivElement>(".notes-container");
   const activeID = getValue(StorageKeys.NOTE_ID);
   if (activeID) removeValue(StorageKeys.NOTE_ID);
   const payload = createNotePayload();
@@ -23,12 +24,55 @@ async function addNoteBtnHandler() {
     return;
   }
   if (editor) {
-    const noteElement = addOneNoteToList(response.data);
+    const noteElement = addOneNoteToList(response.data, container);
     handleEditorEmptyState(response.data.id);
     if (noteElement) setActiveItem(noteElement, container);
     viewNote(response.data, editor);
   }
 }
+
+async function executeNoteDeletion(id: string, noteElement: HTMLDivElement) {
+  const response = await deleteNote(id);
+  if (!response.success) {
+    showToast(response.message);
+    return;
+  }
+  noteElement.remove();
+  const noteID = getValue(StorageKeys.NOTE_ID);
+  if (noteID === id) {
+    removeValue(StorageKeys.NOTE_ID);
+    editor?.commands.clearContent();
+  }
+}
+
+window.noteAPI.onTriggerDelete(async (id: string) => {
+  const noteElement = document.querySelector<HTMLDivElement>(
+    `.noteItem[data-id="${id}"]`,
+  );
+  console.log("Found DOM Element:", noteElement);
+  if (!noteElement) return;
+  await executeNoteDeletion(id, noteElement);
+});
+
+window.noteAPI.onTriggerPin(async (id: string) => {
+  const response = await window.noteAPI.pin(id);
+  if (!response.success) {
+    showToast(response.message);
+    return;
+  }
+  showToast("Pinned note");
+  await reloadNoteList();
+});
+
+window.noteAPI.onTriggerBookmark(async (id: string) => {
+  const response = await window.noteAPI.bookmark(id);
+  if (!response.success) {
+    showToast(response.message);
+    return;
+  }
+  showToast("Bookmarked note");
+  await reloadNoteList();
+});
 
 async function deleteBtnHandler(
   deleteBtn: HTMLButtonElement,
@@ -37,18 +81,7 @@ async function deleteBtnHandler(
   const noteElement = deleteBtn.closest<HTMLDivElement>(".noteItem");
   const id = noteElement?.dataset["id"];
   if (!id) return;
-  const response = await deleteNote(id);
-  if (!response.success) {
-    showToast(response.message);
-    return;
-  }
-  deleteBtn.disabled = true;
-  noteElement.remove();
-  const noteID = getValue(StorageKeys.NOTE_ID);
-  if (noteID === id) {
-    removeValue(StorageKeys.NOTE_ID);
-    editor?.commands.clearContent();
-  }
+  await executeNoteDeletion(id, noteElement);
   handleSidebarEmptyState(container);
   handleEditorEmptyState();
 }

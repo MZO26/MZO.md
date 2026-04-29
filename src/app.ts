@@ -26,10 +26,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   initNotesSidebar();
   await reloadNoteList();
   updateDateTime();
-  const toolbarContainer = getElement(".toolbar");
+  const toolbarContainer = getElement("#toolbar");
   buildToolbar(toolbarContainer, editor);
   initHoverbar();
   initSearchHandlers();
+  getElement(".notes-container")?.addEventListener("contextmenu", (e) => {
+    const item = (e.target as Element).closest<HTMLElement>(".noteItem");
+    if (!item) return;
+    e.preventDefault();
+    const id = item.dataset["id"];
+    const pinned = item.dataset["pinned"] === "true";
+    const bookmarked = item.dataset["bookmarked"] === "true";
+    if (!id) return;
+    window.electronAPI.showContextMenu(id, pinned, bookmarked);
+  });
   setUpEditorSettings({
     selectId: "#font-family",
     storageKey: "font-family",

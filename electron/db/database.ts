@@ -48,13 +48,13 @@ class NoteDB {
     );
     this.toggleBookmarkStmt = this.db.prepare(`
       UPDATE notes 
-      SET bookmarked = NOT bookmarked, updated_at = CURRENT_TIMESTAMP 
-      WHERE id = ?
+      SET bookmarked = NOT bookmarked, updated_at = ?
+      WHERE id = ? RETURNING bookmarked
     `);
     this.togglePinStmt = this.db.prepare(`
       UPDATE notes 
-      SET pinned = NOT pinned, updated_at = CURRENT_TIMESTAMP 
-      WHERE id = ?
+      SET pinned = NOT pinned, updated_at = ?
+      WHERE id = ? RETURNING pinned
     `);
   }
 
@@ -167,11 +167,27 @@ class NoteDB {
   }
 
   toggleBookmark(id: string) {
-    this.toggleBookmarkStmt.run(id);
+    const now = new Date().toISOString();
+    const result = this.toggleBookmarkStmt.get(now, id) as
+      | {
+          bookmarked: number;
+        }
+      | undefined;
+    if (!result) {
+      throw new Error("NOT_FOUND");
+    }
+    return Boolean(result.bookmarked);
   }
 
   togglePin(id: string) {
-    this.togglePinStmt.run(id);
+    const now = new Date().toISOString();
+    const result = this.togglePinStmt.get(now, id) as
+      | { pinned: number }
+      | undefined;
+    if (!result) {
+      throw new Error("NOT_FOUND");
+    }
+    return Boolean(result.pinned);
   }
 }
 

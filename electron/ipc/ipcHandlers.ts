@@ -99,6 +99,26 @@ function registerIpcHandlers() {
     },
   );
 
+  ipcMain.handle("note:pin", (event, id: string) => {
+    return tryExec(event, async () => {
+      if (!checkRateLimit("note:pin", LIMITS.READ_LIGHT))
+        throw new Error("RATE_LIMIT");
+      const validatedData = validateId(id);
+      const result = db.togglePin(validatedData);
+      return result;
+    });
+  });
+
+  ipcMain.handle("note:bookmark", (event, id: string) => {
+    return tryExec(event, async () => {
+      if (!checkRateLimit("note:bookmark", LIMITS.READ_LIGHT))
+        throw new Error("RATE_LIMIT");
+      const validatedData = validateId(id);
+      const result = db.toggleBookmark(validatedData);
+      return result;
+    });
+  });
+
   ipcMain.handle("views:get", (event, view) => {
     let result;
     return tryExec(event, async () => {

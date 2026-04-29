@@ -1,11 +1,7 @@
 import type { JSONContent } from "@tiptap/core";
-import { debounce, getElement } from "../utils/helpers";
+import { getElement } from "../utils/helpers";
 
-function getTodoStats(content: {
-  type: "doc";
-  content: JSONContent[];
-  attrs?: Record<string, unknown> | undefined;
-}) {
+function getTodoStats(content: JSONContent) {
   let total = 0;
   let completed = 0;
   if (!content) {
@@ -37,11 +33,7 @@ function getTodoStats(content: {
   };
 }
 
-function calculateToDos(content: {
-  type: "doc";
-  content: JSONContent[];
-  attrs?: Record<string, unknown> | undefined;
-}) {
+function calculateToDos(content: JSONContent) {
   const stats = getTodoStats(content);
   const container = getElement(".todo-progress-container");
   if (stats.total === 0) {
@@ -64,6 +56,4 @@ function calculateToDos(content: {
   }
 }
 
-const debouncedToDoUpdate = debounce(calculateToDos, 500);
-
-export { debouncedToDoUpdate, getTodoStats };
+export { calculateToDos, getTodoStats };

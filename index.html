@@ -84,7 +84,7 @@
       <div class="editor-container">
         <div class="editor-view hidden">
           <div class="editor-header">
-            <div id="toolbar" class="toolbar">
+            <div id="toolbar">
               <button class="collapse-btn">
                 <i data-lucide="arrow-left-from-line" class="collapse-icon"></i>
               </button>
@@ -179,11 +179,6 @@
             <div class="info-sidebar-header">
               <h4>Note-Info</h4>
             </div>
-            <div class="info-sidebar-content">
-              <h3 class="info-sidebar-title">Table of Contents</h3>
-              <nav id="toc-list"></nav>
-            </div>
-            <div class="sidebar-section"></div>
             <div class="info-sidebar-metadata">
               <span class="info-span">Task status: </span>
               <div class="todo-progress-container" style="display: none">
@@ -200,8 +195,11 @@
               <div class="tag-container"></div>
               <div class="sidebar-section"></div>
               <div class="stats">
-                <span id="word-count">0 words</span>
-                <span><span id="char-count">0</span> characters</span>
+                <div class="count-stats">
+                  <span id="word-count">0 words</span>
+                  <span><span id="char-count">0</span> characters</span>
+                </div>
+                <span id="reading-time"></span>
               </div>
             </div>
           </div>

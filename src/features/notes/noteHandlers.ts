@@ -9,7 +9,6 @@ import {
 } from "../../components/editor/editorHandlers";
 import { updateNoteInList } from "../../components/sidebar/sidebarNotes";
 import { debouncedTagUpdate } from "../../extensions/tag";
-import { debouncedToDoUpdate } from "../../extensions/toDoBar";
 import {
   abortCurrentSave,
   setupAutoSave,
@@ -35,8 +34,7 @@ async function noteItemHandler(
   setValue(StorageKeys.NOTE_ID, noteID);
   viewNote(response.data, editor);
   debouncedTagUpdate(response.data.tags);
-  debouncedToDoUpdate(response.data.content);
-  updateStats(editor);
+  updateStats(editor, response.data.content);
   setActiveItem(noteItem, container);
 }
 
@@ -44,6 +42,7 @@ async function saveNote(id: string, flush: boolean = false): Promise<void> {
   if (!editor) return;
   const editorData = extractNoteDataFromEditor(editor);
   const payload = { ...editorData, id };
+  console.log(payload);
   const response = await updateNote(payload, flush);
   if (!response.success) {
     showToast(response.message);

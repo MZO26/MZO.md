@@ -22,6 +22,11 @@ declare global {
         payload: ImagePayload,
       ) => Promise<IpcResponse<{ imageSrc: string }>>;
       onThemeChanged: (callback: (theme: Theme) => void) => () => void;
+      showContextMenu: (
+        id: string,
+        pinned: boolean,
+        bookmarked: boolean,
+      ) => void;
     };
     noteAPI: {
       getAll: () => Promise<IpcResponse<Note[]>>;
@@ -32,10 +37,16 @@ declare global {
         flush: boolean,
       ) => Promise<IpcResponse<Note>>;
       delete: (id: string) => Promise<IpcResponse<void>>;
+      onTriggerDelete: (callback: (id: string) => void) => () => void;
+      onTriggerDuplicate: (callback: (id: string) => void) => () => void;
+      onTriggerPin: (callback: (id: string) => void) => () => void;
+      onTriggerBookmark: (callback: (id: string) => void) => () => void;
       searchNotes: (
         searchTerm: string,
         limit: number,
       ) => Promise<IpcResponse<Note[]>>;
+      pin: (id: string) => Promise<IpcResponse<boolean>>;
+      bookmark: (id: string) => Promise<IpcResponse<boolean>>;
       getViews: (view) => Promise<IpcResponse<Note[]>>;
     };
     storeApi: {

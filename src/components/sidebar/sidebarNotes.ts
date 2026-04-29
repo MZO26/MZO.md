@@ -47,18 +47,34 @@ function collapseSidebar(): void {
   setValue(StorageKeys.SIDEBAR_COLLAPSED, newState);
 }
 
-function addOneNoteToList(note: Note) {
-  const container = getElement<HTMLDivElement>(".notes-container");
+function addOneNoteToList(
+  note: Note,
+  container: HTMLDivElement,
+): HTMLDivElement {
   const noteElement = createNoteItem(note);
-  container.prepend(noteElement);
+  let target: Element | null = null;
+  for (const child of container.children) {
+    const el = child as HTMLElement;
+    if (
+      el.dataset["pinned"] !== "true" &&
+      el.dataset["bookmarked"] !== "true"
+    ) {
+      target = el;
+      break;
+    }
+  }
+  if (target) {
+    container.insertBefore(noteElement, target);
+  } else {
+    container.appendChild(noteElement);
+  }
   handleSidebarEmptyState(container);
   setValue(StorageKeys.NOTE_ID, note.id);
   return noteElement;
 }
 
-function addManyNotesToList(notes: Note[]) {
+function addManyNotesToList(notes: Note[], container: HTMLDivElement) {
   const fragment = document.createDocumentFragment();
-  const container = getElement<HTMLDivElement>(".notes-container");
   notes.forEach((note: Note) => {
     const noteElement = createNoteItem(note);
     if (noteElement) {
@@ -100,26 +116,33 @@ function updateTransition(containers: NoteItemElements, note: Note) {
   });
 }
 
+function getNotePriority(note: Note): number {
+  if (note.pinned && note.bookmarked) return 0;
+  if (note.pinned) return 1; // highest priority
+  if (note.bookmarked) return 2; // middle
+  return 3; // normal
+}
+
+// this function returns a number by which note items are being displayed in the sidebar. If it returns a negative number, a comes first, then b
+function compareNotes(a: Note, b: Note): number {
+  const priorityDiff = getNotePriority(a) - getNotePriority(b); // example: pinned note a (1) - regular note b(3) = -2, which means a comes before b
+  if (priorityDiff !== 0) return priorityDiff;
+  // if priorities are equal, they get sorted by updated_at
+  return b.updated_at > a.updated_at ? 1 : -1;
+}
+
 async function reloadNoteList(notes?: Note[]): Promise<void> {
   const container = getElement<HTMLDivElement>(".notes-container");
   if (!container) return;
   container.innerHTML = "";
   if (notes) {
-    addManyNotesToList(notes);
+    addManyNotesToList(notes.sort(compareNotes), container);
     return;
   }
-
-  try {
-    const response = await getAll();
-    if (!response.success) {
-      showToast(response.message);
-      return;
-    }
-    addManyNotesToList(response.data);
-  } catch (error) {
-    console.error("Error loading notes:", error);
-    return;
-  }
+  const response = await getAll();
+  response.success
+    ? addManyNotesToList(response.data.sort(compareNotes), container)
+    : showToast(response.message);
 }
 
 export {

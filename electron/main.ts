@@ -1,8 +1,10 @@
-import { app, BrowserWindow, Menu, nativeTheme } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, nativeTheme } from "electron";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { setUpContextMenu } from "./contextMenu";
 import { registerIpcHandlers } from "./ipc/ipcHandlers";
+import { tryExec } from "./ipc/ipcValidation";
 import {
   navigationHandler,
   registerCustomProtocol,
@@ -65,11 +67,25 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  const { default: contextMenu } = await import("electron-context-menu");
+  contextMenu();
   Menu.setApplicationMenu(null);
   createWindow();
   setupLocalImageProtocol();
   setPermissions();
   registerIpcHandlers();
+  ipcMain.on(
+    "show-note-menu",
+    (event, id: string, pinned: boolean, bookmarked: boolean) => {
+      return tryExec(event, async () => {
+        console.log("show menu for", id);
+        if (win) {
+          const contextMenu = setUpContextMenu(win, id, pinned, bookmarked);
+          contextMenu.popup({ window: win });
+        }
+      });
+    },
+  );
   nativeTheme.on("updated", () => {
     if (win) onOSThemeChange(win, store.get("theme"));
   });

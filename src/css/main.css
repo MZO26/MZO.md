@@ -444,7 +444,7 @@
   -webkit-app-region: no-drag;
 }
 
-.toolbar {
+#toolbar {
   display: flex;
   gap: 5px;
   flex-wrap: nowrap;
@@ -595,7 +595,6 @@
 .editor-header {
   grid-row: 1;
   flex-shrink: 0;
-  padding: 0 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -679,11 +678,16 @@
 
 .stats {
   display: flex;
-  margin-top: 20px;
-  margin-left: 25px;
-  gap: 20px;
+  flex-direction: column;
+  gap: 8px;
   color: var(--text-muted);
   font-size: 0.8rem;
+  overflow: hidden;
+}
+
+.count-stats {
+  display: flex;
+  gap: 10px;
 }
 
 .note-info {

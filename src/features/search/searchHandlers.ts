@@ -1,11 +1,10 @@
-import { debounce } from "@tiptap/extension-table-of-contents";
 import { handleEditorEmptyState } from "../../components/editor/editorHandlers";
 import {
   addManyNotesToList,
   handleSidebarEmptyState,
   reloadNoteList,
 } from "../../components/sidebar/sidebarNotes";
-import { getElement } from "../../utils/helpers";
+import { debounce, getElement } from "../../utils/helpers";
 import { showToast } from "../../utils/toast";
 import { getViews, searchNotes } from "./searchAPI";
 

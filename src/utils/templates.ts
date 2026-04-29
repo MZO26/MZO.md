@@ -12,13 +12,7 @@ baseHeader.className = "note-header";
 const baseTitle = document.createElement("span");
 baseTitle.className = "note-title";
 
-const baseDeleteBtn = document.createElement("button");
-baseDeleteBtn.className = "delete-btn";
-const baseDots = document.createElement("span");
-baseDots.className = "dots";
-baseDeleteBtn.append(baseDots);
-
-baseHeader.append(baseTitle, baseDeleteBtn);
+baseHeader.append(baseTitle);
 
 const baseMetadata = document.createElement("div");
 baseMetadata.className = "note-metadata";
@@ -35,6 +29,8 @@ function createNoteItem(note: Note): HTMLDivElement {
   // true to clone everything inside it too
   const item = baseNoteItem.cloneNode(true) as HTMLDivElement;
   item.dataset["id"] = note.id;
+  item.dataset["pinned"] = String(note.pinned);
+  item.dataset["bookmarked"] = String(note.bookmarked);
   item.querySelector(".note-title")!.textContent = note.title;
   item.querySelector(".note-date")!.textContent = formatNoteDate(
     note.updated_at,

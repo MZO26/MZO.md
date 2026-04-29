@@ -15,20 +15,4 @@ function openModal(): void {
   }
 }
 
-const settingItems =
-  document.querySelectorAll<HTMLButtonElement>(".settings-nav-item");
-const panels = document.querySelectorAll<HTMLDivElement>(".settings-panel");
-
-settingItems.forEach((item) => {
-  item.addEventListener("click", () => {
-    const target = item.dataset["section"];
-
-    settingItems.forEach((i) => i.classList.remove("active"));
-    panels.forEach((p) => p.classList.remove("active"));
-
-    item.classList.add("active");
-    getElement<HTMLDivElement>(`#${target}`)?.classList.add("active");
-  });
-});
-
 export { openModal };

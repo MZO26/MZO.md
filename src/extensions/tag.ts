@@ -63,6 +63,6 @@ function updateNoteTags(tags: Note["tags"]) {
   });
 }
 
-const debouncedTagUpdate = debounce(updateNoteTags, 500);
+const debouncedTagUpdate = debounce(updateNoteTags, 1000);
 
 export { debouncedTagUpdate, NoteTag };

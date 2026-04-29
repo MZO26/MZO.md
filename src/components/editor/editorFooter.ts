@@ -1,5 +1,6 @@
-import type { Editor } from "@tiptap/core";
+import type { Editor, JSONContent } from "@tiptap/core";
 import type { AppSettings } from "../../../shared/schemas/storeSchema";
+import { calculateToDos } from "../../extensions/toDoBar";
 import { getSettings, setSettings } from "../../settings/settingsAPI";
 import { debounce, getElement } from "../../utils/helpers";
 
@@ -24,24 +25,29 @@ function updateDateTime() {
   }
 }
 
-const updateStats = debounce((editor: Editor) => {
+function estimateReadingTime(wordCount: number, wpm = 238): string {
+  const s = Math.round((wordCount / wpm) * 60);
+  const m = Math.floor(s / 60);
+  return s < 30 ? "< 1 min read" : s < 60 ? "1 min read" : `${m} min read`;
+}
+
+const updateStats = debounce((editor: Editor, content: JSONContent) => {
   const charCount = editor.storage.characterCount.characters();
   const wordCount = editor.storage.characterCount.words();
 
-  const charCountEl = getElement<HTMLDivElement>("#char-count");
-  if (charCountEl) {
-    charCountEl.innerText = charCount.toString();
-  }
+  const charCountEl = getElement("#char-count");
+  charCountEl.innerText = charCount.toString();
 
-  const wordCountEl = getElement<HTMLDivElement>("#word-count");
-  if (wordCountEl) {
-    if (wordCount === 1) {
-      wordCountEl.innerText = "1 word";
-    } else {
-      wordCountEl.innerText = `${wordCount} words`;
-    }
+  const wordCountEl = getElement("#word-count");
+  if (wordCount === 1) {
+    wordCountEl.innerText = "1 word";
+  } else {
+    wordCountEl.innerText = `${wordCount} words`;
   }
-}, 500);
+  const readingTimeEl = getElement("#reading-time");
+  readingTimeEl.innerText = estimateReadingTime(wordCount);
+  calculateToDos(content);
+}, 1000);
 
 // sets select value and body value
 function syncUI<K extends string>(
