@@ -386,6 +386,10 @@
   white-space: nowrap;
 }
 
+.searchTag {
+  cursor: pointer;
+}
+
 .noteItem:not([data-pinned="true"]).active {
   background-color: var(--accent-hover);
   border-color: var(--border-color);

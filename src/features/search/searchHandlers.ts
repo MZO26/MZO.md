@@ -29,7 +29,7 @@ async function handleSearchInput(
     handleSidebarEmptyState(notesContainer, searchInput);
     return;
   }
-  addManyNotesToList(response.data);
+  addManyNotesToList(response.data, notesContainer);
 }
 
 async function handleViews(view: string) {

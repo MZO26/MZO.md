@@ -15,10 +15,6 @@ function setUpContextMenu(
       label: bookmarked ? "Remove Bookmark" : "Add Bookmark",
       click: () => win.webContents.send("note:trigger-bookmark", id),
     },
-    {
-      label: "Duplicate Note",
-      click: () => win.webContents.send("note:trigger-duplicate", id),
-    },
     { type: "separator" },
     {
       label: "Delete Note",

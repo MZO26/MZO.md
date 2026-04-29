@@ -5,7 +5,12 @@ import {
   handleSidebarEmptyState,
   reloadNoteList,
 } from "../components/sidebar/sidebarNotes";
-import { createNote, deleteNote } from "../features/notes/noteAPI";
+import {
+  bookmark,
+  createNote,
+  deleteNote,
+  pin,
+} from "../features/notes/noteAPI";
 import { viewNote } from "../features/notes/noteHandlers";
 import { getValue, removeValue, StorageKeys } from "../utils/cache";
 import { createNotePayload } from "../utils/factory";
@@ -45,7 +50,7 @@ async function executeNoteDeletion(id: string, noteElement: HTMLDivElement) {
   }
 }
 
-window.noteAPI.onTriggerDelete(async (id: string) => {
+const unsubscribeDelete = window.noteAPI.onTriggerDelete(async (id: string) => {
   const noteElement = document.querySelector<HTMLDivElement>(
     `.noteItem[data-id="${id}"]`,
   );
@@ -54,8 +59,8 @@ window.noteAPI.onTriggerDelete(async (id: string) => {
   await executeNoteDeletion(id, noteElement);
 });
 
-window.noteAPI.onTriggerPin(async (id: string) => {
-  const response = await window.noteAPI.pin(id);
+const unsubscribePin = window.noteAPI.onTriggerPin(async (id: string) => {
+  const response = await pin(id);
   if (!response.success) {
     showToast(response.message);
     return;
@@ -64,14 +69,22 @@ window.noteAPI.onTriggerPin(async (id: string) => {
   await reloadNoteList();
 });
 
-window.noteAPI.onTriggerBookmark(async (id: string) => {
-  const response = await window.noteAPI.bookmark(id);
-  if (!response.success) {
-    showToast(response.message);
-    return;
-  }
-  showToast("Bookmarked note");
-  await reloadNoteList();
+const unsubscribeBookmark = window.noteAPI.onTriggerBookmark(
+  async (id: string) => {
+    const response = await bookmark(id);
+    if (!response.success) {
+      showToast(response.message);
+      return;
+    }
+    showToast("Bookmarked note");
+    await reloadNoteList();
+  },
+);
+
+window.addEventListener("beforeunload", () => {
+  unsubscribePin();
+  unsubscribeDelete();
+  unsubscribeBookmark();
 });
 
 async function deleteBtnHandler(

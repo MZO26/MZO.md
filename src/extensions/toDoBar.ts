@@ -43,8 +43,8 @@ function calculateToDos(content: JSONContent) {
 
   if (container.style.display !== "block") container.style.display = "block";
 
-  const countLabel = document.querySelector<HTMLElement>("#todo-count");
-  const progressBar = document.querySelector<HTMLElement>("#todo-progress");
+  const countLabel = getElement<HTMLElement>("#todo-count");
+  const progressBar = getElement<HTMLElement>("#todo-progress");
 
   if (countLabel) countLabel.innerText = `${stats.completed}/${stats.total}`;
 

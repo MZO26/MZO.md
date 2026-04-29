@@ -23,6 +23,8 @@ class NoteDB {
   private getTagsByIdStmt: BetterSqlite.Statement;
   private toggleBookmarkStmt: BetterSqlite.Statement;
   private togglePinStmt: BetterSqlite.Statement;
+  private searchByTagStmt: BetterSqlite.Statement;
+
   constructor() {
     const dbPath = path.join(app.getPath("userData"), "notes.db");
     this.db = new BetterSqlite(dbPath);
@@ -56,6 +58,12 @@ class NoteDB {
       SET pinned = NOT pinned, updated_at = ?
       WHERE id = ? RETURNING pinned
     `);
+    this.searchByTagStmt = this.db.prepare(`
+      SELECT notes.* 
+      FROM notes
+      JOIN note_tags as t ON notes.id = t.note_id
+      WHERE t.tag_name = ?
+      `);
   }
 
   private createTables() {
@@ -188,6 +196,15 @@ class NoteDB {
       throw new Error("NOT_FOUND");
     }
     return Boolean(result.pinned);
+  }
+
+  searchByTag(tagName: string): Note[] {
+    const result = this.searchByTagStmt.all(tagName) as Note[];
+    return result.map((note) => {
+      return NoteFromDbSchema.parse({
+        ...note,
+      });
+    });
   }
 }
 

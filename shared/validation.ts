@@ -4,6 +4,7 @@ import {
   CreateNotePayloadSchema,
   IdSchema,
   SearchSchema,
+  TagSchema,
   UpdateNotePayloadSchema,
 } from "./schemas/noteSchema";
 import { StoreSchema } from "./schemas/storeSchema";
@@ -28,6 +29,10 @@ function validateCreate(payload: unknown) {
 
 function validateId(id: unknown) {
   return validation(IdSchema, id);
+}
+
+function validateTag(tag: unknown) {
+  return validation(TagSchema, tag);
 }
 
 function validateSearch(searchTerm: unknown, limit: unknown) {
@@ -57,6 +62,7 @@ export {
   validateImage,
   validateSearch,
   validateStore,
+  validateTag,
   validateTheme,
   validateUpdate,
 };

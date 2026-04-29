@@ -10,6 +10,7 @@ import {
   initNotesSidebar,
   reloadNoteList,
 } from "./components/sidebar/sidebarNotes";
+import { getByTag } from "./features/notes/noteAPI";
 import { initSearchHandlers } from "./features/search/searchHandlers";
 import { addNoteBtnHandler, closeModal } from "./handlers/buttonHandlers";
 import {
@@ -19,6 +20,7 @@ import {
 } from "./settings/settings-service";
 import { getElement } from "./utils/helpers";
 import { renderIcons } from "./utils/icons";
+import { showToast } from "./utils/toast";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const editor = initEditor("#editor");
@@ -73,6 +75,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   const addNoteBtn = getElement(".add-note-btn");
   addNoteBtn.addEventListener("click", addNoteBtnHandler);
   const infoSidebar = getElement<HTMLElement>(".info-sidebar");
+  const infoSidebarTagContainer = getElement<HTMLDivElement>(".tag-container");
+  infoSidebarTagContainer.addEventListener("click", async (e: Event) => {
+    const clickedTag = (e.target as HTMLElement).closest(
+      ".tag",
+    ) as HTMLSpanElement;
+    if (!clickedTag) return;
+    const tagName = clickedTag.dataset["tag"];
+    if (!tagName) return;
+    console.log(`Searching for: ${tagName}`);
+    const response = await getByTag(tagName);
+    if (!response.success) {
+      showToast(response.message);
+      return;
+    }
+    await reloadNoteList(response.data);
+  });
   const infoSidebarToggle = getElement<HTMLButtonElement>(
     ".info-sidebar-toggle",
   );
@@ -118,6 +136,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       collapseSidebar();
     }
   });
+  // function openModal(): void {
+  //   const overlay = getElement<HTMLDivElement>(".overlay");
+  //   const modal = getElement<HTMLDivElement>(".modal");
+  //   const items: HTMLCollection | undefined =
+  //     getElement<HTMLDivElement>(".notes-container").children;
+  //   overlay.classList.add("show");
+  //   modal.classList.add("show");
+  //   if (items) {
+  //     Array.from(items).forEach((element) => {
+  //       if (element.classList.contains("active"))
+  //         element.classList.remove("active");
+  //     });
+  //   }
+  // }
 });
 
 setInterval(updateDateTime, 60000);

@@ -44,11 +44,6 @@ const actions: ToolbarMap = {
     isActive: (editor) => editor.isActive("strike"),
     icon: "strikethrough",
   },
-  underline: {
-    run: (editor) => editor.chain().focus().toggleUnderline().run(),
-    isActive: (editor) => editor.isActive("underline"),
-    icon: "underline",
-  },
   highlight: {
     run: (editor) => editor.chain().focus().toggleHighlight().run(),
     isActive: (editor) => editor.isActive("highlight"),

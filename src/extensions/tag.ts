@@ -57,7 +57,8 @@ function updateNoteTags(tags: Note["tags"]) {
   if (!tags || tags.length === 0) return;
   tags.forEach((tag) => {
     const span = document.createElement("span");
-    span.classList.add("tag");
+    span.classList.add("tag", "searchTag");
+    span.dataset["tag"] = String(tag);
     span.textContent = `#${tag}`;
     container.append(span);
   });

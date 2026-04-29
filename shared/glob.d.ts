@@ -37,6 +37,7 @@ declare global {
         flush: boolean,
       ) => Promise<IpcResponse<Note>>;
       delete: (id: string) => Promise<IpcResponse<void>>;
+      getByTag: (tag: string) => Promise<IpcResponse<Note[]>>;
       onTriggerDelete: (callback: (id: string) => void) => () => void;
       onTriggerDuplicate: (callback: (id: string) => void) => () => void;
       onTriggerPin: (callback: (id: string) => void) => () => void;
@@ -49,7 +50,7 @@ declare global {
       bookmark: (id: string) => Promise<IpcResponse<boolean>>;
       getViews: (view) => Promise<IpcResponse<Note[]>>;
     };
-    storeApi: {
+    storeAPI: {
       getSettings: <K extends keyof AppSettings>(
         key: K,
       ) => Promise<IpcResponse<AppSettings[K]>>;

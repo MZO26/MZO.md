@@ -5,7 +5,6 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TableKit } from "@tiptap/extension-table";
-import TextAlign from "@tiptap/extension-text-align";
 import { TextStyleKit } from "@tiptap/extension-text-style";
 import {
   CharacterCount,
@@ -69,18 +68,6 @@ function getNoteEditorExtensions() {
       getScrollContainer: () => getElement(".editor-container"),
       edge: 60,
       maxSpeed: 10,
-    }),
-    TextAlign.configure({
-      types: [
-        "heading",
-        "paragraph",
-        "blockquote",
-        "listItem",
-        "codeBlock",
-        "details",
-      ],
-      alignments: ["start", "center", "end", "justify"],
-      defaultAlignment: "start",
     }),
     BubbleMenu.configure({
       element: getElement(".bubble-menu") as HTMLElement,

@@ -13,6 +13,7 @@ import {
   validateImage,
   validateSearch,
   validateStore,
+  validateTag,
   validateTheme,
   validateUpdate,
 } from "../../shared/validation";
@@ -21,7 +22,7 @@ import { store } from "../store";
 import { getTitleBarOverlay, initTheme } from "../titlebar";
 import { checkRateLimit, tryExec } from "./ipcValidation";
 
-const LIMITS = {
+export const LIMITS = {
   WRITE_HEAVY: 2000, // saveImage
   WRITE_STANDARD: 1000, // create, delete, store:set
   WRITE_LIGHT: 300, // update, setTheme
@@ -84,6 +85,16 @@ function registerIpcHandlers() {
     });
   });
 
+  ipcMain.handle("note:getByTag", (event, tag: string) => {
+    return tryExec(event, async () => {
+      if (!checkRateLimit("note:getById", LIMITS.READ_LIGHT))
+        throw new Error("RATE_LIMIT");
+      const validatedData = validateTag(tag);
+      const result = db.searchByTag(validatedData);
+      return result;
+    });
+  });
+
   ipcMain.handle(
     "note:search",
     (event, searchTerm: unknown, limit: unknown) => {
@@ -136,6 +147,8 @@ function registerIpcHandlers() {
           break;
         case "all":
           return db.getAll();
+        case "untagged":
+          return db.views.getUntaggedNotes();
         default:
           throw new Error("INVALID_VIEW");
       }
