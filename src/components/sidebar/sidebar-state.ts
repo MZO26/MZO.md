@@ -1,3 +1,4 @@
+import { setSettings } from "@/api/settingsAPI";
 import emptySidebar from "@/assets/emptySidebar.svg?raw";
 import searchNotFound from "@/assets/searchNotFound.svg?raw";
 import { getElement } from "@/utils/helpers";
@@ -9,6 +10,14 @@ function getSidebarContainer(): HTMLDivElement {
     defaultSidebarContainer = getElement<HTMLDivElement>(".notes-container");
   }
   return defaultSidebarContainer;
+}
+
+async function collapseSidebar(): Promise<void> {
+  const appContainer = getElement<HTMLDivElement>(".app-container");
+  const currentState = appContainer.classList.contains("sidebar-collapsed");
+  const newState = !currentState;
+  appContainer.classList.toggle("sidebar-collapsed", newState);
+  await setSettings({ "collapsed-state": newState });
 }
 
 function handleSidebarEmptyState(
@@ -49,4 +58,4 @@ function showSidebarEmptyState(searchInput?: string) {
   return emptyStateContainer;
 }
 
-export { handleSidebarEmptyState };
+export { collapseSidebar, handleSidebarEmptyState };

@@ -1,24 +1,24 @@
-import { initEditor } from "@/components/editor/editor";
-import { initHoverbar } from "@/components/editor/hoverbar";
-import {
-  collapseSidebar,
-  initNotesSidebar,
-  reloadNoteList,
-} from "@/components/sidebar/sidebarNotes";
-import { buildMenu } from "@/components/toolbar/toolbarBuilder";
-import { addNoteBtnHandler, setModalState } from "@/handlers/buttonHandlers";
-import { initSearchHandlers } from "@/handlers/searchHandlers";
-import { initAppSettings } from "@/settings/configSetup";
+import { initListeners } from "@/api/listeners";
+import { initEditor } from "@/components/editor/editor-init";
+import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
+import { initSearchHandlers } from "@/components/sidebar/sidebar-filter-init";
+import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
+import { collapseSidebar } from "@/components/sidebar/sidebar-state";
+import { initHoverbar } from "@/components/toolbar/hoverbar";
+import { buildMenu } from "@/components/toolbar/menu-builder";
+import { createNoteButton } from "@/features/note-ui";
+import { setGlobalEditor, setModalState } from "@/services/state";
+import { initAppSettings } from "@/settings/setting-init";
 import { updateDateTime } from "@/utils/date";
 import { createAsyncHandler, getElement } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { createContextMenu } from "@/utils/templates";
-import { setGlobalEditor } from "./services/state";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const editor = initEditor("#editor");
   setGlobalEditor(editor);
   initAppSettings();
+  initListeners();
   renderIcons();
   initNotesSidebar();
   await reloadNoteList();
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     createAsyncHandler(createContextMenu),
   );
   const addNoteBtn = getElement(".add-note-btn");
-  addNoteBtn.addEventListener("click", createAsyncHandler(addNoteBtnHandler));
+  addNoteBtn.addEventListener("click", createAsyncHandler(createNoteButton));
   const infoSidebar = getElement<HTMLElement>(".info-sidebar");
   const infoSidebarToggle = getElement<HTMLButtonElement>(
     ".info-sidebar-toggle",

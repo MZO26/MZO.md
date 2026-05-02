@@ -1,12 +1,12 @@
 import db from "@electron/db/database";
-import { checkRateLimit, wrapResult } from "@electron/ipc/ipcValidation";
+import { checkRateLimit, wrapResult } from "@electron/ipc/ipc-validation";
 import { store } from "@electron/store";
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import {
   StoreSchema,
   type AppSettings,
   type Theme,
-} from "@shared/schemas/storeSchema";
+} from "@shared/schemas/store-schema";
 import {
   validateCreate,
   validateId,

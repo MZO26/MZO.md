@@ -3,7 +3,7 @@ import type {
   CreateNotePayload,
   Note,
   UpdateNotePayload,
-} from "@shared/schemas/noteSchema";
+} from "@shared/schemas/note-schema";
 import type { IpcResponse } from "@shared/types";
 
 async function createNote(

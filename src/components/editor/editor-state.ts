@@ -1,7 +1,8 @@
 import emptyEditor from "@/assets/emptyEditor.svg?raw";
+import { getNoteId } from "@/services/state";
 import { getElement } from "@/utils/helpers";
 
-function handleEditorEmptyState(ID?: string | undefined | null) {
+function handleEditorEmptyState() {
   const editorContainer = getElement(".editor-container");
   const editorView = getElement(".editor-view");
   if (!editorContainer || !editorView) {
@@ -10,7 +11,8 @@ function handleEditorEmptyState(ID?: string | undefined | null) {
   }
   const emptyState = editorContainer.querySelector(".editor-empty-state");
   // if no note id: show empty state of editor view
-  if (!ID) {
+  const id = getNoteId();
+  if (!id) {
     editorView.classList.add("hidden");
     // only append new empty state if it doesn't already exist
     if (!emptyState) {

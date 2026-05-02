@@ -1,5 +1,5 @@
 import { safeIpcCall } from "@/utils/helpers";
-import type { AppSettings } from "@shared/schemas/storeSchema";
+import type { AppSettings } from "@shared/schemas/store-schema";
 import type { IpcResponse } from "@shared/types";
 
 async function getSettings<K extends keyof AppSettings>(

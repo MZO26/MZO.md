@@ -1,9 +1,5 @@
-import type {
-  Action,
-  ActionMap,
-  BubbleMenuGroup,
-} from "@/components/toolbar/actions";
 import { formatShortcut } from "@/utils/helpers";
+import type { Action, ActionMap, BubbleMenuGroup } from "@shared/types";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 

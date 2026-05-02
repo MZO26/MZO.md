@@ -1,5 +1,5 @@
-import type { Note } from "@shared/schemas/noteSchema";
-import type { AppSettings, Theme } from "@shared/schemas/storeSchema";
+import type { Note } from "@shared/schemas/note-schema";
+import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import {
   IpcResponse,
   type CreateNotePayload,

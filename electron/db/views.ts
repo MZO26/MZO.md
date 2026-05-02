@@ -1,4 +1,4 @@
-import { NoteFromDbSchema, type Note } from "@shared/schemas/noteSchema";
+import { NoteFromDbSchema, type Note } from "@shared/schemas/note-schema";
 import type { Database as DatabaseType } from "better-sqlite3";
 import BetterSqlite from "better-sqlite3";
 

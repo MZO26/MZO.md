@@ -1,6 +1,5 @@
-import { debouncedStatUpdate } from "@/components/editor/editorHandlers";
-import { buildMenu } from "@/components/toolbar/toolbarBuilder";
-import { DragAutoScroll } from "@/extensions/autoScroll";
+import { buildMenu } from "@/components/toolbar/menu-builder";
+import { DragAutoScroll } from "@/extensions/autoscroll";
 import { lowlight } from "@/extensions/lowlight";
 import { MasterShortcuts } from "@/extensions/shortcuts";
 import { NoteTag } from "@/extensions/tag";
@@ -23,6 +22,7 @@ import {
   Selection,
 } from "@tiptap/extensions";
 import StarterKit from "@tiptap/starter-kit";
+import { debouncedStatUpdate } from "../sidebar/meta-sidebar-actions";
 
 let editor: Editor | null = null;
 const bubbleMenuElement = getElement(".bubble-menu");
@@ -53,8 +53,7 @@ function initEditor(selector: string): Editor {
   });
   editor.on("update", () => {
     if (!editor) return;
-    const content = editor.getJSON();
-    debouncedStatUpdate(editor, content);
+    debouncedStatUpdate(editor);
   });
   renderIcons(bubbleMenuElement);
   buildMenu(bubbleMenuElement, editor, "bubble-menu");

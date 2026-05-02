@@ -1,12 +1,12 @@
-import { ImagePayloadSchema } from "@shared/schemas/imageSchema";
+import { ImagePayloadSchema } from "@shared/schemas/image-schema";
 import {
   CreateNotePayloadSchema,
   IdSchema,
   SearchSchema,
   TagSchema,
   UpdateNotePayloadSchema,
-} from "@shared/schemas/noteSchema";
-import { StoreSchema } from "@shared/schemas/storeSchema";
+} from "@shared/schemas/note-schema";
+import { StoreSchema } from "@shared/schemas/store-schema";
 import z from "zod";
 
 function validation<T>(schema: z.ZodType<T>, payload: unknown): T {

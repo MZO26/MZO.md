@@ -269,7 +269,7 @@ button:disabled {
 }
 
 /* Focus */
-:root[data-code-theme="github-dark"] {
+:root[data-codetheme="github-dark"] {
   --hljs-bg: transparent;
   --hljs-fg: #c9d1d9;
   --hljs-keyword: #ff7b72;
@@ -292,7 +292,7 @@ button:disabled {
   --hljs-deletion-bg: #67060c;
 }
 
-:root[data-code-theme="github-light"] {
+:root[data-codetheme="github-light"] {
   --hljs-bg: transparent;
   --hljs-fg: #24292e;
   --hljs-keyword: #d73a49;
@@ -317,7 +317,7 @@ button:disabled {
 
 /* Balanced */
 
-:root[data-code-theme="atom-one-dark"] {
+:root[data-codetheme="atom-one-dark"] {
   --hljs-bg: transparent;
   --hljs-fg: #abb2bf;
   --hljs-keyword: #c678dd;
@@ -340,7 +340,7 @@ button:disabled {
   --hljs-deletion-bg: #3e2a2f;
 }
 
-:root[data-code-theme="atom-one-light"] {
+:root[data-codetheme="atom-one-light"] {
   --hljs-bg: transparent;
   --hljs-fg: #383a42;
   --hljs-keyword: #a626a4;
@@ -365,7 +365,7 @@ button:disabled {
 
 /* Eye comfort */
 
-:root[data-code-theme="solarized-dark"] {
+:root[data-codetheme="solarized-dark"] {
   --hljs-bg: transparent;
   --hljs-fg: #839496;
   --hljs-keyword: #859900;
@@ -388,7 +388,7 @@ button:disabled {
   --hljs-deletion-bg: rgba(220, 50, 47, 0.1);
 }
 
-:root[data-code-theme="solarized-light"] {
+:root[data-codetheme="solarized-light"] {
   --hljs-bg: transparent;
   --hljs-fg: #657b83;
   --hljs-keyword: #859900;

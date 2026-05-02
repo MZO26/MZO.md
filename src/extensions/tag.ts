@@ -1,5 +1,3 @@
-import { debounce, getElement } from "@/utils/helpers";
-import type { Note } from "@shared/schemas/noteSchema";
 import { mergeAttributes } from "@tiptap/core";
 import Mention from "@tiptap/extension-mention";
 import { PluginKey } from "@tiptap/pm/state";
@@ -59,19 +57,4 @@ const NoteTag = Mention.extend({
   },
 });
 
-function updateNoteTags(tags: Note["tags"]) {
-  const container = getElement(".tag-container");
-  container.innerHTML = "";
-  if (!tags || tags.length === 0) return;
-  tags.forEach((tag) => {
-    const span = document.createElement("span");
-    span.classList.add("tag", "searchTag");
-    span.dataset["tag"] = String(tag);
-    span.textContent = `#${tag}`;
-    container.append(span);
-  });
-}
-
-const debouncedTagUpdate = debounce(updateNoteTags, 1000);
-
-export { debouncedTagUpdate, NoteTag };
+export { NoteTag };

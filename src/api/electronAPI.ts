@@ -1,6 +1,6 @@
 import { safeIpcCall } from "@/utils/helpers";
-import type { ImagePayload } from "@shared/schemas/imageSchema";
-import type { Theme } from "@shared/schemas/storeSchema";
+import type { ImagePayload } from "@shared/schemas/image-schema";
+import type { Theme } from "@shared/schemas/store-schema";
 import type { IpcResponse } from "@shared/types";
 
 async function setTheme(

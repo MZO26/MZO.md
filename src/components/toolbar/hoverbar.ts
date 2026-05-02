@@ -1,7 +1,7 @@
 import { setTheme } from "@/api/electronAPI";
-import { editor } from "@/components/editor/editor";
+import { editor } from "@/components/editor/editor-init";
 import { createAsyncHandler, getElement } from "@/utils/helpers";
-import type { Theme } from "@shared/schemas/storeSchema";
+import type { Theme } from "@shared/schemas/store-schema";
 
 async function initFocusMode(appContainer: HTMLDivElement) {
   const newState = !appContainer.classList.contains("focus");

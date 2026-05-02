@@ -1,4 +1,4 @@
-import { selectBuilder } from "./settingsBuilder";
+import { selectBuilder } from "@/settings/setting-builder";
 
 function buildSelects(settingsContainer: HTMLDivElement) {
   selectBuilder(

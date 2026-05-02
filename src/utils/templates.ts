@@ -1,6 +1,6 @@
 import { showContextMenu } from "@/api/electronAPI";
 import { formatNoteDate } from "@/utils/date";
-import type { Note } from "@shared/schemas/noteSchema";
+import type { Note } from "@shared/schemas/note-schema";
 
 // builds skeleton once
 

@@ -40,6 +40,8 @@ async function compressImage(
     });
   // because you can't access bytes inside blob, it gets turned into an arrayBuffer. (blob contains metadata and acts as a reference, arrayBuffer is the actual memory)
   const buffer = await blob.arrayBuffer();
+  canvas.width = 0;
+  canvas.height = 0;
   // reaturn as Uint8Array, which is perfect for sending data over the IPC bridge. It enables reading of the buffer byte-by-byte
   return new Uint8Array(buffer);
 }

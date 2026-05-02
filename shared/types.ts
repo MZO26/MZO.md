@@ -1,5 +1,6 @@
 import type { Views } from "@electron/db/views";
-import type { Note } from "./schemas/noteSchema";
+import type { Note } from "@shared/schemas/note-schema";
+import type { Editor } from "@tiptap/core";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -50,6 +51,25 @@ type BubbleMenuCommands = (
   value?: string | undefined,
 ) => boolean | void | Promise<void>;
 
+type BubbleMenuGroup = "text" | "inlineCode" | "codeBlock" | "table";
+
+type Action = {
+  type?: "action";
+  run: (editor: Editor) => void;
+  isActive?: (editor: Editor) => boolean;
+  isDisabled?: (editor: Editor) => boolean;
+  icon: string;
+  shortcut?: string;
+  group?: BubbleMenuGroup;
+};
+
+type Divider = {
+  type: "divider";
+};
+
+type ToolbarItem = Action | Divider;
+type ActionMap = Record<string, ToolbarItem>;
+
 type Metadata = {
   title: string;
   snippet: string;
@@ -62,8 +82,11 @@ type DbRow = Omit<Note, "content" | "tags"> & {
 };
 
 export type {
+  Action,
+  ActionMap,
   AutoScrollOptions,
   BubbleMenuCommands,
+  BubbleMenuGroup,
   Code,
   DbRow,
   IpcResponse,

@@ -1,10 +1,11 @@
-import { setUpContextMenu } from "@electron/contextMenu";
-import { registerIpcHandlers } from "@electron/ipc/ipcHandlers";
+import { setUpContextMenu } from "@electron/context-menu";
+import { registerIpcHandlers } from "@electron/ipc/ipc-handlers";
+import { wrapResult } from "@electron/ipc/ipc-validation";
 import {
   navigationHandler,
   registerCustomProtocol,
   setupLocalImageProtocol,
-} from "@electron/navigationHandler";
+} from "@electron/navigation-handler";
 import { setPermissions } from "@electron/permissions";
 import { store } from "@electron/store";
 import {
@@ -17,7 +18,6 @@ import console from "node:console";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { wrapResult } from "./ipc/ipcValidation";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env["DIST"] = path.join(__dirname, "../dist");
@@ -72,9 +72,9 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  Menu.setApplicationMenu(null);
   const { default: contextMenu } = await import("electron-context-menu");
   contextMenu();
-  Menu.setApplicationMenu(null);
   createWindow();
   setupLocalImageProtocol();
   setPermissions();

@@ -1,5 +1,5 @@
+import { promptImageUpload } from "@/extensions/image/image";
 import { Extension } from "@tiptap/core";
-import { promptImageUpload } from "./image/image";
 
 export const MasterShortcuts = Extension.create({
   name: "masterShortcuts",

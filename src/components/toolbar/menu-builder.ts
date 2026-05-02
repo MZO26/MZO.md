@@ -1,13 +1,11 @@
-import {
-  BubbleMenuActions,
-  ToolbarActions,
-  type ActionMap,
-} from "@/components/toolbar/actions";
+import { BubbleMenuActions } from "@/components/toolbar/bubble-menu-actions";
 import {
   createBubbleMenuFragment,
   createToolbarFragment,
-} from "@/components/toolbar/creationHelpers";
+} from "@/components/toolbar/creation-helpers";
+import { ToolbarActions } from "@/components/toolbar/toolbar-actions";
 import { renderIcons } from "@/utils/icons";
+import type { ActionMap } from "@shared/types";
 import type { Editor } from "@tiptap/core";
 
 function getActiveMenu(editor: Editor): string {

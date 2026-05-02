@@ -9,7 +9,7 @@ import {
   type CreateNotePayload,
   type Note,
   type UpdateNotePayload,
-} from "@shared/schemas/noteSchema";
+} from "@shared/schemas/note-schema";
 import type { DbRow } from "@shared/types";
 import BetterSqlite from "better-sqlite3";
 import { app } from "electron";
@@ -100,12 +100,13 @@ class NoteDB {
     const now = new Date().toISOString();
     let { content, plainText, title, snippet, tags } = payload;
     const stringifiedContent = JSON.stringify(content);
+    const uniqueTags = [...new Set(tags)].slice(0, 3);
     const result = this.transactions.safeCreate({
       id,
       title,
       stringifiedContent,
       snippet,
-      tags: tags.slice(0, 3),
+      tags: uniqueTags,
       plainText,
       created_at: now,
       updated_at: now,
@@ -113,7 +114,7 @@ class NoteDB {
     return NoteFromDbSchema.parse({
       ...result,
       content: stringifiedContent,
-      tags: tags,
+      tags: uniqueTags,
     });
   }
 
@@ -121,20 +122,21 @@ class NoteDB {
     let { id, content, plainText, title, snippet, todos_left, tags } = payload;
     const stringifiedContent = JSON.stringify(content);
     const now = new Date().toISOString();
+    const uniqueTags = [...new Set(tags)].slice(0, 3);
     const result = this.transactions.safeUpdate({
       id,
       title,
       stringifiedContent,
       snippet,
       todos_left,
-      tags: tags.slice(0, 3),
+      tags: uniqueTags,
       plainText,
       updated_at: now,
     });
     return NoteFromDbSchema.parse({
       ...result,
       content: stringifiedContent,
-      tags: tags,
+      tags: uniqueTags,
     });
   }
 

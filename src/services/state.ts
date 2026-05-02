@@ -1,3 +1,4 @@
+import { getElement } from "@/utils/helpers";
 import { Editor } from "@tiptap/core";
 import { createStore } from "zustand/vanilla";
 
@@ -20,9 +21,23 @@ function setGlobalEditor(editor: Editor) {
 
 function getEditor(): Editor {
   if (!globalEditorInstance) {
-    throw new Error("Editor wurde noch nicht initialisiert!");
+    throw new Error("NOT_FOUND");
   }
   return globalEditorInstance;
 }
 
-export { getEditor, getNoteId, setGlobalEditor, setNoteId, stateStore };
+function setModalState(show: boolean): void {
+  const overlay = getElement<HTMLDivElement>(".overlay");
+  const modal = getElement<HTMLDivElement>(".modal");
+  overlay.classList.toggle("show", show);
+  modal.classList.toggle("show", show);
+}
+
+export {
+  getEditor,
+  getNoteId,
+  setGlobalEditor,
+  setModalState,
+  setNoteId,
+  stateStore,
+};

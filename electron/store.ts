@@ -1,4 +1,4 @@
-import { StoreSchema, type AppSettings } from "@shared/schemas/storeSchema";
+import { StoreSchema, type AppSettings } from "@shared/schemas/store-schema";
 import Store from "electron-store";
 import z from "zod";
 

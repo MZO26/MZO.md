@@ -1,54 +1,9 @@
-import { getByTag, getViews, searchNotes } from "@/api/noteAPI";
-import { handleEditorEmptyState } from "@/components/editor/editorEmptyState";
-import { handleSidebarEmptyState } from "@/components/sidebar/sidebarEmptyState";
 import {
-  addManyNotesToList,
-  reloadNoteList,
-} from "@/components/sidebar/sidebarNotes";
+  handleSearchInput,
+  handleViews,
+  searchByTag,
+} from "@/components/sidebar/sidebar-filter";
 import { createAsyncHandler, debounce, getElement } from "@/utils/helpers";
-import { showToast } from "@/utils/toast";
-
-async function handleSearchInput(
-  searchInput: string,
-  notesContainer: HTMLDivElement,
-) {
-  notesContainer.innerHTML = "";
-  try {
-    if (searchInput === "") {
-      await reloadNoteList();
-      return;
-    }
-  } catch (error) {
-    console.error(`(searchInputHandler): Failed to reload note list`);
-    return;
-  }
-  const response = await searchNotes(searchInput, 20);
-  if (!response.success) {
-    showToast(response.message);
-    handleEditorEmptyState();
-    handleSidebarEmptyState(notesContainer, searchInput);
-    return;
-  }
-  addManyNotesToList(response.data, notesContainer);
-}
-
-async function handleViews(view: string) {
-  const response = await getViews(view);
-  if (!response.success) {
-    showToast(response.message);
-    return;
-  }
-  reloadNoteList(response.data);
-}
-
-async function searchByTag(tag: string) {
-  const response = await getByTag(tag);
-  if (!response.success) {
-    showToast(response.message);
-    return;
-  }
-  await reloadNoteList(response.data);
-}
 
 function initSearchHandlers() {
   const searchInput = getElement<HTMLInputElement>("#searchInput");

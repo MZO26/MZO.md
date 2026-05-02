@@ -1,4 +1,7 @@
-import { DbContentSchema, EditorDocSchema } from "@shared/schemas/editorSchema";
+import {
+  DbContentSchema,
+  EditorDocSchema,
+} from "@shared/schemas/editor-schema";
 import { z } from "zod";
 
 const IdSchema = z.uuid();

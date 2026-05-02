@@ -1,4 +1,4 @@
-import { getTodoStats } from "@/extensions/toDoBar";
+import { getTodoStats } from "@/extensions/todo-bar";
 import type { Metadata } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
 

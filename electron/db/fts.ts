@@ -3,7 +3,7 @@ import {
   NoteFromDbSchema,
   type FTSRows,
   type Note,
-} from "@shared/schemas/noteSchema";
+} from "@shared/schemas/note-schema";
 import type { Database as DatabaseType } from "better-sqlite3";
 
 class FTS5 {

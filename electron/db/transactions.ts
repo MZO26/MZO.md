@@ -1,4 +1,4 @@
-import type { Note } from "@shared/schemas/noteSchema";
+import type { Note } from "@shared/schemas/note-schema";
 import type { DbRow } from "@shared/types";
 import type { Database as DatabaseType, Transaction } from "better-sqlite3";
 
@@ -73,9 +73,7 @@ function createNoteTransactions(db: DatabaseType): NoteTransactions {
         throw new Error("NOT_FOUND");
       }
       if (tags && tags.length > 0) {
-        const uniqueTags = [...new Set(tags)].slice(0, 3);
-
-        for (const tag of uniqueTags) {
+        for (const tag of tags) {
           insertTagsStmt.run(result.id, tag);
         }
       }
@@ -113,10 +111,8 @@ function createNoteTransactions(db: DatabaseType): NoteTransactions {
         throw new Error("NOT_FOUND");
       }
       deleteTagsStmt.run(id);
-
-      if (tags.length > 0) {
-        const uniqueTags = [...new Set(tags)];
-        for (const tag of uniqueTags) {
+      if (tags && tags.length > 0) {
+        for (const tag of tags) {
           insertTagsStmt.run(id, tag);
         }
       }
