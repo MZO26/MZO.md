@@ -1,13 +1,12 @@
 import { bookmark, createNote, deleteNote, pin } from "@/api/noteAPI";
-import { editor } from "@/components/editor/editor";
 import { handleEditorEmptyState } from "@/components/editor/editorEmptyState";
 import {
   addOneNoteToList,
   handleSidebarEmptyState,
   reloadNoteList,
 } from "@/components/sidebar/sidebarNotes";
-import { viewNote } from "@/handlers/noteHandlers";
-import { getNoteId, setNoteId } from "@/services/state";
+import { stopAutoSave, viewNote } from "@/services/autoSave";
+import { getEditor, getNoteId, setNoteId } from "@/services/state";
 import { getElement, setActiveItem } from "@/utils/helpers";
 import { showToast } from "@/utils/toast";
 import { getMetadata } from "@shared/generators/generators";
@@ -33,17 +32,17 @@ async function addNoteBtnHandler() {
   const note = response.data;
   setNoteId(note.id);
   showToast("New note created");
-  if (editor) {
-    const noteElement = addOneNoteToList(note, container);
-    if (noteElement) setActiveItem(noteElement, container);
-    handleEditorEmptyState(note.id);
-    viewNote(note, editor);
-  }
+  const noteElement = addOneNoteToList(note, container);
+  if (noteElement) setActiveItem(noteElement, container);
+  handleEditorEmptyState(note.id);
+  viewNote(note);
 }
 
 export const pendingDeletions = new Set<string>();
 
 async function executeNoteDeletion(id: string, noteElement: HTMLDivElement) {
+  const editor = getEditor();
+  stopAutoSave(editor, "cancel");
   pendingDeletions.add(id);
   const response = await deleteNote(id);
   if (!response.success) {

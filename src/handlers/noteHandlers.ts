@@ -1,25 +1,17 @@
-import type { Editor } from "@tiptap/core";
-import { EditorState } from "@tiptap/pm/state";
-
 import { getNoteById, updateNote } from "@/api/noteAPI";
 import { editor } from "@/components/editor/editor";
-import { handleEditorEmptyState } from "@/components/editor/editorEmptyState";
 import {
   debouncedStatUpdate,
   getContent,
 } from "@/components/editor/editorHandlers";
 import { updateNoteInList } from "@/components/sidebar/sidebarNotes";
 import { debouncedTagUpdate } from "@/extensions/tag";
-import {
-  abortCurrentSave,
-  setupAutoSave,
-  startNewSaveCycle,
-} from "@/services/autoSave";
+import { viewNote } from "@/services/autoSave";
 import { setNoteId } from "@/services/state";
 import { setActiveItem } from "@/utils/helpers";
 import { showToast } from "@/utils/toast";
 import { getMetadata } from "@shared/generators/generators";
-import type { Note } from "@shared/schemas/noteSchema";
+import type { Editor } from "@tiptap/core";
 import { pendingDeletions } from "./buttonHandlers";
 
 async function noteItemHandler(
@@ -35,7 +27,7 @@ async function noteItemHandler(
     return;
   }
   setNoteId(noteID);
-  viewNote(response.data, editor);
+  viewNote(response.data);
   debouncedTagUpdate(response.data.tags);
   debouncedStatUpdate(editor, response.data.content);
   setActiveItem(noteItem, container);
@@ -55,25 +47,4 @@ async function saveNote(id: string, flush: boolean = false): Promise<void> {
   updateNoteInList(response.data);
 }
 
-function viewNote(note: Note, editor: Editor): void {
-  if (!editor) return;
-  abortCurrentSave();
-  handleEditorEmptyState(note.id);
-  editor.commands.setContent(note.content, { emitUpdate: false });
-  const newState = EditorState.create({
-    doc: editor.state.doc,
-    plugins: editor.state.plugins,
-    schema: editor.state.schema,
-  });
-  editor.view.updateState(newState);
-  editor.commands.focus();
-  editor.commands.unsetAllMarks();
-  const newController = startNewSaveCycle();
-  setupAutoSave({
-    editor,
-    signal: newController.signal,
-    id: note.id,
-  });
-}
-
-export { noteItemHandler, saveNote, updateNote, viewNote };
+export { noteItemHandler, saveNote, updateNote };

@@ -13,9 +13,11 @@ import { updateDateTime } from "@/utils/date";
 import { createAsyncHandler, getElement } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { createContextMenu } from "@/utils/templates";
+import { setGlobalEditor } from "./services/state";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const editor = initEditor("#editor");
+  setGlobalEditor(editor);
   initAppSettings();
   renderIcons();
   initNotesSidebar();

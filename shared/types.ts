@@ -1,5 +1,4 @@
 import type { Views } from "@electron/db/views";
-import type { Editor } from "@tiptap/core";
 import type { Note } from "./schemas/noteSchema";
 
 type NativeWindowColors = {
@@ -35,12 +34,6 @@ type WorkerResult =
   | { success: true; data: Uint8Array }
   | { success: false; message: string };
 
-interface AutoSaveConfig {
-  editor: Editor;
-  signal: AbortSignal;
-  id: string;
-}
-
 type NoteItemElements = {
   snippetContainer: HTMLDivElement | null;
   dateContainer: HTMLDivElement | null;
@@ -69,7 +62,6 @@ type DbRow = Omit<Note, "content" | "tags"> & {
 };
 
 export type {
-  AutoSaveConfig,
   AutoScrollOptions,
   BubbleMenuCommands,
   Code,

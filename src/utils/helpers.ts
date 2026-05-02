@@ -42,6 +42,14 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
       lastArgs = null;
     }
   };
+
+  debounced.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+      lastArgs = null;
+    }
+  };
   return debounced;
 }
 
