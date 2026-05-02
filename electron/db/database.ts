@@ -4,13 +4,13 @@ import {
   type NoteTransactions,
 } from "@electron/db/transactions";
 import { Views } from "@electron/db/views";
-import { getNoteData } from "@shared/generators/generators";
 import {
   NoteFromDbSchema,
   type CreateNotePayload,
   type Note,
   type UpdateNotePayload,
 } from "@shared/schemas/noteSchema";
+import type { DbRow } from "@shared/types";
 import BetterSqlite from "better-sqlite3";
 import { app } from "electron";
 import path from "path";
@@ -98,43 +98,43 @@ class NoteDB {
   create(payload: CreateNotePayload): Note {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
-    let { content, plainText } = payload;
-    const noteData = getNoteData(content, plainText);
+    let { content, plainText, title, snippet, tags } = payload;
+    const stringifiedContent = JSON.stringify(content);
     const result = this.transactions.safeCreate({
       id,
-      title: noteData.title,
-      stringifiedContent: noteData.stringifiedContent,
-      snippet: noteData.snippet,
-      tags: noteData.tags,
+      title,
+      stringifiedContent,
+      snippet,
+      tags: tags.slice(0, 3),
       plainText,
       created_at: now,
       updated_at: now,
     });
     return NoteFromDbSchema.parse({
       ...result,
-      content: noteData.stringifiedContent,
-      tags: noteData.tags,
+      content: stringifiedContent,
+      tags: tags,
     });
   }
 
   update(payload: UpdateNotePayload): Note {
-    let { id, content, plainText } = payload;
-    const noteData = getNoteData(content, plainText);
+    let { id, content, plainText, title, snippet, todos_left, tags } = payload;
+    const stringifiedContent = JSON.stringify(content);
     const now = new Date().toISOString();
     const result = this.transactions.safeUpdate({
       id,
-      title: noteData.title,
-      stringifiedContent: noteData.stringifiedContent,
-      snippet: noteData.snippet,
-      todos_left: noteData.todos_left,
-      tags: noteData.tags,
+      title,
+      stringifiedContent,
+      snippet,
+      todos_left,
+      tags: tags.slice(0, 3),
       plainText,
       updated_at: now,
     });
     return NoteFromDbSchema.parse({
       ...result,
-      content: noteData.stringifiedContent,
-      tags: noteData.tags,
+      content: stringifiedContent,
+      tags: tags,
     });
   }
 
@@ -144,7 +144,7 @@ class NoteDB {
   }
 
   getAll(): Note[] {
-    const result = this.getAllNotesStmt.all() as Note[];
+    const result = this.getAllNotesStmt.all() as DbRow[];
     if (result.length === 0) return [];
     const allTags = this.getAllTagsStmt.all() as {
       note_id: string;
@@ -166,18 +166,19 @@ class NoteDB {
   }
 
   getById(id: string): Note {
-    const note = this.getNoteByIdStmt.get(id) as Note;
-    const tags = this.getTagsByIdStmt.all(id) as { tag_name: string }[];
-    if (!note) {
+    const dbRow = this.getNoteByIdStmt.get(id) as DbRow;
+    if (!dbRow) {
       throw new Error("NOT_FOUND");
     }
+    const tags = this.getTagsByIdStmt.all(id) as { tag_name: string }[];
+
     return NoteFromDbSchema.parse({
-      ...note,
+      ...dbRow,
       tags: tags.map((t) => t.tag_name),
     });
   }
 
-  toggleBookmark(id: string) {
+  toggleBookmark(id: string): boolean {
     const now = new Date().toISOString();
     const result = this.toggleBookmarkStmt.get(now, id) as
       | {
@@ -190,7 +191,7 @@ class NoteDB {
     return Boolean(result.bookmarked);
   }
 
-  togglePin(id: string) {
+  togglePin(id: string): boolean {
     const now = new Date().toISOString();
     const result = this.togglePinStmt.get(now, id) as
       | { pinned: number }

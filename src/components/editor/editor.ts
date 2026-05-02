@@ -1,14 +1,15 @@
 import { debouncedStatUpdate } from "@/components/editor/editorHandlers";
 import { buildMenu } from "@/components/toolbar/toolbarBuilder";
 import { DragAutoScroll } from "@/extensions/autoScroll";
-import { CustomCodeBlockLowlight } from "@/extensions/languages";
 import { lowlight } from "@/extensions/lowlight";
+import { MasterShortcuts } from "@/extensions/shortcuts";
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
 import { getElement } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { Editor } from "@tiptap/core";
 import BubbleMenu from "@tiptap/extension-bubble-menu";
+import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
@@ -62,6 +63,7 @@ function initEditor(selector: string): Editor {
 
 function getNoteEditorExtensions() {
   return [
+    MasterShortcuts,
     Typography,
     DragAutoScroll.configure({
       getScrollContainer: () => getElement(".editor-container"),
@@ -148,7 +150,7 @@ function getNoteEditorExtensions() {
         class: "editor-dropcursor",
       },
     }),
-    CustomCodeBlockLowlight.configure({
+    CodeBlockLowlight.configure({
       lowlight,
       enableTabIndentation: true,
       HTMLAttributes: {

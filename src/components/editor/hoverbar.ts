@@ -1,14 +1,12 @@
+import { setTheme } from "@/api/electronAPI";
 import { editor } from "@/components/editor/editor";
-import { getElement } from "@/utils/helpers";
+import { createAsyncHandler, getElement } from "@/utils/helpers";
 import type { Theme } from "@shared/schemas/storeSchema";
 
-function initFocusMode(appContainer: HTMLDivElement) {
+async function initFocusMode(appContainer: HTMLDivElement) {
   const newState = !appContainer.classList.contains("focus");
   appContainer.classList.toggle("focus", newState);
-  window.electronAPI.setTheme(
-    document.body.dataset["theme"] as Theme,
-    newState,
-  );
+  await setTheme(document.body.dataset["theme"] as Theme, newState);
 }
 
 function setEditorWidth(editorElement: HTMLDivElement) {
@@ -25,9 +23,12 @@ function initHoverbar() {
   const editorEl = getElement<HTMLDivElement>("#editor");
   const readOnlyBtn = getElement(".read-only-btn");
   const editorWidthBtn = getElement(".editor-width-btn");
-  focusBtn.addEventListener("click", () => {
-    initFocusMode(appContainer);
-  });
+  focusBtn.addEventListener(
+    "click",
+    createAsyncHandler(async () => {
+      initFocusMode(appContainer);
+    }),
+  );
   readOnlyBtn.addEventListener("click", () => {
     editor?.setEditable(!editor.isEditable);
   });

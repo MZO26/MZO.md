@@ -73,6 +73,7 @@ class FTS5 {
 
   searchNotes(searchTerm: string, limit: number): Note[] {
     const ftsQuery = ftsQueryGenerator(searchTerm);
+    if (ftsQuery === "") return [];
     const stmt = this.db.prepare<unknown[], FTSRows>(`
     SELECT 
       n.id, 

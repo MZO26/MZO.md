@@ -144,7 +144,7 @@ body {
 }
 
 button {
-  z-index: 9999;
+  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -187,6 +187,12 @@ button.is-active {
   font-weight: bold;
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .lucide {
   width: 18px;
   height: 18px;
@@ -222,6 +228,7 @@ button.is-active {
 }
 
 .tippy-box[data-theme~="app-theme"] {
+  font-size: 14px;
   background-color: var(--bg-sidebar-section);
   color: var(--text-main);
   border: 1px solid var(--border-color);
@@ -243,6 +250,22 @@ button.is-active {
 .tippy-box[data-theme~="app-theme"][data-placement^="right"]
   > .tippy-arrow::before {
   border-right-color: var(--bg-sidebar-section);
+}
+
+.tippy-shortcut {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  opacity: 0.6;
+  padding: 3px 0;
+  font-size: 0.85em;
+}
+
+.tippy-shortcut::before {
+  content: "•";
+  margin-right: 5px;
+  opacity: 0.7;
 }
 
 /* Focus */

@@ -5,7 +5,7 @@ import {
   addManyNotesToList,
   reloadNoteList,
 } from "@/components/sidebar/sidebarNotes";
-import { debounce, getElement } from "@/utils/helpers";
+import { createAsyncHandler, debounce, getElement } from "@/utils/helpers";
 import { showToast } from "@/utils/toast";
 
 async function handleSearchInput(
@@ -64,25 +64,33 @@ function initSearchHandlers() {
   const smartViewContainer = getElement(".smart-view-list");
   const infoSidebarTagContainer = getElement<HTMLDivElement>(".tag-container");
 
-  smartViewContainer.addEventListener("click", async (event) => {
-    const target = (event.target as HTMLButtonElement).closest(
-      "button[data-view]",
-    ) as HTMLButtonElement | null;
-    if (!target) return;
-    const view = target.dataset["view"];
-    if (!view) return;
-    handleViews(view);
-  });
+  smartViewContainer.addEventListener(
+    "click",
+    createAsyncHandler(async (event) => {
+      const target = event.target as HTMLElement;
+      if (target === smartViewContainer) return;
+      const button = target.closest(
+        "button[data-view]",
+      ) as HTMLButtonElement | null;
+      if (!button) return;
+      const view = button.dataset["view"];
+      if (!view) return;
+      handleViews(view);
+    }),
+  );
 
-  infoSidebarTagContainer.addEventListener("click", async (e: Event) => {
-    const target = (e.target as HTMLElement).closest(
-      ".tag",
-    ) as HTMLSpanElement | null;
-    if (!target) return;
-    const tag = target.dataset["tag"];
-    if (!tag) return;
-    searchByTag(tag);
-  });
+  infoSidebarTagContainer.addEventListener(
+    "click",
+    createAsyncHandler(async (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target === infoSidebarTagContainer) return;
+      const spanEl = target.closest(".tag") as HTMLSpanElement | null;
+      if (!spanEl) return;
+      const tag = spanEl.dataset["tag"];
+      if (!tag) return;
+      searchByTag(tag);
+    }),
+  );
 }
 
 export { initSearchHandlers };

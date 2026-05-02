@@ -30,7 +30,7 @@ function validateSender(event: IpcMainInvokeEvent) {
   throw new Error("UNAUTHORIZED_SENDER");
 }
 
-async function tryExec<T>(
+async function wrapResult<T>(
   event: IpcMainInvokeEvent,
   action: () => T,
 ): Promise<IpcResponse<T>> {
@@ -102,4 +102,4 @@ function checkRateLimit(channel: string, cooldownMs: number): boolean {
   return true;
 }
 
-export { checkRateLimit, tryExec };
+export { checkRateLimit, wrapResult };

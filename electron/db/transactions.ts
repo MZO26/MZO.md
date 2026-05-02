@@ -1,8 +1,9 @@
 import type { Note } from "@shared/schemas/noteSchema";
+import type { DbRow } from "@shared/types";
 import type { Database as DatabaseType, Transaction } from "better-sqlite3";
 
 export interface NoteTransactions {
-  safeCreate: Transaction<(params: CreateTransactionParams) => Note>;
+  safeCreate: Transaction<(params: CreateTransactionParams) => DbRow>;
   safeDelete: Transaction<(id: string) => boolean>;
   safeUpdate: Transaction<(params: UpdateTransactionParams) => Note>;
 }
@@ -48,9 +49,9 @@ function createNoteTransactions(db: DatabaseType): NoteTransactions {
     "INSERT INTO note_tags (note_id, tag_name) VALUES (?, ?)",
   );
   return {
-    safeCreate: db.transaction((params: CreateTransactionParams) => {
-      const id = crypto.randomUUID();
+    safeCreate: db.transaction((params: CreateTransactionParams): DbRow => {
       const {
+        id,
         title,
         stringifiedContent,
         plainText,
@@ -67,12 +68,16 @@ function createNoteTransactions(db: DatabaseType): NoteTransactions {
         snippet,
         created_at,
         updated_at,
-      );
+      ) as DbRow | undefined;
       if (!result) {
         throw new Error("NOT_FOUND");
       }
-      for (const tag of tags) {
-        insertTagsStmt.run(id, tag);
+      if (tags && tags.length > 0) {
+        const uniqueTags = [...new Set(tags)].slice(0, 3);
+
+        for (const tag of uniqueTags) {
+          insertTagsStmt.run(result.id, tag);
+        }
       }
       return result;
     }),
@@ -108,8 +113,12 @@ function createNoteTransactions(db: DatabaseType): NoteTransactions {
         throw new Error("NOT_FOUND");
       }
       deleteTagsStmt.run(id);
-      for (const tag of tags) {
-        insertTagsStmt.run(id, tag);
+
+      if (tags.length > 0) {
+        const uniqueTags = [...new Set(tags)];
+        for (const tag of uniqueTags) {
+          insertTagsStmt.run(id, tag);
+        }
       }
       return result;
     }),

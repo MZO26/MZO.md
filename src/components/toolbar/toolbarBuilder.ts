@@ -17,7 +17,7 @@ function getActiveMenu(editor: Editor): string {
   return "text";
 }
 
-export function updateActiveStates(
+function updateActiveStates(
   buttonElements: Map<string, HTMLButtonElement>,
   actions: ActionMap,
   editor: Editor,
@@ -31,7 +31,7 @@ export function updateActiveStates(
   });
 }
 
-export function buildMenu(
+function buildMenu(
   container: HTMLElement,
   editor: Editor,
   type: "toolbar" | "bubble-menu",
@@ -45,9 +45,9 @@ export function buildMenu(
   container.appendChild(fragment);
   renderIcons(container);
   container.addEventListener("click", (e) => {
-    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
-      "[data-action]",
-    );
+    const target = e.target as HTMLElement;
+    if (target === container) return;
+    const btn = target.closest<HTMLButtonElement>("[data-action]");
     if (!btn) return;
     const actionKey = btn.dataset["action"];
     if (!actionKey) return;
@@ -65,3 +65,5 @@ export function buildMenu(
   });
   updateActiveStates(buttonMap, actions, editor);
 }
+
+export { buildMenu };

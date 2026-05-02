@@ -13,7 +13,12 @@ baseHeader.className = "note-header";
 const baseTitle = document.createElement("span");
 baseTitle.className = "note-title";
 
-baseHeader.append(baseTitle);
+const baseButton = document.createElement("button");
+const dots = document.createElement("span");
+dots.className = "dots";
+baseButton.appendChild(dots);
+
+baseHeader.append(baseTitle, baseButton);
 
 const baseMetadata = document.createElement("div");
 baseMetadata.className = "note-metadata";
@@ -41,7 +46,8 @@ function createNoteItem(note: Note): HTMLDivElement {
 }
 
 async function createContextMenu(e: Event) {
-  const item = (e.target as Element).closest<HTMLElement>(".noteItem");
+  const target = e.target as HTMLElement;
+  const item = target.closest<HTMLElement>(".noteItem");
   if (!item) return;
   e.preventDefault();
   const id = item.dataset["id"];

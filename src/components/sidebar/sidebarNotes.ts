@@ -1,51 +1,55 @@
 import { getAll } from "@/api/noteAPI";
+import { getSettings, setSettings } from "@/api/settingsAPI";
 import { editor } from "@/components/editor/editor";
 import { handleEditorEmptyState } from "@/components/editor/editorEmptyState";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebarEmptyState";
-import { deleteBtnHandler } from "@/handlers/buttonHandlers";
 import { noteItemHandler } from "@/handlers/noteHandlers";
-import { getValue, setValue, StorageKeys } from "@/services/cache";
+import { setNoteId } from "@/services/state";
 import { formatNoteDate } from "@/utils/date";
-import { getElement } from "@/utils/helpers";
-import { createNoteItem } from "@/utils/templates";
+import { createAsyncHandler, getElement } from "@/utils/helpers";
+import { createContextMenu, createNoteItem } from "@/utils/templates";
 import { showToast } from "@/utils/toast";
 import type { Note } from "@shared/schemas/noteSchema";
 import type { NoteItemElements } from "@shared/types";
 
-function initNotesSidebar() {
+async function initNotesSidebar() {
+  const response = await getSettings("collapsed-state");
+  const collapsed = response.success ? response.data === true : false;
   const appContainer = getElement(".app-container");
+  if (collapsed) {
+    appContainer.classList.add("sidebar-collapsed");
+  } else appContainer.classList.remove("sidebar-collapsed");
   void appContainer.offsetWidth;
   appContainer.classList.remove("no-transition");
-  const storedValue = getValue(StorageKeys.SIDEBAR_COLLAPSED);
-  const isCollapsed = storedValue === true;
-  appContainer.classList.toggle("sidebar-collapsed", isCollapsed);
   const container = getElement<HTMLDivElement>(".notes-container");
-  container.addEventListener("click", async (event) => {
-    const target = event.target as HTMLElement;
-
-    const deleteBtn = target.closest<HTMLButtonElement>(".delete-btn");
-    if (deleteBtn) {
-      await deleteBtnHandler(deleteBtn, container);
-      return;
-    }
-    const noteItem = target.closest<HTMLDivElement>(".noteItem");
-    if (noteItem && editor) {
-      await noteItemHandler(noteItem, container, editor);
-      return;
-    }
-  });
+  container.addEventListener(
+    "click",
+    createAsyncHandler(async (event) => {
+      const target = event.target as HTMLElement;
+      // early return if clicking the container background
+      if (target === container) return;
+      const actionBtn = target.closest<HTMLButtonElement>("button");
+      if (actionBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        await createContextMenu(event);
+        return;
+      }
+      const noteItem = target.closest<HTMLDivElement>(".noteItem");
+      if (noteItem && editor) {
+        await noteItemHandler(noteItem, container, editor);
+        return;
+      }
+    }),
+  );
 }
 
-function collapseSidebar(): void {
+async function collapseSidebar(): Promise<void> {
   const appContainer = getElement<HTMLDivElement>(".app-container");
-  const frameLeft = getElement(".frame-left");
   const currentState = appContainer.classList.contains("sidebar-collapsed");
-  const editorContainer = getElement(".editor-container");
   const newState = !currentState;
   appContainer.classList.toggle("sidebar-collapsed", newState);
-  frameLeft.classList.toggle("sidebar-collapsed", newState);
-  editorContainer.classList.toggle("sidebar-collapsed", newState);
-  setValue(StorageKeys.SIDEBAR_COLLAPSED, newState);
+  await setSettings({ "collapsed-state": newState });
 }
 
 function addOneNoteToList(
@@ -70,7 +74,7 @@ function addOneNoteToList(
     container.appendChild(noteElement);
   }
   handleSidebarEmptyState(container);
-  setValue(StorageKeys.NOTE_ID, note.id);
+  setNoteId(note.id);
   return noteElement;
 }
 
@@ -84,7 +88,7 @@ function addManyNotesToList(notes: Note[], container: HTMLDivElement) {
   });
   container.appendChild(fragment);
   handleEditorEmptyState();
-  handleSidebarEmptyState(container);
+  handleSidebarEmptyState();
 }
 
 function updateNoteInList(note: Note): void {

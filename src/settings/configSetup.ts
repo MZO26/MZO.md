@@ -1,11 +1,17 @@
 import { getSettings, setSettings } from "@/api/settingsAPI";
 import { applyAppTheme, setAppTheme, setCodeTheme } from "@/settings/theme";
-import { getElement } from "@/utils/helpers";
-import type { AppSettings } from "@shared/schemas/storeSchema";
-import tippy from "tippy.js";
-import "tippy.js/dist/tippy.css";
+import { createAsyncHandler, getElement, setActiveItem } from "@/utils/helpers";
+import type { StyleKeys } from "@shared/schemas/storeSchema";
+import { buildSelects } from "./settingItems";
 
 function initAppSettings() {
+  const buttonsContainer = getElement<HTMLDivElement>(".settings-buttons");
+  const settingsContainer = getElement<HTMLDivElement>(".settings-content");
+  const firstActiveBtn =
+    buttonsContainer.querySelector<HTMLButtonElement>("button:first-child");
+  if (firstActiveBtn) setActiveItem(firstActiveBtn, buttonsContainer);
+  buildSelects(settingsContainer);
+
   setUpEditorSettings({
     selectId: "#font-family",
     storageKey: "font-family",
@@ -32,20 +38,24 @@ function initAppSettings() {
     formatValue: (v) => `${v}px`,
   });
 
-  const codeThemeSelect = getElement<HTMLSelectElement>("#code-theme");
-  tippy(codeThemeSelect, {
-    content: "select code-theme",
-    trigger: "click",
-    placement: "auto",
-    appendTo: "parent",
-    theme: "app-theme",
+  buttonsContainer.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target === buttonsContainer) return;
+    const btn = target.closest(".selection-btn") as HTMLButtonElement | null;
+    if (!btn) return;
+    const targetTab = btn.dataset["category"];
+    if (!targetTab) return;
+    settingsContainer.dataset["activetab"] = targetTab;
+    setActiveItem(btn, buttonsContainer);
   });
+  const codeThemeSelect = getElement<HTMLSelectElement>("#code-theme");
+
   codeThemeSelect.addEventListener("change", async () => {
     setCodeTheme(codeThemeSelect);
   });
 
   const themeSelect = getElement<HTMLSelectElement>("#theme");
-  themeSelect.addEventListener("change", setAppTheme);
+  themeSelect.addEventListener("change", createAsyncHandler(setAppTheme));
   applyAppTheme(themeSelect);
   // listen to OS theme changes
   const unsubscribeThemeChange = window.electronAPI.onThemeChanged(
@@ -73,7 +83,7 @@ function syncUI<K extends string>(
 
 interface EditorStyleConfig<T extends number | string> {
   selectId: string; // uses the select for the settings
-  storageKey: keyof AppSettings; // single cache key
+  storageKey: StyleKeys; // single cache key
   cssVar: string; // css variable that responds on select
   defaultValue: T; // line-height and font are numbers / font-family string
   min?: number; // min and max optional so they don't appear on font-family setting / otherwise they set the min and max value possible

@@ -68,13 +68,13 @@ function setCodeTheme(selectElement: HTMLSelectElement): CodeTheme {
   return preference;
 }
 
-const setAppTheme = async (event: Event) => {
+async function setAppTheme(event: Event) {
   const selectElement = event.currentTarget as HTMLSelectElement;
   const theme = selectElement.value;
   const validTheme = theme in THEME_MAP ? (theme as Theme) : "system";
   // sets the theme in the main process, which will trigger the theme-changed event
   await applyAppTheme(selectElement, validTheme, false);
   showToast(`Set app theme to: ${validTheme}`);
-};
+}
 
 export { applyAppTheme, resolveTheme, setAppTheme, setCodeTheme };

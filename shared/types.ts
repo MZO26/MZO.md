@@ -1,5 +1,6 @@
 import type { Views } from "@electron/db/views";
 import type { Editor } from "@tiptap/core";
+import type { Note } from "./schemas/noteSchema";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -37,7 +38,7 @@ type WorkerResult =
 interface AutoSaveConfig {
   editor: Editor;
   signal: AbortSignal;
-  noteID?: string;
+  id: string;
 }
 
 type NoteItemElements = {
@@ -56,13 +57,15 @@ type BubbleMenuCommands = (
   value?: string | undefined,
 ) => boolean | void | Promise<void>;
 
-type NoteData = {
+type Metadata = {
   title: string;
   snippet: string;
   tags: string[];
   todos_left: number;
-  stringifiedContent: string;
-  now: string;
+};
+
+type DbRow = Omit<Note, "content" | "tags"> & {
+  content: string;
 };
 
 export type {
@@ -70,9 +73,10 @@ export type {
   AutoScrollOptions,
   BubbleMenuCommands,
   Code,
+  DbRow,
   IpcResponse,
+  Metadata,
   NativeWindowColors,
-  NoteData,
   NoteItemElements,
   ResolvedTheme,
   TitleBarOverlayOptions,

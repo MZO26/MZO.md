@@ -3,8 +3,11 @@ import type { ImagePayload } from "@shared/schemas/imageSchema";
 import type { Theme } from "@shared/schemas/storeSchema";
 import type { IpcResponse } from "@shared/types";
 
-async function setTheme(theme: Theme): Promise<IpcResponse<Theme>> {
-  return safeIpcCall(window.electronAPI.setTheme(theme));
+async function setTheme(
+  theme: Theme,
+  focus?: boolean,
+): Promise<IpcResponse<Theme>> {
+  return safeIpcCall(window.electronAPI.setTheme(theme, focus));
 }
 
 async function saveImage(

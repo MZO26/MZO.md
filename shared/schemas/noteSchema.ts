@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const IdSchema = z.uuid();
 
-const TitleSchema = z.string().min(1).max(100).default("New Note");
+const TitleSchema = z.string().min(1).max(50).default("New Note");
 
 const TagSchema = z.string().trim().min(1).max(40).toLowerCase();
 
@@ -69,39 +69,22 @@ const FTSRowsSchema = NoteSchema.omit({
 });
 
 const SearchSchema = z.object({
-  searchTerm: z
-    .string()
-    .trim()
-    .min(1, "Search term is required")
-    .max(100, "Search term is too long"),
+  searchTerm: z.string().trim().min(1).max(100),
 
-  limit: z
-    .number()
-    .int()
-    .min(1, "Limit must be at least 1")
-    .max(50, "Limit cannot exceed 50")
-    .default(20),
+  limit: z.number().int().min(1).max(50).default(20),
 });
 
 const CreateNotePayloadSchema = NoteSchema.omit({
   id: true,
-  title: true,
-  snippet: true,
-  tags: true,
   pinned: true,
   bookmarked: true,
-  todos_left: true,
   created_at: true,
   updated_at: true,
 });
 
 const UpdateNotePayloadSchema = NoteSchema.omit({
-  title: true,
-  snippet: true,
-  tags: true,
   pinned: true,
   bookmarked: true,
-  todos_left: true,
   created_at: true,
   updated_at: true,
 });

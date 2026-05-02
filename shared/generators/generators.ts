@@ -1,23 +1,20 @@
 import { getTodoStats } from "@/extensions/toDoBar";
-import type { NoteData } from "@shared/types";
+import type { Metadata } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
 
-function getNoteData(
+function getMetadata(
   content: {
     type: "doc";
     content: JSONContent[];
-    attrs?: Record<string, unknown> | undefined;
   },
   plainText: unknown,
-): NoteData {
+): Metadata {
   const { left } = getTodoStats(content);
   return {
     title: titleGenerator(plainText),
     snippet: snippetGenerator(plainText),
     todos_left: left,
     tags: tagsGenerator(plainText),
-    stringifiedContent: JSON.stringify(content),
-    now: new Date().toISOString(),
   };
 }
 
@@ -36,7 +33,7 @@ function titleGenerator(text: unknown): string {
 
   for (let line of iterateLines(text)) {
     line = line.replace(/#[\p{L}\p{N}_]+/gu, "").trim();
-    if (line) return line;
+    if (line) return line.length > 50 ? line.slice(0, 47) + "..." : line;
   }
   return "New Note";
 }
@@ -75,18 +72,18 @@ function tagsGenerator(input: unknown): string[] {
 
 function ftsQueryGenerator(searchTerm: unknown): string {
   if (typeof searchTerm !== "string") return "";
-  const cleanSearch = searchTerm.replace(/[^\p{L}\p{N}\s]/gu, " ");
-  const ftsQuery = cleanSearch
+  const shortened = searchTerm.substring(0, 100);
+  const cleanSearch = shortened.replace(/[^\p{L}\p{N}\s]/gu, " ");
+  const words = cleanSearch
     .split(/\s+/)
-    .filter((word: string) => word.length > 0)
-    .map((word: string) => `"${word}"*`)
-    .join(" AND ");
-  return ftsQuery;
+    .filter((word: string) => word.length > 0);
+  if (words.length === 0) return "";
+  return words.map((word) => `"${word}"*`).join(" AND ");
 }
 
 export {
   ftsQueryGenerator,
-  getNoteData,
+  getMetadata,
   snippetGenerator,
   tagsGenerator,
   titleGenerator,

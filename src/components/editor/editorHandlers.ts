@@ -2,7 +2,7 @@ import { calculateToDos } from "@/extensions/toDoBar";
 import { debounce, getElement } from "@/utils/helpers";
 import type { Editor, JSONContent } from "@tiptap/core";
 
-function extractNoteDataFromEditor(editor: Editor) {
+function getContent(editor: Editor) {
   const plainText = editor.getText();
   const content = editor.getJSON();
   return { content, plainText };
@@ -34,4 +34,4 @@ function updateStats(editor: Editor, content: JSONContent) {
 
 const debouncedStatUpdate = debounce(updateStats, 1000);
 
-export { debouncedStatUpdate, extractNoteDataFromEditor };
+export { debouncedStatUpdate, getContent };

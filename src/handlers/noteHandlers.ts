@@ -6,7 +6,7 @@ import { editor } from "@/components/editor/editor";
 import { handleEditorEmptyState } from "@/components/editor/editorEmptyState";
 import {
   debouncedStatUpdate,
-  extractNoteDataFromEditor,
+  getContent,
 } from "@/components/editor/editorHandlers";
 import { updateNoteInList } from "@/components/sidebar/sidebarNotes";
 import { debouncedTagUpdate } from "@/extensions/tag";
@@ -15,10 +15,12 @@ import {
   setupAutoSave,
   startNewSaveCycle,
 } from "@/services/autoSave";
-import { setValue, StorageKeys } from "@/services/cache";
+import { setNoteId } from "@/services/state";
 import { setActiveItem } from "@/utils/helpers";
 import { showToast } from "@/utils/toast";
+import { getMetadata } from "@shared/generators/generators";
 import type { Note } from "@shared/schemas/noteSchema";
+import { pendingDeletions } from "./buttonHandlers";
 
 async function noteItemHandler(
   noteItem: HTMLDivElement,
@@ -32,7 +34,7 @@ async function noteItemHandler(
     showToast(response.message);
     return;
   }
-  setValue(StorageKeys.NOTE_ID, noteID);
+  setNoteId(noteID);
   viewNote(response.data, editor);
   debouncedTagUpdate(response.data.tags);
   debouncedStatUpdate(editor, response.data.content);
@@ -40,16 +42,17 @@ async function noteItemHandler(
 }
 
 async function saveNote(id: string, flush: boolean = false): Promise<void> {
-  if (!editor) return;
-  const editorData = extractNoteDataFromEditor(editor);
-  const payload = { ...editorData, id };
+  if (!editor || !id || pendingDeletions.has(id)) return;
+  const { content, plainText } = getContent(editor);
+  const metaData = getMetadata(content, plainText);
+  const payload = { id, content, plainText, ...metaData };
   const response = await updateNote(payload, flush);
   if (!response.success) {
+    console.error("save failed for id", id);
     showToast(response.message);
     return;
   }
   updateNoteInList(response.data);
-  setValue(StorageKeys.NOTE_ID, id);
 }
 
 function viewNote(note: Note, editor: Editor): void {
@@ -69,7 +72,7 @@ function viewNote(note: Note, editor: Editor): void {
   setupAutoSave({
     editor,
     signal: newController.signal,
-    noteID: note.id,
+    id: note.id,
   });
 }
 

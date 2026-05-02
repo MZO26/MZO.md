@@ -3,6 +3,9 @@ import type {
   ActionMap,
   BubbleMenuGroup,
 } from "@/components/toolbar/actions";
+import { formatShortcut } from "@/utils/helpers";
+import tippy from "tippy.js";
+import "tippy.js/dist/tippy.css";
 
 const BUBBLE_MENU_GROUPS: BubbleMenuGroup[] = [
   "text",
@@ -17,6 +20,22 @@ function createButton(key: string, item: Action): HTMLButtonElement {
   const i = document.createElement("i");
   i.dataset["lucide"] = item.icon;
   btn.appendChild(i);
+  const tooltipContainer = document.createElement("span");
+  tooltipContainer.textContent = key;
+  const shortcutText = formatShortcut(item.shortcut);
+  if (shortcutText) {
+    const kbd = document.createElement("kbd");
+    kbd.className = "tippy-shortcut";
+    kbd.textContent = shortcutText;
+    tooltipContainer.appendChild(kbd);
+  }
+  tippy(btn, {
+    content: tooltipContainer,
+    placement: "auto",
+    arrow: true,
+    animation: "fade",
+    theme: "app-theme",
+  });
   return btn;
 }
 

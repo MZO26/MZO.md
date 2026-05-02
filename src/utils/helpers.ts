@@ -10,11 +10,11 @@ function getElement<T extends HTMLElement>(selector: string): T {
 
 function setActiveItem(element: HTMLElement, parent: HTMLElement) {
   if (!element) return;
-  const currentlyActive = parent.querySelector(".active");
+  const currentlyActive = parent.querySelector(".is-active");
   if (currentlyActive) {
-    currentlyActive.classList.remove("active");
+    currentlyActive.classList.remove("is-active");
   }
-  element.classList.add("active");
+  element.classList.add("is-active");
 }
 
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
@@ -62,4 +62,50 @@ async function safeIpcCall<T>(
   }
 }
 
-export { debounce, getElement, safeIpcCall, setActiveItem };
+// guard to prevent race conditions on multiple clicks
+function createAsyncHandler<T extends Event>(
+  callback: (event: T) => Promise<void>,
+) {
+  let isProcessing = false;
+  return async (event: T) => {
+    if (isProcessing) return;
+    isProcessing = true;
+    try {
+      await callback(event);
+    } catch (error) {
+      console.error("Async Handler Error: ", error);
+    } finally {
+      isProcessing = false;
+    }
+  };
+}
+
+function formatShortcut(shortcut?: string): string {
+  if (!shortcut) return "";
+
+  const isMac =
+    typeof window !== "undefined"
+      ? navigator.userAgent.toUpperCase().indexOf("MAC") >= 0
+      : false;
+
+  const modifier = isMac ? "⌘" : "Ctrl+";
+  let formatted = shortcut.replace(/mod[-+]?/gi, modifier);
+
+  if (isMac) {
+    formatted = formatted.replace(/shift[-+]?/gi, "⇧");
+    formatted = formatted.replace(/alt[-+]?/gi, "⌥");
+  } else {
+    formatted = formatted.replace(/shift[-+]?/gi, "Shift+");
+    formatted = formatted.replace(/alt[-+]?/gi, "Alt+");
+  }
+  return formatted.toUpperCase();
+}
+
+export {
+  createAsyncHandler,
+  debounce,
+  formatShortcut,
+  getElement,
+  safeIpcCall,
+  setActiveItem,
+};

@@ -6,11 +6,11 @@ import {
   reloadNoteList,
 } from "@/components/sidebar/sidebarNotes";
 import { buildMenu } from "@/components/toolbar/toolbarBuilder";
-import { addNoteBtnHandler, closeModal } from "@/handlers/buttonHandlers";
+import { addNoteBtnHandler, setModalState } from "@/handlers/buttonHandlers";
 import { initSearchHandlers } from "@/handlers/searchHandlers";
-import { initAppSettings } from "@/settings/settings";
+import { initAppSettings } from "@/settings/configSetup";
 import { updateDateTime } from "@/utils/date";
-import { getElement } from "@/utils/helpers";
+import { createAsyncHandler, getElement } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { createContextMenu } from "@/utils/templates";
 
@@ -26,9 +26,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   initHoverbar();
   initSearchHandlers();
   const notesContainer = getElement(".notes-container");
-  notesContainer.addEventListener("contextmenu", createContextMenu);
+  notesContainer.addEventListener(
+    "contextmenu",
+    createAsyncHandler(createContextMenu),
+  );
   const addNoteBtn = getElement(".add-note-btn");
-  addNoteBtn.addEventListener("click", addNoteBtnHandler);
+  addNoteBtn.addEventListener("click", createAsyncHandler(addNoteBtnHandler));
   const infoSidebar = getElement<HTMLElement>(".info-sidebar");
   const infoSidebarToggle = getElement<HTMLButtonElement>(
     ".info-sidebar-toggle",
@@ -43,15 +46,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
   const closeModalBtn = getElement<HTMLButtonElement>(".closeModal-btn");
-  closeModalBtn.addEventListener("click", closeModal);
-  const focusEditorBtn = getElement(".focus-editor-btn");
+  closeModalBtn.addEventListener("click", () => setModalState(false));
+  const openModalBtn = getElement<HTMLButtonElement>(".settings-btn");
+  openModalBtn.addEventListener("click", () => setModalState(true));
+  const focusEditorBtn = getElement(".focus-btn");
   focusEditorBtn.addEventListener("click", () => {
     const editorElement = getElement(".ProseMirror");
     if (editorElement) {
       editorElement.classList.toggle("focus-mode-active");
     }
   });
-
   const collapseBtn = getElement<HTMLButtonElement>(".collapse-btn");
   collapseBtn.addEventListener("click", collapseSidebar);
   document.addEventListener("keydown", (event) => {

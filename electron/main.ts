@@ -1,6 +1,5 @@
 import { setUpContextMenu } from "@electron/contextMenu";
 import { registerIpcHandlers } from "@electron/ipc/ipcHandlers";
-import { tryExec } from "@electron/ipc/ipcValidation";
 import {
   navigationHandler,
   registerCustomProtocol,
@@ -14,9 +13,11 @@ import {
   onOSThemeChange,
 } from "@electron/titlebar";
 import { app, BrowserWindow, ipcMain, Menu, nativeTheme } from "electron";
+import console from "node:console";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { wrapResult } from "./ipc/ipcValidation";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env["DIST"] = path.join(__dirname, "../dist");
@@ -81,7 +82,7 @@ app.whenReady().then(async () => {
   ipcMain.on(
     "show-note-menu",
     (event, id: string, pinned: boolean, bookmarked: boolean) => {
-      return tryExec(event, async () => {
+      return wrapResult(event, async () => {
         console.log("show menu for", id);
         if (win) {
           const contextMenu = setUpContextMenu(win, id, pinned, bookmarked);

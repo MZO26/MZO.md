@@ -1,21 +1,21 @@
 import { saveNote } from "@/handlers/noteHandlers";
-import { getValue, StorageKeys } from "@/services/cache";
 import { debounce } from "@/utils/helpers";
 import type { AutoSaveConfig } from "@shared/types";
 
 let currentController: AbortController | null = null;
 
-async function setupAutoSave({ editor, signal, noteID }: AutoSaveConfig) {
+async function setupAutoSave({ editor, signal, id }: AutoSaveConfig) {
   let lastSavedDoc = editor.state.doc;
   // executeSave always gets the current id and calls save function with id and flush args
-  const executeSave = (flush: boolean) => {
-    // early return if nothing changed
-    if (editor.state.doc === lastSavedDoc) return;
-    const id = noteID || getValue(StorageKeys.NOTE_ID);
-    if (id !== null) {
-      saveNote(id, flush);
-      lastSavedDoc = editor.state.doc;
+  const executeSave = async (flush: boolean) => {
+    if (!id) {
+      console.error("No id found");
+      return;
     }
+    // early return if nothing changed
+    if (editor.state.doc.eq(lastSavedDoc)) return;
+    await saveNote(id, flush);
+    lastSavedDoc = editor.state.doc;
   };
   // wraps executeSave function in 2000ms debounce. debouncedSave now is a variable that holds the debounced function
   const debouncedSave = debounce(executeSave, 2000);

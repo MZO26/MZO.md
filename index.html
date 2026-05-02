@@ -61,18 +61,13 @@
           </div>
           <div class="notes-container"></div>
           <div class="sidebar-footer">
-            <button
-              popovertarget="settings-panel"
-              class="tooltip"
-              data-tooltip="settings"
-              data-position="top-right"
-            >
+            <button class="settings-btn" popovertarget="settings-panel">
               <i data-lucide="sliders-horizontal"></i>
             </button>
 
             <button
-              popovertarget="smart-views-popover"
               class="sidebar-trigger-btn"
+              popovertarget="smart-views-popover"
             >
               <i data-lucide="list-filter"></i>
             </button>
@@ -130,78 +125,9 @@
       </div>
       <div class="toast-container"></div>
     </div>
-    <div id="settings-panel" class="settings-p" popover class="settings-p">
-      <div class="settings-p-header">
-        <div class="settings-title">Settings</div>
-      </div>
-      <div class="settings-p-body">
-        <div class="settings-field">
-          <label for="theme">Theme:</label>
-          <select id="theme" class="theme-select">
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="light-warm">Light (Warm)</option>
-            <option value="dark">Dark</option>
-            <option value="dark-warm">Dark (Warm)</option>
-          </select>
-        </div>
-        <div class="settings-field">
-          <label for="code-theme">Code-Theme:</label>
-          <select id="code-theme" class="theme-select">
-            <option value="focus">Focus</option>
-            <option value="balanced">Balanced</option>
-            <option value="eye-comfort">Eye Comfort</option>
-          </select>
-        </div>
-      </div>
-      <div class="settings-section"></div>
-      <div class="settings-p-body">
-        <div class="settings-field">
-          <label for="font-family">Font:</label>
-          <select id="font-family" class="theme-select">
-            <option value="system">System</option>
-            <option value="arial">Arial</option>
-            <option value="verdana">Verdana</option>
-            <option value="georgia">Georgia</option>
-            <option value="garamond">Garamond</option>
-            <option value="tahoma">Tahoma</option>
-          </select>
-        </div>
-        <div class="settings-field">
-          <label for="font-size">
-            <i class="select-icon" data-lucide="a-large-small"></i>
-            Font-Size:</label
-          >
-          <select id="font-size" class="theme-select">
-            <option value="12">12</option>
-            <option value="14">14</option>
-            <option value="16">16 -</option>
-            <option value="18">18</option>
-            <option value="20">20</option>
-            <option value="24">24</option>
-          </select>
-        </div>
-      </div>
-      <div class="settings-section"></div>
-      <div class="settings-p-body">
-        <div class="settings-field">
+    <!-- <div class="settings-field">
           <button class="focus-editor-btn">Focus</button>
-        </div>
-        <div class="settings-field">
-          <div class="select-wrapper">
-            <select id="line-height" data-action="selectLineHeight">
-              <option value="1.2">1.2</option>
-              <option value="1.3">1.3</option>
-              <option value="1.4">1.4</option>
-              <option value="1.5">1.5 -</option>
-              <option value="1.6">1.6</option>
-              <option value="1.7">1.7</option>
-            </select>
-            <i class="select-icon" data-lucide="unfold-vertical"></i>
-          </div>
-        </div>
-      </div>
-    </div>
+        </div> -->
     <div id="smart-views-popover" popover>
       <ul class="smart-view-list">
         <li><button data-view="all">All Notes</button></li>
@@ -216,6 +142,21 @@
       <button class="closeModal-btn" title="close modal">
         <i data-lucide="x"></i>
       </button>
+      <div class="settings-selection">
+        <div class="settings-title">Settings</div>
+        <div class="settings-buttons">
+          <button class="selection-btn" data-category="appearance">
+            <i data-lucide="palette"></i>
+          </button>
+          <button class="selection-btn" data-category="editor">
+            <i data-lucide="pen-line"></i>
+          </button>
+          <button class="selection-btn" data-category="app">
+            <i data-lucide="app-window"></i>
+          </button>
+        </div>
+      </div>
+      <div class="settings-content" data-activetab="appearance"></div>
     </div>
     <script type="module" src="src/app.ts" defer></script>
   </body>

@@ -1,5 +1,5 @@
 import db from "@electron/db/database";
-import { checkRateLimit, tryExec } from "@electron/ipc/ipcValidation";
+import { checkRateLimit, wrapResult } from "@electron/ipc/ipcValidation";
 import { store } from "@electron/store";
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import {
@@ -32,7 +32,7 @@ export const LIMITS = {
 
 function registerIpcHandlers() {
   ipcMain.handle("note:getAll", (event) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("note:getAll", LIMITS.READ_HEAVY))
         throw new Error("RATE_LIMIT");
       const result = db.getAll();
@@ -41,7 +41,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("note:create", (event, payload: unknown) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("note:create", LIMITS.WRITE_STANDARD))
         throw new Error("RATE_LIMIT");
       const validatedData = validateCreate(payload);
@@ -51,7 +51,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("note:update", (event, payload: unknown, flush: unknown) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!flush) {
         if (!checkRateLimit("note:update-flush", 100)) {
           throw new Error("RATE_LIMIT");
@@ -66,7 +66,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("note:delete", (event, id: unknown) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("note:search", LIMITS.WRITE_STANDARD))
         throw new Error("RATE_LIMIT");
       const validatedData = validateId(id);
@@ -76,7 +76,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("note:getById", (event, id: unknown) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("note:getById", LIMITS.READ_LIGHT))
         throw new Error("RATE_LIMIT");
       const validatedData = validateId(id);
@@ -86,7 +86,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("note:getByTag", (event, tag: string) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("note:getById", LIMITS.READ_LIGHT))
         throw new Error("RATE_LIMIT");
       const validatedData = validateTag(tag);
@@ -98,7 +98,7 @@ function registerIpcHandlers() {
   ipcMain.handle(
     "note:search",
     (event, searchTerm: unknown, limit: unknown) => {
-      return tryExec(event, async () => {
+      return wrapResult(event, async () => {
         if (!checkRateLimit("note:search", LIMITS.READ_HEAVY))
           throw new Error("RATE_LIMIT");
         const validatedData = validateSearch(searchTerm, limit);
@@ -111,7 +111,7 @@ function registerIpcHandlers() {
   );
 
   ipcMain.handle("note:pin", (event, id: string) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("note:pin", LIMITS.READ_LIGHT))
         throw new Error("RATE_LIMIT");
       const validatedData = validateId(id);
@@ -121,7 +121,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("note:bookmark", (event, id: string) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("note:bookmark", LIMITS.READ_LIGHT))
         throw new Error("RATE_LIMIT");
       const validatedData = validateId(id);
@@ -132,7 +132,7 @@ function registerIpcHandlers() {
 
   ipcMain.handle("views:get", (event, view) => {
     let result;
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit(`get:view:${view}`, LIMITS.READ_HEAVY))
         throw new Error("RATE_LIMIT");
       switch (view) {
@@ -157,7 +157,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("set:theme", (event, theme: Theme, focus?: boolean) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("set:theme", LIMITS.WRITE_LIGHT))
         throw new Error("RATE_LIMIT");
       const validatedData = validateTheme(theme);
@@ -173,7 +173,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("saveImage", (event, payload: unknown) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("saveImage", LIMITS.WRITE_HEAVY))
         throw new Error("RATE_LIMIT");
       const validatedData = validateImage(payload);
@@ -202,7 +202,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("electron-store:get", (event, key: string) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("electron-store:get", LIMITS.READ_LIGHT))
         throw new Error("RATE_LIMIT");
       const keyValidation = StoreSchema.keyof().safeParse(key);
@@ -219,7 +219,7 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle("electron-store:set", async (event, settings: AppSettings) => {
-    return tryExec(event, async () => {
+    return wrapResult(event, async () => {
       if (!checkRateLimit("electron-store:set", LIMITS.WRITE_STANDARD))
         throw new Error("RATE_LIMIT");
       const validValue = validateStore(settings);

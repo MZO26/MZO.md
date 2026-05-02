@@ -1,4 +1,3 @@
-import { detectCodeBlockLanguage } from "@/extensions/languages";
 import { showToast } from "@/utils/toast";
 import { Editor, getMarkRange } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
@@ -88,29 +87,6 @@ function promoteToCodeBlock(editor: Editor) {
   return true;
 }
 
-function toggleLanguage(editor: Editor) {
-  const isEnabled = editor.getAttributes("codeBlock")["showLanguage"]; // set if badge is already visible
-
-  if (isEnabled) {
-    editor
-      .chain()
-      .focus()
-      .updateAttributes("codeBlock", { showLanguage: false })
-      .run();
-    return true;
-  } // turn badge off if already enabled
-
-  const detectedLanguage = detectCodeBlockLanguage(editor);
-  //if lowlight finds a language, shows language and updates it
-  if (detectedLanguage) {
-    editor.commands.updateAttributes("codeBlock", {
-      showLanguage: true,
-      language: detectedLanguage,
-    });
-  }
-  return true;
-}
-
 function smartDelete(editor: Editor) {
   const { empty } = editor.state.selection;
   if (!empty) {
@@ -132,5 +108,4 @@ export {
   handleTableDelete,
   promoteToCodeBlock,
   smartDelete,
-  toggleLanguage,
 };

@@ -7,49 +7,66 @@ import {
   reloadNoteList,
 } from "@/components/sidebar/sidebarNotes";
 import { viewNote } from "@/handlers/noteHandlers";
-import { getValue, removeValue, StorageKeys } from "@/services/cache";
-import { createNotePayload } from "@/utils/factory";
+import { getNoteId, setNoteId } from "@/services/state";
 import { getElement, setActiveItem } from "@/utils/helpers";
 import { showToast } from "@/utils/toast";
+import { getMetadata } from "@shared/generators/generators";
+import type { CreateNotePayload } from "@shared/schemas/noteSchema";
+
+async function createNewNote() {
+  const editorContent = {
+    content: { type: "doc" as const, content: [{ type: "paragraph" }] },
+    plainText: "",
+  };
+  const metadata = getMetadata(editorContent.content, editorContent.plainText);
+  const payload: CreateNotePayload = { ...editorContent, ...metadata };
+  return await createNote(payload);
+}
 
 async function addNoteBtnHandler() {
   const container = getElement<HTMLDivElement>(".notes-container");
-  const activeID = getValue(StorageKeys.NOTE_ID);
-  if (activeID) removeValue(StorageKeys.NOTE_ID);
-  const payload = createNotePayload();
-  const response = await createNote(payload);
-  showToast("New note created!");
+  const response = await createNewNote();
   if (!response.success) {
     showToast(response.message);
     return;
   }
+  const note = response.data;
+  setNoteId(note.id);
+  showToast("New note created");
   if (editor) {
-    const noteElement = addOneNoteToList(response.data, container);
-    handleEditorEmptyState(response.data.id);
+    const noteElement = addOneNoteToList(note, container);
     if (noteElement) setActiveItem(noteElement, container);
-    viewNote(response.data, editor);
+    handleEditorEmptyState(note.id);
+    viewNote(note, editor);
   }
 }
 
+export const pendingDeletions = new Set<string>();
+
 async function executeNoteDeletion(id: string, noteElement: HTMLDivElement) {
+  pendingDeletions.add(id);
   const response = await deleteNote(id);
   if (!response.success) {
+    pendingDeletions.delete(id);
     showToast(response.message);
     return;
   }
+  showToast("Note deleted");
   noteElement.remove();
-  const noteID = getValue(StorageKeys.NOTE_ID);
+  handleSidebarEmptyState();
+  const noteID = getNoteId();
   if (noteID === id) {
-    removeValue(StorageKeys.NOTE_ID);
+    setNoteId(null);
     editor?.commands.clearContent();
+    handleEditorEmptyState();
   }
+  setTimeout(() => pendingDeletions.delete(id), 1000);
 }
 
 const unsubscribeDelete = window.noteAPI.onTriggerDelete(async (id: string) => {
   const noteElement = document.querySelector<HTMLDivElement>(
     `.noteItem[data-id="${id}"]`,
   );
-  console.log("Found DOM Element:", noteElement);
   if (!noteElement) return;
   await executeNoteDeletion(id, noteElement);
 });
@@ -86,38 +103,11 @@ window.addEventListener("beforeunload", () => {
   unsubscribeBookmark();
 });
 
-async function deleteBtnHandler(
-  deleteBtn: HTMLButtonElement,
-  container: HTMLDivElement,
-) {
-  const noteElement = deleteBtn.closest<HTMLDivElement>(".noteItem");
-  const id = noteElement?.dataset["id"];
-  if (!id) return;
-  await executeNoteDeletion(id, noteElement);
-  handleSidebarEmptyState(container);
-  handleEditorEmptyState();
-}
-
-function closeModal() {
+function setModalState(show: boolean): void {
   const overlay = getElement<HTMLDivElement>(".overlay");
   const modal = getElement<HTMLDivElement>(".modal");
-  overlay.classList.remove("show");
-  modal.classList.remove("show");
+  overlay.classList.toggle("show", show);
+  modal.classList.toggle("show", show);
 }
 
-// function openModal(): void {
-//   const overlay = getElement<HTMLDivElement>(".overlay");
-//   const modal = getElement<HTMLDivElement>(".modal");
-//   const items: HTMLCollection | undefined =
-//     getElement<HTMLDivElement>(".notes-container").children;
-//   overlay.classList.add("show");
-//   modal.classList.add("show");
-//   if (items) {
-//     Array.from(items).forEach((element) => {
-//       if (element.classList.contains("active"))
-//         element.classList.remove("active");
-//     });
-//   }
-// }
-
-export { addNoteBtnHandler, closeModal, deleteBtnHandler };
+export { addNoteBtnHandler, setModalState };

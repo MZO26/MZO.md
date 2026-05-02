@@ -78,10 +78,9 @@
   position: absolute;
   top: 60px;
   right: 15px;
-  z-index: 9999;
+  z-index: 2000;
   border-radius: 8px;
   cursor: pointer;
-  transition: visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--text-main);
 }
 
@@ -122,18 +121,30 @@
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
   border-top: none;
-  z-index: 9998;
-  transition:
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateX(0);
+  z-index: 1001;
+}
+
+.info-sidebar,
+.info-sidebar-toggle,
+.dots {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
   visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0s;
 }
 
 .info-sidebar.off {
   transform: translateX(100%);
   visibility: hidden;
   pointer-events: none;
+  transition:
+    transform 0.3s cubic-bezier(0.3, 0, 0.8, 0.15),
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
 }
 
 .info-sidebar-metadata {
@@ -396,7 +407,7 @@
   cursor: pointer;
 }
 
-.noteItem:not([data-pinned="true"]).active {
+.noteItem:not([data-pinned="true"]).is-active {
   background-color: var(--accent-hover);
   border-color: var(--border-color);
   color: var(--text-main);
