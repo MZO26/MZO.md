@@ -1,4 +1,3 @@
-import { editor } from "@/components/editor/editor-init";
 import { handleSaveNote, pendingDeletions } from "@/features/note-actions";
 import { cleanup } from "@/features/note-ui";
 import { debounce } from "@/utils/helpers";
@@ -30,11 +29,6 @@ function setupAutoSave(editor: Editor, id: string) {
     },
   };
 }
-
-window.addEventListener("beforeunload", () => {
-  if (!editor) return;
-  cleanup.get(editor)?.flush();
-});
 
 function stopAutoSave(
   editor: Editor,

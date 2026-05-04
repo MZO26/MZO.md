@@ -1,3 +1,4 @@
+import { setUpEditorSettings } from "@/settings/setting-actions";
 import { selectBuilder } from "@/settings/setting-builder";
 
 function buildSelects(settingsContainer: HTMLDivElement) {
@@ -64,4 +65,33 @@ function buildSelects(settingsContainer: HTMLDivElement) {
   );
 }
 
-export { buildSelects };
+function initSettingItems(container: HTMLDivElement) {
+  buildSelects(container);
+  setUpEditorSettings({
+    selectId: "#font-family",
+    storageKey: "font-family",
+    cssVar: "--editor-font-family",
+    defaultValue: "system",
+  });
+
+  setUpEditorSettings({
+    selectId: "#line-height",
+    storageKey: "line-height",
+    cssVar: "--editor-line-height",
+    defaultValue: 1.5,
+    min: 1.2,
+    max: 1.7,
+  });
+
+  setUpEditorSettings({
+    selectId: "#font-size",
+    storageKey: "font-size",
+    cssVar: "--editor-font-size",
+    defaultValue: 16,
+    min: 12,
+    max: 24,
+    formatValue: (v) => `${v}px`,
+  });
+}
+
+export { buildSelects, initSettingItems };

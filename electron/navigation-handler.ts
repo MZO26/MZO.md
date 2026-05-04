@@ -100,6 +100,22 @@ function navigationHandler(win: BrowserWindow) {
     // if any server responds with an http redirect after clicking on an allowed link, this handles it
     processUrl(url, () => event.preventDefault());
   });
+  // 1. Intercept navigation inside IFrames
+  win.webContents.on("will-frame-navigate", (event) => {
+    // isMainFrame is true for the main window, false for iframes
+    if (!event.isMainFrame) {
+      processUrl(event.url, () => event.preventDefault());
+    }
+  });
+  // 2. Prevent arbitrary file downloads
+  win.webContents.session.on("will-download", (event, item) => {
+    event.preventDefault();
+    console.log(`Blocked attempt to download: ${item.getURL()}`);
+  });
+  // 3. Disable <webview> creation entirely (Security Best Practice)
+  win.webContents.on("will-attach-webview", (event) => {
+    event.preventDefault();
+  });
 }
 
 export { navigationHandler, registerCustomProtocol, setupLocalImageProtocol };

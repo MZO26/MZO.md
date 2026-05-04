@@ -2,10 +2,11 @@ import {
   initFocusMode,
   setEditorWidth,
 } from "@/components/toolbar/hoverbar-builder";
+import { getElement } from "@/utils/helpers";
 import type { ActionMap } from "@shared/types";
 import { type Editor } from "@tiptap/core";
 
-const topToolbarActions: ActionMap<any> = {
+const topToolbarActions: ActionMap<Editor> = {
   readOnly: {
     type: "action",
     run: (editor: Editor) => editor?.setEditable(!editor.isEditable),
@@ -14,13 +15,16 @@ const topToolbarActions: ActionMap<any> = {
   },
   focus: {
     type: "action",
-    run: (appContainer: HTMLDivElement) => initFocusMode(appContainer),
+    run: () => initFocusMode(),
     icon: "focus",
     shortcut: "F11",
   },
   editorWidth: {
     type: "action",
-    run: (editorEl: HTMLDivElement) => setEditorWidth(editorEl),
+    run: () => {
+      const editorEl = getElement<HTMLDivElement>("#editor");
+      setEditorWidth(editorEl);
+    },
     icon: "ruler-dimension-line",
     shortcut: "MOD+Shift+W",
   },

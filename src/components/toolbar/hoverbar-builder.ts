@@ -7,15 +7,15 @@ import {
 } from "@/utils/helpers";
 import type { Theme } from "@shared/schemas/store-schema";
 
-const appContainer = getElement<HTMLDivElement>(".app-container");
-
-async function initFocusMode(appContainer: HTMLDivElement) {
+async function initFocusMode() {
+  const appContainer = getElement<HTMLDivElement>(".app-container");
   const newState = !appContainer.classList.contains("focus");
   appContainer.classList.toggle("focus", newState);
   await setTheme(document.body.dataset["theme"] as Theme, newState);
 }
 
 function setEditorWidth(editorElement: HTMLDivElement) {
+  console.log("What is editorElement?", editorElement);
   const widths = ["comfortable", "normal", "wide"];
   const current = editorElement.dataset["width"] || "normal";
   const index = widths.indexOf(current as (typeof widths)[number]);
@@ -23,29 +23,16 @@ function setEditorWidth(editorElement: HTMLDivElement) {
   editorElement.dataset["width"] = next;
 }
 
-const handleToggleFocus = createAsyncHandler(async () => {
-  initFocusMode(appContainer);
-});
-
 function initHoverbar() {
-  const focusBtn = getElement(".focus-btn");
+  const appContainer = getElement<HTMLDivElement>(".app-container");
   const editorEl = getElement<HTMLDivElement>("#editor");
-  const readOnlyBtn = getElement(".readOnly-btn");
-  const editorWidthBtn = getElement(".editorWidth-btn");
-  focusBtn.addEventListener("click", handleToggleFocus);
-  readOnlyBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    editor?.setEditable(!editor.isEditable);
-  });
-  editorWidthBtn.addEventListener("click", () => setEditorWidth(editorEl));
   registerAppEvents(document, {
     "app:set-editor-width": () => setEditorWidth(editorEl),
     "app:toggle-read-only": () => editor?.setEditable(!editor.isEditable),
-    "app:toggle-focus-mode": (event) => handleToggleFocus(event),
-    "app:escape": (event) => {
+    "app:toggle-focus-mode": createAsyncHandler(initFocusMode),
+    "app:escape": () => {
       if (appContainer.classList.contains("focus")) {
-        handleToggleFocus(event);
+        initFocusMode();
       }
     },
   });

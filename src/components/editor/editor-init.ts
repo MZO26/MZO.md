@@ -4,6 +4,7 @@ import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { lowlight } from "@/extensions/lowlight";
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
+import { setGlobalEditor } from "@/services/state";
 import { getElement } from "@/utils/helpers";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
@@ -51,6 +52,7 @@ function initEditor(selector: string): Editor {
     if (!editor) return;
     debouncedStatUpdate(editor);
   });
+  setGlobalEditor(editor);
   return editor;
 }
 
