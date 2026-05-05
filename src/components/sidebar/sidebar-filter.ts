@@ -6,13 +6,12 @@ import {
 } from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
 import { setNoteId } from "@/services/state";
+import { getItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
 
-async function handleSearchInput(
-  searchInput: string,
-  notesContainer: HTMLDivElement,
-) {
-  notesContainer.innerHTML = "";
+async function handleSearchInput(searchInput: string) {
+  const sidebar = getItem("sidebar");
+  sidebar.innerHTML = "";
   setNoteId(null);
   try {
     if (searchInput === "") {
@@ -27,10 +26,10 @@ async function handleSearchInput(
   if (!response.success) {
     showToast(response.message);
     handleEditorEmptyState();
-    handleSidebarEmptyState(notesContainer, searchInput);
     return;
   }
-  addManyNotesToList(response.data, notesContainer);
+  addManyNotesToList(response.data);
+  handleSidebarEmptyState(searchInput);
 }
 
 async function handleViews(view: string) {

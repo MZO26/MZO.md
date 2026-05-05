@@ -218,6 +218,20 @@ function registerIpcHandlers() {
     });
   });
 
+  ipcMain.handle("electron-store:getAll", (event) => {
+    return wrapResult(event, async () => {
+      if (!checkRateLimit("electron-store:getAll", LIMITS.READ_LIGHT))
+        throw new Error("RATE_LIMIT");
+
+      const result = StoreSchema.safeParse(store.store);
+      if (!result.success) {
+        console.error("Invalid store data:", result.error);
+        return null;
+      }
+      return result.data;
+    });
+  });
+
   ipcMain.handle("electron-store:set", async (event, settings: AppSettings) => {
     return wrapResult(event, async () => {
       if (!checkRateLimit("electron-store:set", LIMITS.WRITE_STANDARD))

@@ -55,6 +55,7 @@ declare global {
       getSettings: <K extends keyof AppSettings>(
         key: K,
       ) => Promise<IpcResponse<AppSettings[K]>>;
+      getAllSettings: () => Promise<IpcResponse<AppSettings>>;
       setSettings: (
         settings: Partial<AppSettings>,
       ) => Promise<IpcResponse<AppSettings>>;

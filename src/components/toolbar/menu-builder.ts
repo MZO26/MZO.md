@@ -1,5 +1,6 @@
 import { createToolbarFragment } from "@/components/toolbar/creation-helpers";
 import { renderIcons } from "@/utils/icons";
+import { getItem } from "@/utils/registry";
 import type { ActionMap } from "@shared/types";
 import type { Editor } from "@tiptap/core";
 
@@ -17,11 +18,8 @@ function updateActiveStates<T>(
   });
 }
 
-function buildMenu<T>(
-  container: HTMLElement,
-  editor: Editor,
-  actions: ActionMap<T>,
-): void {
+function buildMenu<T>(container: HTMLElement, actions: ActionMap<T>): void {
+  const editor = getItem("editor");
   container.innerHTML = "";
   const buttonMap = new Map<string, HTMLButtonElement>();
   const fragment = createToolbarFragment(actions, buttonMap);
@@ -36,8 +34,8 @@ function buildMenu<T>(
 function setupToolbarListeners<T>(
   container: HTMLElement,
   actions: ActionMap<T>,
-  context: T,
 ) {
+  const editor = getItem("editor");
   container.addEventListener("click", (e) => {
     const btn = (e.target as Element).closest<HTMLButtonElement>(
       "[data-action]",
@@ -45,7 +43,7 @@ function setupToolbarListeners<T>(
     const key = btn?.dataset["action"] as keyof typeof actions;
     const item = actions[key];
     if (item && "run" in item) {
-      item.run(context);
+      item.run(editor as T);
     }
   });
 }

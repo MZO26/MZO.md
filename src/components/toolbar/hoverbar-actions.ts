@@ -1,8 +1,8 @@
 import {
   initFocusMode,
   setEditorWidth,
-} from "@/components/toolbar/hoverbar-builder";
-import { getElement } from "@/utils/helpers";
+} from "@/components/toolbar/hoverbar-init";
+import { getItem } from "@/utils/registry";
 import type { ActionMap } from "@shared/types";
 import { type Editor } from "@tiptap/core";
 
@@ -22,8 +22,8 @@ const topToolbarActions: ActionMap<Editor> = {
   editorWidth: {
     type: "action",
     run: () => {
-      const editorEl = getElement<HTMLDivElement>("#editor");
-      setEditorWidth(editorEl);
+      const editorWrapper = getItem("editorWrapper");
+      setEditorWidth(editorWrapper);
     },
     icon: "ruler-dimension-line",
     shortcut: "MOD+Shift+W",

@@ -2,15 +2,14 @@ import { handleEditorEmptyState } from "@/components/editor/editor-state";
 import { addOneNoteToList } from "@/components/sidebar/sidebar-actions";
 import { handleCreateNote } from "@/features/note-actions";
 import { setupAutoSave, stopAutoSave } from "@/services/auto-save";
-import { getEditor, setNoteId } from "@/services/state";
-import { getElement } from "@/utils/helpers";
+import { setNoteId } from "@/services/state";
+import { getItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
 import type { Note } from "@shared/schemas/note-schema";
 import type { Editor } from "@tiptap/core";
 import { EditorState } from "@tiptap/pm/state";
 
 async function createNoteButton() {
-  const container = getElement<HTMLDivElement>(".notes-container");
   const response = await handleCreateNote();
   if (!response.success) {
     showToast(response.message);
@@ -19,7 +18,7 @@ async function createNoteButton() {
   const note = response.data;
   setNoteId(note.id);
   showToast("New note created");
-  addOneNoteToList(note, container);
+  addOneNoteToList(note);
   handleEditorEmptyState();
   viewNote(note);
 }
@@ -39,7 +38,7 @@ export const cleanup = new WeakMap<
 >();
 
 function viewNote(note: Note): void {
-  const editor = getEditor();
+  const editor = getItem("editor");
   stopAutoSave(editor, "flush");
   handleEditorEmptyState();
   editor.commands.setContent(note.content, { emitUpdate: false });

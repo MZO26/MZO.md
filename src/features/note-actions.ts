@@ -9,8 +9,9 @@ import { updateNoteInList } from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
 import { viewNote } from "@/features/note-ui";
 import { stopAutoSave } from "@/services/auto-save";
-import { getEditor, getNoteId, setNoteId } from "@/services/state";
+import { getNoteId, setNoteId } from "@/services/state";
 import { setActiveItem } from "@/utils/helpers";
+import { getItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
 import { getMetadata } from "@shared/generators/generators";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
@@ -35,7 +36,7 @@ async function handleCreateNote() {
 }
 
 async function handleDeleteNote(id: string, noteElement: HTMLDivElement) {
-  const editor = getEditor();
+  const editor = getItem("editor");
   stopAutoSave(editor, "cancel");
   pendingDeletions.add(id);
   const response = await deleteNote(id);

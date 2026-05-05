@@ -16,11 +16,17 @@
   outline: none;
 }
 
+:focus-visible:not(.ProseMirror) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  background: var(--accent-hover);
+}
+
 :root {
   --bg-editor: #fcfcfc;
   --bg-sidebar: #f2f2f4;
   --bg-sidebar-section: #e2e2e5;
-  --bg-button: #d8d8dc;
+  --bg-button: #e4e4e7;
   --text-main: #18181b;
   --text-muted: #636370;
   --accent-primary: #52525b;
@@ -235,10 +241,20 @@ button:disabled {
 
 .tippy-box[data-theme~="app-theme"] {
   font-size: 14px;
+  padding: 0;
+  margin: 0;
   background-color: var(--tooltip-bg);
   color: var(--tooltip-text);
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tippy-box[data-theme~="none"] {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
 }
 
 .tippy-box[data-theme~="app-theme"][data-placement^="top"]

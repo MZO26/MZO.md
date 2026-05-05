@@ -1,24 +1,24 @@
 import { getElement } from "@/utils/helpers";
 
+const displayElement = getElement<HTMLDivElement>("#datetime-display");
+
+const dateFormatter = new Intl.DateTimeFormat("de-DE", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+const timeFormatter = new Intl.DateTimeFormat("de-DE", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 function updateDateTime() {
-  const displayElement = getElement<HTMLDivElement>("#datetime-display");
-
-  if (displayElement) {
-    const now = new Date();
-
-    const dateOptions: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    };
-    const dateString = now.toLocaleDateString("de-DE", dateOptions);
-    const timeOptions: Intl.DateTimeFormatOptions = {
-      hour: "2-digit",
-      minute: "2-digit",
-    };
-    const timeString = now.toLocaleTimeString("de-DE", timeOptions);
-    displayElement.textContent = `${dateString} - ${timeString}`;
-  }
+  if (!displayElement) return;
+  const now = new Date();
+  const dateString = dateFormatter.format(now);
+  const timeString = timeFormatter.format(now);
+  displayElement.textContent = `${dateString} - ${timeString}`;
 }
 
 function formatNoteDate(isoString: string) {
@@ -29,4 +29,21 @@ function formatNoteDate(isoString: string) {
   }).format(date);
 }
 
-export { formatNoteDate, updateDateTime };
+function startAppClock() {
+  updateDateTime();
+  const now = new Date();
+  const msUntilNextMinute =
+    (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+  setTimeout(() => {
+    updateDateTime();
+    setInterval(updateDateTime, 60000);
+  }, msUntilNextMinute);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    updateDateTime();
+  }
+});
+
+export { formatNoteDate, startAppClock };

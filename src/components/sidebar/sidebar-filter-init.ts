@@ -1,7 +1,6 @@
 import {
   handleSearchInput,
   handleViews,
-  searchByTag,
 } from "@/components/sidebar/sidebar-filter";
 import {
   createAsyncHandler,
@@ -9,30 +8,37 @@ import {
   getElement,
   registerAppEvents,
 } from "@/utils/helpers";
-import { delegate } from "tippy.js";
+import tippy from "tippy.js";
 
 function initSearchHandlers() {
-  const searchInput = getElement<HTMLInputElement>("#searchInput");
-  const notesContainer = getElement<HTMLDivElement>(".notes-container");
-  const smartViewContainer = getElement(".smart-view-list");
-  const tagContainer = getElement<HTMLDivElement>(".tag-container");
-  const tippyInstance = delegate(tagContainer, {
-    target: "[tippy-content]",
+  const viewBtn = getElement(".sidebar-trigger-btn");
+  const popoverEl = getElement<HTMLDivElement>("#smart-views-popover");
+  const tippyInstance = tippy(viewBtn as Element, {
+    content: popoverEl,
+    allowHTML: true,
+    trigger: "click",
     placement: "top",
-    theme: "app-theme",
-    content: (reference) =>
-      reference.getAttribute("tippy-content") || "filter notes by tag",
+    appendTo: document.body,
+    interactive: true,
+    theme: "none",
+    duration: [100, 200],
+    onTrigger(instance) {
+      const view = (instance.reference as HTMLButtonElement).dataset["view"];
+      if (!view) return;
+      handleViews(view);
+    },
   });
+  const searchInput = getElement<HTMLInputElement>("#searchInput");
   const debouncedSearch = debounce(() => {
     const value = searchInput.value.trim();
-    void handleSearchInput(value, notesContainer);
+    void handleSearchInput(value);
   }, 500);
   searchInput.addEventListener("input", debouncedSearch);
-  smartViewContainer.addEventListener(
+  popoverEl.addEventListener(
     "click",
     createAsyncHandler(async (event) => {
       const target = event.target as HTMLElement;
-      if (target === smartViewContainer) return;
+      if (target === popoverEl) return;
       const button = target.closest(
         "button[data-view]",
       ) as HTMLButtonElement | null;
@@ -42,21 +48,11 @@ function initSearchHandlers() {
       handleViews(view);
     }),
   );
-  tagContainer.addEventListener(
-    "click",
-    createAsyncHandler(async (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target === tagContainer) return;
-      const spanEl = target.closest(".tag") as HTMLSpanElement | null;
-      if (!spanEl) return;
-      const tag = spanEl.dataset["tag"];
-      if (!tag) return;
-      tippyInstance.show();
-      searchByTag(tag);
-    }),
-  );
   registerAppEvents(document, {
-    "app:toggle-view-filter": () => smartViewContainer.togglePopover(),
+    "app:toggle-view-filter": () =>
+      tippyInstance.state.isVisible
+        ? tippyInstance.hide()
+        : tippyInstance.show(),
     "app:open-global-search": () => searchInput.focus(),
   });
 }

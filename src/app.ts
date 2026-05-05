@@ -5,35 +5,41 @@ import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
 import { initSearchHandlers } from "@/components/sidebar/sidebar-filter-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { topToolbarActions } from "@/components/toolbar/hoverbar-actions";
-import { initHoverbar } from "@/components/toolbar/hoverbar-builder";
+import { initHoverbar } from "@/components/toolbar/hoverbar-init";
 import {
   buildMenu,
   setupToolbarListeners,
 } from "@/components/toolbar/menu-builder";
 import { ToolbarActions } from "@/components/toolbar/toolbar-actions";
-import { initAppSettings } from "@/settings/setting-init";
+import { initAppSettings, loadSettings } from "@/settings/setting-init";
 import { initGlobalShortcuts } from "@/settings/shortcuts";
-import { updateDateTime } from "@/utils/date";
+import { startAppClock } from "@/utils/date";
 import { getElement } from "@/utils/helpers";
 import tippy, { delegate } from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import { renderIcons } from "./utils/icons";
+import { setItems } from "./utils/registry";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const editor = initEditor("#editor");
+  setItems({
+    appContainer: getElement<HTMLDivElement>(".app-container"),
+    sidebar: getElement<HTMLDivElement>(".notes-container"),
+    editor: initEditor(),
+    editorWrapper: getElement<HTMLDivElement>("#editor"),
+  });
+  const settings = await loadSettings();
   initGlobalShortcuts();
-  initAppSettings();
+  initAppSettings(settings);
   initListeners();
   await reloadNoteList();
-  initNotesSidebar();
-  initInfoSidebar();
-  updateDateTime();
+  initNotesSidebar(settings["note-sidebar-state"]);
+  initInfoSidebar(settings["info-sidebar-state"]);
   const toolbarContainer = getElement("#toolbar");
-  buildMenu(toolbarContainer, editor, ToolbarActions);
-  setupToolbarListeners(toolbarContainer, ToolbarActions, editor);
+  buildMenu(toolbarContainer, ToolbarActions);
+  setupToolbarListeners(toolbarContainer, ToolbarActions);
   const hoverbar = getElement(".top-toolbar");
-  buildMenu(hoverbar, editor, topToolbarActions);
-  setupToolbarListeners(hoverbar, topToolbarActions, editor);
+  buildMenu(hoverbar, topToolbarActions);
+  setupToolbarListeners(hoverbar, topToolbarActions);
   initHoverbar();
   initSearchHandlers();
   renderIcons();
@@ -48,6 +54,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     content: (reference) =>
       reference.getAttribute("tippy-content") || "options",
   });
+  startAppClock();
 });
-
-setInterval(updateDateTime, 60000);

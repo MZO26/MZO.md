@@ -1,4 +1,4 @@
-import { debouncedSetSettings, getSettings } from "@/api/settingsAPI";
+import { debouncedSetSettings } from "@/api/settingsAPI";
 import { getElement } from "@/utils/helpers";
 import type { StyleKeys } from "@shared/schemas/store-schema";
 
@@ -19,40 +19,49 @@ interface EditorStyleConfig<T extends number | string> {
   storageKey: StyleKeys; // single cache key
   cssVar: string; // css variable that responds on select
   defaultValue: T; // line-height and font are numbers / font-family string
+  value: T | string;
   min?: number; // min and max optional so they don't appear on font-family setting / otherwise they set the min and max value possible
   max?: number;
   formatValue?: (value: T) => string; // formatValue is a little helper to set the correct css variable for editor
 }
 
-async function setUpEditorSettings<T extends number | string>(
-  config: EditorStyleConfig<T>,
-) {
-  const {
-    selectId,
-    storageKey,
-    cssVar,
-    defaultValue,
-    min,
-    max,
-    formatValue = String,
-  } = config;
-  const editorEl = getElement("#editor .ProseMirror");
+function clampValue<T extends number | string>(
+  value: T | string,
+  defaultValue: T,
+  min?: number,
+  max?: number,
+): T {
+  if (typeof defaultValue !== "number") return value as T;
+  let num = Number(value);
+  if (Number.isNaN(num)) num = defaultValue as number;
+  if (min !== undefined) num = Math.max(min, num);
+  if (max !== undefined) num = Math.min(num, max);
+  return num as T;
+}
+function setUpEditorSettings<T extends number | string>({
+  selectId,
+  storageKey,
+  cssVar,
+  defaultValue,
+  value,
+  min,
+  max,
+  formatValue = String,
+}: EditorStyleConfig<T>): void {
+  const editorEl = getElement(".ProseMirror");
   const select = getElement<HTMLSelectElement>(selectId);
-  const response = await getSettings(storageKey);
-  let currentValue = response.success ? response.data : defaultValue;
-  const apply = (newValue: T | string) => {
-    if (typeof defaultValue === "number") {
-      let num = Number(newValue);
-      if (Number.isNaN(num)) num = defaultValue;
-      if (min !== undefined) num = Math.max(min, num);
-      if (max !== undefined) num = Math.min(num, max);
-      currentValue = num as T;
-    } else currentValue = newValue as T;
-    editorEl.style.setProperty(cssVar, formatValue(currentValue));
-    debouncedSetSettings({ [storageKey]: String(currentValue) });
-    syncUI(select, String(storageKey), String(currentValue));
+  let current = (
+    typeof defaultValue === "number" ? Number(value) || defaultValue : value
+  ) as T;
+
+  const apply = (val: T | string): void => {
+    current = clampValue(val, defaultValue, min, max);
+    editorEl.style.setProperty(cssVar, formatValue(current));
+    debouncedSetSettings({ [storageKey]: String(current) });
+    syncUI(select, String(storageKey), String(current));
   };
-  apply(currentValue); // call function to represent current state
+
+  apply(current);
   select.addEventListener("change", () => apply(select.value));
 }
 

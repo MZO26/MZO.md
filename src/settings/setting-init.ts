@@ -1,5 +1,4 @@
-import { debouncedSetSettings } from "@/api/settingsAPI";
-import { setModalState } from "@/services/state";
+import { debouncedSetSettings, getAllSettings } from "@/api/settingsAPI";
 import { initSettingItems } from "@/settings/setting-items";
 import {
   applyAppTheme,
@@ -13,11 +12,21 @@ import {
   registerAppEvents,
   setActiveItem,
 } from "@/utils/helpers";
-import type { Theme } from "@shared/schemas/store-schema";
+import { getItem } from "@/utils/registry";
+import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 
-async function initAppSettings() {
+function setModalState(show: boolean): void {
+  const appContainer = getItem("appContainer");
+  const overlay = getElement<HTMLDivElement>(".overlay");
+  const modal = getElement<HTMLDivElement>(".modal");
+  overlay.classList.toggle("show", show);
+  modal.classList.toggle("show", show);
+  appContainer.inert = show;
+}
+
+async function initAppSettings(settings: AppSettings) {
   const settingsContainer = getElement<HTMLDivElement>(".settings-content");
-  initSettingItems(settingsContainer);
+  initSettingItems(settingsContainer, settings);
   const buttonsContainer = getElement<HTMLDivElement>(".settings-buttons");
   const modal = getElement<HTMLDivElement>(".modal");
   const openModalBtn = getElement<HTMLButtonElement>(".settings-btn");
@@ -49,7 +58,7 @@ async function initAppSettings() {
     }),
   );
   themeSelect.addEventListener("change", createAsyncHandler(setAppTheme));
-  await applyAppTheme();
+  await applyAppTheme(undefined, false, settings.theme, settings["code-theme"]);
   registerAppEvents(document, {
     "app:open-settings": () => setModalState(true),
     "app:escape": () => {
@@ -60,4 +69,13 @@ async function initAppSettings() {
   });
 }
 
-export { initAppSettings };
+async function loadSettings(): Promise<AppSettings> {
+  const response = await getAllSettings();
+  if (!response.success) {
+    console.error(response.message);
+    throw new Error(response.message);
+  }
+  return response.data;
+}
+
+export { initAppSettings, loadSettings };

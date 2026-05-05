@@ -5,13 +5,20 @@ async function setUpEditorMenu() {
 
   contextMenu({
     menu: (defaultActions) => [
+      defaultActions.cut({}),
+      defaultActions.copy({}),
+      defaultActions.paste({}),
+      defaultActions.separator(),
+      defaultActions.searchWithGoogle({}),
+      defaultActions.lookUpSelection({}),
+      defaultActions.separator(),
       defaultActions.selectAll({}),
+      defaultActions.separator(),
       defaultActions.copyImage({}),
       defaultActions.copyImageAddress({}),
       defaultActions.saveImage({}),
       defaultActions.saveImageAs({}),
       defaultActions.copyLink({}),
-      defaultActions.lookUpSelection({}),
     ],
   });
 }

@@ -4,6 +4,7 @@ import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
 import { getNoteId, setNoteId } from "@/services/state";
 import { formatNoteDate } from "@/utils/date";
 import { getElement, setActiveItem } from "@/utils/helpers";
+import { getItem } from "@/utils/registry";
 import { createNoteItem } from "@/utils/templates";
 import { showToast } from "@/utils/toast";
 import type { Note } from "@shared/schemas/note-schema";
@@ -23,10 +24,11 @@ function compareNotes(a: Note, b: Note): number {
   return b.updated_at > a.updated_at ? 1 : -1;
 }
 
-function addOneNoteToList(note: Note, container: HTMLDivElement) {
+function addOneNoteToList(note: Note) {
   const noteElement = createNoteItem(note);
   let target: Element | null = null;
-  for (const child of container.children) {
+  const sidebar = getItem("sidebar");
+  for (const child of sidebar.children) {
     const el = child as HTMLElement;
     if (
       el.dataset["pinned"] !== "true" &&
@@ -37,16 +39,17 @@ function addOneNoteToList(note: Note, container: HTMLDivElement) {
     }
   }
   if (target) {
-    container.insertBefore(noteElement, target);
+    sidebar.insertBefore(noteElement, target);
   } else {
-    container.appendChild(noteElement);
+    sidebar.appendChild(noteElement);
   }
-  handleSidebarEmptyState(container);
+  handleSidebarEmptyState();
   setNoteId(note.id);
-  setActiveItem(noteElement, container);
+  setActiveItem(noteElement, sidebar);
 }
 
-function addManyNotesToList(notes: Note[], container: HTMLDivElement) {
+function addManyNotesToList(notes: Note[]) {
+  const sidebar = getItem("sidebar");
   const fragment = document.createDocumentFragment();
   notes.forEach((note: Note) => {
     const noteElement = createNoteItem(note);
@@ -54,25 +57,25 @@ function addManyNotesToList(notes: Note[], container: HTMLDivElement) {
       fragment.appendChild(noteElement);
     }
   });
-  container.appendChild(fragment);
+  sidebar.appendChild(fragment);
   handleEditorEmptyState();
   handleSidebarEmptyState();
   const id = getNoteId();
   if (!id) return;
   const noteElement = getElement<HTMLDivElement>(`.noteItem[data-id="${id}"]`);
-  setActiveItem(noteElement, container);
+  setActiveItem(noteElement, sidebar);
 }
 
 async function reloadNoteList(notes?: Note[]): Promise<void> {
-  const container = getElement<HTMLDivElement>(".notes-container");
-  container.innerHTML = "";
+  const sidebar = getItem("sidebar");
+  sidebar.innerHTML = "";
   if (notes) {
-    addManyNotesToList(notes.sort(compareNotes), container);
+    addManyNotesToList(notes.sort(compareNotes));
     return;
   }
   const response = await getAll();
   response.success
-    ? addManyNotesToList(response.data.sort(compareNotes), container)
+    ? addManyNotesToList(response.data.sort(compareNotes))
     : showToast(response.message);
 }
 

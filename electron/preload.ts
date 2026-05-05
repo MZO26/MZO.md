@@ -64,6 +64,7 @@ contextBridge.exposeInMainWorld("noteAPI", {
 });
 contextBridge.exposeInMainWorld("storeAPI", {
   getSettings: (key: string) => ipcRenderer.invoke("electron-store:get", key),
+  getAllSettings: () => ipcRenderer.invoke("electron-store:getAll"),
   setSettings: (settings: AppSettings) =>
     ipcRenderer.invoke("electron-store:set", settings),
 });

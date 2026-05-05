@@ -1,5 +1,6 @@
 import { setUpEditorSettings } from "@/settings/setting-actions";
 import { selectBuilder } from "@/settings/setting-builder";
+import type { AppSettings, StyleKeys } from "@shared/schemas/store-schema";
 
 function buildSelects(settingsContainer: HTMLDivElement) {
   selectBuilder(
@@ -65,13 +66,17 @@ function buildSelects(settingsContainer: HTMLDivElement) {
   );
 }
 
-function initSettingItems(container: HTMLDivElement) {
+function initSettingItems(
+  container: HTMLDivElement,
+  settings: Pick<AppSettings, StyleKeys>,
+) {
   buildSelects(container);
   setUpEditorSettings({
     selectId: "#font-family",
     storageKey: "font-family",
     cssVar: "--editor-font-family",
     defaultValue: "system",
+    value: settings["font-family"],
   });
 
   setUpEditorSettings({
@@ -79,6 +84,7 @@ function initSettingItems(container: HTMLDivElement) {
     storageKey: "line-height",
     cssVar: "--editor-line-height",
     defaultValue: 1.5,
+    value: settings["line-height"],
     min: 1.2,
     max: 1.7,
   });
@@ -88,6 +94,7 @@ function initSettingItems(container: HTMLDivElement) {
     storageKey: "font-size",
     cssVar: "--editor-font-size",
     defaultValue: 16,
+    value: settings["font-size"],
     min: 12,
     max: 24,
     formatValue: (v) => `${v}px`,

@@ -4,7 +4,6 @@ import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { lowlight } from "@/extensions/lowlight";
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
-import { setGlobalEditor } from "@/services/state";
 import { getElement } from "@/utils/helpers";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
@@ -24,18 +23,13 @@ import StarterKit from "@tiptap/starter-kit";
 
 let editor: Editor | null = null;
 
-function initEditor(selector: string): Editor {
-  const element = document.querySelector(selector);
+function initEditor(): Editor {
+  const editorWrapper = getElement("#editor");
   if (editor) {
     return editor;
   }
-  if (!element) {
-    console.error(`(editor): element with "${selector}" was not found.`);
-    throw new Error(`(editor): element with "${selector}" was not found.`);
-  }
-
   editor = new Editor({
-    element: element as HTMLElement,
+    element: editorWrapper,
     extensions: getNoteEditorExtensions(),
     editorProps: {
       attributes: {
@@ -52,7 +46,6 @@ function initEditor(selector: string): Editor {
     if (!editor) return;
     debouncedStatUpdate(editor);
   });
-  setGlobalEditor(editor);
   return editor;
 }
 

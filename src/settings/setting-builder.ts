@@ -1,3 +1,4 @@
+import { el } from "@/utils/helpers";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 
@@ -25,15 +26,6 @@ function selectBuilder(
   const row = el("div", { className: "settings-row" }, label, select);
   row.dataset["category"] = category;
   container.append(row);
-}
-function el<K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  props?: Partial<HTMLElementTagNameMap[K]>,
-  ...children: (Node | string)[]
-): HTMLElementTagNameMap[K] {
-  const element = Object.assign(document.createElement(tag), props);
-  element.append(...children);
-  return element;
 }
 
 export { selectBuilder };

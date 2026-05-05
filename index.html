@@ -61,11 +61,7 @@
             >
               <i data-lucide="sliders-horizontal"></i>
             </button>
-            <button
-              class="sidebar-trigger-btn"
-              popovertarget="smart-views-popover"
-              data-tippy-content="smart views"
-            >
+            <button class="sidebar-trigger-btn">
               <i data-lucide="list-filter"></i>
             </button>
           </div>
@@ -76,11 +72,6 @@
         <div class="editor-view hidden">
           <div class="editor-header">
             <div id="toolbar"></div>
-            <div
-              class="bubble-menu"
-              data-active-menu="text"
-              style="visibility: hidden"
-            ></div>
           </div>
           <button class="info-sidebar-toggle">
             <span class="dots"></span>
@@ -118,7 +109,7 @@
       </div>
       <div class="toast-container"></div>
     </div>
-    <div id="smart-views-popover" popover>
+    <div id="smart-views-popover">
       <ul class="smart-view-list">
         <li><button data-view="all">All Notes</button></li>
         <li><button data-view="bookmarked">Bookmarked</button></li>

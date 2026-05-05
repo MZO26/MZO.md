@@ -9,6 +9,10 @@ async function getSettings<K extends keyof AppSettings>(
   return safeIpcCall(window.storeAPI.getSettings(key));
 }
 
+async function getAllSettings(): Promise<IpcResponse<AppSettings>> {
+  return safeIpcCall(window.storeAPI.getAllSettings());
+}
+
 async function setSettings(
   settings: Partial<AppSettings>,
 ): Promise<IpcResponse<AppSettings>> {
@@ -29,4 +33,4 @@ const debouncedSetSettings = debounce(
   1000,
 );
 
-export { debouncedSetSettings, getSettings };
+export { debouncedSetSettings, getAllSettings, getSettings };
