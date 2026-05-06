@@ -1,7 +1,6 @@
-import { createTooltipContent } from "@/utils";
+import { createTooltipContent } from "@/utils/ui";
 import type { Action, ActionMap } from "@shared/types";
 import tippy from "tippy.js";
-import "tippy.js/dist/tippy.css";
 
 function createButton<T>(key: string, item: Action<T>): HTMLButtonElement {
   const btn = document.createElement("button");

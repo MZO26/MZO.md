@@ -1,15 +1,12 @@
-import { showContextMenu } from "@/api/electronAPI";
-import { editor } from "@/components/editor/editor-init";
 import { setSidebarState } from "@/components/sidebar/sidebar-state";
 import { handleSelectNote } from "@/features/note-actions";
 import { createNoteButton } from "@/features/note-ui";
-import {
-  createAsyncHandler,
-  getItem,
-  registerAppEvents,
-  requireElement,
-} from "@/utils";
+import { createAsyncHandler } from "@/utils/async";
+import { requireElement } from "@/utils/dom";
+import { getItem, registerAppEvents } from "@/utils/registry";
+import { createContextMenu } from "@/utils/ui";
 import { delegate } from "tippy.js";
+import "tippy.js/dist/tippy.css";
 
 async function initNotesSidebar(state: boolean) {
   const appContainer = getItem("appContainer");
@@ -21,34 +18,18 @@ async function initNotesSidebar(state: boolean) {
     content: (reference) =>
       reference.getAttribute("tippy-content") || "options",
   });
-  async function createContextMenu(e: Event) {
-    const target = e.target as HTMLElement;
-    const item = target.closest<HTMLElement>(".noteItem");
-    if (!item) return;
-    e.preventDefault();
-    const id = item.dataset["id"];
-    const pinned = item.dataset["pinned"] === "true";
-    const bookmarked = item.dataset["bookmarked"] === "true";
-    if (!id) return;
-    await showContextMenu(id, pinned, bookmarked);
-  }
-  setSidebarState(appContainer, "note-sidebar-state", state);
-  void appContainer.offsetWidth;
-  appContainer.classList.remove("no-transition");
   const toggleSidebar = () => {
     const collapsed = appContainer.classList.contains("collapsed");
     setSidebarState(appContainer, "note-sidebar-state", !collapsed);
   };
-  sidebar.addEventListener(
-    "contextmenu",
-    createAsyncHandler(createContextMenu),
-  );
+  setSidebarState(appContainer, "note-sidebar-state", state);
+  void appContainer.offsetWidth;
+  appContainer.classList.remove("no-transition");
   addNoteBtn.addEventListener("click", createAsyncHandler(createNoteButton));
   sidebar.addEventListener(
     "click",
     createAsyncHandler(async (event) => {
       const target = event.target as HTMLElement;
-      // early return if clicking the container background
       if (target === sidebar) return;
       const actionBtn = target.closest<HTMLButtonElement>("button");
       if (actionBtn) {
@@ -58,8 +39,8 @@ async function initNotesSidebar(state: boolean) {
         return;
       }
       const noteItem = target.closest<HTMLDivElement>(".noteItem");
-      if (noteItem && editor) {
-        await handleSelectNote(noteItem, sidebar, editor);
+      if (noteItem) {
+        await handleSelectNote(noteItem);
         return;
       }
     }),

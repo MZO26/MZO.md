@@ -1,4 +1,4 @@
-import { findElement } from "@/utils";
+import { findElement } from "./dom";
 
 let container: HTMLDivElement | null = null;
 

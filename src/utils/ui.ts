@@ -1,4 +1,5 @@
-import { formatShortcut } from "@/utils";
+import { showContextMenu } from "@/api/electronAPI";
+import { formatShortcut } from "@/utils/format";
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -26,4 +27,16 @@ function createTooltipContent(
   return tooltipContent;
 }
 
-export { createTooltipContent, el };
+async function createContextMenu(e: Event) {
+  const target = e.target as HTMLElement;
+  const item = target.closest<HTMLElement>(".noteItem");
+  if (!item) return;
+  e.preventDefault();
+  const id = item.dataset["id"];
+  const pinned = item.dataset["pinned"] === "true";
+  const bookmarked = item.dataset["bookmarked"] === "true";
+  if (!id) return;
+  await showContextMenu(id, pinned, bookmarked);
+}
+
+export { createContextMenu, createTooltipContent, el };

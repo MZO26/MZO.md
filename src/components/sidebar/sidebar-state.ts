@@ -1,5 +1,7 @@
 import { debouncedSetSettings } from "@/api/settingsAPI";
-import { el, getItem } from "@/utils";
+import { getItem } from "@/utils/registry";
+import { el } from "@/utils/ui";
+
 import { createElement, Library, SearchX } from "lucide";
 
 async function setSidebarState(

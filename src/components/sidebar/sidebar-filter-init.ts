@@ -4,19 +4,16 @@ import {
   handleViews,
   views,
 } from "@/components/sidebar/sidebar-filter";
-import {
-  createAsyncHandler,
-  debounce,
-  findElement,
-  registerAppEvents,
-  requireElement,
-} from "@/utils";
+import { createAsyncHandler, debounce } from "@/utils/async";
+import { findElement, requireElement } from "@/utils/dom";
+import { registerAppEvents } from "@/utils/registry";
 import tippy from "tippy.js";
 
 function initSearchHandlers() {
   const viewBtn = findElement(".sidebar-trigger-btn");
   const popoverEl = findElement<HTMLDivElement>("#smart-views-popover");
   if (!viewBtn || !popoverEl) return;
+
   const tippyInstance = tippy(viewBtn as Element, {
     content: popoverEl,
     allowHTML: true,
@@ -32,6 +29,7 @@ function initSearchHandlers() {
       handleViews(view);
     },
   });
+
   const searchInput = requireElement<HTMLInputElement>("#searchInput");
   popoverEl.appendChild(createViews(views));
   const debouncedSearch = debounce(() => {
@@ -39,6 +37,7 @@ function initSearchHandlers() {
     void handleSearchInput(value);
   }, 500);
   searchInput.addEventListener("input", debouncedSearch);
+
   popoverEl.addEventListener(
     "click",
     createAsyncHandler(async (event) => {
@@ -53,6 +52,7 @@ function initSearchHandlers() {
       handleViews(view);
     }),
   );
+
   registerAppEvents(document, {
     "app:toggle-view-filter": () =>
       tippyInstance.state.isVisible

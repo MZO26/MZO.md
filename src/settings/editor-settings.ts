@@ -1,5 +1,5 @@
 import { debouncedSetSettings } from "@/api/settingsAPI";
-import { findElement, requireElement } from "@/utils";
+import { findElement, requireElement } from "@/utils/dom";
 import type { StyleKeys } from "@shared/schemas/store-schema";
 
 // sets select value and body value

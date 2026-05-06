@@ -16,7 +16,7 @@ import rust from "highlight.js/lib/languages/rust";
 import shell from "highlight.js/lib/languages/shell";
 import sql from "highlight.js/lib/languages/sql";
 import ts from "highlight.js/lib/languages/typescript";
-import html from "highlight.js/lib/languages/xml"; // HTML ist in highlight.js unter 'xml'
+import html from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import { createLowlight } from "lowlight";
 

@@ -1,20 +1,19 @@
 import { searchByTag } from "@/components/sidebar/sidebar-filter";
 import { setSidebarState } from "@/components/sidebar/sidebar-state";
-import {
-  createAsyncHandler,
-  findElement,
-  getItem,
-  registerAppEvents,
-  requireElement,
-} from "@/utils";
+import { createAsyncHandler } from "@/utils/async";
+import { findElement, requireElement } from "@/utils/dom";
+import { getItem, registerAppEvents } from "@/utils/registry";
 import tippy, { delegate } from "tippy.js";
+import "tippy.js/dist/tippy.css";
 
 async function initInfoSidebar(collapsed: boolean = true) {
   const editorWrapper = getItem("editorWrapper");
   const toggleBtn = findElement<HTMLButtonElement>(".info-sidebar-toggle");
   const infoSidebar = findElement<HTMLDivElement>(".info-sidebar");
   if (!toggleBtn || !infoSidebar) return;
+
   const tagContainer = requireElement<HTMLDivElement>(".tag-container");
+
   const tippyInstance = delegate(tagContainer, {
     target: "[tippy-content]",
     placement: "top",
@@ -29,15 +28,18 @@ async function initInfoSidebar(collapsed: boolean = true) {
         : false;
     },
   });
+
   tippy(toggleBtn, {
     placement: "top",
     theme: "app-theme",
     content: "toggleInfobar",
   });
+
   const collapseInfoSidebar = () => {
     const collapsed = infoSidebar.classList.contains("collapsed");
     setSidebarState(infoSidebar, "info-sidebar-state", !collapsed);
   };
+
   setSidebarState(infoSidebar, "info-sidebar-state", collapsed);
   tagContainer.addEventListener(
     "click",

@@ -8,10 +8,6 @@ import {
 } from "@shared/shared/types";
 
 declare module "*.css";
-declare module "*?raw" {
-  const content: string;
-  export default content;
-}
 
 declare global {
   interface Window {

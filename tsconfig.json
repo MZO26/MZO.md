@@ -41,7 +41,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "types/**/*.d.ts",
+    "shared/**/*.d.ts",
     "electron/**/*.ts",
     "shared/**/*.ts"
   ],

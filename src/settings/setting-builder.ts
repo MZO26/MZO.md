@@ -1,4 +1,4 @@
-import { el } from "@/utils";
+import { el } from "@/utils/ui";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 
@@ -8,7 +8,7 @@ function selectBuilder(
   container: HTMLDivElement,
   id: string,
   options: SelectOption[],
-  category: "appearance" | "editor" | "app",
+  category: "appearance" | "editor" | "app" | "info",
 ) {
   const optionNodes = options.map((opt) => new Option(opt.label, opt.value));
   const label = el("label", { htmlFor: id }, `${id}`);

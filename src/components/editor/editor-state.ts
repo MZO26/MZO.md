@@ -1,5 +1,6 @@
-import { getNoteId } from "@/services/state";
-import { el, requireElement } from "@/utils";
+import { getNoteId } from "@/features/note-state";
+import { requireElement } from "@/utils/dom";
+import { el } from "@/utils/ui";
 import { createElement, FileQuestion } from "lucide";
 
 function handleEditorEmptyState() {

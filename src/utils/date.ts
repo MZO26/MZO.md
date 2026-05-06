@@ -1,4 +1,4 @@
-import { findElement } from "@/utils";
+import { findElement } from "./dom";
 
 let displayElement: HTMLDivElement | null = null;
 
@@ -38,10 +38,4 @@ function startAppClock() {
   }, msUntilNextMinute);
 }
 
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
-    updateDateTime();
-  }
-});
-
-export { startAppClock };
+export { startAppClock, updateDateTime };

@@ -1,4 +1,3 @@
-import type { Views } from "@electron/db/views";
 import type { Note } from "@shared/schemas/note-schema";
 
 type NativeWindowColors = {
@@ -86,6 +85,5 @@ export type {
   NoteItemElements,
   ResolvedTheme,
   TitleBarOverlayOptions,
-  Views,
   WorkerResult,
 };

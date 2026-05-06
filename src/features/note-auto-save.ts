@@ -1,6 +1,6 @@
 import { handleSaveNote, pendingDeletions } from "@/features/note-actions";
 import { cleanup } from "@/features/note-ui";
-import { debounce } from "@/utils";
+import { debounce } from "@/utils/async";
 import type { Editor } from "@tiptap/core";
 import { Node } from "@tiptap/pm/model";
 

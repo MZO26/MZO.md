@@ -1,6 +1,6 @@
 import { saveImage } from "@/api/electronAPI";
 import { compressImage } from "@/extensions/image/image-utils";
-import { showToast } from "@/utils";
+import { showToast } from "@/utils/toast";
 import type { WorkerResult } from "@shared/types";
 import type { Editor } from "@tiptap/core";
 

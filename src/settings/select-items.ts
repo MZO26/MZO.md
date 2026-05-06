@@ -1,8 +1,8 @@
-import { setUpEditorSettings } from "@/settings/setting-actions";
 import { selectBuilder } from "@/settings/setting-builder";
-import type { AppSettings, StyleKeys } from "@shared/schemas/store-schema";
+import { requireElement } from "@/utils/dom";
 
-function buildSelects(settingsContainer: HTMLDivElement) {
+function buildSelects() {
+  const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
   selectBuilder(
     settingsContainer,
     "theme",
@@ -86,7 +86,7 @@ function buildSelects(settingsContainer: HTMLDivElement) {
   );
   selectBuilder(
     settingsContainer,
-    "minimize-mode",
+    "minimize-window-mode",
     [
       { value: "taskbar", label: "Minimize to taskbar" },
       { value: "tray", label: "Minimize to tray" },
@@ -95,39 +95,4 @@ function buildSelects(settingsContainer: HTMLDivElement) {
   );
 }
 
-function initSettingItems(
-  container: HTMLDivElement,
-  settings: Pick<AppSettings, StyleKeys>,
-) {
-  buildSelects(container);
-  setUpEditorSettings({
-    selectId: "#font-family",
-    storageKey: "font-family",
-    cssVar: "--editor-font-family",
-    defaultValue: "system",
-    value: settings["font-family"],
-  });
-
-  setUpEditorSettings({
-    selectId: "#line-height",
-    storageKey: "line-height",
-    cssVar: "--editor-line-height",
-    defaultValue: 1.5,
-    value: settings["line-height"],
-    min: 1.2,
-    max: 1.7,
-  });
-
-  setUpEditorSettings({
-    selectId: "#font-size",
-    storageKey: "font-size",
-    cssVar: "--editor-font-size",
-    defaultValue: 16,
-    value: settings["font-size"],
-    min: 12,
-    max: 24,
-    formatValue: (v) => `${v}px`,
-  });
-}
-
-export { buildSelects, initSettingItems };
+export { buildSelects };

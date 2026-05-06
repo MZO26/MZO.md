@@ -20,7 +20,7 @@ const StoreSchema = z.object({
     .enum(["restore", "centered", "maximized"])
     .default("centered"),
   "close-window-mode": z.enum(["normal", "tray", "minimize"]).default("normal"),
-  "minimize-mode": z.enum(["taskbar", "tray"]).default("taskbar"),
+  "minimize-window-mode": z.enum(["taskbar", "tray"]).default("taskbar"),
   "window-bounds": z
     .object({
       width: z.number().min(1100).default(1100),
@@ -31,6 +31,9 @@ const StoreSchema = z.object({
     .default({ width: 1100, height: 600 }),
 });
 type AppSettings = z.infer<typeof StoreSchema>;
+type OpenWindowMode = AppSettings["open-window-mode"];
+type CloseWindowMode = AppSettings["close-window-mode"];
+type MinimizeWindowMode = AppSettings["minimize-window-mode"];
 type Theme = AppSettings["theme"];
 type FontFamily = AppSettings["font-family"];
 type FontSize = AppSettings["font-size"];
@@ -47,10 +50,13 @@ type StateKeys = Extract<
 export {
   StoreSchema,
   type AppSettings,
+  type CloseWindowMode,
   type CodeTheme,
   type FontFamily,
   type FontSize,
   type LineHeight,
+  type MinimizeWindowMode,
+  type OpenWindowMode,
   type StateKeys,
   type StyleKeys,
   type Theme,

@@ -5,15 +5,14 @@ async function safeIpcCall<T>(
 ): Promise<IpcResponse<T>> {
   try {
     return await ipcPromise;
-  } catch (error) {
-    console.error("IPC error: ", error);
-
-    const errorMessage =
-      error instanceof Error
-        ? error.message
+  } catch (err: unknown) {
+    console.error("IPC error: ", err);
+    const msg =
+      err instanceof Error
+        ? err.message
         : "An unknown communication error occurred";
 
-    return { success: false, message: errorMessage };
+    return { success: false, message: msg };
   }
 }
 

@@ -1,21 +1,11 @@
-import { debouncedSetSettings, getAllSettings } from "@/api/settingsAPI";
+import { getAllSettings } from "@/api/settingsAPI";
 import { createSettingsMenu } from "@/settings/setting-builder";
-import { initSettingItems } from "@/settings/setting-items";
-import {
-  applyAppTheme,
-  resolveTheme,
-  setAppTheme,
-  setCodeTheme,
-} from "@/settings/setting-theme";
-import {
-  createAsyncHandler,
-  findElement,
-  getItem,
-  registerAppEvents,
-  requireElement,
-  setActiveItem,
-} from "@/utils";
-import type { AppSettings, Theme } from "@shared/schemas/store-schema";
+import { setSelectListeners } from "@/settings/setting-items-init";
+import { applyAppTheme } from "@/settings/setting-theme";
+import { findElement, requireElement, setActiveItem } from "@/utils/dom";
+import { getItem, registerAppEvents } from "@/utils/registry";
+import type { AppSettings } from "@shared/schemas/store-schema";
+import { buildSelects } from "./select-items";
 
 function setModalState(show: boolean): void {
   const appContainer = getItem("appContainer");
@@ -31,7 +21,8 @@ async function initAppSettings(settings: AppSettings) {
   const settingsContainer = findElement<HTMLDivElement>(".settings-content");
   if (!modal || !settingsContainer) return;
   settingsContainer.appendChild(createSettingsMenu());
-  initSettingItems(settingsContainer, settings);
+  buildSelects();
+  setSelectListeners(settings);
   const buttonsContainer = findElement<HTMLDivElement>(".settings-buttons");
   if (!buttonsContainer) return;
   const openModalBtn = requireElement<HTMLButtonElement>(".settings-btn");
@@ -40,10 +31,8 @@ async function initAppSettings(settings: AppSettings) {
     "button:first-child",
     buttonsContainer,
   );
-  const themeSelect = requireElement<HTMLSelectElement>("#theme");
-  const codeThemeSelect = requireElement<HTMLSelectElement>("#code-theme");
   if (firstActiveBtn) setActiveItem(firstActiveBtn, buttonsContainer);
-
+  await applyAppTheme(undefined, false, settings.theme, settings["code-theme"]);
   closeModalBtn.addEventListener("click", () => setModalState(false));
   openModalBtn.addEventListener("click", () => setModalState(true));
   buttonsContainer.addEventListener("click", (e) => {
@@ -56,16 +45,7 @@ async function initAppSettings(settings: AppSettings) {
     settingsContainer.dataset["activetab"] = targetTab;
     setActiveItem(btn, buttonsContainer);
   });
-  codeThemeSelect.addEventListener(
-    "change",
-    createAsyncHandler(async () => {
-      const baseTheme = resolveTheme(themeSelect.value as Theme);
-      const codePref = setCodeTheme(baseTheme);
-      debouncedSetSettings({ "code-theme": codePref });
-    }),
-  );
-  themeSelect.addEventListener("change", createAsyncHandler(setAppTheme));
-  await applyAppTheme(undefined, false, settings.theme, settings["code-theme"]);
+
   registerAppEvents(document, {
     "app:open-settings": () => setModalState(true),
     "app:escape": () => {

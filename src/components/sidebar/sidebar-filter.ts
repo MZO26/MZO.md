@@ -5,8 +5,10 @@ import {
   reloadNoteList,
 } from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
-import { setNoteId } from "@/services/state";
-import { el, getItem, showToast } from "@/utils";
+import { setNoteId } from "@/features/note-state";
+import { getItem } from "@/utils/registry";
+import { showToast } from "@/utils/toast";
+import { el } from "@/utils/ui";
 
 interface ViewItem {
   id: string;

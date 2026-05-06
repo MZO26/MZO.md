@@ -7,10 +7,12 @@ import {
 } from "@/components/sidebar/info-sidebar-actions";
 import { updateNoteInList } from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
+import { stopAutoSave } from "@/features/note-auto-save";
+import { getNoteId, setNoteId } from "@/features/note-state";
 import { viewNote } from "@/features/note-ui";
-import { stopAutoSave } from "@/services/auto-save";
-import { getNoteId, setNoteId } from "@/services/state";
-import { getItem, setActiveItem, showToast } from "@/utils";
+import { setActiveItem } from "@/utils/dom";
+import { getItem } from "@/utils/registry";
+import { showToast } from "@/utils/toast";
 import { getMetadata } from "@shared/generators/generators";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { Editor } from "@tiptap/core";
@@ -73,11 +75,7 @@ async function handleSaveNote(
   updateNoteInList(response.data);
 }
 
-async function handleSelectNote(
-  noteItem: HTMLDivElement,
-  container: HTMLDivElement,
-  editor: Editor,
-) {
+async function handleSelectNote(noteItem: HTMLDivElement) {
   const noteID = noteItem.dataset["id"];
   if (!noteID) return;
   const response = await getNoteById(noteID);
@@ -88,8 +86,8 @@ async function handleSelectNote(
   setNoteId(noteID);
   viewNote(response.data);
   debouncedTagUpdate(response.data.tags);
-  debouncedStatUpdate(editor);
-  setActiveItem(noteItem, container);
+  debouncedStatUpdate(getItem("editor"));
+  setActiveItem(noteItem, getItem("sidebar"));
 }
 
 export { handleCreateNote, handleDeleteNote, handleSaveNote, handleSelectNote };

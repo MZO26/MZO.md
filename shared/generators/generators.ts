@@ -1,4 +1,4 @@
-import { getTodoStats } from "@shared/logic/note-metadata";
+import { getTodoStats } from "@shared/generators/note-metadata";
 import type { Metadata } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
 

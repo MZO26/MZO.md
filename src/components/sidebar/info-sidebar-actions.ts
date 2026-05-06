@@ -1,5 +1,6 @@
 import { calculateToDos } from "@/extensions/todo-bar";
-import { debounce, requireElement } from "@/utils";
+import { debounce } from "@/utils/async";
+import { requireElement } from "@/utils/dom";
 import type { Note } from "@shared/schemas/note-schema";
 import type { Editor } from "@tiptap/core";
 

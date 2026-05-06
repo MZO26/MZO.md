@@ -1,5 +1,6 @@
 import { createToolbarFragment } from "@/components/toolbar/creation-helpers";
-import { getItem, renderIcons } from "@/utils";
+import { renderIcons } from "@/utils/icons";
+import { getItem } from "@/utils/registry";
 import type { ActionMap } from "@shared/types";
 import type { Editor } from "@tiptap/core";
 

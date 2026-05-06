@@ -1,10 +1,10 @@
 import { debouncedStatUpdate } from "@/components/sidebar/info-sidebar-actions";
-import { DragAutoScroll } from "@/extensions/autoscroll";
+import { DragAutoScroll } from "@/extensions/auto-scroll";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { lowlight } from "@/extensions/lowlight";
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
-import { requireElement } from "@/utils";
+import { requireElement } from "@/utils/dom";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Highlight from "@tiptap/extension-highlight";

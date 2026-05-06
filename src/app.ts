@@ -13,8 +13,12 @@ import {
 import { ToolbarActions } from "@/components/toolbar/toolbar-actions";
 import { initAppSettings, loadSettings } from "@/settings/setting-init";
 import { initGlobalShortcuts } from "@/settings/shortcuts";
-import { renderIcons, requireElement, setItems, startAppClock } from "@/utils";
+import { startAppClock } from "@/utils/date";
+import { requireElement } from "@/utils/dom";
+import { renderIcons } from "@/utils/icons";
+import { setItems } from "@/utils/registry";
 import tippy from "tippy.js";
+import "tippy.js/dist/tippy.css";
 
 document.addEventListener("DOMContentLoaded", async () => {
   setItems({

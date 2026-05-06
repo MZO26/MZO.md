@@ -32,13 +32,13 @@ function validateSender(event: IpcMainInvokeEvent) {
 
 async function wrapResult<T>(
   event: IpcMainInvokeEvent,
-  action: () => T,
+  action: () => Promise<T>,
 ): Promise<IpcResponse<T>> {
   try {
     validateSender(event);
     const data = await action();
     return { success: true, data };
-  } catch (err: any) {
+  } catch (err: unknown) {
     return handleIpcError(err);
   }
 }

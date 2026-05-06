@@ -1,7 +1,8 @@
-import { debounce, safeIpcCall, showToast } from "@/utils";
+import { debounce } from "@/utils/async";
+import { safeIpcCall } from "@/utils/ipc";
+import { showToast } from "@/utils/toast";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { IpcResponse } from "@shared/types";
-
 async function getSettings<K extends keyof AppSettings>(
   key: K,
 ): Promise<IpcResponse<AppSettings[K]>> {

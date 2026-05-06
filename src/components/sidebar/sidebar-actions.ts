@@ -1,15 +1,13 @@
 import { getAll } from "@/api/noteAPI";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
-import { getNoteId, setNoteId } from "@/services/state";
-import {
-  createNoteItem,
-  findElement,
-  formatNoteDate,
-  getItem,
-  setActiveItem,
-  showToast,
-} from "@/utils";
+import { getNoteId, setNoteId } from "@/features/note-state";
+import { findElement, setActiveItem } from "@/utils/dom";
+import { formatNoteDate } from "@/utils/format";
+import { getItem } from "@/utils/registry";
+import { createNoteItem } from "@/utils/templates";
+import { showToast } from "@/utils/toast";
+
 import type { Note } from "@shared/schemas/note-schema";
 
 function getNotePriority(note: Note): number {

@@ -1,5 +1,5 @@
-import { requireElement } from "@/utils";
-import { getTodoStats } from "@shared/logic/note-metadata";
+import { requireElement } from "@/utils/dom";
+import { getTodoStats } from "@shared/generators/note-metadata";
 import type { JSONContent } from "@tiptap/core";
 
 function calculateToDos(content: JSONContent) {

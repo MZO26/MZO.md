@@ -1,4 +1,4 @@
-import { safeIpcCall } from "@/utils";
+import { safeIpcCall } from "@/utils/ipc";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type { Theme } from "@shared/schemas/store-schema";
 import type { IpcResponse } from "@shared/types";

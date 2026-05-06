@@ -1,6 +1,7 @@
 import { setTheme } from "@/api/electronAPI";
 import { debouncedSetSettings } from "@/api/settingsAPI";
-import { findElement, showToast } from "@/utils";
+import { findElement } from "@/utils/dom";
+import { showToast } from "@/utils/toast";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import { CODE_THEME_MAP, THEME_MAP } from "@shared/theme-constants";
 import type { Code, ResolvedTheme } from "@shared/types";

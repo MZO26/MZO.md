@@ -1,4 +1,4 @@
-import { safeIpcCall } from "@/utils";
+import { safeIpcCall } from "@/utils/ipc";
 import type {
   CreateNotePayload,
   Note,
