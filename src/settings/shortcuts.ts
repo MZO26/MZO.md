@@ -19,8 +19,8 @@ function initGlobalShortcuts() {
       e.preventDefault();
       await handleZoom("reset");
     },
-    "$mod+o": (event) => {
-      event.preventDefault();
+    "$mod+o": (e) => {
+      e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:toggle-sidebar"));
     },
     "$mod+Shift+R": (e) => {
@@ -51,12 +51,12 @@ function initGlobalShortcuts() {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:create-new-note"));
     },
-    F11: (event) => {
-      event.preventDefault();
+    F11: (e) => {
+      e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:toggle-focus-mode"));
     },
-    Escape: (event) => {
-      event.preventDefault();
+    Escape: (e) => {
+      e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:escape"));
     },
   });

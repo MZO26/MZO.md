@@ -6,9 +6,20 @@ import { cleanup } from "@/features/note-ui";
 import { applyAppTheme } from "@/settings/theme-actions";
 import { findElement } from "@/utils/dom";
 import { showToast } from "@/utils/toast";
+import type { ExportRequest } from "@shared/schemas/export-schema";
+import { exportNote } from "./exportAPI";
 
 function initListeners() {
   let lastAppliedTheme: string | null = null;
+
+  window.exportAPI.onTriggerExport(async (payload: ExportRequest) => {
+    const response = await exportNote(payload);
+    if (!response.success) {
+      showToast(response.message);
+      return;
+    }
+    showToast(`Exported Note as ${response.data.extension}-file`);
+  });
 
   window.noteAPI.onTriggerDelete(async (id: string) => {
     const noteElement = findElement<HTMLDivElement>(

@@ -1,6 +1,10 @@
 import type { IpcResponse } from "@shared/types";
-import { app, type IpcMainInvokeEvent } from "electron";
+import { app, BrowserWindow, type IpcMainInvokeEvent } from "electron";
 import z, { ZodError } from "zod";
+import { registerElectronIpc } from "./ipc-electron";
+import { registerExportIpc } from "./ipc-export";
+import { registerNoteIpc } from "./ipc-note";
+import { registerSettingsIpc } from "./ipc-settings";
 
 enum AppError {
   DBError = "NOT_FOUND",
@@ -8,11 +12,16 @@ enum AppError {
   SenderError = "UNAUTHORIZED_SENDER",
   UnknownError = "UNKNOWN_ERROR",
   InvalidViewError = "INVALID_VIEW",
+  CancelledOperation = "CANCELLED_ERROR",
 }
 
 function validateSender(event: IpcMainInvokeEvent) {
   if (!event.senderFrame) {
     console.error("Blocked: IPC Without valid senderFrame");
+    throw new Error("UNAUTHORIZED_SENDER");
+  }
+  const mainWindow = BrowserWindow.fromWebContents(event.sender);
+  if (!mainWindow) {
     throw new Error("UNAUTHORIZED_SENDER");
   }
   const senderUrl = new URL(event.senderFrame.url);
@@ -30,7 +39,7 @@ function validateSender(event: IpcMainInvokeEvent) {
   throw new Error("UNAUTHORIZED_SENDER");
 }
 
-async function wrapResult<T>(
+async function safeResponse<T>(
   event: IpcMainInvokeEvent,
   action: () => Promise<T>,
 ): Promise<IpcResponse<T>> {
@@ -73,9 +82,12 @@ function handleIpcError(err: unknown): { success: false; message: string } {
     case AppError.InvalidViewError:
       return { success: false, message: "View not found." };
 
+    case AppError.CancelledOperation:
+      return { success: false, message: "Operation cancelled" };
+
     case AppError.UnknownError:
     default:
-      return { success: false, message: "An unexpected error occurred." };
+      return { success: false, message: "Unknown error occurred." };
   }
 }
 
@@ -102,4 +114,11 @@ function checkRateLimit(channel: string, cooldownMs: number): boolean {
   return true;
 }
 
-export { checkRateLimit, wrapResult };
+function registerIpc(win: BrowserWindow) {
+  registerElectronIpc();
+  registerNoteIpc();
+  registerSettingsIpc(win);
+  registerExportIpc(win);
+}
+
+export { checkRateLimit, registerIpc, safeResponse };

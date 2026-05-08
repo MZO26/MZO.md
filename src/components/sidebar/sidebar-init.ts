@@ -38,14 +38,14 @@ function applySidebarListeners(
   addNoteBtn.addEventListener("click", createAsyncHandler(createNoteButton));
   sidebar.addEventListener(
     "click",
-    createAsyncHandler(async (event) => {
-      const target = event.target as HTMLElement;
+    createAsyncHandler(async (e) => {
+      const target = e.target as HTMLElement;
       if (target === sidebar) return;
       const actionBtn = target.closest<HTMLButtonElement>("button");
       if (actionBtn) {
-        event.preventDefault();
-        event.stopPropagation();
-        await createContextMenu(event);
+        e.preventDefault();
+        e.stopPropagation();
+        await createContextMenu(e);
         return;
       }
       const noteItem = target.closest<HTMLDivElement>(".noteItem");

@@ -35,14 +35,14 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
 }
 
 function createAsyncHandler<T extends Event>(
-  callback: (event: T) => Promise<void>,
+  callback: (e: T) => Promise<void>,
 ) {
   let isProcessing = false;
-  return async (event: T) => {
+  return async (e: T) => {
     if (isProcessing) return;
     isProcessing = true;
     try {
-      await callback(event);
+      await callback(e);
     } catch (error) {
       console.error("Async Handler Error: ", error);
     } finally {

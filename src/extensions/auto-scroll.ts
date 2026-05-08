@@ -48,9 +48,9 @@ export const DragAutoScroll = Extension.create<AutoScrollOptions>({
             }
           };
 
-          const onDragOver = (event: DragEvent) => {
+          const onDragOver = (e: DragEvent) => {
             const rect = container.getBoundingClientRect();
-            const y = event.clientY;
+            const y = e.clientY;
 
             if (y < rect.top + edge) {
               const distance = Math.max(0, y - rect.top);

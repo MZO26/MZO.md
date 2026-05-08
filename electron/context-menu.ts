@@ -1,3 +1,4 @@
+import type { ExportRequest } from "@shared/schemas/export-schema";
 import { Menu, type BrowserWindow } from "electron";
 
 async function setUpEditorMenu() {
@@ -27,6 +28,7 @@ function setUpNoteMenu(
   id: string,
   pinned: boolean,
   bookmarked: boolean,
+  exportRequest: ExportRequest,
 ) {
   const noteItemMenu = Menu.buildFromTemplate([
     {
@@ -36,6 +38,11 @@ function setUpNoteMenu(
     {
       label: bookmarked ? "Remove Bookmark" : "Add Bookmark",
       click: () => win.webContents.send("note:trigger-bookmark", id),
+    },
+    { type: "separator" },
+    {
+      label: "Export note",
+      click: () => win.webContents.send("note:trigger-export", exportRequest),
     },
     { type: "separator" },
     {

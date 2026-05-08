@@ -1,8 +1,8 @@
 /// <reference lib="webworker" />
 import { compressImage } from "@/extensions/image/image-utils";
 
-self.onmessage = async (event: MessageEvent) => {
-  const { id, file, maxWidth, quality } = event.data;
+self.onmessage = async (e: MessageEvent) => {
+  const { id, file, maxWidth, quality } = e.data;
 
   try {
     const response = await compressImage(file, maxWidth, quality);

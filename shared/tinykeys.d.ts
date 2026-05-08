@@ -1,10 +1,10 @@
 declare module "tinykeys" {
   export interface KeyBindingMap {
-    [key: string]: (event: KeyboardEvent) => void;
+    [key: string]: (e: KeyboardEvent) => void;
   }
 
   export interface TinyKeysOptions {
-    event?: "keydown" | "keyup";
+    e?: "keydown" | "keyup";
   }
 
   export function tinykeys(

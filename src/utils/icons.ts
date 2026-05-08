@@ -15,6 +15,7 @@ import {
   CopyPlus,
   createIcons,
   Download,
+  FileUp,
   Focus,
   Folder,
   Glasses,
@@ -56,6 +57,7 @@ import {
 function renderIcons(scope: Document | HTMLElement = document): void {
   createIcons({
     icons: {
+      FileUp,
       RulerDimensionLine,
       Focus,
       Glasses,

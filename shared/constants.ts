@@ -1,6 +1,14 @@
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import type { Code, ResolvedTheme } from "@shared/types";
 
+const LIMITS = {
+  WRITE_HEAVY: 2000, // saveImage
+  WRITE_STANDARD: 1000, // create, delete, store:set
+  WRITE_LIGHT: 300, // update, setTheme
+  READ_HEAVY: 500, // search, getAll
+  READ_LIGHT: 100, // getById, store:get
+};
+
 const THEME_MAP = {
   system: "system",
   light: "light",
@@ -55,4 +63,4 @@ const THEME_DATA: Record<
   },
 } as const;
 
-export { CODE_THEME_MAP, THEME_DATA, THEME_MAP };
+export { CODE_THEME_MAP, LIMITS, THEME_DATA, THEME_MAP };

@@ -41,35 +41,6 @@
   user-select: none;
 }
 
-.select-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.select-wrapper::after {
-  content: "";
-  position: absolute;
-  right: 32px;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 25px;
-  width: 1px;
-  background-color: var(--text-main);
-  opacity: 0.2;
-  pointer-events: none;
-}
-
-.select-icon {
-  position: absolute;
-  right: 8px;
-  width: 10px;
-  height: 10px;
-  pointer-events: none;
-  color: var(--text-main);
-}
-
 .ProseMirror h1 {
   font-size: 2.2em;
   line-height: 1;
@@ -431,12 +402,12 @@ ul[data-type="taskList"]
   box-shadow: var(--shadow);
 }
 
-/* .ProseMirror mark.editor-selection-blur,
+.ProseMirror mark.editor-selection-blur,
 .ProseMirror code.editor-selection-blur,
 .ProseMirror .editor-selection-blur strong,
 .ProseMirror .editor-selection-blur em {
   background: var(--accent-hover);
-} */
+}
 
 .ProseMirror .editor-dropcursor {
   position: relative;

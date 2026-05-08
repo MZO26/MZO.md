@@ -54,8 +54,8 @@ function applyFilterListeners(
   searchInput.addEventListener("input", debouncedSearch);
   popoverEl.addEventListener(
     "click",
-    createAsyncHandler(async (event) => {
-      const target = event.target as HTMLElement;
+    createAsyncHandler(async (e) => {
+      const target = e.target as HTMLElement;
       if (target === popoverEl) return;
       const button = target.closest(
         "button[data-view]",

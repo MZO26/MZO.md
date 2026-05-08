@@ -3,6 +3,8 @@ import { requireElement } from "@/utils/dom";
 import { el } from "@/utils/ui";
 import { createElement, FileQuestion } from "lucide";
 
+const EMPTY_STATE = showEditorEmptyState(); // cached because it never changes dynamically
+
 function handleEditorEmptyState() {
   const editorContainer = requireElement(".editor-container");
   const editorView = requireElement(".editor-view");
@@ -11,8 +13,7 @@ function handleEditorEmptyState() {
   if (!id) {
     editorView.classList.add("hidden");
     if (!emptyState) {
-      const newEmptyState = showEditorEmptyState();
-      editorContainer.appendChild(newEmptyState);
+      editorContainer.appendChild(EMPTY_STATE);
     }
   } else {
     editorView.classList.remove("hidden");

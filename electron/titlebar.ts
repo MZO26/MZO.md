@@ -1,6 +1,6 @@
+import { THEME_DATA } from "@shared/constants";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
-import { THEME_DATA } from "@shared/theme-constants";
 import type { NativeWindowColors } from "@shared/types";
 import { BrowserWindow, nativeTheme } from "electron";
 

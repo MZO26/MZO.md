@@ -1,6 +1,6 @@
 import type { IpcResponse } from "@shared/types";
 
-async function safeIpcCall<T>(
+async function safeInvoke<T>(
   ipcPromise: Promise<IpcResponse<T>>,
 ): Promise<IpcResponse<T>> {
   try {
@@ -16,4 +16,4 @@ async function safeIpcCall<T>(
   }
 }
 
-export { safeIpcCall };
+export { safeInvoke };

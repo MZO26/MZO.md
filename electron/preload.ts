@@ -1,3 +1,4 @@
+import type { ExportRequest } from "@shared/schemas/export-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
@@ -13,7 +14,7 @@ function subscribe<T>(
   channel: string,
   callback: (payload: T) => void,
 ): () => void {
-  const listener = (_event: IpcRendererEvent, payload: T) => {
+  const listener = (_e: IpcRendererEvent, payload: T) => {
     callback(payload);
   };
   ipcRenderer.on(channel, listener);
@@ -21,7 +22,13 @@ function subscribe<T>(
     ipcRenderer.removeListener(channel, listener);
   };
 }
-
+contextBridge.exposeInMainWorld("exportAPI", {
+  noteExport: (payload: ExportRequest) =>
+    ipcRenderer.invoke("note:export", payload),
+  onTriggerExport: (callback: (payload: ExportRequest) => void) => {
+    subscribe("note:trigger-export", callback);
+  },
+});
 contextBridge.exposeInMainWorld("electronAPI", {
   platform: () => ipcRenderer.invoke("platform:get"),
   setTheme: (theme: Theme, focus?: boolean) =>

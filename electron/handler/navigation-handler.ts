@@ -91,30 +91,30 @@ function navigationHandler(win: BrowserWindow) {
     return { action: "deny" };
   });
 
-  win.webContents.on("will-navigate", (event, url) => {
+  win.webContents.on("will-navigate", (e, url) => {
     // intercepts client side navigation (before any network request leaves the app)
-    processUrl(url, () => event.preventDefault());
+    processUrl(url, () => e.preventDefault());
   });
 
-  win.webContents.on("will-redirect", (event, url) => {
+  win.webContents.on("will-redirect", (e, url) => {
     // if any server responds with an http redirect after clicking on an allowed link, this handles it
-    processUrl(url, () => event.preventDefault());
+    processUrl(url, () => e.preventDefault());
   });
   // 1. Intercept navigation inside IFrames
-  win.webContents.on("will-frame-navigate", (event) => {
+  win.webContents.on("will-frame-navigate", (e) => {
     // isMainFrame is true for the main window, false for iframes
-    if (!event.isMainFrame) {
-      processUrl(event.url, () => event.preventDefault());
+    if (!e.isMainFrame) {
+      processUrl(e.url, () => e.preventDefault());
     }
   });
   // 2. Prevent arbitrary file downloads
-  win.webContents.session.on("will-download", (event, item) => {
-    event.preventDefault();
+  win.webContents.session.on("will-download", (e, item) => {
+    e.preventDefault();
     console.log(`Blocked attempt to download: ${item.getURL()}`);
   });
   // 3. Disable <webview> creation entirely (Security Best Practice)
-  win.webContents.on("will-attach-webview", (event) => {
-    event.preventDefault();
+  win.webContents.on("will-attach-webview", (e) => {
+    e.preventDefault();
   });
 }
 

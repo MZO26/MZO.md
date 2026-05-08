@@ -6,7 +6,6 @@ import {
   setupLocalImageProtocol,
 } from "@electron/handler/navigation-handler";
 import { setPermissions } from "@electron/handler/permission-handler";
-import { registerIpcHandlers } from "@electron/ipc/ipc-handlers";
 import { store } from "@electron/store";
 import {
   getTitleBarOverlay,
@@ -26,6 +25,7 @@ import {
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { registerIpc } from "./ipc/ipc-validation";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env["DIST"] = path.join(__dirname, "../dist");
@@ -93,6 +93,7 @@ function createWindow() {
     }
   }
   win = new BrowserWindow(windowConfig);
+  // attach listeners to win after it's assigned to BrowserWindow and not null
   navigationHandler(win);
   win.webContents.openDevTools();
   win.setMenuBarVisibility(false);
@@ -101,6 +102,7 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
+
   win?.on("close", (e) => {
     const closeMode = store.get("close-window-mode");
     if (!isForceQuitting) {
@@ -136,21 +138,18 @@ function createWindow() {
   });
 }
 
-// global ipc-listeners (registered once)
-
-ipcMain.on("flush-confirmed", () => {
-  isReadyToClose = true;
-  win?.close();
-});
-
 // app start and tray
 
 app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
+  ipcMain.on("flush-confirmed", () => {
+    isReadyToClose = true;
+    win?.close();
+  });
   createWindow();
   setupLocalImageProtocol();
   setPermissions();
-  registerIpcHandlers(win!);
+  registerIpc(win as BrowserWindow);
   setUpEditorMenu();
   const trayIcon = await app.getFileIcon(process.execPath);
   tray = new Tray(trayIcon);
@@ -181,7 +180,7 @@ app.whenReady().then(async () => {
   });
 });
 
-// global app events
+// global app events / lifecycle events
 
 nativeTheme.on("updated", () => {
   if (win) onOSThemeChange(win, store.get("theme"));

@@ -20,7 +20,6 @@
   --tag-color: #0284c7;
   --tag-bg: rgba(2, 132, 199, 0.12);
   --selection-bg: rgba(82, 82, 91, 0.12);
-  --focus-ring: #2563eb;
   --scrollbar-thumb: #c4c4c8;
   --tooltip-bg: #2c2c2f;
   --tooltip-text: #f4f4f5;
@@ -62,7 +61,6 @@
   --tag-bg: rgba(56, 189, 248, 0.15);
   --shadow: 0 0 0 1px rgba(49, 49, 53, 0.8), 0 1px 3px rgba(0, 0, 0, 0.3);
   --selection-bg: rgba(161, 161, 170, 0.18);
-  --focus-ring: #60a5fa;
   --scrollbar-thumb: #6a6a6e;
   --tooltip-bg: #e8e8eb;
   --tooltip-text: #18181b;
@@ -87,7 +85,6 @@
   --tag-color: #0f766e;
   --tag-bg: rgba(15, 118, 110, 0.12);
   --selection-bg: rgba(68, 64, 60, 0.12);
-  --focus-ring: #0d9488;
   --scrollbar-thumb: #c0beb6;
   --tooltip-bg: #2c2925;
   --tooltip-text: #f5f3ef;
@@ -112,7 +109,6 @@
   --tag-bg: rgba(251, 191, 36, 0.15);
   --shadow: 0 0 0 1px rgba(80, 72, 67, 0.85), 0 1px 3px rgba(0, 0, 0, 0.32);
   --selection-bg: rgba(158, 152, 144, 0.18);
-  --focus-ring: #d97706;
   --scrollbar-thumb: #6a645b;
   --tooltip-bg: #e4e2da;
   --tooltip-text: #1c1917;
@@ -212,7 +208,8 @@ button:active {
   background: var(--bg-button);
 }
 
-button.is-active {
+button.is-active,
+button:focus-within {
   background-color: var(--bg-sidebar-section);
   color: var(--text-muted);
   border-color: var(--accent-primary);
@@ -223,6 +220,35 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+select {
+  width: 200px;
+  appearance: none;
+  outline: none;
+  background-color: var(--bg-sidebar);
+  color: var(--text-main);
+  font-size: 14px;
+  padding: 8px 36px 8px 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+  border-radius: 8px;
+  cursor: pointer;
+  min-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    background-color 0.3s ease,
+    border 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+select:hover,
+select:focus-within {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow);
 }
 
 .lucide {
