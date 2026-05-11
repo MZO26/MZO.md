@@ -27,6 +27,7 @@ class NoteDB {
   private toggleBookmarkStmt: BetterSqlite.Statement;
   private togglePinStmt: BetterSqlite.Statement;
   private searchByTagStmt: BetterSqlite.Statement;
+  // private getMirroredNotesStmt: BetterSqlite.Statement;
 
   constructor() {
     const dbPath = path.join(app.getPath("userData"), "notes.db");
@@ -67,6 +68,11 @@ class NoteDB {
       JOIN note_tags as t ON notes.id = t.note_id
       WHERE t.tag_name = ?
       `);
+    // this.getMirroredNotesStmt = this.db.prepare(`
+    //   SELECT *
+    //   FROM notes
+    //   WHERE is_mirrored = 1
+    //   `);
   }
 
   private createTables() {
@@ -80,6 +86,7 @@ class NoteDB {
         pinned INTEGER NOT NULL DEFAULT 0,
         todos_left INTEGER NOT NULL DEFAULT 0,
         snippet TEXT DEFAULT '',
+        is_mirrored INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );

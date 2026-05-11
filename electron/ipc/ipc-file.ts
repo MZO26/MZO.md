@@ -1,5 +1,6 @@
 import { createPDFCanvas } from "@electron/handler/export-handler";
 import { safeResponse } from "@electron/ipc/ipc-validation";
+import { store } from "@electron/store";
 import { createHiddenPdfWindow } from "@electron/win";
 import { validateExport, validateFiles } from "@shared/validation";
 import {
@@ -12,6 +13,19 @@ import fs from "fs/promises";
 import path from "path";
 
 function registerFileIpc(win: BrowserWindow) {
+  ipcMain.handle("select-folder", async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      properties: ["openDirectory"],
+    });
+
+    if (canceled || filePaths.length === 0) {
+      return null;
+    }
+    const selectedPath = filePaths[0];
+    store.set("mirror-path", selectedPath);
+    return selectedPath;
+  });
+
   ipcMain.handle("note:import", (e) => {
     return safeResponse(e, async () => {
       const { canceled, filePaths } = await dialog.showOpenDialog(win, {

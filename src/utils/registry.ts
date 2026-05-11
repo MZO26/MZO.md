@@ -17,7 +17,8 @@ type SettingsKeys =
   | "lineHeightSelect"
   | "openWindowSelect"
   | "closeWindowSelect"
-  | "minimizeWindowSelect";
+  | "minimizeWindowSelect"
+  | "mirrorModeSelect";
 
 interface SettingsRegistry extends Record<SettingsKeys, HTMLSelectElement> {}
 
@@ -66,8 +67,7 @@ export function getSettingsItem<K extends keyof SettingsRegistry>(
 ): SettingsRegistry[K];
 export function getSettingsItem(): SettingsRegistry;
 export function getSettingsItem(key?: any): any {
-  if (!registry.settings)
-    throw new Error("SettingsRegistry nicht initialisiert!");
+  if (!registry.settings) throw new Error("Failed to init setttings registry");
   if (key) return (registry.settings as any)[key];
   return registry.settings as SettingsRegistry;
 }

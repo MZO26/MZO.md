@@ -271,7 +271,7 @@ select:focus-within {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb);
+  background-color: var(--bg-button);
   backdrop-filter: blur(10px);
   border: 3px solid transparent;
   background-clip: content-box;

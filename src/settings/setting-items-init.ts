@@ -8,6 +8,7 @@ import {
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItem, setSettingsItem } from "@/utils/registry";
+import { showToast } from "@/utils/toast";
 import { THEME_MAP } from "@shared/constants";
 import type {
   AppSettings,
@@ -161,7 +162,7 @@ function initWindowSettings() {
       });
     }),
   );
-  minimizeWindowSelect?.addEventListener(
+  minimizeWindowSelect.addEventListener(
     "change",
     createAsyncHandler(async (e: Event) => {
       const target = e.target as HTMLSelectElement;
@@ -179,10 +180,41 @@ function initWindowSettings() {
   });
 }
 
+function initStorageSettings() {
+  const mirrorModeSelect = findElement<HTMLSelectElement>("#mirror-mode");
+  if (!mirrorModeSelect) return;
+  mirrorModeSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e) => {
+      const target = e.target as HTMLSelectElement;
+      mirrorModeSelect.value = target.value;
+      if (target.value === "fs") {
+        const folderPath = await window.fileAPI.selectFolder();
+        if (folderPath) {
+          debouncedSetSettings({
+            "mirror-mode": "fs",
+            "mirror-path": folderPath,
+          });
+          showToast(`Mirorring activated. Saving to ${folderPath}`);
+        } else {
+          showToast("Folder selection cancelled. Reverting to db mode");
+          mirrorModeSelect.value = "db";
+        }
+      } else if (target.value === "db") {
+        debouncedSetSettings({ "mirror-mode": "db" });
+      }
+    }),
+  );
+  setSettingsItem({
+    mirrorModeSelect,
+  });
+}
+
 function setSelectListeners(settings: AppSettings) {
   initAppearanceSettings();
   initEditorSettings(settings);
   initWindowSettings();
+  initStorageSettings();
 }
 
 export { setSelectListeners };

@@ -1,4 +1,3 @@
-import { getAllSettings } from "@/api/settingsAPI";
 import { buildSelects } from "@/settings/select-items";
 import { createSettingsMenu } from "@/settings/setting-builder";
 import { setSelectListeners } from "@/settings/setting-items-init";
@@ -76,13 +75,4 @@ function applyModalListeners(
   });
 }
 
-async function loadSettings(): Promise<AppSettings> {
-  const response = await getAllSettings();
-  if (!response.success) {
-    console.error(response.message);
-    throw new Error(response.message);
-  }
-  return response.data;
-}
-
-export { initAppSettings, loadSettings };
+export { initAppSettings };

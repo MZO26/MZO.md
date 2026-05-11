@@ -104,6 +104,15 @@ function buildSelects() {
     ],
     "app",
   );
+  selectBuilder(
+    settingsContainer,
+    "mirror-mode",
+    [
+      { value: "db", label: "Save only in database" },
+      { value: "fs", label: "Mirror to markdown files" },
+    ],
+    "storage",
+  );
 }
 
 export { buildSelects };

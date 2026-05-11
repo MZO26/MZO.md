@@ -171,7 +171,8 @@ label {
 .settings-content[data-activetab="typography"]
   .settings-row[data-category="typography"],
 .settings-content[data-activetab="app"] .settings-row[data-category="app"],
-.settings-content[data-category="info"] .settings-row[data-category="info"] {
+.settings-content[data-activetab="storage"]
+  .settings-row[data-category="storage"] {
   display: flex;
   animation: fadeIn 0.2s ease-out;
 }

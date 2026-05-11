@@ -68,6 +68,7 @@ type ExportRequest = z.infer<typeof ExportRequestSchema>;
 
 export {
   ExportRequestSchema,
+  FileNameSchema,
   ImportRequestSchema,
   type ExportRequest,
   type ImportRequest,

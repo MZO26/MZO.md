@@ -23,6 +23,7 @@ function subscribe<T>(
   };
 }
 contextBridge.exposeInMainWorld("fileAPI", {
+  selectFolder: () => ipcRenderer.invoke("select-folder"),
   noteExport: (payload: ExportRequest) =>
     ipcRenderer.invoke("note:export", payload),
   onTriggerExport: (callback: (payload: ExportRequest) => void) => {
@@ -75,8 +76,11 @@ contextBridge.exposeInMainWorld("noteAPI", {
   setActiveNote: (id: string | null) => ipcRenderer.send("set-active-note", id),
 });
 contextBridge.exposeInMainWorld("storeAPI", {
+  onSettingsChanged: (callback: (settings: Partial<AppSettings>) => void) => {
+    subscribe("settings-change", callback);
+  },
   getSettings: (key: string) => ipcRenderer.invoke("electron-store:get", key),
   getAllSettings: () => ipcRenderer.invoke("electron-store:getAll"),
-  setSettings: (settings: AppSettings) =>
+  setSettings: (settings: Partial<AppSettings>) =>
     ipcRenderer.invoke("electron-store:set", settings),
 });

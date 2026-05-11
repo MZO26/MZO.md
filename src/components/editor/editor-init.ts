@@ -51,7 +51,7 @@ function getNoteEditorExtensions() {
     Typography,
     Focus.configure({
       className: "has-focus",
-      mode: "shallowest",
+      mode: "all",
     }),
     Placeholder.configure({
       placeholder: "Start writing...",

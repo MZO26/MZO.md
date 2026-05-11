@@ -2,6 +2,7 @@ import { exportNote } from "@/api/fileAPI";
 import { bookmark, pin } from "@/api/noteAPI";
 import { editor } from "@/components/editor/editor-init";
 import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
+import { settingsStore } from "@/features/app-state";
 import { handleDeleteNote } from "@/features/note-actions";
 import { cleanup } from "@/features/note-ui";
 import { applyAppTheme } from "@/settings/theme-actions";
@@ -14,6 +15,10 @@ import type { ExportRequest } from "@shared/schemas/export-schema";
 
 function initListeners() {
   let lastAppliedTheme: string | null = null;
+
+  window.storeAPI.onSettingsChanged((settings) => {
+    settingsStore.setState(settings);
+  });
 
   window.fileAPI.onTriggerExport(async (extension) => {
     const editor = getAppItem("editor");

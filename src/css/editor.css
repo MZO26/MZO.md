@@ -20,15 +20,6 @@
   outline: 1px solid transparent;
 }
 
-.ProseMirror.focus-mode-active .has-focus {
-  background-color: var(--bg-sidebar);
-  box-shadow: var(--shadow);
-  outline-color: var(--border-color);
-  transition:
-    background-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
 .ProseMirror.is-editor-empty::before {
   content: attr(data-placeholder);
   position: absolute;
@@ -45,14 +36,16 @@
   font-size: 2.2em;
   line-height: 1;
   font-weight: 800;
-  margin-top: 0;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
 }
 
 .ProseMirror h2 {
   font-size: 1.75em;
   line-height: 1.25;
   font-weight: 700;
-  margin-top: 0;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
   letter-spacing: -0.01em;
 }
 
@@ -60,17 +53,29 @@
   font-size: 1.35em;
   line-height: 1.4;
   font-weight: 600;
-  margin-top: 0;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
 }
 
 .ProseMirror h1,
 .ProseMirror h2,
 .ProseMirror h3 {
-  padding: 12px 2px;
+  padding: 2px 6px;
+  margin-left: -6px;
   border-radius: 6px;
   outline: 1px solid transparent;
   box-shadow: 0 0 0 0 transparent;
   background-color: transparent;
+  transition:
+    background-color 0.2s,
+    outline 0.2s,
+    box-shadow 0.2s;
+}
+
+.ProseMirror h1:first-child,
+.ProseMirror h2:first-child,
+.ProseMirror h3:first-child {
+  margin-top: 0;
 }
 
 .ProseMirror p {
@@ -128,15 +133,6 @@
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
   white-space: pre-wrap;
-}
-
-.ProseMirror img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.5em;
-  margin: 1.5em auto;
-  display: block;
-  border: 1px solid var(--border-color);
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {
@@ -292,6 +288,7 @@
 
 .ProseMirror img {
   max-width: 100%;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   display: block;
   margin: 1em 0;
@@ -366,7 +363,7 @@ ul[data-type="taskList"] li > label input[type="checkbox"] {
   width: 1em;
   height: 1em;
   flex-shrink: 0;
-  border: 1.5px solid var(--border-color);
+  border: 1.5px solid var(--accent-primary);
   border-radius: 3px;
   background-color: transparent;
   cursor: pointer;
@@ -463,4 +460,58 @@ ul[data-type="taskList"] li[data-checked="true"] > div > p {
   transform: translateX(-50%);
   background: rgba(82, 82, 91, 0.12);
   border-radius: 999px;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror.focus-mode-active:has(.has-focus) > *:not(.has-focus) {
+  opacity: 0.45;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ProseMirror.focus-mode-active > *:has(.has-focus),
+.ProseMirror.focus-mode-active .has-focus {
+  opacity: 1;
+}
+
+.ProseMirror.focus-mode-active
+  .has-focus:is(
+    p,
+    ul,
+    ol,
+    li,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    hr,
+    table,
+    tr,
+    td,
+    th,
+    img
+  ) {
+  background-color: var(--bg-button);
+  border-radius: 4px;
+}
+.ProseMirror.focus-mode-active .has-focus:is(blockquote) {
+  border-left-color: var(--accent-primary);
+  border-radius: 4px;
+}
+
+.ProseMirror.focus-mode-active .has-focus:is(pre) {
+  box-shadow: 0 0 0 1px var(--accent-primary);
+  border-radius: 4px;
+}
+
+.ProseMirror.focus-mode-active .has-focus {
+  background-color: var(--bg-sidebar);
+  box-shadow: var(--shadow);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }

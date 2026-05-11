@@ -16,6 +16,8 @@ const SnippetSchema = z.string().max(50).default("");
 
 const BookmarkedSchema = z.boolean().default(false);
 
+const MirrorSchema = z.boolean().default(false);
+
 const DBBooleanSchema = z
   .union([z.literal(0), z.literal(1)])
   .default(0)
@@ -25,11 +27,15 @@ const DBBookmarkedSchema = DBBooleanSchema;
 
 const DBPinnedSchema = DBBooleanSchema;
 
+const DBMirrorSchema = DBBooleanSchema;
+
 const PinnedSchema = z.boolean().default(false);
 
 const TodoSchema = z.number().int().min(0).default(0);
 
 const PlainTextSchema = z.string().default("");
+
+const MDSchema = z.string().optional();
 
 const DateSchema = z.iso.datetime();
 
@@ -43,6 +49,7 @@ const NoteSchema = z
     pinned: PinnedSchema,
     todos_left: TodoSchema,
     plainText: PlainTextSchema,
+    is_mirrored: MirrorSchema,
     created_at: DateSchema,
     updated_at: DateSchema,
     tags: TagsSchema,
@@ -58,6 +65,7 @@ const NoteFromDbSchema = z.object({
   pinned: DBPinnedSchema,
   todos_left: TodoSchema,
   plainText: PlainTextSchema,
+  is_mirrored: DBMirrorSchema,
   created_at: DateSchema,
   updated_at: DateSchema,
   tags: TagsSchema,
@@ -82,14 +90,14 @@ const CreateNotePayloadSchema = NoteSchema.omit({
   bookmarked: true,
   created_at: true,
   updated_at: true,
-});
+}).extend({ markdown: MDSchema });
 
 const UpdateNotePayloadSchema = NoteSchema.omit({
   pinned: true,
   bookmarked: true,
   created_at: true,
   updated_at: true,
-});
+}).extend({ markdown: MDSchema });
 
 type UpdateNotePayload = z.infer<typeof UpdateNotePayloadSchema>;
 type CreateNotePayload = z.infer<typeof CreateNotePayloadSchema>;

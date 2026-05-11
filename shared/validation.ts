@@ -1,5 +1,6 @@
 import {
   ExportRequestSchema,
+  FileNameSchema,
   ImportRequestSchema,
 } from "@shared/schemas/export-schema";
 import { ImagePayloadSchema } from "@shared/schemas/image-schema";
@@ -70,9 +71,14 @@ function validateFiles(payload: unknown) {
   return validation(ImportRequestSchema, payload);
 }
 
+function validateFileName(payload: unknown) {
+  return validation(FileNameSchema, payload);
+}
+
 export {
   validateCreate,
   validateExport,
+  validateFileName,
   validateFiles,
   validateId,
   validateImage,

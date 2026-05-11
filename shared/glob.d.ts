@@ -16,6 +16,7 @@ declare module "*.css";
 declare global {
   interface Window {
     fileAPI: {
+      selectFolder: () => Promise<IpcResponse<void>>;
       noteExport: (
         payload: ExportRequest,
       ) => Promise<IpcResponse<ExportRequest>>;
@@ -37,9 +38,6 @@ declare global {
       onRequestFlush: (callback: () => void) => () => void;
       confirmFlush: () => void;
       zoom: (action: ZoomAction) => Promise<IpcResponse<number>>;
-      search: (text: string) => void;
-      searchNext: (text: string) => void;
-      onResults: (callback: (result: SearchResult) => void) => () => void;
     };
     noteAPI: {
       getAll: () => Promise<IpcResponse<Note[]>>;
@@ -65,6 +63,9 @@ declare global {
       setActiveNote: (id: string | null) => void;
     };
     storeAPI: {
+      onSettingsChanged: (
+        callback: (settings: Partial<AppSettings>) => void,
+      ) => () => void;
       getSettings: <K extends keyof AppSettings>(
         key: K,
       ) => Promise<IpcResponse<AppSettings[K]>>;

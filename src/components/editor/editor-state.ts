@@ -1,4 +1,4 @@
-import { stateStore } from "@/features/note-state";
+import { stateStore } from "@/features/app-state";
 import { requireElement } from "@/utils/dom";
 import { el } from "@/utils/ui";
 import { createElement, FileQuestion } from "lucide";

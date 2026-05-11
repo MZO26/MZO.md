@@ -8,7 +8,7 @@ function selectBuilder(
   container: HTMLDivElement,
   id: string,
   options: SelectOption[],
-  category: "appearance" | "typography" | "app" | "info",
+  category: "appearance" | "typography" | "app" | "storage",
 ) {
   const optionNodes = options.map((opt) => new Option(opt.label, opt.value));
   const label = el("label", { htmlFor: id }, `${id}`);
@@ -42,7 +42,7 @@ function createSettingsMenu(): HTMLDivElement {
     createSettingsButton("appearance", "palette"),
     createSettingsButton("typography", "pen-line"),
     createSettingsButton("app", "app-window"),
-    createSettingsButton("info", "info"),
+    createSettingsButton("storage", "database-backup"),
   );
 }
 
