@@ -18,7 +18,7 @@
   width: 0;
 }
 
-.notes-container::after {
+.notes-container::after:not(empty) {
   content: "";
   position: sticky;
   bottom: 15px;

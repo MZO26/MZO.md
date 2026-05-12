@@ -1,9 +1,6 @@
 import { ftsQueryGenerator } from "@shared/generators/generators";
-import {
-  NoteFromDbSchema,
-  type FTSRows,
-  type Note,
-} from "@shared/schemas/note-schema";
+import { DBRowSchema, type Note } from "@shared/schemas/note-schema";
+import type { NoteRow } from "@shared/types";
 import type { Database as DatabaseType } from "better-sqlite3";
 
 class FTS5 {
@@ -74,7 +71,7 @@ class FTS5 {
   searchNotes(searchTerm: string, limit: number): Note[] {
     const ftsQuery = ftsQueryGenerator(searchTerm);
     if (ftsQuery === "") return [];
-    const stmt = this.db.prepare<unknown[], FTSRows>(`
+    const stmt = this.db.prepare(`
     SELECT 
       n.id, 
       n.title,
@@ -93,13 +90,13 @@ class FTS5 {
     ORDER BY bm25(notes_fts, 0.0, 10.0, 1.0), n.updated_at DESC
     LIMIT ?
   `);
-    const result = stmt.all(ftsQuery, limit);
+    const result = stmt.all(ftsQuery, limit) as NoteRow[];
     return result.map((note) => {
       const noteData = {
         ...note,
         tags: JSON.parse(note.tags),
       };
-      return NoteFromDbSchema.parse(noteData);
+      return DBRowSchema.parse(noteData);
     });
   }
 }

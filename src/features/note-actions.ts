@@ -14,7 +14,10 @@ import { setActiveItem } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
 import { getMetadata } from "@shared/generators/generators";
-import type { CreateNotePayload } from "@shared/schemas/note-schema";
+import type {
+  CreateNotePayload,
+  UpdateNotePayload,
+} from "@shared/schemas/note-schema";
 
 export const pendingDeletions = new Set<string>();
 
@@ -39,6 +42,8 @@ async function handleCreateNote() {
   const payload: CreateNotePayload = {
     ...editorContent,
     ...metadata,
+    pinned: false,
+    bookmarked: false,
     is_mirrored,
   };
   return await createNote(payload);
@@ -74,7 +79,7 @@ async function handleSaveNote(
   const { content, plainText, markdown } = getContent();
   const metaData = getMetadata(content, plainText);
   const is_mirrored = markdown ? true : false;
-  const payload = {
+  const payload: UpdateNotePayload = {
     id,
     content,
     plainText,

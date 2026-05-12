@@ -1,4 +1,4 @@
-import { NoteFromDbSchema, type Note } from "@shared/schemas/note-schema";
+import type { NoteRow } from "@shared/types";
 import type { Database as DatabaseType } from "better-sqlite3";
 import BetterSqlite from "better-sqlite3";
 
@@ -27,6 +27,7 @@ class Views {
       WHERE todos_left > 0
       ORDER BY updated_at DESC
     `);
+
     this.getUntaggedNotesStmt = this.db.prepare(`
       SELECT notes.*
       FROM notes
@@ -35,27 +36,20 @@ class Views {
       `);
   }
 
-  getBookmarkedNotes(): Note[] {
-    const result = this.getBookmarkedNotesStmt.all();
-    return result.map((note) => NoteFromDbSchema.parse(note));
-  }
-  getPinnedNotes(): Note[] {
-    const result = this.getPinnedNotesStmt.all();
-    return result.map((note) => NoteFromDbSchema.parse(note));
+  getBookmarkedNotes(): NoteRow[] {
+    return this.getBookmarkedNotesStmt.all() as NoteRow[];
   }
 
-  getNotesWithActionItems(): Note[] {
-    const result = this.getNotesWithActionItemsStmt.all();
-    return result.map((note) => NoteFromDbSchema.parse(note));
+  getPinnedNotes(): NoteRow[] {
+    return this.getPinnedNotesStmt.all() as NoteRow[];
   }
 
-  getUntaggedNotes(): Note[] {
-    const result = this.getUntaggedNotesStmt.all() as Note[];
-    return result.map((note) => {
-      return NoteFromDbSchema.parse({
-        ...note,
-      });
-    });
+  getNotesWithActionItems(): NoteRow[] {
+    return this.getNotesWithActionItemsStmt.all() as NoteRow[];
+  }
+
+  getUntaggedNotes(): NoteRow[] {
+    return this.getUntaggedNotesStmt.all() as NoteRow[];
   }
 }
 

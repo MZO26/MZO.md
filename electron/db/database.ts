@@ -5,12 +5,18 @@ import {
 } from "@electron/db/transactions";
 import { Views } from "@electron/db/views";
 import {
-  NoteFromDbSchema,
+  CreateTransactionSchema,
+  DBRowSchema,
+  NoteTagNameRowsSchema,
+  NoteTagRowsSchema,
+  ToggleBookmarkSchema,
+  TogglePinSchema,
+  UpdateTransactionSchema,
   type CreateNotePayload,
   type Note,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
-import type { DbRow } from "@shared/types";
+import type { NoteRow } from "@shared/types";
 import BetterSqlite from "better-sqlite3";
 import { app } from "electron";
 import path from "path";
@@ -45,28 +51,30 @@ class NoteDB {
     this.getAllNotesStmt = this.db.prepare(
       "SELECT * FROM notes ORDER BY created_at DESC",
     );
-    this.getNoteByIdStmt = this.db.prepare("SELECT * FROM notes WHERE id = ?");
+    this.getNoteByIdStmt = this.db.prepare(
+      "SELECT * FROM notes WHERE id = @id",
+    );
     this.getAllTagsStmt = this.db.prepare(
       "SELECT note_id, tag_name FROM note_tags",
     );
     this.getTagsByIdStmt = this.db.prepare(
-      "SELECT tag_name FROM note_tags WHERE note_id = ?",
+      "SELECT tag_name FROM note_tags WHERE note_id = @id",
     );
     this.toggleBookmarkStmt = this.db.prepare(`
       UPDATE notes 
-      SET bookmarked = NOT bookmarked, updated_at = ?
-      WHERE id = ? RETURNING bookmarked
+      SET bookmarked = NOT bookmarked, updated_at = @updated_at
+      WHERE id = @id RETURNING bookmarked
     `);
     this.togglePinStmt = this.db.prepare(`
       UPDATE notes 
-      SET pinned = NOT pinned, updated_at = ?
-      WHERE id = ? RETURNING pinned
+      SET pinned = NOT pinned, updated_at = @updated_at
+      WHERE id = @id RETURNING pinned
     `);
     this.searchByTagStmt = this.db.prepare(`
       SELECT notes.* 
       FROM notes
       JOIN note_tags as t ON notes.id = t.note_id
-      WHERE t.tag_name = ?
+      WHERE t.tag_name = @tag_name
       `);
     // this.getMirroredNotesStmt = this.db.prepare(`
     //   SELECT *
@@ -86,7 +94,7 @@ class NoteDB {
         pinned INTEGER NOT NULL DEFAULT 0,
         todos_left INTEGER NOT NULL DEFAULT 0,
         snippet TEXT DEFAULT '',
-        is_mirrored INTEGER DEFAULT 0,
+        is_mirrored INTEGER NOT NULL DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
@@ -105,46 +113,34 @@ class NoteDB {
   create(payload: CreateNotePayload): Note {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
-    let { content, plainText, title, snippet, tags } = payload;
+    let { tags, content, ...rest } = payload;
     const stringifiedContent = JSON.stringify(content);
     const uniqueTags = [...new Set(tags)].slice(0, 3);
-    const result = this.transactions.safeCreate({
+    const rawContent = {
       id,
-      title,
-      stringifiedContent,
-      snippet,
-      tags: uniqueTags,
-      plainText,
-      created_at: now,
-      updated_at: now,
-    });
-    return NoteFromDbSchema.parse({
-      ...result,
+      ...rest,
       content: stringifiedContent,
       tags: uniqueTags,
-    });
+      created_at: now,
+      updated_at: now,
+    };
+    const dbContent = CreateTransactionSchema.parse(rawContent);
+    return this.transactions.safeCreate(dbContent);
   }
 
-  update(payload: UpdateNotePayload): Note {
-    let { id, content, plainText, title, snippet, todos_left, tags } = payload;
+  update(payload: Omit<UpdateNotePayload, "markdown">): Note {
+    let { tags, content, ...rest } = payload;
     const stringifiedContent = JSON.stringify(content);
     const now = new Date().toISOString();
     const uniqueTags = [...new Set(tags)].slice(0, 3);
-    const result = this.transactions.safeUpdate({
-      id,
-      title,
-      stringifiedContent,
-      snippet,
-      todos_left,
-      tags: uniqueTags,
-      plainText,
-      updated_at: now,
-    });
-    return NoteFromDbSchema.parse({
-      ...result,
+    const rawContent = {
+      ...rest,
       content: stringifiedContent,
       tags: uniqueTags,
-    });
+      updated_at: now,
+    };
+    const dbContent = UpdateTransactionSchema.parse(rawContent);
+    return this.transactions.safeUpdate(dbContent);
   }
 
   delete(id: string): void {
@@ -153,21 +149,19 @@ class NoteDB {
   }
 
   getAll(): Note[] {
-    const result = this.getAllNotesStmt.all() as DbRow[];
-    if (result.length === 0) return [];
-    const allTags = this.getAllTagsStmt.all() as {
-      note_id: string;
-      tag_name: string;
-    }[];
+    const rows = this.getAllNotesStmt.all() as NoteRow[];
+    if (rows.length === 0) return [];
+    const rawResult = this.getAllTagsStmt.all();
+    const allTags = NoteTagRowsSchema.parse(rawResult);
     const tagMap = new Map<string, string[]>();
-    for (const tag of allTags) {
-      const existingTags = tagMap.get(tag.note_id) || [];
-      existingTags.push(tag.tag_name);
-      tagMap.set(tag.note_id, existingTags);
+    for (const { note_id, tag_name } of allTags) {
+      const existingTags = tagMap.get(note_id) ?? [];
+      existingTags.push(tag_name);
+      tagMap.set(note_id, existingTags);
     }
-    return result.map((note) => {
-      const noteTags = tagMap.get(note.id) || [];
-      return NoteFromDbSchema.parse({
+    return rows.map((note) => {
+      const noteTags = tagMap.get(note.id) ?? [];
+      return DBRowSchema.parse({
         ...note,
         tags: noteTags,
       });
@@ -175,47 +169,82 @@ class NoteDB {
   }
 
   getById(id: string): Note {
-    const dbRow = this.getNoteByIdStmt.get(id) as DbRow;
+    const dbRow = this.getNoteByIdStmt.get({ id }) as NoteRow;
     if (!dbRow) {
       throw new Error("NOT_FOUND");
     }
-    const tags = this.getTagsByIdStmt.all(id) as { tag_name: string }[];
-
-    return NoteFromDbSchema.parse({
+    return DBRowSchema.parse({
       ...dbRow,
-      tags: tags.map((t) => t.tag_name),
+      tags: this.getTagsById(id),
     });
   }
 
   toggleBookmark(id: string): boolean {
     const now = new Date().toISOString();
-    const result = this.toggleBookmarkStmt.get(now, id) as
-      | {
-          bookmarked: number;
-        }
-      | undefined;
-    if (!result) {
+    const rawResult = this.toggleBookmarkStmt.get({ updated_at: now, id });
+    if (!rawResult) {
       throw new Error("NOT_FOUND");
     }
-    return Boolean(result.bookmarked);
+    return ToggleBookmarkSchema.parse(rawResult).bookmarked;
   }
 
   togglePin(id: string): boolean {
     const now = new Date().toISOString();
-    const result = this.togglePinStmt.get(now, id) as
-      | { pinned: number }
-      | undefined;
-    if (!result) {
+    const rawResult = this.togglePinStmt.get({ updated_at: now, id });
+    if (!rawResult) {
       throw new Error("NOT_FOUND");
     }
-    return Boolean(result.pinned);
+    return TogglePinSchema.parse(rawResult).pinned;
+  }
+
+  getTagsById(id: string): string[] {
+    const rawResult = this.getTagsByIdStmt.all({ id });
+    const result = NoteTagNameRowsSchema.parse(rawResult);
+    return result.map((row) => row.tag_name);
   }
 
   searchByTag(tagName: string): Note[] {
-    const result = this.searchByTagStmt.all(tagName) as Note[];
-    return result.map((note) => {
-      return NoteFromDbSchema.parse({
+    const result = this.searchByTagStmt.all({ tag_name: tagName }) as NoteRow[];
+    return result.map((note) =>
+      DBRowSchema.parse({ ...note, tags: this.getTagsById(note.id) }),
+    );
+  }
+  getPinnedNotes(): Note[] {
+    const rows = this.views.getPinnedNotes();
+    return rows.map((note) =>
+      DBRowSchema.parse({
         ...note,
+        tags: this.getTagsById(note.id),
+      }),
+    );
+  }
+
+  getBookMarkedNotes(): Note[] {
+    const rows = this.views.getBookmarkedNotes();
+    return rows.map((note) => {
+      return DBRowSchema.parse({
+        ...note,
+        tags: this.getTagsById(note.id),
+      });
+    });
+  }
+
+  getNotesWithActionItems(): Note[] {
+    const rows = this.views.getNotesWithActionItems();
+    return rows.map((note) => {
+      return DBRowSchema.parse({
+        ...note,
+        tags: this.getTagsById(note.id),
+      });
+    });
+  }
+
+  getUntaggedNotes(): Note[] {
+    const rows = this.views.getUntaggedNotes();
+    return rows.map((note) => {
+      return DBRowSchema.parse({
+        ...note,
+        tags: this.getTagsById(note.id),
       });
     });
   }

@@ -50,7 +50,6 @@ function registerNoteIpc() {
         }
       }
       const validatedData = validateUpdate(payload);
-      console.log(validatedData);
       const { markdown, ...dbContent } = validatedData;
       const result = db.update(dbContent);
       if (validatedData.is_mirrored) {
@@ -149,18 +148,18 @@ function registerNoteIpc() {
         throw new Error("RATE_LIMIT");
       switch (view) {
         case "bookmarked":
-          result = db.views.getBookmarkedNotes();
+          result = db.getBookMarkedNotes();
           break;
         case "pinned":
-          result = db.views.getPinnedNotes();
+          result = db.getPinnedNotes();
           break;
         case "todos":
-          result = db.views.getNotesWithActionItems();
+          result = db.getNotesWithActionItems();
           break;
         case "all":
           return db.getAll();
         case "untagged":
-          return db.views.getUntaggedNotes();
+          return db.getUntaggedNotes();
         default:
           throw new Error("INVALID_VIEW");
       }

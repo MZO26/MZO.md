@@ -11,20 +11,11 @@ const baseNoteItem = templateElement.content
 function createNoteItem(note: Note): HTMLDivElement {
   // Deep clone with true
   const item = baseNoteItem.cloneNode(true) as HTMLDivElement;
-  const pinned = note.pinned === true;
-  const bookmarked = note.bookmarked === true;
+  console.log(note);
   item.dataset["id"] = note.id;
-  item.dataset["pinned"] = String(pinned);
-  item.dataset["bookmarked"] = String(bookmarked);
-  const pinIcon = item.querySelector<HTMLElement>(".pin");
-  const bookmarkIcon = item.querySelector<HTMLElement>(".bookmark");
-  if (!pinned && pinIcon) {
-    pinIcon.style.display = "none";
-  }
-  if (!bookmarked && bookmarkIcon) {
-    bookmarkIcon.style.display = "none";
-  }
-  if (pinned || bookmarked) {
+  item.dataset["pinned"] = String(note.pinned === true);
+  item.dataset["bookmarked"] = String(note.bookmarked === true);
+  if (note.pinned || note.bookmarked) {
     renderIcons(item);
   }
   item.querySelector(".note-title")!.textContent = note.title;

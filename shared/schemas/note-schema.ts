@@ -14,22 +14,17 @@ const TagsSchema = z.array(TagSchema).max(3).default([]);
 
 const SnippetSchema = z.string().max(50).default("");
 
-const BookmarkedSchema = z.boolean().default(false);
-
-const MirrorSchema = z.boolean().default(false);
-
+// DB -> App
 const DBBooleanSchema = z
   .union([z.literal(0), z.literal(1)])
   .default(0)
-  .transform((val) => val === 1); // default before transform because else it expects a boolean -> transform handles to-boolean transformation
+  .transform((val) => val === 1);
 
-const DBBookmarkedSchema = DBBooleanSchema;
-
-const DBPinnedSchema = DBBooleanSchema;
-
-const DBMirrorSchema = DBBooleanSchema;
-
-const PinnedSchema = z.boolean().default(false);
+// App -> DB
+const BooleanSchema = z
+  .boolean()
+  .default(false)
+  .transform((val) => (val ? 1 : 0) as 0 | 1);
 
 const TodoSchema = z.number().int().min(0).default(0);
 
@@ -39,88 +34,135 @@ const MDSchema = z.string().optional();
 
 const DateSchema = z.iso.datetime();
 
-const NoteSchema = z
-  .object({
-    id: IdSchema,
-    title: TitleSchema,
-    content: EditorDocSchema,
-    snippet: SnippetSchema,
-    bookmarked: BookmarkedSchema,
-    pinned: PinnedSchema,
-    todos_left: TodoSchema,
-    plainText: PlainTextSchema,
-    is_mirrored: MirrorSchema,
-    created_at: DateSchema,
-    updated_at: DateSchema,
-    tags: TagsSchema,
-  })
-  .strict();
-
-const NoteFromDbSchema = z.object({
-  id: IdSchema,
-  title: TitleSchema,
-  content: DbContentSchema,
-  snippet: SnippetSchema,
-  bookmarked: DBBookmarkedSchema,
-  pinned: DBPinnedSchema,
-  todos_left: TodoSchema,
-  plainText: PlainTextSchema,
-  is_mirrored: DBMirrorSchema,
-  created_at: DateSchema,
-  updated_at: DateSchema,
-  tags: TagsSchema,
+const TogglePinSchema = z.object({
+  pinned: DBBooleanSchema,
 });
 
-const NotesSchema = z.array(NoteSchema);
-
-const FTSRowsSchema = NoteSchema.omit({
-  tags: true,
-}).extend({
-  tags: z.string(),
+const ToggleBookmarkSchema = z.object({
+  bookmarked: DBBooleanSchema,
 });
+
+const NoteTagRowSchema = z.object({
+  note_id: IdSchema,
+  tag_name: TagSchema,
+});
+
+const NoteTagRowsSchema = z.array(NoteTagRowSchema);
+
+const NoteTagNameRowSchema = NoteTagRowSchema.pick({
+  tag_name: true,
+});
+
+const NoteTagNameRowsSchema = z.array(NoteTagNameRowSchema);
 
 const SearchSchema = z.object({
   searchTerm: z.string().trim().min(1).max(100),
   limit: z.number().int().min(20).max(50).default(50),
 });
 
+// base schema for all notes. These are always there and do not change their shape
+const NoteCoreSchema = z.object({
+  title: TitleSchema,
+  snippet: SnippetSchema,
+  todos_left: TodoSchema,
+  plainText: PlainTextSchema,
+  tags: TagsSchema,
+});
+
+// base for payloads. Booleans instead of numbers and normal editor schema (still in json)
+const NoteSchema = NoteCoreSchema.extend({
+  id: IdSchema,
+  content: EditorDocSchema,
+  pinned: z.boolean(),
+  bookmarked: z.boolean(),
+  is_mirrored: z.boolean(),
+  created_at: DateSchema,
+  updated_at: DateSchema,
+});
+
+// for note array results
+const NotesSchema = z.array(NoteSchema);
+
+// for note table results -> tags have to be appended to result of database
+const DBRowSchema = NoteCoreSchema.extend({
+  id: IdSchema,
+  content: DbContentSchema,
+  pinned: DBBooleanSchema,
+  bookmarked: DBBooleanSchema,
+  is_mirrored: DBBooleanSchema,
+  created_at: DateSchema,
+  updated_at: DateSchema,
+});
+
+// transforms boolean to 0 | 1 and expects stringified content
+const NoteToDBSchema = NoteCoreSchema.extend({
+  id: IdSchema,
+  content: z.string(),
+  pinned: BooleanSchema,
+  bookmarked: BooleanSchema,
+  is_mirrored: BooleanSchema,
+  created_at: DateSchema,
+  updated_at: DateSchema,
+});
+
+// omitted values get generated in the db
 const CreateNotePayloadSchema = NoteSchema.omit({
   id: true,
-  pinned: true,
-  bookmarked: true,
   created_at: true,
   updated_at: true,
-}).extend({ markdown: MDSchema });
+});
 
+// markdown if mirroring is activated. Payload does not send updated_at. Timestamp for it gets generated in db
 const UpdateNotePayloadSchema = NoteSchema.omit({
   pinned: true,
   bookmarked: true,
   created_at: true,
   updated_at: true,
-}).extend({ markdown: MDSchema });
+}).extend({
+  markdown: MDSchema,
+});
 
+// everything gets written to db. Defaults apply
+const CreateTransactionSchema = NoteToDBSchema;
+
+// pinned, bookmarked get toggled dynamically. created_at stays reserved for first creation and never gets touched after
+const UpdateTransactionSchema = NoteToDBSchema.omit({
+  pinned: true,
+  bookmarked: true,
+  created_at: true,
+});
+
+type CreateTransaction = z.infer<typeof CreateTransactionSchema>;
+type UpdateTransaction = z.infer<typeof UpdateTransactionSchema>;
 type UpdateNotePayload = z.infer<typeof UpdateNotePayloadSchema>;
 type CreateNotePayload = z.infer<typeof CreateNotePayloadSchema>;
-type FTSRows = z.infer<typeof FTSRowsSchema>;
 type Note = z.infer<typeof NoteSchema>;
 
 export {
   CreateNotePayloadSchema,
+  CreateTransactionSchema,
+  DBBooleanSchema,
+  DBRowSchema,
   EditorDocSchema,
-  FTSRowsSchema,
   IdSchema,
-  NoteFromDbSchema,
   NoteSchema,
   NotesSchema,
+  NoteTagNameRowsSchema,
+  NoteTagRowsSchema,
+  NoteToDBSchema,
   PlainTextSchema,
   SearchSchema,
   SnippetSchema,
   TagSchema,
   TagsSchema,
   TitleSchema,
+  ToggleBookmarkSchema,
+  TogglePinSchema,
   UpdateNotePayloadSchema,
+  UpdateTransactionSchema,
   type CreateNotePayload,
-  type FTSRows,
+  type CreateTransaction,
   type Note,
   type UpdateNotePayload,
+  type UpdateTransaction,
 };

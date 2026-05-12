@@ -1,5 +1,3 @@
-import type { Note } from "@shared/schemas/note-schema";
-
 type NativeWindowColors = {
   backgroundColor: string;
   overlayOptions: TitleBarOverlayOptions;
@@ -69,8 +67,19 @@ type Metadata = {
   todos_left: number;
 };
 
-type DbRow = Omit<Note, "content" | "tags"> & {
+type NoteRow = {
+  id: string;
+  title: string;
   content: string;
+  snippet: string;
+  bookmarked: 0 | 1;
+  pinned: 0 | 1;
+  todos_left: number;
+  plainText: string;
+  is_mirrored: 0 | 1;
+  created_at: number;
+  updated_at: number;
+  tags: string;
 };
 
 type ZoomAction = "get" | "in" | "out" | "reset";
@@ -80,11 +89,11 @@ export type {
   ActionMap,
   AutoScrollOptions,
   Code,
-  DbRow,
   IpcResponse,
   Metadata,
   NativeWindowColors,
   NoteItemElements,
+  NoteRow,
   ResolvedTheme,
   TitleBarOverlayOptions,
   WorkerResult,
