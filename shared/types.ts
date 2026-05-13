@@ -71,16 +71,32 @@ type NoteRow = {
   id: string;
   title: string;
   content: string;
+  markdown: string;
   snippet: string;
   bookmarked: 0 | 1;
   pinned: 0 | 1;
   todos_left: number;
   plainText: string;
-  is_mirrored: 0 | 1;
   created_at: number;
   updated_at: number;
   tags: string;
 };
+
+type ImportedContent = {
+  title: string;
+  content: string;
+  extension: "md" | "html" | "json" | "txt";
+};
+
+interface BatchExportData {
+  id: string;
+  title: string;
+  markdown?: string;
+  plainText?: string;
+  content?: string;
+}
+
+type ContentType = "markdown" | "html" | "json";
 
 type ZoomAction = "get" | "in" | "out" | "reset";
 
@@ -88,7 +104,10 @@ export type {
   Action,
   ActionMap,
   AutoScrollOptions,
+  BatchExportData,
   Code,
+  ContentType,
+  ImportedContent,
   IpcResponse,
   Metadata,
   NativeWindowColors,

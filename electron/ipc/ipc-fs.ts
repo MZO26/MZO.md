@@ -1,8 +1,14 @@
-import { createPDFCanvas } from "@electron/handler/export-handler";
+import { processWithLimit } from "@electron/fs/fs-limiter";
+import { batchExport } from "@electron/fs/fs-write-batch";
+import { createPDFCanvas } from "@electron/handler/pdf-handler";
 import { safeResponse } from "@electron/ipc/ipc-validation";
-import { store } from "@electron/store";
 import { createHiddenPdfWindow } from "@electron/win";
-import { validateExport, validateFiles } from "@shared/validation";
+import {
+  ExportManyRequestSchema,
+  ExportRequestSchema,
+  ImportRequestSchema,
+} from "@shared/schemas/export-schema";
+import { validation } from "@shared/validation";
 import {
   dialog,
   ipcMain,
@@ -22,7 +28,6 @@ function registerFileIpc(win: BrowserWindow) {
       return null;
     }
     const selectedPath = filePaths[0];
-    store.set("mirror-path", selectedPath);
     return selectedPath;
   });
 
@@ -30,7 +35,7 @@ function registerFileIpc(win: BrowserWindow) {
     return safeResponse(e, async () => {
       const { canceled, filePaths } = await dialog.showOpenDialog(win, {
         title: "Import note",
-        properties: ["openFile"],
+        properties: ["openFile", "multiSelections"],
         filters: [
           {
             name: "Supported files",
@@ -43,25 +48,58 @@ function registerFileIpc(win: BrowserWindow) {
         ],
       });
       const filePath = filePaths[0];
-      if (canceled || !filePath) {
+      if (canceled || !filePath || filePath.length === 0) {
         throw new Error("CANCELLED_OPERATION");
       }
-      const content = await fs.readFile(filePath, "utf8");
-      const extension = path.extname(filePath).slice(1).toLowerCase();
-      const fileName = path.basename(filePath, path.extname(filePath));
-      const validatedData = validateFiles({
-        extension,
-        content,
-        fileName,
+      const imported = await processWithLimit(
+        filePaths,
+        50,
+        async (filePath) => {
+          try {
+            const content = await fs.readFile(filePath, "utf8");
+            const extension = path.extname(filePath).slice(1).toLowerCase();
+            const fileName = path.basename(filePath, path.extname(filePath));
+            return validation(ImportRequestSchema, {
+              extension,
+              fileName,
+              content,
+            });
+          } catch (error) {
+            console.error(`Failed to read/validate file: ${filePath}`, error);
+            return null;
+          }
+        },
+      );
+      const validNotes = imported.filter((note) => note !== null);
+      return validNotes;
+    });
+  });
+
+  ipcMain.handle("note:export-many", (e, payload: unknown) => {
+    return safeResponse(e, async () => {
+      const validatedData = validation(ExportManyRequestSchema, payload);
+      if (!validatedData) {
+        throw new Error("CANCELLED_OPERATION");
+      }
+      const { extension } = validatedData;
+      const { canceled, filePaths } = await dialog.showOpenDialog({
+        title: "Select Folder for Export",
+        buttonLabel: "Export Here",
+        properties: ["openDirectory", "createDirectory", "promptToCreate"],
       });
 
-      return validatedData;
+      const selectedFolder = filePaths[0];
+      if (canceled || !selectedFolder) {
+        throw new Error("CANCELLED_OPERATION");
+      }
+      await batchExport(selectedFolder, extension);
+      return selectedFolder;
     });
   });
 
   ipcMain.handle("note:export", (e, payload: unknown) => {
     return safeResponse(e, async () => {
-      const validatedData = validateExport(payload);
+      const validatedData = validation(ExportRequestSchema, payload);
       if (!validatedData) {
         throw new Error("CANCELLED_OPERATION");
       }
@@ -74,7 +112,6 @@ function registerFileIpc(win: BrowserWindow) {
       if (canceled || !filePath) {
         throw new Error("CANCELLED_OPERATION");
       }
-      // if string -> content doesn't get changed, but if it's still json editor doc it gets stringified
       const data =
         typeof content === "string"
           ? content

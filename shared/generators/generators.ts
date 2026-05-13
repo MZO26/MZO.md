@@ -73,13 +73,12 @@ function tagsGenerator(input: unknown): string[] {
 
 function ftsQueryGenerator(searchTerm: unknown): string {
   if (typeof searchTerm !== "string") return "";
-  const shortened = searchTerm.substring(0, 100);
-  const cleanSearch = shortened.replace(/[^\p{L}\p{N}\s]/gu, " ");
-  const words = cleanSearch
-    .split(/\s+/)
-    .filter((word: string) => word.length > 0);
-  if (words.length === 0) return "";
-  return words.map((word) => `"${word}"*`).join(" AND ");
+  const shortened = searchTerm.substring(0, 100).trim();
+  if (!shortened) return "";
+  const cleanSearch = shortened
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ");
+  return `"${cleanSearch}"*`;
 }
 
 export {

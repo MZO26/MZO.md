@@ -1,4 +1,7 @@
-import type { ExportRequest } from "@shared/schemas/export-schema";
+import type {
+  ExportManyRequest,
+  ExportRequest,
+} from "@shared/schemas/export-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
@@ -29,6 +32,8 @@ contextBridge.exposeInMainWorld("fileAPI", {
   onTriggerExport: (callback: (payload: ExportRequest) => void) => {
     subscribe("note:trigger-export", callback);
   },
+  noteExportMany: (payload: ExportManyRequest) =>
+    ipcRenderer.invoke("note:export-many", payload),
   noteImport: () => ipcRenderer.invoke("note:import"),
 });
 contextBridge.exposeInMainWorld("electronAPI", {
@@ -51,6 +56,8 @@ contextBridge.exposeInMainWorld("noteAPI", {
   getAll: () => ipcRenderer.invoke("note:getAll"),
   create: (payload: CreateNotePayload) =>
     ipcRenderer.invoke("note:create", payload),
+  createMany: (payload: CreateNotePayload[]) =>
+    ipcRenderer.invoke("note:create-many", payload),
   update: (payload: UpdateNotePayload, flush: boolean) =>
     ipcRenderer.invoke("note:update", payload, flush),
   delete: (id: string) => ipcRenderer.invoke("note:delete", id),

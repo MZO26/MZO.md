@@ -18,7 +18,7 @@ type SettingsKeys =
   | "openWindowSelect"
   | "closeWindowSelect"
   | "minimizeWindowSelect"
-  | "mirrorModeSelect";
+  | "batchExportSelect";
 
 interface SettingsRegistry extends Record<SettingsKeys, HTMLSelectElement> {}
 

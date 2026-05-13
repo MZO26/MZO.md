@@ -1,8 +1,9 @@
 import { checkRateLimit, safeResponse } from "@electron/ipc/ipc-validation";
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import { LIMITS } from "@shared/constants";
-import type { Theme } from "@shared/schemas/store-schema";
-import { validateImage, validateTheme } from "@shared/validation";
+import { ImagePayloadSchema } from "@shared/schemas/image-schema";
+import { StoreSchema, type Theme } from "@shared/schemas/store-schema";
+import { validation } from "@shared/validation";
 import { createHash } from "crypto";
 import { app, BrowserWindow, ipcMain } from "electron";
 import fs from "node:fs";
@@ -21,7 +22,7 @@ function registerElectronIpc() {
     return safeResponse(e, async () => {
       if (!checkRateLimit("set:theme", LIMITS.WRITE_LIGHT))
         throw new Error("RATE_LIMIT");
-      const validatedData = validateTheme(theme);
+      const validatedData = validation(StoreSchema.shape.theme, theme);
       const activeTheme = initTheme(validatedData);
       const windowTheme = focus
         ? getTitleBarOverlay(activeTheme, true)
@@ -37,7 +38,7 @@ function registerElectronIpc() {
     return safeResponse(e, async () => {
       if (!checkRateLimit("saveImage", LIMITS.WRITE_HEAVY))
         throw new Error("RATE_LIMIT");
-      const validatedData = validateImage(payload);
+      const validatedData = validation(ImagePayloadSchema, payload);
       const userDataPath = app.getPath("userData");
       const imagesFolder = path.join(userDataPath, "editor-images");
       // Create the folder if it doesn't exist yet

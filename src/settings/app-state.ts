@@ -14,8 +14,6 @@ const DEFAULT_STORE: AppSettings = {
   "close-window-mode": "normal",
   "minimize-window-mode": "taskbar",
   "window-bounds": { width: 1100, height: 600 },
-  "mirror-mode": "db",
-  "mirror-path": null,
 };
 
 interface AppState {

@@ -1,5 +1,5 @@
 import { registerElectronIpc } from "@electron/ipc/ipc-electron";
-import { registerFileIpc } from "@electron/ipc/ipc-file";
+import { registerFileIpc } from "@electron/ipc/ipc-fs";
 import { registerNoteIpc } from "@electron/ipc/ipc-note";
 import { registerSettingsIpc } from "@electron/ipc/ipc-settings";
 import type { IpcResponse } from "@shared/types";
@@ -13,6 +13,8 @@ enum AppError {
   UnknownError = "UNKNOWN_ERROR",
   InvalidViewError = "INVALID_VIEW",
   CancelledOperation = "CANCELLED_OPERATION",
+  CompressionError = "COMPRESSION_ERROR",
+  InvalidImageError = "INVALID_IMAGE_ERROR",
 }
 
 function validateSender(event: IpcMainInvokeEvent) {
@@ -83,7 +85,13 @@ function handleIpcError(err: unknown): { success: false; message: string } {
       return { success: false, message: "View not found." };
 
     case AppError.CancelledOperation:
-      return { success: false, message: "Operation cancelled" };
+      return { success: false, message: "Operation cancelled." };
+
+    case AppError.CompressionError:
+      return { success: false, message: "Failed to process the image." };
+
+    case AppError.InvalidImageError:
+      return { success: false, message: "Image is damaged or unsupported" };
 
     case AppError.UnknownError:
     default:

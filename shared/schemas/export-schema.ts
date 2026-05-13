@@ -1,11 +1,20 @@
 import z from "zod";
 
-const normalizeFileName = (val: string) =>
-  val
-    .trim()
-    .replace(/\s+/g, "_")
-    .replace(/[^a-zA-Z0-9._-]/g, "_")
-    .replace(/_+/g, "_");
+const normalizeFileName = (val: string): string => {
+  if (!val) return "untitled";
+
+  return (
+    val
+      .normalize("NFC") // ensures consistent unicode representation ('é' as one char)
+      .trim()
+      .replace(/[\x00-\x1f\x80-\x9f]/g, "")
+      .replace(/[/\\?%*:|"<>]/g, "")
+      .replace(/\s+/g, "_")
+      .replace(/^\.+|\.+$/g, "")
+      .replace(/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..+)?$/i, "_$1$2")
+      .slice(0, 200) || "untitled"
+  );
+};
 
 const FileNameSchema = z
   .string()
@@ -56,6 +65,12 @@ const ExportRequestSchema = z.discriminatedUnion("extension", [
   PdfSchema,
 ]);
 
+const ExportManyRequestSchema = z.discriminatedUnion("extension", [
+  MdSchema.pick({ extension: true }),
+  TxtSchema.pick({ extension: true }),
+  JsonSchema.pick({ extension: true }),
+]);
+
 const ImportRequestSchema = z.discriminatedUnion("extension", [
   HtmlSchema,
   MdSchema,
@@ -63,13 +78,16 @@ const ImportRequestSchema = z.discriminatedUnion("extension", [
   JsonSchema,
 ]);
 
+type ExportManyRequest = z.infer<typeof ExportManyRequestSchema>;
 type ImportRequest = z.infer<typeof ImportRequestSchema>;
 type ExportRequest = z.infer<typeof ExportRequestSchema>;
 
 export {
+  ExportManyRequestSchema,
   ExportRequestSchema,
   FileNameSchema,
   ImportRequestSchema,
+  type ExportManyRequest,
   type ExportRequest,
   type ImportRequest,
 };

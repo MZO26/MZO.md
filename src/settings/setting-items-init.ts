@@ -1,3 +1,4 @@
+import { exportManyNotes } from "@/api/fileAPI";
 import { debouncedSetSettings } from "@/api/settingsAPI";
 import {
   applyAppTheme,
@@ -181,32 +182,20 @@ function initWindowSettings() {
 }
 
 function initStorageSettings() {
-  const mirrorModeSelect = findElement<HTMLSelectElement>("#mirror-mode");
-  if (!mirrorModeSelect) return;
-  mirrorModeSelect.addEventListener(
+  const batchExportSelect = findElement<HTMLSelectElement>("#file-backup");
+  if (!batchExportSelect) return;
+  batchExportSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement;
-      mirrorModeSelect.value = target.value;
-      if (target.value === "fs") {
-        const folderPath = await window.fileAPI.selectFolder();
-        if (folderPath) {
-          debouncedSetSettings({
-            "mirror-mode": "fs",
-            "mirror-path": folderPath,
-          });
-          showToast(`Mirorring activated. Saving to ${folderPath}`);
-        } else {
-          showToast("Folder selection cancelled. Reverting to db mode");
-          mirrorModeSelect.value = "db";
-        }
-      } else if (target.value === "db") {
-        debouncedSetSettings({ "mirror-mode": "db" });
-      }
+      const selectedExtension = target.value as "md" | "txt" | "json";
+      await exportManyNotes({ extension: selectedExtension });
+      target.value = "";
+      showToast(`Successfully exported all files to ${selectedExtension}`);
     }),
   );
   setSettingsItem({
-    mirrorModeSelect,
+    batchExportSelect,
   });
 }
 

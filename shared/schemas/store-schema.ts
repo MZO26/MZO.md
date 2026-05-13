@@ -30,13 +30,10 @@ const StoreSchema = z.object({
       y: z.number().optional(),
     })
     .default({ width: 1100, height: 600 }),
-  "mirror-mode": z.enum(["db", "fs"]).default("db"),
-  "mirror-path": z.string().nullable().default(null),
 });
 
 type AppSettings = z.infer<typeof StoreSchema>;
 type HighlightTheme = AppSettings["highlight"];
-type MirrorMode = AppSettings["mirror-mode"];
 type OpenWindowMode = AppSettings["open-window-mode"];
 type CloseWindowMode = AppSettings["close-window-mode"];
 type MinimizeWindowMode = AppSettings["minimize-window-mode"];
@@ -63,7 +60,6 @@ export {
   type HighlightTheme,
   type LineHeight,
   type MinimizeWindowMode,
-  type MirrorMode,
   type OpenWindowMode,
   type StateKeys,
   type StyleKeys,

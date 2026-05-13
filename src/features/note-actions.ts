@@ -7,9 +7,9 @@ import {
 } from "@/components/sidebar/info-sidebar-actions";
 import { updateNoteInList } from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
-import { settingsStore, stateStore } from "@/features/app-state";
 import { stopAutoSave } from "@/features/note-auto-save";
 import { viewNote } from "@/features/note-ui";
+import { stateStore } from "@/settings/app-state";
 import { setActiveItem } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
@@ -25,26 +25,22 @@ function getContent() {
   const editor = getAppItem("editor");
   const plainText = editor.getText();
   const content = editor.getJSON();
-  if (settingsStore.get("mirror-mode") === "fs") {
-    const markdown = editor.getMarkdown();
-    return { content, plainText, markdown };
-  }
-  return { content, plainText };
+  const markdown = editor.getMarkdown();
+  return { content, plainText, markdown };
 }
 
 async function handleCreateNote() {
   const editorContent = {
     content: { type: "doc" as const, content: [{ type: "paragraph" }] },
     plainText: "",
+    markdown: "",
   };
   const metadata = getMetadata(editorContent.content, editorContent.plainText);
-  const is_mirrored = settingsStore.get("mirror-mode") === "fs" ? true : false;
   const payload: CreateNotePayload = {
     ...editorContent,
     ...metadata,
     pinned: false,
     bookmarked: false,
-    is_mirrored,
   };
   return await createNote(payload);
 }
@@ -76,15 +72,11 @@ async function handleSaveNote(
   flush: boolean = false,
 ): Promise<void> {
   if (!editor || !id || pendingDeletions.has(id)) return;
-  const { content, plainText, markdown } = getContent();
-  const metaData = getMetadata(content, plainText);
-  const is_mirrored = markdown ? true : false;
+  const editorContent = getContent();
+  const metaData = getMetadata(editorContent.content, editorContent.plainText);
   const payload: UpdateNotePayload = {
     id,
-    content,
-    plainText,
-    markdown,
-    is_mirrored,
+    ...editorContent,
     ...metaData,
   };
   const response = await updateNote(payload, flush);

@@ -27,7 +27,8 @@ class FTS5 {
       CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
         id UNINDEXED,
         title,
-        plainText
+        plainText,
+        tokenize="trigram"
       );`);
     this.db.exec(`
     DROP VIEW IF EXISTS notes_view;
@@ -83,11 +84,12 @@ class FTS5 {
         WHERE note_id = n.id
       ) AS tags,
       n.created_at,
-      n.updated_at
+      n.updated_at,
+      bm25(notes_fts, 0.0, 10.0, 1.0) as rank
     FROM notes_fts
     JOIN notes n ON notes_fts.id = n.id
-    WHERE notes_fts MATCH ? -- id(0), title(10), plainText(1))
-    ORDER BY bm25(notes_fts, 0.0, 10.0, 1.0), n.updated_at DESC
+    WHERE notes_fts MATCH ?
+    ORDER BY rank
     LIMIT ?
   `);
     const result = stmt.all(ftsQuery, limit) as NoteRow[];

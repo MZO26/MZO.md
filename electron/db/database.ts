@@ -16,7 +16,7 @@ import {
   type Note,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
-import type { NoteRow } from "@shared/types";
+import type { BatchExportData, NoteRow } from "@shared/types";
 import BetterSqlite from "better-sqlite3";
 import { app } from "electron";
 import path from "path";
@@ -33,8 +33,6 @@ class NoteDB {
   private toggleBookmarkStmt: BetterSqlite.Statement;
   private togglePinStmt: BetterSqlite.Statement;
   private searchByTagStmt: BetterSqlite.Statement;
-  // private getMirroredNotesStmt: BetterSqlite.Statement;
-
   constructor() {
     const dbPath = path.join(app.getPath("userData"), "notes.db");
     this.db = new BetterSqlite(dbPath);
@@ -76,11 +74,6 @@ class NoteDB {
       JOIN note_tags as t ON notes.id = t.note_id
       WHERE t.tag_name = @tag_name
       `);
-    // this.getMirroredNotesStmt = this.db.prepare(`
-    //   SELECT *
-    //   FROM notes
-    //   WHERE is_mirrored = 1
-    //   `);
   }
 
   private createTables() {
@@ -89,12 +82,12 @@ class NoteDB {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL CHECK(length(title) > 0),
         content TEXT NOT NULL,
-        plainText TEXT,
+        plainText TEXT NOT NULL DEFAULT '',
         bookmarked INTEGER NOT NULL DEFAULT 0,
         pinned INTEGER NOT NULL DEFAULT 0,
         todos_left INTEGER NOT NULL DEFAULT 0,
         snippet TEXT DEFAULT '',
-        is_mirrored INTEGER NOT NULL DEFAULT 0,
+        markdown TEXT NOT NULL DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
@@ -128,7 +121,29 @@ class NoteDB {
     return this.transactions.safeCreate(dbContent);
   }
 
-  update(payload: Omit<UpdateNotePayload, "markdown">): Note {
+  createMany(payloads: CreateNotePayload[]): Note[] {
+    const now = new Date().toISOString();
+    const dbContents = [];
+    for (const payload of payloads) {
+      const id = crypto.randomUUID();
+      let { tags, content, ...rest } = payload;
+      const stringifiedContent = JSON.stringify(content);
+      const uniqueTags = [...new Set(tags)].slice(0, 3);
+      const rawContent = {
+        id,
+        ...rest,
+        content: stringifiedContent,
+        tags: uniqueTags,
+        created_at: now,
+        updated_at: now,
+      };
+      const dbContent = CreateTransactionSchema.parse(rawContent);
+      dbContents.push(dbContent);
+    }
+    return this.transactions.safeCreateMany(dbContents);
+  }
+
+  update(payload: UpdateNotePayload): Note {
     let { tags, content, ...rest } = payload;
     const stringifiedContent = JSON.stringify(content);
     const now = new Date().toISOString();
@@ -247,6 +262,25 @@ class NoteDB {
         tags: this.getTagsById(note.id),
       });
     });
+  }
+
+  exportIterator(format: "json" | "md" | "txt") {
+    let query: string;
+    switch (format) {
+      case "json":
+        query = "SELECT id, title, content FROM notes";
+        break;
+      case "md":
+        query = "SELECT id, title, markdown FROM notes";
+        break;
+      case "txt":
+        query = "SELECT id, title, plainText FROM notes";
+        break;
+    }
+
+    return this.db
+      .prepare(query)
+      .iterate() as IterableIterator<BatchExportData>;
   }
 }
 

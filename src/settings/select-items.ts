@@ -106,10 +106,11 @@ function buildSelects() {
   );
   selectBuilder(
     settingsContainer,
-    "mirror-mode",
+    "file-backup",
     [
-      { value: "db", label: "Save only in database" },
-      { value: "fs", label: "Mirror to markdown files" },
+      { value: "json", label: "JSON" },
+      { value: "md", label: "Markdown" },
+      { value: "txt", label: "Plain Text" },
     ],
     "storage",
   );

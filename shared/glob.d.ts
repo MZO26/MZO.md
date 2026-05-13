@@ -1,4 +1,5 @@
 import type {
+  ExportManyRequest,
   ExportRequest,
   ImportRequest,
 } from "@shared/schemas/export-schema";
@@ -21,7 +22,10 @@ declare global {
         payload: ExportRequest,
       ) => Promise<IpcResponse<ExportRequest>>;
       onTriggerExport: (callback: (extension: string) => void) => () => void;
-      noteImport: () => Promise<IpcResponse<ImportRequest>>;
+      noteExportMany: (
+        payload: ExportManyRequest,
+      ) => Promise<IpcResponse<ExportManyRequest>>;
+      noteImport: () => Promise<IpcResponse<ImportRequest[]>>;
     };
     electronAPI: {
       platform: () => Promise<IpcResponse<string>>;
@@ -43,6 +47,9 @@ declare global {
       getAll: () => Promise<IpcResponse<Note[]>>;
       getById: (id: string) => Promise<IpcResponse<Note>>;
       create: (payload: CreateNotePayload) => Promise<IpcResponse<Note>>;
+      createMany: (
+        payload: CreateNotePayload[],
+      ) => Promise<IpcResponse<Note[]>>;
       update: (
         payload: UpdateNotePayload,
         flush: boolean,

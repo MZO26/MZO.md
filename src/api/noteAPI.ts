@@ -12,6 +12,12 @@ async function createNote(
   return safeInvoke(window.noteAPI.create(payload));
 }
 
+async function createManyNotes(
+  payload: CreateNotePayload[],
+): Promise<IpcResponse<Note[]>> {
+  return safeInvoke(window.noteAPI.createMany(payload));
+}
+
 async function updateNote(
   note: UpdateNotePayload,
   flush: boolean,
@@ -56,6 +62,7 @@ async function getViews(view: string): Promise<IpcResponse<Note[]>> {
 
 export {
   bookmark,
+  createManyNotes,
   createNote,
   deleteNote,
   getAll,

@@ -5,7 +5,7 @@ import {
   reloadNoteList,
 } from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
-import { stateStore } from "@/features/app-state";
+import { stateStore } from "@/settings/app-state";
 import { getAppItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
 import { el } from "@/utils/ui";

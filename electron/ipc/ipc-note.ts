@@ -1,25 +1,20 @@
 import { setUpNoteMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
-import { writeAtomic } from "@electron/fs/fs-atomic-write";
-import { createMutex } from "@electron/fs/fs-queue";
 import { checkRateLimit, safeResponse } from "@electron/ipc/ipc-validation";
 import { win } from "@electron/main";
-import { store } from "@electron/store";
 import { LIMITS } from "@shared/constants";
 import {
-  validateCreate,
-  validateFileName,
-  validateId,
-  validateSearch,
-  validateTag,
-  validateUpdate,
-} from "@shared/validation";
+  CreateNotePayloadSchema,
+  CreateNotesPayloadsSchema,
+  IdSchema,
+  SearchSchema,
+  TagSchema,
+  UpdateNotePayloadSchema,
+} from "@shared/schemas/note-schema";
+import { validation } from "@shared/validation";
 import { ipcMain } from "electron";
-import path from "path";
 
 function registerNoteIpc() {
-  const lastFSSave = new Map(); // for throttled fs saves
-
   ipcMain.handle("note:getAll", (e) => {
     return safeResponse(e, async () => {
       if (!checkRateLimit("note:getAll", LIMITS.READ_HEAVY))
@@ -33,8 +28,18 @@ function registerNoteIpc() {
     return safeResponse(e, async () => {
       if (!checkRateLimit("note:create", LIMITS.WRITE_STANDARD))
         throw new Error("RATE_LIMIT");
-      const validatedData = validateCreate(payload);
+      const validatedData = validation(CreateNotePayloadSchema, payload);
       const result = db.create(validatedData);
+      return result;
+    });
+  });
+
+  ipcMain.handle("note:create-many", (e, payloads: unknown) => {
+    return safeResponse(e, async () => {
+      if (!checkRateLimit("note:create", LIMITS.WRITE_STANDARD))
+        throw new Error("RATE_LIMIT");
+      const validatedData = validation(CreateNotesPayloadsSchema, payloads);
+      const result = db.createMany(validatedData);
       return result;
     });
   });
@@ -49,32 +54,8 @@ function registerNoteIpc() {
           throw new Error("RATE_LIMIT");
         }
       }
-      const validatedData = validateUpdate(payload);
-      const { markdown, ...dbContent } = validatedData;
-      const result = db.update(dbContent);
-      if (validatedData.is_mirrored) {
-        const mirrorFolder = store.get("mirror-path");
-        if (mirrorFolder && markdown !== undefined) {
-          const now = Date.now();
-          const lastWrite = lastFSSave.get(validatedData.id) || 0;
-          const throttleMs = 10000;
-          if (flush === true || now - lastWrite >= throttleMs) {
-            const cleanTitle = validateFileName(validatedData.title);
-            const fileName = `${cleanTitle}_${validatedData.id.slice(0, 5)}.md`;
-            console.log(fileName);
-            const filePath = path.join(mirrorFolder, fileName);
-            // use atomic operations to prevent file corruption
-            await createMutex(validatedData.id, async () => {
-              await writeAtomic(filePath, markdown);
-            });
-            console.log("[UPDATE]: writing to fs", validatedData.id);
-            // if (!isSafePath(newPath, mirrorFolder)) {
-            //    throw new Error("Security Block: Path resolves outside the allowed mirror folder.");
-            // }
-            lastFSSave.set(validatedData.id, now);
-          }
-        }
-      }
+      const validatedData = validation(UpdateNotePayloadSchema, payload);
+      const result = db.update(validatedData);
       return result;
     });
   });
@@ -83,7 +64,7 @@ function registerNoteIpc() {
     return safeResponse(e, async () => {
       if (!checkRateLimit("note:search", LIMITS.WRITE_STANDARD))
         throw new Error("RATE_LIMIT");
-      const validatedData = validateId(id);
+      const validatedData = validation(IdSchema, id);
       const result = db.delete(validatedData);
       return result;
     });
@@ -93,7 +74,7 @@ function registerNoteIpc() {
     return safeResponse(e, async () => {
       if (!checkRateLimit("note:getById", LIMITS.READ_LIGHT))
         throw new Error("RATE_LIMIT");
-      const validatedData = validateId(id);
+      const validatedData = validation(IdSchema, id);
       const result = db.getById(validatedData);
       return result;
     });
@@ -103,7 +84,7 @@ function registerNoteIpc() {
     return safeResponse(e, async () => {
       if (!checkRateLimit("note:getById", LIMITS.READ_LIGHT))
         throw new Error("RATE_LIMIT");
-      const validatedData = validateTag(tag);
+      const validatedData = validation(TagSchema, tag);
       const result = db.searchByTag(validatedData);
       return result;
     });
@@ -113,7 +94,7 @@ function registerNoteIpc() {
     return safeResponse(e, async () => {
       if (!checkRateLimit("note:search", LIMITS.READ_HEAVY))
         throw new Error("RATE_LIMIT");
-      const validatedData = validateSearch(searchTerm, limit);
+      const validatedData = validation(SearchSchema, { searchTerm, limit });
       const { searchTerm: validSearchTerm, limit: validSearchLimit } =
         validatedData;
       const result = db.search.searchNotes(validSearchTerm, validSearchLimit);
@@ -125,7 +106,7 @@ function registerNoteIpc() {
     return safeResponse(e, async () => {
       if (!checkRateLimit("note:pin", LIMITS.READ_LIGHT))
         throw new Error("RATE_LIMIT");
-      const validatedData = validateId(id);
+      const validatedData = validation(IdSchema, id);
       const result = db.togglePin(validatedData);
       return result;
     });
@@ -135,7 +116,7 @@ function registerNoteIpc() {
     return safeResponse(e, async () => {
       if (!checkRateLimit("note:bookmark", LIMITS.READ_LIGHT))
         throw new Error("RATE_LIMIT");
-      const validatedData = validateId(id);
+      const validatedData = validation(IdSchema, id);
       const result = db.toggleBookmark(validatedData);
       return result;
     });

@@ -30,8 +30,6 @@ const TodoSchema = z.number().int().min(0).default(0);
 
 const PlainTextSchema = z.string().default("");
 
-const MDSchema = z.string().optional();
-
 const DateSchema = z.iso.datetime();
 
 const TogglePinSchema = z.object({
@@ -66,6 +64,7 @@ const NoteCoreSchema = z.object({
   snippet: SnippetSchema,
   todos_left: TodoSchema,
   plainText: PlainTextSchema,
+  markdown: PlainTextSchema,
   tags: TagsSchema,
 });
 
@@ -75,7 +74,6 @@ const NoteSchema = NoteCoreSchema.extend({
   content: EditorDocSchema,
   pinned: z.boolean(),
   bookmarked: z.boolean(),
-  is_mirrored: z.boolean(),
   created_at: DateSchema,
   updated_at: DateSchema,
 });
@@ -89,7 +87,6 @@ const DBRowSchema = NoteCoreSchema.extend({
   content: DbContentSchema,
   pinned: DBBooleanSchema,
   bookmarked: DBBooleanSchema,
-  is_mirrored: DBBooleanSchema,
   created_at: DateSchema,
   updated_at: DateSchema,
 });
@@ -100,7 +97,6 @@ const NoteToDBSchema = NoteCoreSchema.extend({
   content: z.string(),
   pinned: BooleanSchema,
   bookmarked: BooleanSchema,
-  is_mirrored: BooleanSchema,
   created_at: DateSchema,
   updated_at: DateSchema,
 });
@@ -112,14 +108,14 @@ const CreateNotePayloadSchema = NoteSchema.omit({
   updated_at: true,
 });
 
+const CreateNotesPayloadsSchema = z.array(CreateNotePayloadSchema);
+
 // markdown if mirroring is activated. Payload does not send updated_at. Timestamp for it gets generated in db
 const UpdateNotePayloadSchema = NoteSchema.omit({
   pinned: true,
   bookmarked: true,
   created_at: true,
   updated_at: true,
-}).extend({
-  markdown: MDSchema,
 });
 
 // everything gets written to db. Defaults apply
@@ -136,10 +132,12 @@ type CreateTransaction = z.infer<typeof CreateTransactionSchema>;
 type UpdateTransaction = z.infer<typeof UpdateTransactionSchema>;
 type UpdateNotePayload = z.infer<typeof UpdateNotePayloadSchema>;
 type CreateNotePayload = z.infer<typeof CreateNotePayloadSchema>;
+type CreateNotesPayload = z.infer<typeof CreateNotesPayloadsSchema>;
 type Note = z.infer<typeof NoteSchema>;
 
 export {
   CreateNotePayloadSchema,
+  CreateNotesPayloadsSchema,
   CreateTransactionSchema,
   DBBooleanSchema,
   DBRowSchema,
@@ -161,6 +159,7 @@ export {
   UpdateNotePayloadSchema,
   UpdateTransactionSchema,
   type CreateNotePayload,
+  type CreateNotesPayload,
   type CreateTransaction,
   type Note,
   type UpdateNotePayload,

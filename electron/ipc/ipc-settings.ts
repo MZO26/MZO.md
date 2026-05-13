@@ -4,7 +4,7 @@ import { nextZoom } from "@electron/win";
 import { LIMITS } from "@shared/constants";
 import { StoreSchema, type AppSettings } from "@shared/schemas/store-schema";
 import type { ZoomAction } from "@shared/types";
-import { validateStore } from "@shared/validation";
+import { validation } from "@shared/validation";
 import { BrowserWindow, ipcMain } from "electron";
 
 function registerSettingsIpc(win: BrowserWindow) {
@@ -56,7 +56,7 @@ function registerSettingsIpc(win: BrowserWindow) {
     return safeResponse(e, async () => {
       if (!checkRateLimit("electron-store:set", LIMITS.WRITE_STANDARD))
         throw new Error("RATE_LIMIT");
-      const validValue = validateStore(settings);
+      const validValue = validation(StoreSchema, settings);
       store.set(validValue);
     });
   });

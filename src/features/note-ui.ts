@@ -1,27 +1,28 @@
-import { deleteNote } from "@/api/noteAPI";
+import { createManyNotes } from "@/api/noteAPI";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
-import { addOneNoteToList } from "@/components/sidebar/sidebar-actions";
-import { stateStore } from "@/features/app-state";
-import { handleImportFile } from "@/features/import-actions";
-import { handleCreateNote, handleSaveNote } from "@/features/note-actions";
+import {
+  addManyNotesToList,
+  addOneNoteToList,
+} from "@/components/sidebar/sidebar-actions";
+import {
+  getImportedContent,
+  handleImportFile,
+} from "@/features/import-actions";
+import { handleCreateNote } from "@/features/note-actions";
 import { setupAutoSave, stopAutoSave } from "@/features/note-auto-save";
+import { stateStore } from "@/settings/app-state";
 import { getAppItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
 import type { Note } from "@shared/schemas/note-schema";
-import type { Editor } from "@tiptap/core";
+import { Editor } from "@tiptap/core";
 import { EditorState } from "@tiptap/pm/state";
-
-type ImportedContent = {
-  content: string;
-  extension: "md" | "html" | "json" | "txt";
-};
 
 const cleanup = new WeakMap<
   Editor,
   { flush: () => Promise<void>; cancel: () => void }
 >();
 
-async function createNoteButton() {
+async function createNoteButton(): Promise<void> {
   const response = await handleCreateNote();
   if (!response.success) {
     showToast(response.message);
@@ -35,28 +36,23 @@ async function createNoteButton() {
   viewNote(note);
 }
 
-async function importNoteButton() {
-  const response = await handleCreateNote();
+async function importNoteButton(): Promise<void> {
+  const imported = await handleImportFile();
+  if (!imported.success) {
+    showToast("Failed to import files");
+    return;
+  }
+  const files = await getImportedContent(imported.notes);
+  const response = await createManyNotes(files);
   if (!response.success) {
     showToast(response.message);
     return;
   }
-  const note = response.data;
-  const imported = await handleImportFile();
-  if (!imported.success) {
-    showToast("Import cancelled.");
-    await deleteNote(response.data.id);
-    return;
-  }
-  stateStore.setState({ activeId: note.id });
-  addOneNoteToList(note);
+  addManyNotesToList(response.data);
   handleEditorEmptyState();
-  viewNote(note, imported as ImportedContent); // use result pattern to avoid having to use type assertion
-  await handleSaveNote(note.id, true);
-  showToast("Note imported.");
 }
 
-function resetEditorHistory(editor: Editor) {
+function resetEditorHistory(editor: Editor): void {
   const newState = EditorState.create({
     doc: editor.state.doc,
     plugins: editor.state.plugins,
@@ -65,40 +61,13 @@ function resetEditorHistory(editor: Editor) {
   editor.view.updateState(newState);
 }
 
-function viewNote(note: Note, imported?: ImportedContent): void {
+function viewNote(note: Note): void {
   const editor = getAppItem("editor");
   stopAutoSave(editor, "flush");
   handleEditorEmptyState();
-  if (imported) {
-    switch (imported.extension) {
-      case "md":
-        editor.commands.setContent(imported.content, {
-          contentType: "markdown",
-          emitUpdate: false,
-        });
-        break;
-      case "html":
-        editor.commands.setContent(imported.content, {
-          contentType: "html",
-          emitUpdate: false,
-        });
-        break;
-      case "txt":
-        editor.commands.setContent(imported.content, {
-          emitUpdate: false,
-        });
-        break;
-      case "json":
-        editor.commands.setContent(imported.content, {
-          emitUpdate: false,
-        });
-        break;
-    }
-  } else {
-    editor.commands.setContent(note.content, {
-      emitUpdate: false,
-    });
-  }
+  editor.commands.setContent(note.content, {
+    emitUpdate: false,
+  });
   resetEditorHistory(editor);
   editor.commands.focus();
   const newCleanup = setupAutoSave(editor, note.id);

@@ -11,6 +11,8 @@ import {
   setupToolbarListeners,
 } from "@/components/toolbar/menu-builder";
 import { ToolbarActions } from "@/components/toolbar/toolbar-actions";
+import { loadSettings } from "@/settings/app-state";
+import { getPlatformData } from "@/settings/platform";
 import { initAppSettings } from "@/settings/setting-init";
 import { initGlobalShortcuts } from "@/settings/shortcuts";
 import { startAppClock } from "@/utils/date";
@@ -18,8 +20,6 @@ import { requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { setAppItem } from "@/utils/registry";
 import "tippy.js/dist/tippy.css";
-import { loadSettings } from "./features/app-state";
-import { getPlatformData } from "./settings/platform";
 
 document.addEventListener("DOMContentLoaded", async () => {
   setAppItem({
