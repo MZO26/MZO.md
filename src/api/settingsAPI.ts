@@ -1,3 +1,4 @@
+import { settingsStore } from "@/settings/app-state";
 import { debounce } from "@/utils/async";
 import { safeInvoke } from "@/utils/ipc";
 import { showToast } from "@/utils/toast";
@@ -32,5 +33,9 @@ const debouncedSetSettings = debounce(
   },
   1000,
 );
+const updateSettings = (settings: Partial<AppSettings>) => {
+  settingsStore.setState(settings);
+  debouncedSetSettings(settings);
+};
 
-export { debouncedSetSettings, getAllSettings, getSettings };
+export { getAllSettings, getSettings, updateSettings };

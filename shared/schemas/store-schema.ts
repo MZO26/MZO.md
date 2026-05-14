@@ -11,10 +11,12 @@ const StoreSchema = z.object({
   "line-height": z
     .enum(["1.2", "1.3", "1.4", "1.5", "1.6", "1.7"])
     .default("1.5"),
+  "editor-focus": z.enum(["on", "off"]).default("off"),
   "code-theme": z
     .enum(["focus", "balanced", "eye-comfort"])
     .default("balanced"),
   highlight: z.enum(["done", "info", "idea", "focus"]).default("done"),
+  "note-item-display": z.enum(["normal", "minimal"]).default("normal"),
   "note-sidebar-state": z.boolean().default(false),
   "info-sidebar-state": z.boolean().default(false),
   "open-window-mode": z
@@ -33,6 +35,8 @@ const StoreSchema = z.object({
 });
 
 type AppSettings = z.infer<typeof StoreSchema>;
+type EditorFocus = AppSettings["editor-focus"];
+type NoteItemDisplay = AppSettings["note-item-display"];
 type HighlightTheme = AppSettings["highlight"];
 type OpenWindowMode = AppSettings["open-window-mode"];
 type CloseWindowMode = AppSettings["close-window-mode"];
@@ -55,11 +59,13 @@ export {
   type AppSettings,
   type CloseWindowMode,
   type CodeTheme,
+  type EditorFocus,
   type FontFamily,
   type FontSize,
   type HighlightTheme,
   type LineHeight,
   type MinimizeWindowMode,
+  type NoteItemDisplay,
   type OpenWindowMode,
   type StateKeys,
   type StyleKeys,

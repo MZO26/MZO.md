@@ -1,4 +1,5 @@
 import { getAllSettings } from "@/api/settingsAPI";
+import { getAppItem } from "@/utils/registry";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 const DEFAULT_STORE: AppSettings = {
@@ -6,8 +7,10 @@ const DEFAULT_STORE: AppSettings = {
   "font-family": "system",
   "font-size": "16",
   "line-height": "1.5",
+  "editor-focus": "off",
   "code-theme": "balanced",
   highlight: "done",
+  "note-item-display": "normal",
   "note-sidebar-state": false,
   "info-sidebar-state": false,
   "open-window-mode": "centered",
@@ -69,6 +72,16 @@ stateStore.subscribe((state) => {
   if (state.activeId !== previousId) {
     previousId = state.activeId;
     window.noteAPI.setActiveNote(state.activeId);
+  }
+});
+
+settingsStore.subscribe((settings) => {
+  const editor = getAppItem("editor");
+  const editorDom = editor.view.dom;
+  if (settings["editor-focus"] === "on") {
+    editorDom.classList.add("focus-mode-active");
+  } else {
+    editorDom.classList.remove("focus-mode-active");
   }
 });
 

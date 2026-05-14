@@ -1,5 +1,5 @@
 import { setTheme } from "@/api/electronAPI";
-import { debouncedSetSettings } from "@/api/settingsAPI";
+import { updateSettings } from "@/api/settingsAPI";
 import { getSettingsItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
 import { CODE_THEME_MAP, THEME_MAP } from "@shared/constants";
@@ -37,7 +37,7 @@ async function applyAppTheme(
   themeSelect.value = appPref;
   const codePref = setCodeTheme(baseTheme);
   if (!onOSchange) {
-    debouncedSetSettings({ theme: appPref, "code-theme": codePref });
+    updateSettings({ theme: appPref, "code-theme": codePref });
   }
   if (currentDomTheme !== domTheme) {
     currentDomTheme = domTheme;

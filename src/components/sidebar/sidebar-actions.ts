@@ -1,13 +1,12 @@
 import { getAll } from "@/api/noteAPI";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
-import { stateStore } from "@/settings/app-state";
+import { settingsStore, stateStore } from "@/settings/app-state";
 import { findElement, setActiveItem } from "@/utils/dom";
 import { formatNoteDate } from "@/utils/format";
 import { getAppItem } from "@/utils/registry";
-import { createNoteItem } from "@/utils/templates";
+import { createNoteItem, createNoteItemMinimal } from "@/utils/templates";
 import { showToast } from "@/utils/toast";
-
 import type { Note } from "@shared/schemas/note-schema";
 
 function getNotePriority(note: Note): number {
@@ -26,7 +25,10 @@ function compareNotes(a: Note, b: Note): number {
 }
 
 function addOneNoteToList(note: Note) {
-  const noteElement = createNoteItem(note);
+  const template = settingsStore.get("note-item-display");
+  const renderNoteItem: (note: Note) => HTMLDivElement =
+    template === "minimal" ? createNoteItemMinimal : createNoteItem;
+  const noteElement = renderNoteItem(note);
   let target: Element | null = null;
   const sidebar = getAppItem("sidebar");
   for (const child of sidebar.children) {
@@ -50,10 +52,13 @@ function addOneNoteToList(note: Note) {
 }
 
 function addManyNotesToList(notes: Note[]) {
+  const template = settingsStore.get("note-item-display");
   const sidebar = getAppItem("sidebar");
   const fragment = document.createDocumentFragment();
+  const renderNoteItem: (note: Note) => HTMLDivElement =
+    template === "minimal" ? createNoteItemMinimal : createNoteItem;
   notes.forEach((note: Note) => {
-    const noteElement = createNoteItem(note);
+    const noteElement = renderNoteItem(note);
     if (noteElement) {
       fragment.appendChild(noteElement);
     }
@@ -77,9 +82,11 @@ async function reloadNoteList(notes?: Note[]): Promise<void> {
     return;
   }
   const response = await getAll();
-  response.success
-    ? addManyNotesToList(response.data.sort(compareNotes))
-    : showToast(response.message);
+  if (!response.success) {
+    showToast(response.message);
+  } else {
+    addManyNotesToList(response.data.sort(compareNotes));
+  }
 }
 
 function updateNoteInList(note: Note): void {
@@ -96,9 +103,10 @@ function updateNoteInList(note: Note): void {
     noteElement.querySelector<HTMLDivElement>(".note-content");
   const dateContainer = noteElement.querySelector<HTMLDivElement>(".note-date");
   document.startViewTransition(() => {
-    snippetContainer!.textContent = note.snippet;
-    dateContainer!.textContent = formatNoteDate(note.updated_at);
     titleContainer!.textContent = note.title;
+    if (snippetContainer) snippetContainer.textContent = note.snippet;
+    if (dateContainer)
+      dateContainer.textContent = formatNoteDate(note.updated_at);
   });
 }
 

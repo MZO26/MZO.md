@@ -113,6 +113,31 @@
   transition: opacity 0.2s ease;
 }
 
+.ProseMirror .wikilink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.2em;
+  background-color: transparent;
+  border-radius: 0.25em;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 500;
+  box-shadow: none;
+  user-select: all;
+  transition: all 0.2s ease;
+}
+
+.ProseMirror .wikilink:hover {
+  box-shadow: var(--shadow);
+  background: var(--tag-bg);
+}
+
+.ProseMirror a {
+  color: var(--tag-color);
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
 .ProseMirror a:hover {
   opacity: 0.8;
 }

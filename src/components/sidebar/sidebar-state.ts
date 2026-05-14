@@ -1,7 +1,6 @@
-import { debouncedSetSettings } from "@/api/settingsAPI";
+import { updateSettings } from "@/api/settingsAPI";
 import { getAppItem } from "@/utils/registry";
 import { el } from "@/utils/ui";
-
 import { createElement, Library, SearchX } from "lucide";
 
 async function setSidebarState(
@@ -12,7 +11,7 @@ async function setSidebarState(
   const isCollapsed = element.classList.contains("collapsed");
   if (isCollapsed === collapsed) return;
   element.classList.toggle("collapsed", collapsed);
-  debouncedSetSettings({ [key]: collapsed });
+  updateSettings({ [key]: collapsed });
 }
 
 function handleSidebarEmptyState(searchInput?: string) {

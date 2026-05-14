@@ -2,7 +2,9 @@ import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { lowlight } from "@/extensions/lowlight";
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
-import { requireElement } from "@/utils/dom";
+import { WikiLink } from "@/extensions/wikilinks";
+import { handleSelectNote } from "@/features/note-actions";
+import { findElement, requireElement } from "@/utils/dom";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Highlight from "@tiptap/extension-highlight";
@@ -49,6 +51,13 @@ function getNoteEditorExtensions() {
     Markdown,
     MasterShortcuts,
     Typography,
+    WikiLink.configure({
+      onClick: async (id) => {
+        const noteItem = findElement<HTMLDivElement>(`div[data-id="${id}"]`);
+        if (!noteItem) return;
+        handleSelectNote(noteItem);
+      },
+    }),
     Focus.configure({
       className: "has-focus",
       mode: "all",

@@ -3,10 +3,28 @@ import { formatNoteDate } from "@/utils/format";
 import { renderIcons } from "@/utils/icons";
 import type { Note } from "@shared/schemas/note-schema";
 
-const templateElement =
+const templateNormal =
   requireElement<HTMLTemplateElement>("#noteItem-template");
-const baseNoteItem = templateElement.content
+const templateMinimal = requireElement<HTMLTemplateElement>(
+  "#noteItem-minimal-template",
+);
+
+const baseNoteItem = templateNormal.content.firstElementChild as HTMLDivElement;
+
+const minimalNoteItem = templateMinimal.content
   .firstElementChild as HTMLDivElement;
+
+function createNoteItemMinimal(note: Note): HTMLDivElement {
+  const item = minimalNoteItem.cloneNode(true) as HTMLDivElement;
+  item.dataset["id"] = note.id;
+  item.dataset["pinned"] = String(note.pinned === true);
+  item.dataset["bookmarked"] = String(note.bookmarked === true);
+  if (note.pinned || note.bookmarked) {
+    renderIcons(item);
+  }
+  item.querySelector(".note-title")!.textContent = note.title;
+  return item;
+}
 
 function createNoteItem(note: Note): HTMLDivElement {
   // Deep clone with true
@@ -26,4 +44,4 @@ function createNoteItem(note: Note): HTMLDivElement {
   return item;
 }
 
-export { createNoteItem };
+export { createNoteItem, createNoteItemMinimal };

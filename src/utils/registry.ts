@@ -15,10 +15,12 @@ type SettingsKeys =
   | "fontFamilySelect"
   | "fontSizeSelect"
   | "lineHeightSelect"
+  | "focusSelect"
   | "openWindowSelect"
   | "closeWindowSelect"
   | "minimizeWindowSelect"
-  | "batchExportSelect";
+  | "batchExportSelect"
+  | "noteItemSelect";
 
 interface SettingsRegistry extends Record<SettingsKeys, HTMLSelectElement> {}
 

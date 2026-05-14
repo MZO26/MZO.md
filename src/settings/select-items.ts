@@ -29,10 +29,25 @@ function buildSelects() {
     settingsContainer,
     "highlight-theme",
     [
-      { value: "done", label: "Done · Soft" },
-      { value: "info", label: "Info · Soft" },
-      { value: "idea", label: "Idea · Soft" },
-      { value: "focus", label: "Focus · Warm" },
+      { value: "done", label: "Done" },
+      { value: "info", label: "Info" },
+      { value: "idea", label: "Idea" },
+      { value: "focus", label: "Focus" },
+    ],
+    "appearance",
+  );
+  selectBuilder(
+    settingsContainer,
+    "note-item-display",
+    [
+      {
+        value: "normal",
+        label: "Normal",
+      },
+      {
+        value: "minimal",
+        label: "Minimal",
+      },
     ],
     "appearance",
   );
@@ -72,6 +87,15 @@ function buildSelects() {
       { value: "1.5", label: "1.5" },
       { value: "1.6", label: "1.6" },
       { value: "1.7", label: "1.7" },
+    ],
+    "typography",
+  );
+  selectBuilder(
+    settingsContainer,
+    "editor-focus",
+    [
+      { value: "on", label: "Activate Editor Focus" },
+      { value: "off", label: "Deactivate Editor Focus" },
     ],
     "typography",
   );

@@ -58,14 +58,17 @@
 }
 
 #smart-views-popover {
-  padding: 6px;
   border: 1px solid var(--border-color);
   border-radius: 10px;
   background: var(--bg-editor);
   box-shadow: var(--shadow);
   color: var(--text-main);
-  min-width: 150px;
-  max-width: 200px;
+  width: 140px;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
 .smart-view-list {
@@ -74,24 +77,23 @@
   padding: 0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: stretch;
-  gap: 2px;
+  gap: 3px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .smart-view-list button {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 32px;
-  white-space: nowrap;
+  border-radius: 0;
+  min-height: 35px;
   color: var(--text-main);
-  padding: 8px 10px;
-  border-radius: 6px;
   text-align: left;
   font-size: 13px;
   font-weight: 500;
   width: 100%;
-  transition: background-color 0.1s ease;
+  transition: background-color 0.2s ease;
 }
 
 .sidebar-empty-state {
@@ -384,6 +386,15 @@
   cursor: pointer;
 }
 
+.noteItem-minimal {
+  min-height: 40px;
+  max-height: 40px;
+  grid-template-rows: 1fr;
+  contain-intrinsic-size: auto 40px;
+  justify-content: center;
+  align-items: center;
+}
+
 .noteItem .icon-div {
   display: none;
   margin: 2px 4px 0 0;
@@ -445,6 +456,10 @@
   white-space: nowrap;
 }
 
+.note-title-minimal {
+  font-size: 0.8rem;
+}
+
 .menu-btn {
   grid-column: 3;
 }
@@ -468,8 +483,7 @@
   margin-top: 7px;
 }
 
-.tag-node,
-.tag {
+.tag-node {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -479,6 +493,25 @@
   border-radius: 20px;
   font-size: 0.85em;
   font-weight: 500;
+  background: var(--tag-bg);
+  color: var(--tag-color);
+  border: var(--border-color);
+  box-shadow: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: all;
+  transition: all 0.2s ease;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: top;
+  padding: 0.15em 0.4em;
+  margin: 0 0.1em;
+  border-radius: 20px;
+  font-size: 0.7em;
   background: var(--tag-bg);
   color: var(--tag-color);
   border: var(--border-color);

@@ -1,5 +1,6 @@
 import { exportManyNotes } from "@/api/fileAPI";
-import { debouncedSetSettings } from "@/api/settingsAPI";
+import { updateSettings } from "@/api/settingsAPI";
+import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
 import {
   applyAppTheme,
   currentDomTheme,
@@ -14,11 +15,13 @@ import { THEME_MAP } from "@shared/constants";
 import type {
   AppSettings,
   CloseWindowMode,
+  EditorFocus,
   FontFamily,
   FontSize,
   HighlightTheme,
   LineHeight,
   MinimizeWindowMode,
+  NoteItemDisplay,
   OpenWindowMode,
   Theme,
 } from "@shared/schemas/store-schema";
@@ -28,14 +31,15 @@ function initEditorSettings(settings: AppSettings) {
   const fontFamilySelect = findElement<HTMLSelectElement>("#font-family");
   const fontSizeSelect = findElement<HTMLSelectElement>("#font-size");
   const lineHeightSelect = findElement<HTMLSelectElement>("#line-height");
-  if (!fontFamilySelect || !fontSizeSelect || !lineHeightSelect) return;
+  const focusSelect = findElement<HTMLSelectElement>("#editor-focus");
+  if (!fontFamilySelect || !fontSizeSelect || !lineHeightSelect || !focusSelect)
+    return;
 
   const applyFont = (val: string) => {
     const current = val || "system";
 
     editorWrapper.style.setProperty("--editor-font-family", current);
-    debouncedSetSettings({ "font-family": current as FontFamily });
-
+    updateSettings({ "font-family": current as FontFamily });
     if (fontFamilySelect.querySelector(`option[value="${current}"]`)) {
       fontFamilySelect.value = current;
       document.documentElement.setAttribute("data-font-family", current);
@@ -53,7 +57,7 @@ function initEditorSettings(settings: AppSettings) {
     const strCurrent = String(current);
 
     editorWrapper.style.setProperty("--editor-font-size", `${strCurrent}px`);
-    debouncedSetSettings({ "font-size": strCurrent as FontSize });
+    updateSettings({ "font-size": strCurrent as FontSize });
 
     if (fontSizeSelect.querySelector(`option[value="${strCurrent}"]`)) {
       fontSizeSelect.value = strCurrent;
@@ -72,7 +76,7 @@ function initEditorSettings(settings: AppSettings) {
     const strCurrent = String(current);
 
     editorWrapper.style.setProperty("--editor-line-height", strCurrent);
-    debouncedSetSettings({ "line-height": strCurrent as LineHeight });
+    updateSettings({ "line-height": strCurrent as LineHeight });
 
     if (lineHeightSelect.querySelector(`option[value="${strCurrent}"]`)) {
       lineHeightSelect.value = strCurrent;
@@ -85,10 +89,20 @@ function initEditorSettings(settings: AppSettings) {
     applyLineHeight(lineHeightSelect.value),
   );
 
+  focusSelect.addEventListener("change", (e: Event) => {
+    const target = e.target as HTMLSelectElement;
+    focusSelect.value = target.value;
+    console.log(target.value);
+    updateSettings({
+      "editor-focus": target.value as EditorFocus,
+    });
+  });
+
   setSettingsItem({
     fontFamilySelect,
     fontSizeSelect,
     lineHeightSelect,
+    focusSelect,
   });
 }
 
@@ -96,7 +110,8 @@ function initAppearanceSettings() {
   const themeSelect = findElement<HTMLSelectElement>("#theme");
   const codeThemeSelect = findElement<HTMLSelectElement>("#code-theme");
   const highlightSelect = findElement<HTMLSelectElement>("#highlight-theme");
-  if (!codeThemeSelect || !themeSelect || !highlightSelect) {
+  const noteItemSelect = findElement<HTMLSelectElement>("#note-item-display");
+  if (!codeThemeSelect || !themeSelect || !highlightSelect || !noteItemSelect) {
     return;
   }
   codeThemeSelect.addEventListener(
@@ -104,7 +119,7 @@ function initAppearanceSettings() {
     createAsyncHandler(async () => {
       const baseTheme = resolveTheme(themeSelect.value as Theme);
       const codePref = setCodeTheme(baseTheme);
-      debouncedSetSettings({ "code-theme": codePref });
+      updateSettings({ "code-theme": codePref });
     }),
   );
   themeSelect.addEventListener(
@@ -123,15 +138,29 @@ function initAppearanceSettings() {
     const target = e.target as HTMLSelectElement;
     highlightSelect.value = target.value;
     document.documentElement.setAttribute("data-highlight", target.value);
-    debouncedSetSettings({
+    updateSettings({
       highlight: target.value as HighlightTheme,
     });
   });
+
+  noteItemSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e: Event) => {
+      const target = e.target as HTMLSelectElement;
+      noteItemSelect.value = target.value;
+      updateSettings({
+        "note-item-display": target.value as NoteItemDisplay,
+      });
+      document.documentElement.setAttribute("data-noteItem", target.value);
+      await reloadNoteList();
+    }),
+  );
 
   setSettingsItem({
     codeThemeSelect,
     themeSelect,
     highlightSelect,
+    noteItemSelect,
   });
 }
 
@@ -148,7 +177,7 @@ function initWindowSettings() {
     createAsyncHandler(async (e: Event) => {
       const target = e.target as HTMLSelectElement;
       openWindowSelect.value = target.value;
-      debouncedSetSettings({
+      updateSettings({
         "open-window-mode": target.value as OpenWindowMode,
       });
     }),
@@ -158,7 +187,7 @@ function initWindowSettings() {
     createAsyncHandler(async (e: Event) => {
       const target = e.target as HTMLSelectElement;
       closeWindowSelect.value = target.value;
-      debouncedSetSettings({
+      updateSettings({
         "close-window-mode": target.value as CloseWindowMode,
       });
     }),
@@ -168,7 +197,7 @@ function initWindowSettings() {
     createAsyncHandler(async (e: Event) => {
       const target = e.target as HTMLSelectElement;
       minimizeWindowSelect.value = target.value;
-      debouncedSetSettings({
+      updateSettings({
         "minimize-window-mode": target.value as MinimizeWindowMode,
       });
     }),

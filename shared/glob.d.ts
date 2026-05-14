@@ -53,6 +53,7 @@ declare global {
       delete: (id: string) => Promise<Result<void>>;
       getByTag: (tag: string) => Promise<Result<Note[]>>;
       onTriggerDelete: (callback: (id: string) => void) => () => void;
+      onTriggerId: (callback: (id: string) => void) => () => void;
       onTriggerDuplicate: (callback: (id: string) => void) => () => void;
       onTriggerPin: (callback: (id: string) => void) => () => void;
       onTriggerBookmark: (callback: (id: string) => void) => () => void;

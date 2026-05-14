@@ -1,7 +1,10 @@
 import { exportNote } from "@/api/fileAPI";
-import { bookmark, pin } from "@/api/noteAPI";
+import { bookmark, createNote, getNoteById, pin } from "@/api/noteAPI";
 import { editor } from "@/components/editor/editor-init";
-import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
+import {
+  addOneNoteToList,
+  reloadNoteList,
+} from "@/components/sidebar/sidebar-actions";
 import { handleDeleteNote } from "@/features/note-actions";
 import { cleanup } from "@/features/note-ui";
 import { settingsStore } from "@/settings/app-state";
@@ -12,6 +15,7 @@ import { sanitize } from "@/utils/sanitize";
 import { showToast } from "@/utils/toast";
 import { titleGenerator } from "@shared/generators/generators";
 import type { ExportRequest } from "@shared/schemas/export-schema";
+import type { CreateNotePayload } from "@shared/schemas/note-schema";
 
 function initListeners() {
   let lastAppliedTheme: string | null = null;
@@ -81,6 +85,16 @@ function initListeners() {
     await handleDeleteNote(id, noteElement);
   });
 
+  window.noteAPI.onTriggerId(async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      showToast("ID copied to clipboard!");
+    } catch (err) {
+      showToast("Failed to copy ID.");
+      console.error("Failed to copy text: ", err);
+    }
+  });
+
   window.noteAPI.onTriggerPin(async (id: string) => {
     const response = await pin(id);
     if (!response.success) {
@@ -103,6 +117,26 @@ function initListeners() {
       ? showToast("Bookmarked note")
       : showToast("Removed bookmark");
     await reloadNoteList();
+  });
+
+  window.noteAPI.onTriggerDuplicate(async (id: string) => {
+    const response = await getNoteById(id);
+    if (!response.success) {
+      showToast(response.message);
+      return;
+    }
+    const { id: originalId, created_at, updated_at, ...rest } = response.data;
+    const data: CreateNotePayload = {
+      ...rest,
+      pinned: false,
+      bookmarked: false,
+    };
+    const result = await createNote(data);
+    if (!result.success) {
+      showToast(result.message);
+      return;
+    }
+    addOneNoteToList(result.data);
   });
 
   window.electronAPI.onThemeChanged(async (newTheme) => {
