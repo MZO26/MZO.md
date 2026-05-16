@@ -1,4 +1,8 @@
-import { getTags, getTodoStats } from "@shared/generators/note-metadata";
+import {
+  getLinks,
+  getTags,
+  getTodoStats,
+} from "@shared/generators/note-metadata";
 import type { Metadata } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
 
@@ -14,6 +18,7 @@ function getMetadata(
     title: titleGenerator(plainText),
     snippet: snippetGenerator(plainText),
     todos_left: left,
+    links: getLinks(content),
     tags: getTags(content),
   };
 }

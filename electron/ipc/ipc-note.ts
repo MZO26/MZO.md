@@ -60,8 +60,20 @@ function registerNoteIpc() {
           ...resultB.content.content,
         ],
       };
-      const updateResult = db.update({ ...resultA, content: mergedJSON });
-      return updateResult;
+      const outgoingA = resultA.links
+        .filter((l) => l.dir === "out")
+        .map((l) => l.id);
+      const outgoingB = resultB.links
+        .filter((l) => l.dir === "out")
+        .map((l) => l.id);
+      const mergedOutgoingLinks = [...new Set([...outgoingA, ...outgoingB])];
+      const validatedData = validation(UpdateNotePayloadSchema, {
+        ...resultA,
+        content: mergedJSON,
+        links: mergedOutgoingLinks,
+      });
+      const result = db.update(validatedData);
+      return result;
     });
   });
 

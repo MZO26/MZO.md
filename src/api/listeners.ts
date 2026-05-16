@@ -199,9 +199,21 @@ function initListeners() {
       showToast(response.message);
       return;
     }
-    const { id: originalId, created_at, updated_at, ...rest } = response.data;
+    const {
+      id: originalId,
+      links: originalLinks,
+      created_at,
+      updated_at,
+      ...rest
+    } = response.data;
+
+    // does not duplicate incoming links because other notes would be forced to point to this new duplicate
+    const outgoingLinkIds = originalLinks
+      .filter((link) => link.dir === "out")
+      .map((link) => link.id);
     const data: CreateNotePayload = {
       ...rest,
+      links: outgoingLinkIds,
       pinned: false,
       bookmarked: false,
     };

@@ -1,96 +1,150 @@
+import NoteDB from "@electron/db/database";
 import {
-  DBRowSchema,
+  NoteFromDB,
   type CreateTransaction,
   type Note,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
-import type { Database as DatabaseType, Transaction } from "better-sqlite3";
+import type { NoteRow } from "@shared/types";
+import { validation } from "@shared/validation";
+import type { Database as DatabaseType } from "better-sqlite3";
+import BetterSqlite from "better-sqlite3";
 
-export interface NoteTransactions {
-  safeCreateMany: Transaction<(params: CreateTransaction[]) => Note[]>;
-  safeCreate: Transaction<(params: CreateTransaction) => Note>;
-  safeDelete: Transaction<(id: string) => boolean>;
-  safeUpdate: Transaction<(params: UpdateTransaction) => Note>;
-}
+class Transactions {
+  private db: DatabaseType;
+  private createNoteStmt: BetterSqlite.Statement;
+  private updateNoteStmt: BetterSqlite.Statement;
+  private selectNoteStmt: BetterSqlite.Statement;
+  private deleteNoteStmt: BetterSqlite.Statement;
+  private deleteTagsStmt: BetterSqlite.Statement;
+  private insertTagsStmt: BetterSqlite.Statement;
+  private deleteLinksStmt: BetterSqlite.Statement;
+  private insertLinksStmt: BetterSqlite.Statement;
+  private checkNoteStmt: BetterSqlite.Statement;
+  constructor(dbConnection: DatabaseType) {
+    this.db = dbConnection;
 
-function createNoteTransactions(db: DatabaseType): NoteTransactions {
-  const createNoteStmt = db.prepare(
-    "INSERT INTO notes (id, title, content, plainText,markdown, snippet, pinned, bookmarked, todos_left, created_at, updated_at) VALUES (@id, @title, @content, @plainText, @markdown, @snippet, @pinned, @bookmarked, @todos_left, @created_at, @updated_at) RETURNING *",
-  );
-  const selectNoteStmt = db.prepare("SELECT id FROM notes WHERE id = @id");
-  const deleteNoteStmt = db.prepare("DELETE FROM notes WHERE id = @id");
-  const deleteTagsStmt = db.prepare(
-    "DELETE FROM note_tags WHERE note_id = @note_id",
-  );
-  const updateNoteStmt =
-    db.prepare(`UPDATE notes SET title = @title, content = @content, plainText = @plainText, markdown = @markdown, snippet = @snippet, todos_left = @todos_left, updated_at = @updated_at WHERE id = @id RETURNING *
-`);
-  const insertTagsStmt = db.prepare(
-    "INSERT INTO note_tags (note_id, tag_name) VALUES (@note_id, @tag_name)",
-  );
-  return {
-    safeCreateMany: db.transaction((paramsArr) => {
-      const results = [];
-      for (const params of paramsArr) {
-        const { tags, ...noteParams } = params;
-        const rawResult = createNoteStmt.get(noteParams);
-        if (!rawResult) {
-          throw new Error("NOT_FOUND");
-        }
-        const result = DBRowSchema.parse({
-          ...rawResult,
-          tags,
-        });
-        if (tags && tags.length > 0) {
-          for (const tag of tags) {
-            insertTagsStmt.run({ note_id: result.id, tag_name: tag });
+    this.createNoteStmt = this.db.prepare(
+      `INSERT INTO notes (id, title, content, plainText,markdown, snippet, pinned, bookmarked, todos_left, created_at, updated_at) VALUES (@id, @title, @content, @plainText, @markdown, @snippet, @pinned, @bookmarked, @todos_left, @created_at, @updated_at) RETURNING *`,
+    );
+    this.updateNoteStmt = this.db
+      .prepare(`UPDATE notes SET title = @title, content = @content, plainText = @plainText, markdown = @markdown, snippet = @snippet, todos_left = @todos_left, updated_at = @updated_at WHERE id = @id RETURNING *
+    `);
+    this.selectNoteStmt = this.db.prepare(
+      "SELECT id FROM notes WHERE id = @id",
+    );
+    this.deleteNoteStmt = this.db.prepare("DELETE FROM notes WHERE id = @id");
+    this.deleteTagsStmt = this.db.prepare(
+      "DELETE FROM note_tags WHERE note_id = @note_id",
+    );
+    this.insertTagsStmt = this.db.prepare(
+      "INSERT INTO note_tags (note_id, tag_name) VALUES (@note_id, @tag_name)",
+    );
+    this.deleteLinksStmt = this.db.prepare(
+      "DELETE FROM note_links WHERE source_id = @source_id",
+    );
+    this.insertLinksStmt = this.db.prepare(
+      "INSERT INTO note_links (source_id, target_id) VALUES (@source_id, @target_id)",
+    );
+    this.checkNoteStmt = this.db.prepare("SELECT 1 FROM notes WHERE id = @id");
+  }
+
+  safeCreateMany(paramsArr: CreateTransaction[]): Note[] {
+    const rows: Note[] = [];
+    for (const params of paramsArr) {
+      const { tags, links, ...noteParams } = params;
+      const rawResult = this.createNoteStmt.get(noteParams) as NoteRow;
+      if (!rawResult) {
+        throw new Error("NOT_FOUND");
+      }
+      const noteId = rawResult.id;
+      if (links && links.length > 0) {
+        for (const link of links) {
+          const exists = this.checkNoteStmt.get({ id: link });
+          if (exists) {
+            this.insertLinksStmt.run({ source_id: noteId, target_id: link });
           }
         }
-        results.push(result);
       }
-      return results;
-    }),
-
-    safeCreate: db.transaction((params) => {
-      const { tags, ...noteParams } = params;
-      const rawResult = createNoteStmt.get(noteParams);
-      if (!rawResult) {
-        throw new Error("NOT_FOUND");
+      if (tags && tags.length > 0) {
+        for (const tag of tags) {
+          this.insertTagsStmt.run({ note_id: noteId, tag_name: tag });
+        }
       }
-      const result = DBRowSchema.parse({
+      const createdNote = validation(NoteFromDB, {
         ...rawResult,
-        tags,
+        tags: NoteDB.getTagsById(noteId),
+        links: NoteDB.getLinksById(noteId),
       });
-      if (tags && tags.length > 0) {
-        for (const tag of tags) {
-          insertTagsStmt.run({ note_id: result.id, tag_name: tag });
+      rows.push(createdNote);
+    }
+    return rows;
+  }
+
+  safeCreate(params: CreateTransaction): Note {
+    const { tags, links, ...noteParams } = params;
+    const rawResult = this.createNoteStmt.get(noteParams) as NoteRow;
+    if (!rawResult) {
+      throw new Error("NOT_FOUND");
+    }
+    const noteId = rawResult.id;
+    if (links && links.length > 0) {
+      for (const link of links) {
+        const exists = this.checkNoteStmt.get({ id: link });
+        if (exists) {
+          this.insertLinksStmt.run({ source_id: noteId, target_id: link });
         }
       }
-      return result;
-    }),
-    safeDelete: db.transaction((id: string) => {
-      const exists = selectNoteStmt.get({ id });
-      if (!exists) return false;
-      deleteTagsStmt.run({ note_id: id });
-      const result = deleteNoteStmt.run({ id });
-      return result.changes > 0;
-    }),
-    safeUpdate: db.transaction((params) => {
-      const { tags, ...noteParams } = params;
-      const rawResult = updateNoteStmt.get(noteParams);
-      if (!rawResult) {
-        throw new Error("NOT_FOUND");
+    }
+    if (tags && tags.length > 0) {
+      for (const tag of tags) {
+        this.insertTagsStmt.run({ note_id: noteId, tag_name: tag });
       }
-      const result = DBRowSchema.parse({ ...rawResult, tags: params.tags });
-      deleteTagsStmt.run({ note_id: result.id });
-      if (tags && tags.length > 0) {
-        for (const tag of tags) {
-          insertTagsStmt.run({ note_id: result.id, tag_name: tag });
+    }
+    return validation(NoteFromDB, {
+      ...rawResult,
+      tags: NoteDB.getTagsById(noteId),
+      links: NoteDB.getLinksById(noteId),
+    });
+  }
+
+  safeDelete(id: string): boolean {
+    const exists = this.selectNoteStmt.get({ id });
+    if (!exists) return false;
+    this.deleteTagsStmt.run({ note_id: id });
+    this.deleteLinksStmt.run({ source_id: id });
+    const result = this.deleteNoteStmt.run({ id });
+    return result.changes > 0;
+  }
+
+  safeUpdate(params: UpdateTransaction): Note {
+    const { tags, links, ...noteParams } = params;
+    const rawResult = this.updateNoteStmt.get(noteParams) as NoteRow;
+    if (!rawResult) {
+      throw new Error("NOT_FOUND");
+    }
+    const noteId = rawResult.id;
+    this.deleteLinksStmt.run({ source_id: noteId });
+    if (links && links.length > 0) {
+      for (const link of links) {
+        const exists = this.checkNoteStmt.get({ id: link });
+        if (exists) {
+          this.insertLinksStmt.run({ source_id: noteId, target_id: link });
         }
       }
-      return result;
-    }),
-  };
+    }
+    this.deleteTagsStmt.run({ note_id: noteId });
+    if (tags && tags.length > 0) {
+      for (const tag of tags) {
+        this.insertTagsStmt.run({ note_id: noteId, tag_name: tag });
+      }
+    }
+    return validation(NoteFromDB, {
+      ...rawResult,
+      tags: NoteDB.getTagsById(noteId),
+      links: NoteDB.getLinksById(noteId),
+    });
+  }
 }
 
-export { createNoteTransactions };
+export { Transactions };

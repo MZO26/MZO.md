@@ -32,9 +32,27 @@ function getTodoStats(content: JSONContent) {
   };
 }
 
+function getLinks(jsonDoc: JSONContent): string[] {
+  if (!jsonDoc) return [];
+  const seen = new Set<string>();
+  const stack: JSONContent[] = [jsonDoc];
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    if (node.content) {
+      for (let i = node.content.length - 1; i >= 0; i--) {
+        stack.push(node.content[i] as JSONContent);
+      }
+    }
+    if (node.type !== "wikilink" || !node.attrs?.["id"]) continue;
+    const linkId = node.attrs["id"];
+    if (seen.has(linkId)) continue;
+    seen.add(linkId);
+  }
+  return Array.from(seen);
+}
+
 function getTags(jsonDoc: JSONContent): string[] {
   if (!jsonDoc) return [];
-  const tags: string[] = [];
   const seen = new Set<string>();
   const stack: JSONContent[] = [jsonDoc];
   while (stack.length > 0) {
@@ -49,10 +67,9 @@ function getTags(jsonDoc: JSONContent): string[] {
     if (tagText.length === 0 || tagText.length > 40) continue;
     if (seen.has(tagText)) continue;
     seen.add(tagText);
-    tags.push(tagText);
-    if (tags.length === 3) break;
+    if (seen.size === 3) break;
   }
-  return tags;
+  return Array.from(seen);
 }
 
-export { getTags, getTodoStats };
+export { getLinks, getTags, getTodoStats };

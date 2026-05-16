@@ -4,13 +4,14 @@ import {
 } from "@shared/schemas/editor-schema";
 import { z } from "zod";
 
+const SearchSchema = z.object({
+  searchTerm: z.string().trim().min(1).max(100),
+  limit: z.number().int().min(20).max(50).default(50),
+});
+
 const IdSchema = z.uuid();
 
 const TitleSchema = z.string().min(1).max(50).default("New Note");
-
-const TagSchema = z.string().trim().min(1).max(40).toLowerCase();
-
-const TagsSchema = z.array(TagSchema).max(3).default([]);
 
 const SnippetSchema = z.string().max(50).default("");
 
@@ -40,94 +41,120 @@ const ToggleBookmarkSchema = z.object({
   bookmarked: DBBooleanSchema,
 });
 
-const NoteTagRowSchema = z.object({
+const TagSchema = z.string().trim().min(1).max(40).toLowerCase();
+
+const TagsSchema = z.array(TagSchema).max(3).default([]);
+
+const TagRowSchema = z.object({
   note_id: IdSchema,
   tag_name: TagSchema,
 });
 
-const NoteTagRowsSchema = z.array(NoteTagRowSchema);
+const TagNameRowSchema = z.object({ tag_name: TagSchema });
 
-const NoteTagNameRowSchema = NoteTagRowSchema.pick({
-  tag_name: true,
+const TagRowsSchema = z.array(TagRowSchema).default([]);
+
+const LinkRowSchema = z.object({
+  source_id: IdSchema,
+  target_id: IdSchema,
 });
 
-const NoteTagNameRowsSchema = z.array(NoteTagNameRowSchema);
+const LinkRowsSchema = z.array(LinkRowSchema).default([]);
 
-const SearchSchema = z.object({
-  searchTerm: z.string().trim().min(1).max(100),
-  limit: z.number().int().min(20).max(50).default(50),
+const LinkPayloadSchema = z.array(IdSchema).default([]);
+
+const LinkSchema = z.object({
+  id: IdSchema,
+  dir: z.enum(["in", "out"]),
 });
 
-// base schema for all notes. These are always there and do not change their shape
-const NoteCoreSchema = z.object({
+const LinksSchema = z.array(LinkSchema).default([]);
+
+// Full Note Table
+const NoteTableSchema = z.object({
+  id: IdSchema,
   title: TitleSchema,
   snippet: SnippetSchema,
+  content: EditorDocSchema,
   todos_left: TodoSchema,
   plainText: PlainTextSchema,
   markdown: PlainTextSchema,
-  tags: TagsSchema,
-});
-
-// base for payloads. Booleans instead of numbers and normal editor schema (still in json)
-const NoteSchema = NoteCoreSchema.extend({
-  id: IdSchema,
-  content: EditorDocSchema,
   pinned: z.boolean(),
   bookmarked: z.boolean(),
   created_at: DateSchema,
   updated_at: DateSchema,
 });
 
-// for note array results
+// Full Note Object
+const NoteSchema = NoteTableSchema.extend({
+  tags: TagsSchema,
+  links: LinksSchema,
+});
+
+// Full Array of Note Objects
 const NotesSchema = z.array(NoteSchema);
 
-// for note table results -> tags have to be appended to result of database
-const DBRowSchema = NoteCoreSchema.extend({
-  id: IdSchema,
+// DB Results (Content gets parsed / 0 or 1 gets converted to boolean). Links have new Schema
+const NoteFromDB = NoteSchema.extend({
   content: DbContentSchema,
   pinned: DBBooleanSchema,
   bookmarked: DBBooleanSchema,
-  created_at: DateSchema,
-  updated_at: DateSchema,
+  links: LinksSchema,
 });
 
-// transforms boolean to 0 | 1 and expects stringified content
-const NoteToDBSchema = NoteCoreSchema.extend({
+// Payload Evaluation: Expects content to be stringified and converts booleans to 0 or 1 for DB
+const NoteToDBSchema = NoteSchema.extend({
   id: IdSchema,
   content: z.string(),
   pinned: BooleanSchema,
   bookmarked: BooleanSchema,
-  created_at: DateSchema,
-  updated_at: DateSchema,
+  links: LinkPayloadSchema,
 });
 
-// omitted values get generated in the db
+// Omitted values get generated in the DB. Links have their own Schema for Payload because DB expects them in an Array.
 const CreateNotePayloadSchema = NoteSchema.omit({
   id: true,
   created_at: true,
   updated_at: true,
-});
+}).extend({ links: LinkPayloadSchema });
 
 const CreateNotesPayloadsSchema = z.array(CreateNotePayloadSchema);
 
-// markdown if mirroring is activated. Payload does not send updated_at. Timestamp for it gets generated in db
+// Update payload does not send updated_at. Timestamp for it gets generated in DB. Pinned and Bookmarked do not need to be sent over because they get toggled individually.
 const UpdateNotePayloadSchema = NoteSchema.omit({
   pinned: true,
   bookmarked: true,
   created_at: true,
   updated_at: true,
-});
+}).extend({ links: LinkPayloadSchema });
 
-// everything gets written to db. Defaults apply
+// Everything gets written to DB.
 const CreateTransactionSchema = NoteToDBSchema;
 
-// pinned, bookmarked get toggled dynamically. created_at stays reserved for first creation and never gets touched after
 const UpdateTransactionSchema = NoteToDBSchema.omit({
   pinned: true,
   bookmarked: true,
   created_at: true,
 });
 
+const NoteRowSchema = z.object({
+  id: IdSchema,
+  title: TitleSchema,
+  content: z.string(),
+  markdown: PlainTextSchema,
+  snippet: SnippetSchema,
+  bookmarked: z.union([z.literal(0), z.literal(1)]).default(0),
+  pinned: z.union([z.literal(0), z.literal(1)]).default(0),
+  todos_left: TodoSchema,
+  plainText: PlainTextSchema,
+  created_at: DateSchema,
+  updated_at: DateSchema,
+});
+
+type NoteRow = z.infer<typeof NoteRowSchema>;
+type Tag = z.infer<typeof TagSchema>;
+type Link = z.infer<typeof LinkSchema>;
+type TagName = z.infer<typeof TagNameRowSchema>;
 type CreateTransaction = z.infer<typeof CreateTransactionSchema>;
 type UpdateTransaction = z.infer<typeof UpdateTransactionSchema>;
 type UpdateNotePayload = z.infer<typeof UpdateNotePayloadSchema>;
@@ -140,17 +167,18 @@ export {
   CreateNotesPayloadsSchema,
   CreateTransactionSchema,
   DBBooleanSchema,
-  DBRowSchema,
-  EditorDocSchema,
   IdSchema,
+  LinkRowsSchema,
+  LinksSchema,
+  NoteFromDB,
+  NoteRowSchema,
   NoteSchema,
   NotesSchema,
-  NoteTagNameRowsSchema,
-  NoteTagRowsSchema,
   NoteToDBSchema,
   PlainTextSchema,
   SearchSchema,
   SnippetSchema,
+  TagRowsSchema,
   TagSchema,
   TagsSchema,
   TitleSchema,
@@ -161,7 +189,11 @@ export {
   type CreateNotePayload,
   type CreateNotesPayload,
   type CreateTransaction,
+  type Link,
   type Note,
+  type NoteRow,
+  type Tag,
+  type TagName,
   type UpdateNotePayload,
   type UpdateTransaction,
 };

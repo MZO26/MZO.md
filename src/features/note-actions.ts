@@ -82,6 +82,7 @@ async function handleSaveNote(
     ...editorContent,
     ...metaData,
   };
+  console.log(payload);
   const response = await updateNote(payload, flush);
   if (!response.success) {
     console.error("save failed for id", id);

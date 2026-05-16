@@ -56,7 +56,10 @@ async function safeResponse<T>(
 
 function handleIpcError(err: unknown): Failure {
   if (err instanceof ZodError) {
-    console.error("[IPC Validation]: ", z.treeifyError(err));
+    console.error(
+      "[IPC Validation]: ",
+      JSON.stringify(z.treeifyError(err), null, 2),
+    );
     return { success: false, message: "Invalid data provided." };
   }
   // check if it's an error object and show the message in console for debugging. If it's no error object, just return the string

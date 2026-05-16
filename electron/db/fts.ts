@@ -1,13 +1,31 @@
+import NoteDB from "@electron/db/database";
 import { ftsQueryGenerator } from "@shared/generators/generators";
-import { DBRowSchema, type Note } from "@shared/schemas/note-schema";
-import type { NoteRow } from "@shared/types";
+import {
+  NoteFromDB,
+  NoteRowSchema,
+  type Note,
+  type NoteRow,
+} from "@shared/schemas/note-schema";
+import { validation } from "@shared/validation";
 import type { Database as DatabaseType } from "better-sqlite3";
+import BetterSqlite from "better-sqlite3";
 
 class FTS5 {
   private db: DatabaseType;
+  private searchStmt: BetterSqlite.Statement;
 
   constructor(dbConnection: DatabaseType) {
     this.db = dbConnection;
+    this.searchStmt = this.db.prepare(`
+    WITH matched_notes AS (
+    SELECT id, bm25(notes_fts, 0.0, 10.0, 1.0) as rank FROM notes_fts WHERE notes_fts MATCH @ftsQuery
+    ORDER BY rank ASC 
+    LIMIT @limit)
+    SELECT n.id, n.title, n.content, n.snippet, n.markdown, n.bookmarked, n.pinned, 
+    n.todos_left, n.plainText, n.created_at, n.updated_at
+    FROM matched_notes m
+    JOIN notes n ON m.id = n.id
+  `);
   }
 
   populateInitialFTSIndex() {
@@ -31,10 +49,10 @@ class FTS5 {
         tokenize="trigram"
       );`);
     this.db.exec(`
-    DROP VIEW IF EXISTS notes_view;
-    CREATE VIEW notes_view AS
-    SELECT n.id, n.title, n.content, n.plainText, n.snippet, (SELECT json_group_array(tag_name) FROM note_tags WHERE note_id = n.id) AS tags
-    FROM notes n
+      DROP VIEW IF EXISTS notes_view;
+      CREATE VIEW notes_view AS
+      SELECT n.id, n.title, n.content, n.plainText, n.snippet, (SELECT json_group_array(tag_name) FROM note_tags WHERE note_id = n.id) AS tags
+      FROM notes n
     `);
 
     this.db.exec(`
@@ -61,22 +79,18 @@ class FTS5 {
   searchNotes(searchTerm: string, limit: number): Note[] {
     const ftsQuery = ftsQueryGenerator(searchTerm);
     if (ftsQuery === "") return [];
-    const stmt = this.db.prepare(`
-    SELECT n.id, n.title, n.content, n.snippet, (SELECT json_group_array(tag_name) FROM note_tags WHERE note_id = n.id) AS tags, n.created_at, n.updated_at,
-    bm25(notes_fts, 0.0, 10.0, 1.0) as rank
-    FROM notes_fts
-    JOIN notes n ON notes_fts.id = n.id
-    WHERE notes_fts MATCH ?
-    ORDER BY rank
-    LIMIT ?
-  `);
-    const result = stmt.all(ftsQuery, limit) as NoteRow[];
+
+    const result = this.searchStmt.all({
+      ftsQuery,
+      limit,
+    }) as NoteRow[];
     return result.map((note) => {
-      const noteData = {
-        ...note,
-        tags: JSON.parse(note.tags),
-      };
-      return DBRowSchema.parse(noteData);
+      const validatedRow = validation(NoteRowSchema, note);
+      return validation(NoteFromDB, {
+        ...validatedRow,
+        tags: NoteDB.getTagsById(validatedRow.id),
+        links: NoteDB.getLinksById(validatedRow.id),
+      });
     });
   }
 }

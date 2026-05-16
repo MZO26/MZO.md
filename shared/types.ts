@@ -55,21 +55,7 @@ type Metadata = {
   snippet: string;
   tags: string[];
   todos_left: number;
-};
-
-type NoteRow = {
-  id: string;
-  title: string;
-  content: string;
-  markdown: string;
-  snippet: string;
-  bookmarked: 0 | 1;
-  pinned: 0 | 1;
-  todos_left: number;
-  plainText: string;
-  created_at: number;
-  updated_at: number;
-  tags: string;
+  links: string[];
 };
 
 type ImportedContent = {
@@ -100,7 +86,6 @@ export type {
   ImportedContent,
   Metadata,
   NativeWindowColors,
-  NoteRow,
   ResolvedTheme,
   Result,
   Success,
