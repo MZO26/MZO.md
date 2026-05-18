@@ -19,26 +19,27 @@ function createTooltipContent(
 }
 
 function useDelayedSpinner(delay = 300) {
-  const spinner = findElement<HTMLDivElement>("#loadingSpinner");
-  const overlay = findElement<HTMLDivElement>(".overlay");
+  const spinner = findElement("#loadingSpinner");
+  const overlay = findElement(".overlay");
   if (!spinner || !overlay) return () => {};
   const overlayExisting = overlay.classList.contains("show");
-  const spinnerExisting = spinner.style.display === "block";
+  const spinnerExisting = spinner.classList.contains("show");
   const spinnerTimeout = setTimeout(() => {
     if (!overlayExisting) {
       overlay.classList.add("show");
     }
     if (!spinnerExisting) {
-      spinner.style.display = "block";
+      spinner.classList.add("show");
     }
   }, delay);
+
   return function cleanup() {
     clearTimeout(spinnerTimeout);
     if (!overlayExisting) {
       overlay.classList.remove("show");
     }
     if (!spinnerExisting) {
-      spinner.style.display = "none";
+      spinner.classList.remove("show");
     }
   };
 }

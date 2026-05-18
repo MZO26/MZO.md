@@ -18,7 +18,6 @@ function registerCustomProtocol() {
 
 async function setupLocalImageProtocol() {
   const imagesDir = path.join(app.getPath("userData"), "editor-images");
-
   protocol.handle("appimg", async (request) => {
     // remove the appimg:// prefix
     let pathPart = request.url.replace(/^appimg:\/+/i, "");
@@ -35,7 +34,7 @@ async function setupLocalImageProtocol() {
       if (!result.ok) throw new Error("File not found");
       return result;
     } catch {
-      return new Response("Not found", { status: 404 });
+      return new Response(null, { status: 204 });
     }
   });
 }

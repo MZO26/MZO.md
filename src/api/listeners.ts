@@ -13,12 +13,13 @@ import {
   reloadNoteList,
 } from "@/components/sidebar/sidebar-actions";
 import {
+  cleanup,
   cleanupDeletedNoteUI,
   handleDeleteNote,
   pendingDeletions,
+  viewNote,
 } from "@/features/note-actions";
 import { stopAutoSave } from "@/features/note-auto-save";
-import { cleanup, viewNote } from "@/features/note-ui";
 import { settingsStore, stateStore } from "@/settings/app-state";
 import { applyAppTheme } from "@/settings/theme-actions";
 import { debounce } from "@/utils/async";

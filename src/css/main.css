@@ -203,13 +203,17 @@
     #fff calc(100% - 3px)
   );
   animation: spin 0.8s linear infinite;
-  z-index: 4;
+  z-index: 9999;
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
+}
+
+.spinner.show {
+  display: block !important;
 }
 
 label {

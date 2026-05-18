@@ -1,5 +1,6 @@
 import { getAll } from "@/api/noteAPI";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
+import { createNoteItem } from "@/components/sidebar/sidebar-items";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { findElement, setActiveItem } from "@/utils/dom";
@@ -7,7 +8,6 @@ import { formatNoteDate } from "@/utils/format";
 import { getAppItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
 import type { Note } from "@shared/schemas/note-schema";
-import { createNoteItem } from "./sidebar-items";
 
 function updateNoteCount(notes: Note[]) {
   const noteCount = findElement<HTMLSpanElement>(".note-count");
@@ -108,7 +108,7 @@ function updateNoteInList(note: Note): void {
     noteElement.querySelector<HTMLDivElement>(".note-content");
   const dateContainer = noteElement.querySelector<HTMLDivElement>(".note-date");
   const tagContainer = noteElement.querySelector<HTMLDivElement>(".note-tags");
-  document.startViewTransition(() => {
+  const transition = document.startViewTransition(() => {
     if (titleContainer) titleContainer.textContent = note.title;
     if (snippetContainer) snippetContainer.textContent = note.snippet;
     if (tagContainer) {
@@ -125,6 +125,11 @@ function updateNoteInList(note: Note): void {
     }
     if (dateContainer)
       dateContainer.textContent = formatNoteDate(note.updated_at);
+  });
+  transition.finished.catch((error: Error) => {
+    if (error.name === "AbortError") {
+      return;
+    }
   });
 }
 

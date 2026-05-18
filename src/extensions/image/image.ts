@@ -1,5 +1,6 @@
 import { saveImage } from "@/api/electronAPI";
 import { showToast } from "@/utils/toast";
+import { useDelayedSpinner } from "@/utils/ui";
 import type { Result } from "@shared/types";
 import type { Editor } from "@tiptap/core";
 
@@ -48,9 +49,10 @@ async function processAndInsertImage(file: File, editor: Editor, pos: number) {
     return;
   }
   if (file.size > MAX_SIZE) {
-    showToast("Error: Image must be under 5MB.");
+    showToast("Error: Image must be under 25MB.");
     return;
   }
+  const stopSpinner = useDelayedSpinner(100);
   try {
     const response = await compressImageInWorker(file);
     if (!response.success) {
@@ -74,6 +76,8 @@ async function processAndInsertImage(file: File, editor: Editor, pos: number) {
   } catch (error) {
     console.error("Failed to process and insert image:", error);
     showToast("Error: Image compression failed.");
+  } finally {
+    if (stopSpinner) stopSpinner();
   }
 }
 

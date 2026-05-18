@@ -1,13 +1,13 @@
+import { searchByTag } from "@/components/sidebar/sidebar-filter";
 import { setSidebarState } from "@/components/sidebar/sidebar-state";
 import { handleSelectNote } from "@/features/note-actions";
-import { createNoteButton, importNoteButton } from "@/features/note-ui";
+import { createNoteButton, importNoteButton } from "@/features/note-buttons";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { createContextMenu } from "@/utils/ui";
 import { delegate } from "tippy.js";
 import "tippy.js/dist/tippy.css";
-import { searchByTag } from "./sidebar-filter";
 
 const toggleSidebar = (appContainer: HTMLDivElement) => {
   const collapsed = appContainer.classList.contains("collapsed");

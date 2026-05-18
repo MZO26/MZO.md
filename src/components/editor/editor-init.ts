@@ -10,7 +10,6 @@ import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
-import Link from "@tiptap/extension-link";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TableKit } from "@tiptap/extension-table";
 import { TextStyleKit } from "@tiptap/extension-text-style";
@@ -158,7 +157,30 @@ function getNoteEditorExtensions() {
     Highlight.configure({ multicolor: true }),
     StarterKit.configure({
       codeBlock: false,
-      link: false,
+      link: {
+        openOnClick: true,
+        autolink: true,
+        defaultProtocol: "https",
+        HTMLAttributes: {
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+        validate: (href) => {
+          const protocolMatch = href.match(/^([a-zA-Z0-9\+\-\.]+):/);
+          if (!protocolMatch) {
+            return true;
+          }
+          const protocol = protocolMatch[0].toLowerCase();
+          const allowedProtocols = [
+            "http:",
+            "https:",
+            "mailto:",
+            "tel:",
+            "appimg:",
+          ];
+          return allowedProtocols.includes(protocol);
+        },
+      },
       dropcursor: {
         color: "var(--accent-primary)",
         width: 2,
@@ -170,30 +192,6 @@ function getNoteEditorExtensions() {
       enableTabIndentation: true,
       HTMLAttributes: {
         spellcheck: "false",
-      },
-    }),
-    Link.configure({
-      openOnClick: true,
-      autolink: true,
-      defaultProtocol: "https",
-      HTMLAttributes: {
-        target: "_blank",
-        rel: "noopener noreferrer",
-      },
-      validate: (href) => {
-        const protocolMatch = href.match(/^([a-zA-Z0-9\+\-\.]+):/);
-        if (!protocolMatch) {
-          return true;
-        }
-        const protocol = protocolMatch[0].toLowerCase();
-        const allowedProtocols = [
-          "http:",
-          "https:",
-          "mailto:",
-          "tel:",
-          "appimg:",
-        ];
-        return allowedProtocols.includes(protocol);
       },
     }),
   ];

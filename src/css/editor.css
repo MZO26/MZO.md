@@ -6,6 +6,7 @@
   margin: 0;
   outline: none;
   position: relative;
+  view-transition-name: none !important;
 }
 
 .ProseMirror ::selection {
@@ -343,6 +344,7 @@
 
 .ProseMirror img {
   max-width: 100%;
+  background-color: var(--bg-sidebar);
   border: 1px solid var(--border-color);
   border-radius: 4px;
   display: block;

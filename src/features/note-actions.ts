@@ -4,8 +4,7 @@ import { handleEditorEmptyState } from "@/components/editor/editor-state";
 import { updateStats } from "@/components/sidebar/info-sidebar-actions";
 import { updateNoteInList } from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
-import { stopAutoSave } from "@/features/note-auto-save";
-import { viewNote } from "@/features/note-ui";
+import { setupAutoSave, stopAutoSave } from "@/features/note-auto-save";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { setActiveItem } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
@@ -13,8 +12,11 @@ import { showToast } from "@/utils/toast";
 import { getMetadata } from "@shared/generators/generators";
 import type {
   CreateNotePayload,
+  Note,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
+import { Editor } from "@tiptap/core";
+import { EditorState } from "@tiptap/pm/state";
 
 export const pendingDeletions = new Set<string>();
 
@@ -124,10 +126,39 @@ async function handleSelectNote(noteItem: HTMLDivElement) {
   setActiveItem(noteItem, getAppItem("sidebar"));
 }
 
+const cleanup = new WeakMap<
+  Editor,
+  { flush: () => Promise<void>; cancel: () => void }
+>();
+
+function resetEditorHistory(editor: Editor): void {
+  const newState = EditorState.create({
+    doc: editor.state.doc,
+    plugins: editor.state.plugins,
+    schema: editor.state.schema,
+  });
+  editor.view.updateState(newState);
+}
+
+function viewNote(note: Note): void {
+  const editor = getAppItem("editor");
+  stopAutoSave(editor, "flush");
+  handleEditorEmptyState();
+  editor.commands.setContent(note.content, {
+    emitUpdate: false,
+  });
+  resetEditorHistory(editor);
+  editor.commands.focus();
+  const newCleanup = setupAutoSave(editor, note.id);
+  cleanup.set(editor, newCleanup);
+}
+
 export {
+  cleanup,
   cleanupDeletedNoteUI,
   handleCreateNote,
   handleDeleteNote,
   handleSaveNote,
   handleSelectNote,
+  viewNote,
 };

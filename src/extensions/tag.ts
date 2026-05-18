@@ -1,59 +1,52 @@
-import { mergeAttributes } from "@tiptap/core";
-import Mention from "@tiptap/extension-mention";
-import { PluginKey } from "@tiptap/pm/state";
+import { InputRule, Node, mergeAttributes } from "@tiptap/core";
 
-const NoteTag = Mention.extend({
-  name: "noteTag", // unique name to register extension in the editor schema
-}).configure({
-  HTMLAttributes: { class: "tag-node" }, // gives a specific class to handle styling
-
-  renderHTML({ options, node }) {
+const NoteTag = Node.create({
+  name: "noteTag",
+  group: "inline",
+  inline: true,
+  atom: true,
+  addAttributes() {
+    return {
+      id: {
+        default: null,
+      },
+    };
+  },
+  parseHTML() {
     return [
-      "span",
-      mergeAttributes(options.HTMLAttributes),
-      `#${node.attrs["id"]}`, // json format to describe the html structure of the tag
+      {
+        tag: 'span[data-type="noteTag"]',
+      },
     ];
   },
-
-  renderText({ node }) {
-    return `#${node.attrs["id"]}`; // without this, the mention extension would default back to @
+  renderHTML({ node, HTMLAttributes }) {
+    return [
+      "span",
+      mergeAttributes(HTMLAttributes, {
+        "data-type": "noteTag",
+        class: "tag-node",
+      }),
+      `#${node.attrs["id"]}`,
+    ];
   },
-
-  suggestion: {
-    char: "#",
-    pluginKey: new PluginKey("noteTagSuggestion"), // unique key to keep it extensible
-    items: ({ query }: { query: string }) => (query ? [query] : []),
-    render: () => {
-      let savedCommand: ((props: any) => void) | null = null;
-      let savedQuery = "";
-      // always gets called once # is being typed
-      return {
-        onStart: (props) => {
-          savedCommand = props.command;
-          savedQuery = props.query;
+  addInputRules() {
+    return [
+      new InputRule({
+        find: /(?:^|\s)#([\p{L}\p{N}_-]+)\s$/u,
+        handler: ({ state, range, match }) => {
+          const { tr } = state;
+          const start = range.from;
+          const end = range.to;
+          // match[0] is the full text
+          // match[1] is the text without the #
+          const matchString = match[0];
+          const tagText = match[1];
+          const prefixSpace = matchString.match(/^\s/) ? 1 : 0;
+          const node = this.type.create({ id: tagText });
+          tr.replaceWith(start + prefixSpace, end, node).insertText(" ");
         },
-        onUpdate: (props) => {
-          savedCommand = props.command;
-          savedQuery = props.query;
-        },
-        onExit: () => {
-          savedCommand = null;
-          savedQuery = "";
-        },
-        onKeyDown: ({ event }) => {
-          // when user hits space or enter
-          if (
-            (event.key === " " || event.key === "Enter") &&
-            savedQuery.length > 0
-          ) {
-            event.preventDefault();
-            savedCommand?.({ id: savedQuery }); // replaces the #query text in the document with a noteTag inline node
-            return true;
-          }
-          return false;
-        },
-      };
-    },
+      }),
+    ];
   },
 });
 
