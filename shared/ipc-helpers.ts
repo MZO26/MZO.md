@@ -18,4 +18,12 @@ function validation<T extends z.ZodType>(
   return validation.data;
 }
 
-export { validation };
+function measure<T>(fn: () => T): number {
+  const start = performance.now();
+  fn();
+  const end = performance.now();
+
+  return Math.round((end - start) * 100) / 100;
+}
+
+export { measure, validation };

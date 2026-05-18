@@ -3,12 +3,12 @@ import { batchExport } from "@electron/fs/fs-write-batch";
 import { createPDFCanvas } from "@electron/handler/pdf-handler";
 import { safeResponse } from "@electron/ipc/ipc-validation";
 import { createHiddenPdfWindow } from "@electron/win";
+import { validation } from "@shared/ipc-helpers";
 import {
   ExportManyRequestSchema,
   ExportRequestSchema,
   ImportRequestSchema,
 } from "@shared/schemas/export-schema";
-import { validation } from "@shared/validation";
 import {
   dialog,
   ipcMain,

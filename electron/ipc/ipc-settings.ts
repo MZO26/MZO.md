@@ -2,9 +2,9 @@ import { checkRateLimit, safeResponse } from "@electron/ipc/ipc-validation";
 import { store } from "@electron/store";
 import { nextZoom } from "@electron/win";
 import { LIMITS } from "@shared/constants";
+import { validation } from "@shared/ipc-helpers";
 import { StoreSchema, type AppSettings } from "@shared/schemas/store-schema";
 import type { ZoomAction } from "@shared/types";
-import { validation } from "@shared/validation";
 import { BrowserWindow, ipcMain } from "electron";
 
 function registerSettingsIpc(win: BrowserWindow) {

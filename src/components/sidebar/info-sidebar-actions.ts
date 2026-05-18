@@ -3,7 +3,7 @@ import { findElement, requireElement } from "@/utils/dom";
 import { formatNoteDate } from "@/utils/format";
 import { getAppItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
-import { getTodoStats } from "@shared/generators/note-metadata";
+import { getTodoStats } from "@shared/generators/generators";
 import type { Note } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
 
@@ -56,10 +56,6 @@ async function updateNoteLinks(links: Note["links"]) {
     const span = document.createElement("span");
     span.classList.add("link");
     span.dataset["link"] = link.id;
-    span.setAttribute(
-      "data-tippy-content",
-      `Go to note with ${linkMap.get(link.id) ?? link.id}`,
-    );
     span.textContent = `${link.dir}: ${linkMap.get(link.id) ?? link.id}`;
     container.append(span);
   }

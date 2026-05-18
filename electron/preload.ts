@@ -8,9 +8,21 @@ import type {
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import { subscribe } from "@shared/subscribe";
 import type { ZoomAction } from "@shared/types";
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
+
+function subscribe<T>(
+  channel: string,
+  callback: (payload: T) => void,
+): () => void {
+  const listener = (_e: IpcRendererEvent, payload: T) => {
+    callback(payload);
+  };
+  ipcRenderer.on(channel, listener);
+  return () => {
+    ipcRenderer.removeListener(channel, listener);
+  };
+}
 
 contextBridge.exposeInMainWorld("fileAPI", {
   selectFolder: () => ipcRenderer.invoke("select-folder"),
@@ -31,7 +43,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     subscribe("theme-changed", callback);
   },
   saveImage: (payload: ImagePayload) =>
-    ipcRenderer.invoke("saveImage", payload),
+    ipcRenderer.invoke("save:image", payload),
   showContextMenu: (id: string, pinned: boolean, bookmarked: boolean) =>
     ipcRenderer.send("show-note-menu", id, pinned, bookmarked),
   onRequestFlush: (callback: () => void) =>
@@ -76,6 +88,8 @@ contextBridge.exposeInMainWorld("noteAPI", {
   pin: (id: string) => ipcRenderer.invoke("note:pin", id),
   bookmark: (id: string) => ipcRenderer.invoke("note:bookmark", id),
   getViews: (view: string) => ipcRenderer.invoke("views:get", view),
+  dbMaintenance: (action: string) =>
+    ipcRenderer.invoke("db-maintenance", action),
   setActiveNote: (id: string | null) => ipcRenderer.send("set-active-note", id),
 });
 contextBridge.exposeInMainWorld("storeAPI", {

@@ -1,8 +1,17 @@
 import { saveImage } from "@/api/electronAPI";
-import { compressImage } from "@/extensions/image/image-utils";
 import { showToast } from "@/utils/toast";
 import type { Result } from "@shared/types";
 import type { Editor } from "@tiptap/core";
+
+const mimeToExt = {
+  "image/jpeg": "jpeg",
+  "image/png": "png",
+  "image/gif": "gif",
+  "image/webp": "webp",
+} as const;
+
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 26,214,400B. file.size from JS is always in bytes
 
 const worker = new Worker(new URL("./image-worker.ts", import.meta.url), {
   type: "module",
@@ -29,60 +38,58 @@ function compressImageInWorker(
       }
     };
     worker.addEventListener("message", handleMessage);
-    // adds
     worker.postMessage({ id, file, maxWidth, quality });
   });
 }
 
-function promptImageUpload(editor: Editor) {
-  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+async function processAndInsertImage(file: File, editor: Editor, pos: number) {
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    showToast("Error: Only JPG, PNG, GIF, and WebP are allowed.");
+    return;
+  }
+  if (file.size > MAX_SIZE) {
+    showToast("Error: Image must be under 5MB.");
+    return;
+  }
+  try {
+    const response = await compressImageInWorker(file);
+    if (!response.success) {
+      showToast(response.message);
+      return;
+    }
+    const extension = mimeToExt[file.type as keyof typeof mimeToExt] ?? "jpeg";
+    const saved = await saveImage({ imageData: response.data, extension });
+    if (!saved.success) {
+      showToast(saved.message);
+      return;
+    }
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(pos, {
+        type: "image",
+        attrs: { src: saved.data.imageSrc },
+      })
+      .run();
+  } catch (error) {
+    console.error("Failed to process and insert image:", error);
+    showToast("Error: Image compression failed.");
+  }
+}
 
+async function promptImageUpload(editor: Editor) {
+  if (!editor) return;
   const input = document.createElement("input");
   input.type = "file";
-  input.accept = "image/jpeg, image/png, image/gif, image/webp";
+  input.accept = "image/jpeg,image/png,image/gif,image/webp";
   input.onchange = async (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-    if (!file) {
-      showToast("No file provided.");
-      return;
-    }
-    if (!allowedTypes.includes(file.type)) {
-      console.error("Invalid file type.");
-      showToast("Error: Only JPG, PNG, GIF, and WebP are allowed.");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
-      showToast("Error: Image must be under 5MB.");
-      return;
-    }
-    try {
-      const response = await compressImageInWorker(file);
-      if (!response.success) {
-        showToast(response.message);
-        return;
-      }
-      const extension = "jpeg";
-      const imageCompression = await saveImage({
-        imageData: response.data,
-        extension: extension,
-      });
-      if (!imageCompression.success) {
-        showToast(imageCompression.message);
-        return;
-      }
-      editor
-        .chain()
-        .focus()
-        .setImage({ src: imageCompression.data.imageSrc })
-        .run();
-    } catch (error) {
-      console.error("Failed to process and insert image:", error);
-      showToast("Error: Image compression failed.");
-    }
+    input.remove();
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const pos = editor.state.selection.to;
+    await processAndInsertImage(file, editor, pos);
   };
   input.click();
 }
 
-export { compressImage, promptImageUpload };
+export { compressImageInWorker, processAndInsertImage, promptImageUpload };

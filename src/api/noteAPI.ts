@@ -66,10 +66,15 @@ async function getViews(view: string): Promise<Result<Note[]>> {
   return safeInvoke(window.noteAPI.getViews(view));
 }
 
+async function dbMaintenance(action: string): Promise<Result<number>> {
+  return safeInvoke(window.noteAPI.dbMaintenance(action));
+}
+
 export {
   bookmark,
   createManyNotes,
   createNote,
+  dbMaintenance,
   deleteNote,
   getAll,
   getByTag,

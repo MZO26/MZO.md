@@ -1,12 +1,12 @@
 import NoteDB from "@electron/db/database";
 import { ftsQueryGenerator } from "@shared/generators/generators";
+import { validation } from "@shared/ipc-helpers";
 import {
   NoteFromDB,
   NoteRowSchema,
   type Note,
   type NoteRow,
 } from "@shared/schemas/note-schema";
-import { validation } from "@shared/validation";
 import type { Database as DatabaseType } from "better-sqlite3";
 import BetterSqlite from "better-sqlite3";
 

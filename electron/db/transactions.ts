@@ -1,4 +1,5 @@
 import NoteDB from "@electron/db/database";
+import { validation } from "@shared/ipc-helpers";
 import {
   NoteFromDB,
   UpdateNotePayloadSchema,
@@ -8,7 +9,6 @@ import {
   type NoteRow,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
-import { validation } from "@shared/validation";
 import type { Database as DatabaseType } from "better-sqlite3";
 import BetterSqlite from "better-sqlite3";
 

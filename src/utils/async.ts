@@ -1,3 +1,5 @@
+import { useDelayedSpinner } from "./ui";
+
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   let lastArgs: Parameters<T> | null = null;
@@ -41,12 +43,14 @@ function createAsyncHandler<T extends Event>(
   return async (e: T) => {
     if (isProcessing) return;
     isProcessing = true;
+    const stopSpinner = useDelayedSpinner(300);
     try {
       await callback(e);
     } catch (error) {
       console.error("Async Handler Error: ", error);
     } finally {
       isProcessing = false;
+      stopSpinner();
     }
   };
 }

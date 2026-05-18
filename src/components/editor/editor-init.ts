@@ -1,4 +1,5 @@
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
+import { processAndInsertImage } from "@/extensions/image/image";
 import { lowlight } from "@/extensions/lowlight";
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
@@ -33,6 +34,41 @@ function initEditor(): Editor {
     element: editorWrapper,
     extensions: getNoteEditorExtensions(),
     editorProps: {
+      handleDrop(view, event, _slice, moved) {
+        if (!editor) return false;
+        if (!moved && event.dataTransfer?.files?.length) {
+          event.preventDefault();
+          const pos =
+            view.posAtCoords({ left: event.clientX, top: event.clientY })
+              ?.pos ?? view.state.doc.content.size;
+          let handled = false;
+          for (const file of event.dataTransfer.files) {
+            if (file.type.startsWith("image/")) {
+              processAndInsertImage(file, editor, pos);
+              handled = true;
+            }
+          }
+          return handled;
+        }
+        return false;
+      },
+      handlePaste(view, event) {
+        if (!editor) return false;
+        if (event.clipboardData?.files?.length) {
+          const pos = view.state.selection.to;
+
+          let handled = false;
+          for (const file of event.clipboardData.files) {
+            if (file.type.startsWith("image/")) {
+              event.preventDefault();
+              processAndInsertImage(file, editor, pos);
+              handled = true;
+            }
+          }
+          return handled;
+        }
+        return false;
+      },
       attributes: {
         spellcheck: "false",
       },

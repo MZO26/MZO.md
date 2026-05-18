@@ -50,6 +50,7 @@ import {
   Trash2,
   Undo2,
   UnfoldVertical,
+  Wrench,
   X,
 } from "lucide";
 
@@ -57,6 +58,7 @@ function renderIcons(scope: Document | HTMLElement = document): void {
   createIcons({
     icons: {
       FileUp,
+      Wrench,
       SearchX,
       Library,
       RulerDimensionLine,

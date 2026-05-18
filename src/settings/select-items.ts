@@ -141,6 +141,19 @@ function buildSelects() {
       { value: "txt", label: "Plain Text" },
     ],
     "storage",
+    "Backup Format",
+  );
+  selectBuilder(
+    settingsContainer,
+    "db-optimization",
+    [
+      { value: "optimize-db", label: "Optimize database" },
+      { value: "vacuum-db", label: "Free up disk space" },
+      { value: "backup-db", label: "Backup database" },
+      // { value: "empty-trash", label: "Clear last deleted" },
+    ],
+    "storage",
+    "Database Settings",
   );
 }
 

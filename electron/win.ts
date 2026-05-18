@@ -22,15 +22,35 @@ function nextZoom(current: number, action: ZoomAction): number {
 }
 
 function saveWindowBounds() {
-  if (win && !win.isMaximized() && !win.isMinimized()) {
-    const currentBounds = win.getBounds();
-    try {
-      const validBounds =
-        StoreSchema.shape["window-bounds"].parse(currentBounds);
-      store.set("window-bounds", validBounds);
-    } catch (error) {
-      console.error("Error saving window bounds: ", error);
+  if (
+    !win ||
+    win.isDestroyed() ||
+    win.isMaximized() ||
+    win.isMinimized() ||
+    win.isFullScreen()
+  ) {
+    return;
+  }
+
+  try {
+    const rawBounds =
+      typeof win.getNormalBounds === "function"
+        ? win.getNormalBounds()
+        : win.getBounds();
+    const preparedBounds = {
+      x: rawBounds.x,
+      y: rawBounds.y,
+      width: Math.max(1100, rawBounds.width),
+      height: Math.max(600, rawBounds.height),
+    };
+    const result = StoreSchema.shape["window-bounds"].safeParse(preparedBounds);
+    if (!result.success) {
+      console.error("Failed to validate window bounds:", result.error);
+      return;
     }
+    store.set("window-bounds", result.data);
+  } catch (error) {
+    console.error("Failed to save window bounds:", error);
   }
 }
 

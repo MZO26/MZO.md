@@ -1,4 +1,5 @@
 import { exportManyNotes } from "@/api/fileAPI";
+import { dbMaintenance } from "@/api/noteAPI";
 import { updateSettings } from "@/api/settingsAPI";
 import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
 import {
@@ -25,6 +26,7 @@ import type {
   OpenWindowMode,
   Theme,
 } from "@shared/schemas/store-schema";
+import type { BatchExportExtensions, DbOptimization } from "@shared/types";
 
 function initEditorSettings(settings: AppSettings) {
   const editorWrapper = getAppItem("editorWrapper");
@@ -210,20 +212,45 @@ function initWindowSettings(settings: AppSettings) {
 
 function initStorageSettings() {
   const batchExportSelect = findElement<HTMLSelectElement>("#file-backup");
-  if (!batchExportSelect) return;
+  const dbOptimizeSelect = findElement<HTMLSelectElement>("#db-optimization");
+  if (!batchExportSelect || !dbOptimizeSelect) return;
   batchExportSelect.value = "";
   batchExportSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement;
-      const selectedExtension = target.value as "md" | "txt" | "json";
-      await exportManyNotes({ extension: selectedExtension });
+      const selectedExtension = target.value as BatchExportExtensions;
+      const result = await exportManyNotes({ extension: selectedExtension });
       target.value = "";
+      if (!result.success) {
+        showToast(result.message);
+        return;
+      }
       showToast(`Successfully exported all files to ${selectedExtension}`);
+    }),
+  );
+  dbOptimizeSelect.value = "";
+  dbOptimizeSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e) => {
+      const target = e.target as HTMLSelectElement;
+      const selectedOpt = target.value as DbOptimization;
+      const result = await dbMaintenance(selectedOpt);
+      target.value = "";
+      if (!result.success) {
+        showToast(result.message);
+        return;
+      }
+      if (selectedOpt === "backup-db" && result.success) {
+        showToast("Backup saved.");
+        return;
+      }
+      showToast(`Optimized db in ${result.data} ms.`);
     }),
   );
   setSettingsItem({
     batchExportSelect,
+    dbOptimizeSelect,
   });
 }
 

@@ -72,16 +72,28 @@ interface BatchExportData {
   content?: string;
 }
 
+type BatchExportExtensions = "md" | "txt" | "json";
+
 type ContentType = "markdown" | "html" | "json";
 
 type ZoomAction = "get" | "in" | "out" | "reset";
+
+type DbOptimization = "optimize-db" | "vacuum-db" | "backup-db";
+
+type DBBackupResult = {
+  totalPages: number;
+  remainingPages: number;
+};
 
 export type {
   Action,
   ActionMap,
   BatchExportData,
+  BatchExportExtensions,
   Code,
   ContentType,
+  DBBackupResult,
+  DbOptimization,
   Failure,
   ImportedContent,
   Metadata,

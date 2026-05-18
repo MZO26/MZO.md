@@ -1,6 +1,7 @@
 import { FTS5 } from "@electron/db/fts";
 import { Transactions } from "@electron/db/transactions";
 import { Views } from "@electron/db/views";
+import { validation } from "@shared/ipc-helpers";
 import {
   CreateTransactionSchema,
   LinkRowsSchema,
@@ -17,8 +18,7 @@ import {
   type TagName,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
-import type { BatchExportData } from "@shared/types";
-import { validation } from "@shared/validation";
+import type { BatchExportData, DBBackupResult } from "@shared/types";
 import BetterSqlite from "better-sqlite3";
 import { app } from "electron";
 import path from "path";
@@ -333,6 +333,18 @@ class NoteDB {
         links: this.getLinksById(note.id) ?? [],
       });
     });
+  }
+
+  optimizeDb() {
+    this.db.pragma("optimize");
+  }
+
+  vacuumDb() {
+    this.db.exec("VACUUM");
+  }
+
+  async backupDb(destination: string): Promise<DBBackupResult> {
+    return this.db.backup(destination);
   }
 
   exportIterator(format: "json" | "md" | "txt") {

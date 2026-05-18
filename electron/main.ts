@@ -53,12 +53,12 @@ function createWindow() {
   const preloadPath = path.join(__dirname, "../preload/preload.js");
   const activeTheme = initTheme(store.get("theme"));
   const windowTheme = getTitleBarOverlay(activeTheme);
-  const openMode = store.get("open-window-mode", "centered");
+  const openMode = store.get("open-window-mode");
   const bounds = store.get("window-bounds");
   const windowConfig: BrowserWindowConstructorOptions = {
     show: false,
-    width: bounds.width,
-    height: bounds.height,
+    width: Math.max(1100, bounds.width ?? 1100),
+    height: Math.max(600, bounds.height ?? 600),
     minWidth: 1100,
     minHeight: 600,
     titleBarStyle: "hidden",

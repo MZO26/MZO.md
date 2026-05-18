@@ -1,9 +1,9 @@
 import { checkRateLimit, safeResponse } from "@electron/ipc/ipc-validation";
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import { LIMITS } from "@shared/constants";
+import { validation } from "@shared/ipc-helpers";
 import { ImagePayloadSchema } from "@shared/schemas/image-schema";
 import { StoreSchema, type Theme } from "@shared/schemas/store-schema";
-import { validation } from "@shared/validation";
 import { createHash } from "crypto";
 import { app, BrowserWindow, ipcMain } from "electron";
 import fs from "node:fs";
@@ -34,9 +34,9 @@ function registerElectronIpc() {
     });
   });
 
-  ipcMain.handle("saveImage", (e, payload: unknown) => {
+  ipcMain.handle("save:image", (e, payload: unknown) => {
     return safeResponse(e, async () => {
-      if (!checkRateLimit("saveImage", LIMITS.WRITE_HEAVY))
+      if (!checkRateLimit("save-image", LIMITS.WRITE_HEAVY))
         throw new Error("RATE_LIMIT");
       const validatedData = validation(ImagePayloadSchema, payload);
       const userDataPath = app.getPath("userData");
@@ -54,12 +54,21 @@ function registerElectronIpc() {
         console.log("Image already existing. Skipping saving process");
         return { imageSrc: `appimg:///${fileName}` };
       }
-      // 4. Save the file to the hard drive
-      fs.writeFileSync(filePath, imageBuffer);
-      // 5. Return the local file path to Tiptap
-      return {
-        imageSrc: `appimg:///${fileName}`,
-      };
+      try {
+        fs.writeFileSync(filePath, imageBuffer, { flag: "wx" });
+      } catch (err) {
+        if (
+          err instanceof Error &&
+          (err as NodeJS.ErrnoException).code === "EEXIST"
+        ) {
+          return {
+            imageSrc: `appimg:///${fileName}`,
+          };
+        } else {
+          throw err;
+        }
+      }
+      return { imageSrc: `appimg:///${fileName}` };
     });
   });
 }

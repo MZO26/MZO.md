@@ -1,8 +1,8 @@
 import { setUpNoteMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
 import { checkRateLimit, safeResponse } from "@electron/ipc/ipc-validation";
-import { win } from "@electron/main";
 import { LIMITS } from "@shared/constants";
+import { measure, validation } from "@shared/ipc-helpers";
 import {
   CreateNotePayloadSchema,
   CreateNotesPayloadsSchema,
@@ -13,10 +13,10 @@ import {
   TagSchema,
   UpdateNotePayloadSchema,
 } from "@shared/schemas/note-schema";
-import { validation } from "@shared/validation";
-import { ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import path from "path";
 
-function registerNoteIpc() {
+function registerNoteIpc(win: BrowserWindow) {
   ipcMain.handle("note:getAll", (e) => {
     return safeResponse(e, async () => {
       if (!checkRateLimit("note:getAll", LIMITS.READ_HEAVY))
@@ -166,6 +166,49 @@ function registerNoteIpc() {
           throw new Error("INVALID_VIEW");
       }
       return result;
+    });
+  });
+
+  ipcMain.handle("db-maintenance", (e, action: unknown) => {
+    return safeResponse(e, async () => {
+      if (!checkRateLimit("db-maintenance", LIMITS.WRITE_HEAVY))
+        throw new Error("RATE_LIMIT");
+      switch (action) {
+        case "optimize-db":
+          return measure(() => {
+            db.optimizeDb();
+          });
+        case "vacuum-db":
+          return measure(() => {
+            db.vacuumDb();
+          });
+        case "backup-db":
+          const timestamp = new Date()
+            .toISOString()
+            .slice(0, 19)
+            .replace(/[:T]/g, "-");
+          const defaultPath = path.join(
+            app.getPath("documents"),
+            `db-backup-${timestamp}.sqlite`,
+          );
+          const { canceled, filePath } = await dialog.showSaveDialog(win, {
+            title: "Backup database",
+            defaultPath,
+            buttonLabel: "Save backup",
+            filters: [
+              { name: "SQLite Database", extensions: ["sqlite", "db"] },
+            ],
+            properties: ["showOverwriteConfirmation"],
+          });
+          if (canceled || !filePath) {
+            throw new Error("CANCELLED_OPERATION");
+          }
+          const result = await db.backupDb(filePath);
+          return result.totalPages;
+        default: {
+          throw new Error("INVALID_ACTION");
+        }
+      }
     });
   });
 

@@ -1,7 +1,7 @@
 import db from "@electron/db/database";
 import { writeAtomic } from "@electron/fs/fs-atomic-write";
+import { validation } from "@shared/ipc-helpers";
 import { FileNameSchema } from "@shared/schemas/export-schema";
-import { validation } from "@shared/validation";
 import fs from "fs/promises";
 import path from "path";
 

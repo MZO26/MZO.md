@@ -8,20 +8,31 @@ function selectBuilder(
   id: string,
   options: SelectOption[],
   category: "appearance" | "typography" | "app" | "storage",
+  placeholderText?: string,
 ) {
-  const optionNodes = options.map((opt) => new Option(opt.label, opt.value));
   const label = document.createElement("label");
   label.htmlFor = id;
   label.textContent = id;
   const select = document.createElement("select");
   select.className = "theme-select";
   select.id = id;
+  if (placeholderText) {
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = placeholderText;
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    placeholder.hidden = true;
+    select.required = true;
+    select.append(placeholder);
+  }
+  const optionNodes = options.map((opt) => new Option(opt.label, opt.value));
   select.append(...optionNodes);
+  select.setAttribute("data-tippy-content", `select ${id}`);
   const row = document.createElement("div");
   row.className = "settings-row";
-  row.append(label, select);
-  select.setAttribute("data-tippy-content", `select ${id}`);
   row.dataset["category"] = category;
+  row.append(label, select);
   container.append(row);
 }
 

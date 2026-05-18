@@ -20,7 +20,8 @@ type SettingsKeys =
   | "closeWindowSelect"
   | "minimizeWindowSelect"
   | "batchExportSelect"
-  | "noteItemSelect";
+  | "noteItemSelect"
+  | "dbOptimizeSelect";
 
 interface SettingsRegistry extends Record<SettingsKeys, HTMLSelectElement> {}
 

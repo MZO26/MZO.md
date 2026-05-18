@@ -15,6 +15,7 @@ enum AppError {
   CancelledOperation = "CANCELLED_OPERATION",
   CompressionError = "COMPRESSION_ERROR",
   InvalidImageError = "INVALID_IMAGE_ERROR",
+  InvalidDbAction = "INVALID_ACTION",
 }
 
 function validateSender(event: IpcMainInvokeEvent) {
@@ -96,6 +97,9 @@ function handleIpcError(err: unknown): Failure {
     case AppError.InvalidImageError:
       return { success: false, message: "Image is damaged or unsupported" };
 
+    case AppError.InvalidDbAction:
+      return { success: false, message: "Action not found" };
+
     case AppError.UnknownError:
     default:
       return { success: false, message: "Unknown error occurred." };
@@ -127,7 +131,7 @@ function checkRateLimit(channel: string, cooldownMs: number): boolean {
 
 function registerIpc(win: BrowserWindow) {
   registerElectronIpc();
-  registerNoteIpc();
+  registerNoteIpc(win);
   registerSettingsIpc(win);
   registerFileIpc(win);
 }

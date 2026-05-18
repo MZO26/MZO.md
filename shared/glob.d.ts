@@ -67,6 +67,7 @@ declare global {
       pin: (id: string) => Promise<Result<boolean>>;
       bookmark: (id: string) => Promise<Result<boolean>>;
       getViews: (view) => Promise<Result<Note[]>>;
+      dbMaintenance: (action) => Promise<Result<number>>;
       setActiveNote: (id: string | null) => void;
     };
     storeAPI: {

@@ -21,15 +21,25 @@ function createTooltipContent(
 function useDelayedSpinner(delay = 300) {
   const spinner = findElement<HTMLDivElement>("#loadingSpinner");
   const overlay = findElement<HTMLDivElement>(".overlay");
-  if (!spinner || !overlay) return;
+  if (!spinner || !overlay) return () => {};
+  const overlayExisting = overlay.classList.contains("show");
+  const spinnerExisting = spinner.style.display === "block";
   const spinnerTimeout = setTimeout(() => {
-    overlay?.classList.toggle("show", true);
-    spinner.style.display = "block";
+    if (!overlayExisting) {
+      overlay.classList.add("show");
+    }
+    if (!spinnerExisting) {
+      spinner.style.display = "block";
+    }
   }, delay);
   return function cleanup() {
     clearTimeout(spinnerTimeout);
-    overlay?.classList.toggle("show", false);
-    spinner.style.display = "none";
+    if (!overlayExisting) {
+      overlay.classList.remove("show");
+    }
+    if (!spinnerExisting) {
+      spinner.style.display = "none";
+    }
   };
 }
 
