@@ -1,4 +1,5 @@
 import { createViews, views } from "@/components/sidebar/sidebar-filter";
+import { applyFilterListeners } from "@/components/sidebar/sidebar-filter-init";
 import { setSidebarState } from "@/components/sidebar/sidebar-state";
 import { handleSelectNote } from "@/features/note-actions";
 import { createNoteButton, importNoteButton } from "@/features/note-buttons";
@@ -7,7 +8,6 @@ import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { delegate } from "tippy.js";
 import "tippy.js/dist/tippy.css";
-import { applyFilterListeners } from "./sidebar-filter-init";
 
 const toggleSidebar = (appContainer: HTMLDivElement) => {
   const collapsed = appContainer.classList.contains("collapsed");
@@ -52,7 +52,7 @@ function applySidebarListeners(
         e.preventDefault();
         e.stopPropagation();
         const target = e.target as HTMLElement;
-        const item = target.closest<HTMLElement>(".noteItem");
+        const item = target.closest<HTMLElement>(".note-item");
         if (!item) return;
         const id = item.dataset["id"];
         if (!id) return;
@@ -65,7 +65,7 @@ function applySidebarListeners(
         });
         return;
       }
-      const noteItem = target.closest<HTMLDivElement>(".noteItem");
+      const noteItem = target.closest<HTMLDivElement>(".note-item");
       if (noteItem) {
         await handleSelectNote(noteItem);
         return;

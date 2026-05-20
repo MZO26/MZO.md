@@ -1,12 +1,9 @@
 import { setTheme } from "@/api/electronAPI";
 import { updateSettings } from "@/api/settingsAPI";
 import { getSettingsItem } from "@/utils/registry";
-import { showToast } from "@/utils/toast";
 import { CODE_THEME_MAP, THEME_MAP } from "@shared/constants";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import type { Code, ResolvedTheme } from "@shared/types";
-
-let currentDomTheme: Theme | null = null;
 
 function resolveTheme(theme: Theme): ResolvedTheme {
   if (theme === "system") {
@@ -21,29 +18,20 @@ async function applyAppTheme(
   themeOverride?: Theme,
   onOSchange = false,
   themeRes?: Theme,
-  codeRes?: CodeTheme,
 ) {
   let appPref: Theme = themeOverride || "system";
-  const codeThemeSelect = getSettingsItem("codeThemeSelect");
-  const themeSelect = getSettingsItem("themeSelect");
   if (!themeOverride) {
     // no override means only on startup
     if (themeRes) appPref = themeRes;
-    if (codeRes) codeThemeSelect.value = codeRes;
   }
   const baseTheme = resolveTheme(appPref);
   const domTheme = appPref === "system" ? baseTheme : appPref;
   document.documentElement.dataset["theme"] = domTheme;
-  themeSelect.value = appPref;
   const codePref = setCodeTheme(baseTheme);
   if (!onOSchange) {
     updateSettings({ theme: appPref, "code-theme": codePref });
   }
-  if (currentDomTheme !== domTheme) {
-    currentDomTheme = domTheme;
-    await setTheme(domTheme);
-  }
-  showToast(`Set app theme to: ${domTheme}`);
+  await setTheme(domTheme);
 }
 
 function setCodeTheme(resolvedTheme: ResolvedTheme): CodeTheme {
@@ -66,4 +54,4 @@ function getDefaultCodeTheme(resolvedTheme: ResolvedTheme): {
   };
 }
 
-export { applyAppTheme, currentDomTheme, resolveTheme, setCodeTheme };
+export { applyAppTheme, resolveTheme, setCodeTheme };

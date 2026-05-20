@@ -89,7 +89,9 @@ function getNoteEditorExtensions() {
     Typography,
     WikiLink.configure({
       onClick: async (id) => {
-        const noteItem = findElement<HTMLDivElement>(`div[data-id="${id}"]`);
+        const noteItem = findElement<HTMLDivElement>(
+          `.note-item[data-id="${id}"]`,
+        );
         if (!noteItem) return;
         handleSelectNote(noteItem);
       },

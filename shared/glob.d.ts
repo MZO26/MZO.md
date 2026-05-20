@@ -10,7 +10,7 @@ import {
   type ImagePayload,
   type UpdateNotePayload,
 } from "@shared/shared/types";
-import type { ExportItem, MenuType } from "./types";
+import type { ExportItem, MenuType } from "@shared/types";
 
 declare module "*.css";
 
@@ -26,7 +26,6 @@ declare global {
       noteImport: () => Promise<Result<ImportRequest[]>>;
     };
     electronAPI: {
-      platform: () => Promise<Result<string>>;
       setTheme: (theme: Theme, focus?: boolean) => Promise<Result<Theme>>;
       saveImage: (
         payload: ImagePayload,

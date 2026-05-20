@@ -7,7 +7,6 @@ const LIMITS = {
   WRITE_LIGHT: 300, // update, setTheme
   READ_HEAVY: 500, // search, getAll
   READ_LIGHT: 100, // getById, store:get
-  SET_THEME: 5,
   WRITE_FLUSH: 5, // update with flush arg
 };
 

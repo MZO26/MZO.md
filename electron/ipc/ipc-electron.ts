@@ -12,14 +12,6 @@ import fs from "node:fs";
 import path from "path";
 
 function registerElectronIpc(win: BrowserWindow) {
-  ipcMain.handle("platform:get", (e) => {
-    return safeResponse(e, async () => {
-      if (!checkRateLimit("platform:get", LIMITS.READ_LIGHT))
-        throw new Error("RATE_LIMIT");
-      return process.platform;
-    });
-  });
-
   ipcMain.on(
     "show-context-menu",
     (e, menuType: MenuType, payload: NoteMenuPayload) => {
@@ -42,7 +34,7 @@ function registerElectronIpc(win: BrowserWindow) {
 
   ipcMain.handle("set:theme", (e, theme: Theme, focus?: boolean) => {
     return safeResponse(e, async () => {
-      if (!checkRateLimit("set:theme", LIMITS.SET_THEME))
+      if (!checkRateLimit("set:theme", LIMITS.WRITE_LIGHT))
         throw new Error("RATE_LIMIT");
       const validatedData = validation(StoreSchema.shape.theme, theme);
       const activeTheme = initTheme(validatedData);

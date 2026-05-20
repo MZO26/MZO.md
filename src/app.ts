@@ -14,7 +14,6 @@ import {
 } from "@/components/toolbar/menu-builder";
 import { ToolbarActions } from "@/components/toolbar/toolbar-actions";
 import { loadSettings } from "@/settings/app-state";
-import { getPlatformData } from "@/settings/platform";
 import { initAppSettings } from "@/settings/setting-init";
 import { initGlobalShortcuts } from "@/settings/shortcuts";
 import { startAppClock } from "@/utils/date";
@@ -48,5 +47,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   initHoverbar();
   renderIcons();
   startAppClock();
-  getPlatformData();
 });

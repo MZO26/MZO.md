@@ -4,10 +4,13 @@ import {
   addManyNotesToList,
   addOneNoteToList,
 } from "@/components/sidebar/sidebar-actions";
+import {
+  getImportedContent,
+  handleImportFile,
+} from "@/features/import-actions";
+import { handleCreateNote, viewNote } from "@/features/note-actions";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { showToast } from "@/utils/toast";
-import { getImportedContent, handleImportFile } from "./import-actions";
-import { handleCreateNote, viewNote } from "./note-actions";
 
 async function createNoteButton(): Promise<void> {
   const response = await handleCreateNote();

@@ -1,4 +1,5 @@
 import { processWithLimit } from "@electron/fs/fs-limiter";
+import { exportPdfNote } from "@electron/fs/fs-pdf";
 import { loadPDFAssets } from "@electron/handler/pdf-handler";
 import { createHiddenPdfWindow } from "@electron/win";
 import { validation } from "@shared/ipc-helpers";
@@ -6,7 +7,6 @@ import { FileNameSchema } from "@shared/schemas/export-schema";
 import type { ExportItem } from "@shared/types";
 import fs from "fs/promises";
 import path from "path";
-import { exportPdfNote } from "./fs-pdf";
 
 async function batchPDFExport(folder: string, payload: ExportItem[]) {
   await fs.mkdir(folder, { recursive: true });

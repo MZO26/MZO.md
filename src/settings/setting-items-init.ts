@@ -5,7 +5,6 @@ import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
 import { getExportContent } from "@/features/export-actions";
 import {
   applyAppTheme,
-  currentDomTheme,
   resolveTheme,
   setCodeTheme,
 } from "@/settings/theme-actions";
@@ -144,7 +143,6 @@ function initAppearanceSettings(settings: AppSettings) {
       themeSelect.value = target.value;
       const validTheme =
         target.value in THEME_MAP ? (target.value as Theme) : "system";
-      if (validTheme === currentDomTheme) return;
       await applyAppTheme(validTheme, false);
     }),
   );

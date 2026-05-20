@@ -71,7 +71,7 @@ function initListeners() {
 
   window.electronAPI.onTriggerNoteAction((payload) => {
     const noteElement = document.querySelector(
-      `.noteItem[data-id="${payload.id}"]`,
+      `.note-item[data-id="${payload.id}"]`,
     ) as HTMLElement;
     if (!noteElement) return;
     switch (payload.action) {
@@ -173,7 +173,7 @@ function initListeners() {
     const handleClose = async () => {
       if (deleteDialog.returnValue !== "confirm") return;
       const noteElement = findElement<HTMLDivElement>(
-        `.noteItem[data-id="${id}"]`,
+        `.note-item[data-id="${id}"]`,
       );
       if (!noteElement) return;
       await handleDeleteNote(id, noteElement);
@@ -241,7 +241,7 @@ function initListeners() {
         viewNote(result.data);
         await updateStats(result.data);
         const noteItem = findElement<HTMLDivElement>(
-          `div[data-id="${result.data.id}"]`,
+          `.note-item[data-id="${result.data.id}"]`,
         );
         if (noteItem) setActiveItem(noteItem, getAppItem("sidebar"));
         showToast("Notes merged successfully.");

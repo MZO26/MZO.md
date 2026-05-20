@@ -75,7 +75,7 @@ function addManyNotesToList(notes: Note[]) {
   const { activeId } = stateStore.getState();
   if (!activeId) return;
   const noteElement = findElement<HTMLDivElement>(
-    `.noteItem[data-id="${activeId}"]`,
+    `.note-item[data-id="${activeId}"]`,
   );
   if (noteElement) setActiveItem(noteElement, sidebar);
 }
@@ -101,7 +101,7 @@ async function reloadNoteList(notes?: Note[]): Promise<void> {
 
 async function updateNoteInList(note: Note): Promise<void> {
   const noteElement = findElement<HTMLDivElement>(
-    `.noteItem[data-id="${note.id}"]`,
+    `.note-item[data-id="${note.id}"]`,
   );
   if (!noteElement) {
     console.warn("Note Element not found.");

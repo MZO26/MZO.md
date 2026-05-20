@@ -14,7 +14,6 @@ function selectBuilder(
   label.htmlFor = id;
   label.textContent = id;
   const select = document.createElement("select");
-  select.className = "theme-select";
   select.id = id;
   if (placeholderText) {
     const placeholder = document.createElement("option");

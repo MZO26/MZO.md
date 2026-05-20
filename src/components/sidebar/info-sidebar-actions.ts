@@ -20,6 +20,7 @@ function updateInfoHeader(date: Note["created_at"], title: Note["title"]) {
   span.textContent = formattedDate;
   h4.classList.add("note-title");
   h4.textContent = title.trim();
+  h4.setAttribute("data-tippy-content", title.trim());
   container.append(span, h4);
 }
 

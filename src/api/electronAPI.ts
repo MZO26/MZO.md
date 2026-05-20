@@ -3,10 +3,6 @@ import type { ImagePayload } from "@shared/schemas/image-schema";
 import type { Theme } from "@shared/schemas/store-schema";
 import type { Result, ZoomAction } from "@shared/types";
 
-async function getPlatform(): Promise<Result<string>> {
-  return safeInvoke(window.electronAPI.platform());
-}
-
 async function setTheme(theme: Theme, focus?: boolean): Promise<Result<Theme>> {
   return safeInvoke(window.electronAPI.setTheme(theme, focus));
 }
@@ -21,4 +17,4 @@ async function handleZoom(action: ZoomAction): Promise<Result<ZoomAction>> {
   return safeInvoke(window.electronAPI.zoom(action));
 }
 
-export { getPlatform, handleZoom, saveImage, setTheme };
+export { handleZoom, saveImage, setTheme };

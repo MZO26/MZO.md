@@ -44,7 +44,6 @@
               <i data-lucide="search" class="search-icon"></i>
               <input
                 type="search"
-                id="searchInput"
                 class="search-input"
                 placeholder="search notes"
                 data-tippy-content="search note content"
@@ -62,7 +61,10 @@
             <button class="settings-btn" data-tippy-content="settings">
               <i data-lucide="sliders-horizontal"></i>
             </button>
-            <select class="view-select theme-select"></select>
+            <select
+              class="view-select"
+              data-tippy-content="filter notes"
+            ></select>
             <span class="info-span note-count"></span>
           </div>
         </div>
@@ -113,7 +115,7 @@
       <div class="toast-container" popover="manual"></div>
     </div>
     <div class="overlay"></div>
-    <div id="loadingSpinner" class="spinner" popover="manual"></div>
+    <div class="spinner" popover="manual"></div>
     <dialog id="delete-dialog" class="delete-dialog">
       <form method="dialog" class="delete-dialog-form">
         <button class="delete-close-btn" data-tippy-content="close">
@@ -172,7 +174,7 @@
     <dialog class="modal-settings modal">
       <form method="dialog" novalidate>
         <button
-          class="closeModal-btn"
+          class="close-setting-modal-btn"
           value="cancel"
           data-tippy-content="close"
         >
@@ -209,8 +211,8 @@
         </div>
       </div>
     </template>
-    <template id="noteItem-template">
-      <div class="noteItem">
+    <template id="note-item-template">
+      <div class="note-item">
         <div class="note-header">
           <div class="icon-div">
             <i data-lucide="pin" data-tippy-content="pinned" class="pin"></i>
@@ -221,7 +223,7 @@
             ></i>
           </div>
           <span class="note-title"></span>
-          <button class="menu-btn" data-tippy-content="options">
+          <button class="menu-btn">
             <span class="dots"></span>
           </button>
         </div>

@@ -5,7 +5,9 @@
   flex-direction: column;
   user-select: none;
   white-space: nowrap;
-  min-width: 280px;
+  width: 280px;
+  opacity: 1;
+  transform: scale(1);
 }
 
 .notes-container {
@@ -363,7 +365,7 @@
   margin-right: 3px;
 }
 
-.noteItem {
+.note-item {
   height: 90px;
   width: 100%;
   padding: 5px 10px;
@@ -379,45 +381,45 @@
     border-color 0.15s ease;
 }
 
-.notes-container[data-noteItem="minimal"] .noteItem {
+.notes-container[data-noteItem="minimal"] .note-item {
   height: 60px;
   grid-template-rows: 30px 20px;
   contain-intrinsic-size: auto 60px;
 }
 
-.noteItem .icon-div {
+.note-item .icon-div {
   display: none;
   margin: 2px 4px 0 0;
 }
 
-.noteItem[data-pinned="true"] .icon-div,
-.noteItem[data-bookmarked="true"] .icon-div {
+.note-item[data-pinned="true"] .icon-div,
+.note-item[data-bookmarked="true"] .icon-div {
   display: flex;
 }
 
-.noteItem .icon-div .pin,
-.noteItem .icon-div .bookmark {
+.note-item .icon-div .pin,
+.note-item .icon-div .bookmark {
   display: none;
 }
 
-.noteItem[data-pinned="true"] .icon-div .pin {
+.note-item[data-pinned="true"] .icon-div .pin {
   display: inline-block;
 }
 
-.noteItem[data-bookmarked="true"] .icon-div .bookmark {
+.note-item[data-bookmarked="true"] .icon-div .bookmark {
   display: inline-block;
 }
 
-.noteItem:hover:not(.is-active) {
+.note-item:hover:not(.is-active) {
   background: var(--accent-hover);
   box-shadow: var(--shadow);
 }
 
-.noteItem:active {
+.note-item:active {
   background-color: var(--bg-sidebar-section);
 }
 
-.noteItem.is-active {
+.note-item.is-active {
   background: var(--bg-editor);
   box-shadow: var(--shadow);
   border-left: 2px solid var(--accent-primary);

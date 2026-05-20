@@ -6,6 +6,22 @@ import { registerSettingsIpc } from "@electron/ipc/ipc-settings";
 import type { Result } from "@shared/types";
 import { app, BrowserWindow, type IpcMainInvokeEvent } from "electron";
 
+const APP_START_TIME = Date.now();
+const ipcTimers = new Map<string, number>();
+
+async function safeResponse<T>(
+  event: IpcMainInvokeEvent,
+  action: () => Promise<T>,
+): Promise<Result<T>> {
+  try {
+    validateSender(event);
+    const data = await action();
+    return { success: true, data };
+  } catch (err: unknown) {
+    return handleIpcError(err);
+  }
+}
+
 function validateSender(event: IpcMainInvokeEvent) {
   if (!event.senderFrame) {
     console.error("Blocked: IPC Without valid senderFrame");
@@ -29,22 +45,6 @@ function validateSender(event: IpcMainInvokeEvent) {
   console.error(`Blocked senderFrame: ${senderUrl.href}`);
   throw new Error("UNAUTHORIZED_SENDER");
 }
-
-async function safeResponse<T>(
-  event: IpcMainInvokeEvent,
-  action: () => Promise<T>,
-): Promise<Result<T>> {
-  try {
-    validateSender(event);
-    const data = await action();
-    return { success: true, data };
-  } catch (err: unknown) {
-    return handleIpcError(err);
-  }
-}
-
-const APP_START_TIME = Date.now();
-const ipcTimers = new Map<string, number>();
 
 function checkRateLimit(channel: string, cooldownMs: number): boolean {
   const now = Date.now();

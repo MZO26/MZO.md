@@ -4,7 +4,7 @@ import { renderIcons } from "@/utils/icons";
 import { animateTextChange } from "@/utils/ui";
 import type { Note } from "@shared/schemas/note-schema";
 
-const template = requireElement<HTMLTemplateElement>("#noteItem-template");
+const template = requireElement<HTMLTemplateElement>("#note-item-template");
 
 const baseNoteItem = template.content.firstElementChild as HTMLDivElement;
 
@@ -19,6 +19,7 @@ function createNoteItem(note: Note): HTMLDivElement {
     renderIcons(item);
   }
   item.querySelector(".note-title")!.textContent = note.title;
+  item.setAttribute("data-tippy-content", note.title);
   item.querySelector(".note-date")!.textContent = formatNoteDate(
     note.updated_at,
   );

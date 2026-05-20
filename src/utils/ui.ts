@@ -1,5 +1,5 @@
+import { findElement } from "@/utils/dom";
 import { formatShortcut } from "@/utils/format";
-import { findElement } from "./dom";
 
 function createTooltipContent(
   baseText: string,
@@ -18,7 +18,7 @@ function createTooltipContent(
 }
 
 function useDelayedSpinner(delay = 300) {
-  const spinner = findElement<HTMLDivElement>("#loadingSpinner");
+  const spinner = findElement<HTMLDivElement>(".spinner");
   if (!spinner) return () => {};
   const wasAlreadyOpen = spinner.matches(":popover-open");
   const spinnerTimeout = setTimeout(() => {
