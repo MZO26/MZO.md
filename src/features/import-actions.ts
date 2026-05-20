@@ -13,7 +13,6 @@ async function handleImportFile(): Promise<Result<ImportedContent[]>> {
     showToast(response.message);
     return response;
   }
-  console.log("RAW RESPONSE:", response);
   const filesToProcess = response.data;
   const processedNotes = [];
   const failedFiles = [];

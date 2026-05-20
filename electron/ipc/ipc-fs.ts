@@ -3,7 +3,8 @@ import { writeAtomic } from "@electron/fs/fs-atomic-write";
 import { batchExport } from "@electron/fs/fs-export";
 import { batchPDFExport } from "@electron/fs/fs-export-pdf";
 import { batchImport } from "@electron/fs/fs-import";
-import { loadPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
+import { exportPdfNote } from "@electron/fs/fs-pdf";
+import { loadPDFAssets } from "@electron/handler/pdf-handler";
 import { safeResponse } from "@electron/ipc/ipc-validation";
 import { createHiddenPdfWindow } from "@electron/win";
 import { validation } from "@shared/ipc-helpers";
@@ -12,13 +13,7 @@ import {
   ExportRequestSchema,
   FileNameSchema,
 } from "@shared/schemas/export-schema";
-import {
-  app,
-  dialog,
-  ipcMain,
-  type BrowserWindow,
-  type PrintToPDFOptions,
-} from "electron";
+import { app, dialog, ipcMain, type BrowserWindow } from "electron";
 import path from "path";
 
 function registerFileIpc(win: BrowserWindow) {
@@ -120,22 +115,9 @@ function registerFileIpc(win: BrowserWindow) {
         console.log(
           `[PDF-Export] Created hidden window with ID: ${hiddenWin.id}`,
         );
-        const pdfOptions: PrintToPDFOptions = {
-          pageSize: "A4",
-          printBackground: true,
-          landscape: false,
-        };
         const assets = loadPDFAssets();
-        const htmlString = renderPDFCanvas(data, assets);
         try {
-          console.log("[PDF-Export]: Loading HTML into canvas.");
-          // converts htmlString into bytes using utf8 encoding (Buffer is Node.js's raw byte array). toString(base64) then takes those bytes and encodes them as base64 which only allows A-Z a-z 0-9 + / = chars.
-          const encoded = Buffer.from(htmlString, "utf8").toString("base64");
-          // data:text/html tells chrome parse as html and base64 tells chrome to decode before parsing with the exact html bytes. Base64 is required to load the css correctly because chrome expects URL's to have URL-encoded content.
-          await hiddenWin.loadURL(`data:text/html;base64,${encoded}`);
-          const pdfBuffer = await hiddenWin.webContents.printToPDF(pdfOptions);
-          await writeAtomic(filePath, pdfBuffer);
-          console.log("[PDF-Export]: Successful.");
+          await exportPdfNote({ win: hiddenWin, filePath, html: data, assets });
           return filePath;
         } catch (error) {
           console.error("[PDF-Export]: Error", error);

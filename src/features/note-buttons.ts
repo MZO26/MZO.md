@@ -45,6 +45,9 @@ async function importNoteButton(): Promise<void> {
     showToast(response.message);
     return;
   }
+  noteStore.setState((state) => ({
+    notes: [...state.notes, ...response.data],
+  }));
   addManyNotesToList(response.data);
   handleEditorEmptyState();
 }
