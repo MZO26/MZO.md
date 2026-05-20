@@ -96,7 +96,6 @@ function createWindow() {
   // attach listeners to win after it's assigned to BrowserWindow and not null
   navigationHandler(win);
   win.webContents.openDevTools();
-  win.webContents.session.setSpellCheckerLanguages(["en-US"]);
   win.setMenuBarVisibility(false);
   if (process.env["ELECTRON_RENDERER_URL"]) {
     win.loadURL(process.env["ELECTRON_RENDERER_URL"]);

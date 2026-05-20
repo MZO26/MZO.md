@@ -21,7 +21,7 @@ class FTS5 {
     SELECT id, bm25(notes_fts, 0.0, 10.0, 1.0) as rank FROM notes_fts WHERE notes_fts MATCH @ftsQuery
     ORDER BY rank ASC 
     LIMIT @limit)
-    SELECT n.id, n.title, n.content, n.snippet, n.markdown, n.bookmarked, n.pinned, 
+    SELECT n.id, n.title, n.content, n.snippet, n.bookmarked, n.pinned, 
     n.todos_left, n.plainText, n.created_at, n.updated_at
     FROM matched_notes m
     JOIN notes n ON m.id = n.id

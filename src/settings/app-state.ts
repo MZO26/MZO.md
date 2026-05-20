@@ -1,6 +1,5 @@
 import { getAllSettings } from "@/api/settingsAPI";
 import { updateNoteCount } from "@/components/sidebar/sidebar-actions";
-import { getAppItem } from "@/utils/registry";
 import type { Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
@@ -13,7 +12,6 @@ const DEFAULT_STORE: AppSettings = {
   "code-theme": "balanced",
   highlight: "done",
   "note-item-display": "tags",
-  "note-sidebar-state": false,
   "info-sidebar-state": false,
   "open-window-mode": "centered",
   "close-window-mode": "normal",
@@ -93,16 +91,6 @@ noteStore.subscribe((state) => {
   if (state.notes.length !== previousNotesLength) {
     previousNotesLength = state.notes.length;
     updateNoteCount(state.notes);
-  }
-});
-
-settingsStore.subscribe((settings) => {
-  const editor = getAppItem("editor");
-  const editorDom = editor.view.dom;
-  if (settings["editor-focus"] === "on") {
-    editorDom.classList.add("focus-mode-active");
-  } else {
-    editorDom.classList.remove("focus-mode-active");
   }
 });
 

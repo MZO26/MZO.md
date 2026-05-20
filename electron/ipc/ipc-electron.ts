@@ -56,14 +56,6 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("set:spellcheck", (e, enabled: boolean) => {
-    return safeResponse(e, async () => {
-      if (!checkRateLimit("set:spellcheck", LIMITS.READ_LIGHT))
-        throw new Error("RATE_LIMIT");
-      win.webContents.session.setSpellCheckerEnabled(enabled);
-    });
-  });
-
   ipcMain.handle("save:image", (e, payload: unknown) => {
     return safeResponse(e, async () => {
       if (!checkRateLimit("save:image", LIMITS.WRITE_HEAVY))

@@ -96,6 +96,13 @@ function initEditorSettings(settings: AppSettings) {
   focusSelect.value = settings["editor-focus"];
   focusSelect.addEventListener("change", (e: Event) => {
     const target = e.target as HTMLSelectElement;
+    const editor = getAppItem("editor");
+    const editorDom = editor.view.dom;
+    if (target.value === "on") {
+      editorDom.classList.add("focus-mode-active");
+    } else {
+      editorDom.classList.remove("focus-mode-active");
+    }
     updateSettings({
       "editor-focus": target.value as EditorFocus,
     });

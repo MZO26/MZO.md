@@ -27,10 +27,10 @@ class Transactions {
     this.db = dbConnection;
 
     this.createNoteStmt = this.db.prepare(
-      `INSERT INTO notes (id, title, content, plainText,markdown, snippet, pinned, bookmarked, todos_left, created_at, updated_at) VALUES (@id, @title, @content, @plainText, @markdown, @snippet, @pinned, @bookmarked, @todos_left, @created_at, @updated_at) RETURNING *`,
+      `INSERT INTO notes (id, title, content, plainText, snippet, pinned, bookmarked, todos_left, created_at, updated_at) VALUES (@id, @title, @content, @plainText, @snippet, @pinned, @bookmarked, @todos_left, @created_at, @updated_at) RETURNING *`,
     );
     this.updateNoteStmt = this.db
-      .prepare(`UPDATE notes SET title = @title, content = @content, plainText = @plainText, markdown = @markdown, snippet = @snippet, todos_left = @todos_left, updated_at = @updated_at WHERE id = @id RETURNING *
+      .prepare(`UPDATE notes SET title = @title, content = @content, plainText = @plainText, snippet = @snippet, todos_left = @todos_left, updated_at = @updated_at WHERE id = @id RETURNING *
     `);
     this.selectNoteStmt = this.db.prepare(
       "SELECT id FROM notes WHERE id = @id",

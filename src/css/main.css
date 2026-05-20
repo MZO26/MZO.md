@@ -682,35 +682,33 @@ svg.empty-state-icon {
   stroke-width: 1.5;
 }
 
+.empty-state-add-note-btn {
+  display: inline-flex;
+  background-color: var(--border-color);
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 3px;
+  vertical-align: middle;
+}
+
+.empty-state-plus-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .empty-state-title {
-  font-size: 16px;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-main);
   margin: 0;
 }
 
 .empty-state-description {
-  font-size: 14px;
+  font-size: 0.9rem;
   line-height: 1.5;
   color: var(--text-muted);
-  margin: 0;
-}
-
-.empty-state-description strong {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background-color: var(--bg-button);
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 0 6px;
-  font-weight: 600;
-  font-size: 13px;
-  min-width: 16px;
-  height: 22px;
-  margin: 2px;
-  box-shadow: var(--shadow);
+  margin: 0;
 }
 
 #datetime-display {

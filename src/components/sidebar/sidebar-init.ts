@@ -13,7 +13,7 @@ const toggleSidebar = (appContainer: HTMLDivElement) => {
   setSidebarState(appContainer, "note-sidebar-state", !collapsed);
 };
 
-async function initNotesSidebar(state: boolean) {
+async function initNotesSidebar() {
   const appContainer = getAppItem("appContainer");
   const sidebar = getAppItem("sidebar");
   const sidebarContainer = requireElement<HTMLDivElement>(".sidebar-container");
@@ -24,7 +24,6 @@ async function initNotesSidebar(state: boolean) {
     theme: "app-theme",
     trigger: "mouseenter",
   });
-  setSidebarState(appContainer, "note-sidebar-state", state);
   applySidebarListeners(sidebar, addNoteBtn, importBtn);
   registerAppEvents(document, {
     "app:toggle-sidebar": () => toggleSidebar(appContainer),

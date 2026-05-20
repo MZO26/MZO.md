@@ -99,12 +99,10 @@ async function getImportedContent(
       }
       const json = headlessEditor.getJSON();
       const plainText = headlessEditor.getText();
-      const markdown = headlessEditor.getMarkdown();
       const metadata = getMetadata(json, plainText);
       const payload: CreateNotePayload = {
         content: json,
         plainText: plainText,
-        markdown: markdown,
         ...metadata,
         pinned: false,
         bookmarked: false,

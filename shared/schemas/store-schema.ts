@@ -17,7 +17,6 @@ const StoreSchema = z.object({
     .default("balanced"),
   highlight: z.enum(["done", "info", "idea", "focus"]).default("done"),
   "note-item-display": z.enum(["tags", "snippet", "minimal"]).default("tags"),
-  "note-sidebar-state": z.boolean().default(false),
   "info-sidebar-state": z.boolean().default(false),
   "open-window-mode": z
     .enum(["restore", "centered", "maximized"])

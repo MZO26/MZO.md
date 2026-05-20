@@ -24,15 +24,13 @@ function getContent() {
   const editor = getAppItem("editor");
   const plainText = editor.getText();
   const content = editor.getJSON();
-  const markdown = editor.getMarkdown();
-  return { content, plainText, markdown };
+  return { content, plainText };
 }
 
 async function handleCreateNote() {
   const editorContent = {
     content: { type: "doc" as const, content: [{ type: "paragraph" }] },
     plainText: "",
-    markdown: "",
   };
   const metadata = getMetadata(editorContent.content, editorContent.plainText);
   const payload: CreateNotePayload = {
@@ -137,6 +135,9 @@ function viewNote(note: Note): void {
   editor.commands.focus();
   const newCleanup = setupAutoSave(editor, note.id);
   cleanup.set(editor, newCleanup);
+  requestAnimationFrame(() => {
+    editor.commands.focus();
+  });
 }
 
 export {

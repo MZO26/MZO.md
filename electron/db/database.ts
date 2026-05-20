@@ -101,7 +101,6 @@ class NoteDB {
         pinned INTEGER NOT NULL DEFAULT 0,
         todos_left INTEGER NOT NULL DEFAULT 0,
         snippet TEXT DEFAULT '',
-        markdown TEXT NOT NULL DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );

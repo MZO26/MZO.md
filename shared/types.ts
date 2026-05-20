@@ -1,4 +1,5 @@
 import type { Content } from "@tiptap/core";
+import type { Code } from "lucide";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -63,14 +64,6 @@ type ImportedContent = {
   extension: "md" | "html" | "json" | "txt";
 };
 
-interface BatchExportData {
-  id: string;
-  title: string;
-  markdown?: string;
-  plainText?: string;
-  content?: string;
-}
-
 type ExportFormat = "json" | "txt" | "md" | "html" | "pdf";
 
 type ExportItem = {
@@ -102,7 +95,6 @@ type NoteMenuPayload = {
 export type {
   Action,
   ActionMap,
-  BatchExportData,
   Code,
   ContentType,
   DBBackupResult,

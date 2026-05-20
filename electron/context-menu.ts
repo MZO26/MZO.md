@@ -72,7 +72,7 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
   const noteItemMenu = Menu.buildFromTemplate([
     {
       label: "Copy Note ID",
-      click: () => win.webContents.send("note:trigger-id", `[[${id}]]`),
+      click: () => win.webContents.send("note:trigger-id", id),
     },
     { type: "separator" },
     {
