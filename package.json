@@ -15,6 +15,10 @@
   "build": {
     "appId": "MZO26.md",
     "asar": true,
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*"
+    ],
+    "nodeGypRebuild": true,
     "productName": "MZO.md",
     "directories": {
       "output": "dist"

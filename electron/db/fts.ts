@@ -46,7 +46,7 @@ class FTS5 {
         id UNINDEXED,
         title,
         plainText,
-        tokenize="trigram"
+        tokenize='trigram'
       );`);
     this.db.exec(`
       DROP VIEW IF EXISTS notes_view;
