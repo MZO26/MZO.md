@@ -9,7 +9,8 @@ Built with Electron, TypeScript, Better SQLite3, and TipTap.
 - Local-first note storage with SQLite
 - Fast full-text search with FTS5
 - Markdown-focused editing with TipTap
-- Code blocks, tables, task lists, images, and highlights
+- Export notes to Markdown, Plain Text, HTML, JSON and PDF
+- Import notes from Markdown, Plain Text, HTML and JSON
 - Focus mode and read-only mode
 - Adjustable editor width (Ultrawide support)
 - Light and dark theme support
@@ -149,7 +150,7 @@ TipTap powers the editor with support for:
 - Images
 - Text highlight and inline formatting
 
-## What this project demonstrates
+## What this project tries to demonstrate
 
 - Desktop app architecture with Electron
 - Type-safe development with TypeScript
@@ -158,7 +159,7 @@ TipTap powers the editor with support for:
 - SQLite schema design and search with FTS5
 - Rich editor integration without a frontend framework
 - Native module handling with `electron-rebuild`
-- A clean main / renderer / shared separation
+- Separation between main / renderer / shared
 
 ## Known issues
 
