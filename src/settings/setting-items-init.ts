@@ -15,19 +15,81 @@ import { showToast } from "@/utils/toast";
 import { THEME_MAP } from "@shared/constants";
 import type {
   AppSettings,
-  CloseWindowMode,
   EditorFocus,
   FontFamily,
   FontSize,
   HighlightTheme,
   LineHeight,
-  MinimizeWindowMode,
   NoteItemDisplay,
-  OpenWindowMode,
   Spellcheck,
   Theme,
 } from "@shared/schemas/store-schema";
 import type { DbOptimization, ExportFormat } from "@shared/types";
+
+function initAppearanceSettings(settings: AppSettings) {
+  const themeSelect = findElement<HTMLSelectElement>("#theme");
+  const codeThemeSelect = findElement<HTMLSelectElement>("#code-theme");
+  const highlightSelect = findElement<HTMLSelectElement>("#highlight-theme");
+  const noteItemSelect = findElement<HTMLSelectElement>("#note-item-display");
+  const sidebar = getAppItem("sidebar");
+  if (!codeThemeSelect || !themeSelect || !highlightSelect || !noteItemSelect) {
+    return;
+  }
+  document.documentElement.setAttribute(
+    "data-code-theme",
+    settings["code-theme"],
+  );
+  codeThemeSelect.value = settings["code-theme"];
+  codeThemeSelect.addEventListener("change", () => {
+    const baseTheme = resolveTheme(themeSelect.value as Theme);
+    const codePref = setCodeTheme(baseTheme);
+    updateSettings({ "code-theme": codePref });
+  });
+  document.documentElement.setAttribute("data-theme", settings["theme"]);
+  themeSelect.value = settings["theme"];
+  themeSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e: Event) => {
+      const target = e.target as HTMLSelectElement;
+      themeSelect.value = target.value;
+      const validTheme =
+        target.value in THEME_MAP ? (target.value as Theme) : "system";
+      await applyAppTheme(validTheme, false);
+    }),
+  );
+  document.documentElement.setAttribute(
+    "data-highlight",
+    settings["highlight"],
+  );
+  highlightSelect.value = settings["highlight"];
+  highlightSelect.addEventListener("change", (e: Event) => {
+    const target = e.target as HTMLSelectElement;
+    document.documentElement.setAttribute("data-highlight", target.value);
+    updateSettings({
+      highlight: target.value as HighlightTheme,
+    });
+  });
+  sidebar.setAttribute("data-noteItem", settings["note-item-display"]);
+  noteItemSelect.value = settings["note-item-display"];
+  noteItemSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e: Event) => {
+      const target = e.target as HTMLSelectElement;
+      updateSettings({
+        "note-item-display": target.value as NoteItemDisplay,
+      });
+      sidebar.setAttribute("data-noteItem", target.value);
+      await reloadNoteList();
+    }),
+  );
+
+  setSettingsItem({
+    codeThemeSelect,
+    themeSelect,
+    highlightSelect,
+    noteItemSelect,
+  });
+}
 
 function initEditorSettings(settings: AppSettings) {
   const editorWrapper = getAppItem("editorWrapper");
@@ -115,131 +177,14 @@ function initEditorSettings(settings: AppSettings) {
   });
 }
 
-function initAppearanceSettings(settings: AppSettings) {
-  const themeSelect = findElement<HTMLSelectElement>("#theme");
-  const codeThemeSelect = findElement<HTMLSelectElement>("#code-theme");
-  const highlightSelect = findElement<HTMLSelectElement>("#highlight-theme");
-  const noteItemSelect = findElement<HTMLSelectElement>("#note-item-display");
-  const sidebar = getAppItem("sidebar");
-  if (!codeThemeSelect || !themeSelect || !highlightSelect || !noteItemSelect) {
-    return;
-  }
-  document.documentElement.setAttribute(
-    "data-code-theme",
-    settings["code-theme"],
-  );
-  codeThemeSelect.value = settings["code-theme"];
-  codeThemeSelect.addEventListener("change", () => {
-    const baseTheme = resolveTheme(themeSelect.value as Theme);
-    const codePref = setCodeTheme(baseTheme);
-    updateSettings({ "code-theme": codePref });
-  });
-  document.documentElement.setAttribute("data-theme", settings["theme"]);
-  themeSelect.value = settings["theme"];
-  themeSelect.addEventListener(
-    "change",
-    createAsyncHandler(async (e: Event) => {
-      const target = e.target as HTMLSelectElement;
-      themeSelect.value = target.value;
-      const validTheme =
-        target.value in THEME_MAP ? (target.value as Theme) : "system";
-      await applyAppTheme(validTheme, false);
-    }),
-  );
-  document.documentElement.setAttribute(
-    "data-highlight",
-    settings["highlight"],
-  );
-  highlightSelect.value = settings["highlight"];
-  highlightSelect.addEventListener("change", (e: Event) => {
-    const target = e.target as HTMLSelectElement;
-    document.documentElement.setAttribute("data-highlight", target.value);
-    updateSettings({
-      highlight: target.value as HighlightTheme,
-    });
-  });
-  sidebar.setAttribute("data-noteItem", settings["note-item-display"]);
-  noteItemSelect.value = settings["note-item-display"];
-  noteItemSelect.addEventListener(
-    "change",
-    createAsyncHandler(async (e: Event) => {
-      const target = e.target as HTMLSelectElement;
-      updateSettings({
-        "note-item-display": target.value as NoteItemDisplay,
-      });
-      sidebar.setAttribute("data-noteItem", target.value);
-      await reloadNoteList();
-    }),
-  );
-
-  setSettingsItem({
-    codeThemeSelect,
-    themeSelect,
-    highlightSelect,
-    noteItemSelect,
-  });
-}
-
-function initWindowSettings(settings: AppSettings) {
-  const openWindowSelect = findElement<HTMLSelectElement>("#open-window-mode");
-  const closeWindowSelect =
-    findElement<HTMLSelectElement>("#close-window-mode");
-  const minimizeWindowSelect = findElement<HTMLSelectElement>(
-    "#minimize-window-mode",
-  );
-  const spellcheckSelect = findElement<HTMLSelectElement>("#spellcheck");
-  if (
-    !openWindowSelect ||
-    !closeWindowSelect ||
-    !minimizeWindowSelect ||
-    !spellcheckSelect
-  )
-    return;
-  openWindowSelect.value = settings["open-window-mode"];
-  openWindowSelect.addEventListener("change", (e: Event) => {
-    const target = e.target as HTMLSelectElement;
-    updateSettings({
-      "open-window-mode": target.value as OpenWindowMode,
-    });
-  });
-  closeWindowSelect.value = settings["close-window-mode"];
-  closeWindowSelect.addEventListener("change", (e: Event) => {
-    const target = e.target as HTMLSelectElement;
-    updateSettings({
-      "close-window-mode": target.value as CloseWindowMode,
-    });
-  });
-  minimizeWindowSelect.value = settings["minimize-window-mode"];
-  minimizeWindowSelect.addEventListener("change", (e: Event) => {
-    const target = e.target as HTMLSelectElement;
-    updateSettings({
-      "minimize-window-mode": target.value as MinimizeWindowMode,
-    });
-  });
-  spellcheckSelect.value = settings["spellcheck"] ? "true" : "false";
-  spellcheckSelect.addEventListener("change", (e: Event) => {
-    const editor = getAppItem("editor");
-    const target = e.target as HTMLSelectElement;
-    const enabled = target.value === "true";
-    editor.view.dom.spellcheck = enabled;
-    editor.commands.focus();
-    updateSettings({ spellcheck: enabled as Spellcheck });
-  });
-
-  setSettingsItem({
-    openWindowSelect,
-    closeWindowSelect,
-    minimizeWindowSelect,
-    spellcheckSelect,
-  });
-}
-
-function initStorageSettings() {
+function initAppSettings(settings: AppSettings) {
   const batchExportSelect = findElement<HTMLSelectElement>("#file-backup");
   const dbOptimizeSelect = findElement<HTMLSelectElement>("#db-optimization");
-  if (!batchExportSelect || !dbOptimizeSelect) return;
+  const spellcheckSelect = findElement<HTMLSelectElement>("#spellcheck");
+  if (!batchExportSelect || !dbOptimizeSelect || !spellcheckSelect) return;
+
   batchExportSelect.value = "";
-  (batchExportSelect.addEventListener(
+  batchExportSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement;
@@ -257,8 +202,9 @@ function initStorageSettings() {
       }
       showToast(`Successfully exported all files to ${selectedExtension}`);
     }),
-  ),
-    (dbOptimizeSelect.value = ""));
+  );
+
+  dbOptimizeSelect.value = "";
   dbOptimizeSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
@@ -277,7 +223,19 @@ function initStorageSettings() {
       showToast(`Optimized db in ${result.data} ms.`);
     }),
   );
+
+  spellcheckSelect.value = settings["spellcheck"] ? "true" : "false";
+  spellcheckSelect.addEventListener("change", (e: Event) => {
+    const editor = getAppItem("editor");
+    const target = e.target as HTMLSelectElement;
+    const enabled = target.value === "true";
+    editor.view.dom.spellcheck = enabled;
+    editor.commands.focus();
+    updateSettings({ spellcheck: enabled as Spellcheck });
+  });
+
   setSettingsItem({
+    spellcheckSelect,
     batchExportSelect,
     dbOptimizeSelect,
   });
@@ -286,8 +244,7 @@ function initStorageSettings() {
 function setSelectListeners(settings: AppSettings) {
   initAppearanceSettings(settings);
   initEditorSettings(settings);
-  initWindowSettings(settings);
-  initStorageSettings();
+  initAppSettings(settings);
 }
 
 export { setSelectListeners };

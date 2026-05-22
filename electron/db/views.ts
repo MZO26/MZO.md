@@ -1,6 +1,6 @@
 import type { NoteRow } from "@shared/schemas/note-schema";
+import type BetterSqlite from "better-sqlite3";
 import type { Database as DatabaseType } from "better-sqlite3";
-import BetterSqlite from "better-sqlite3";
 
 class Views {
   private db: DatabaseType;
@@ -36,19 +36,19 @@ class Views {
       `);
   }
 
-  getBookmarkedNotes(): NoteRow[] {
+  public getBookmarkedNotes(): NoteRow[] {
     return this.getBookmarkedNotesStmt.all() as NoteRow[];
   }
 
-  getPinnedNotes(): NoteRow[] {
+  public getPinnedNotes(): NoteRow[] {
     return this.getPinnedNotesStmt.all() as NoteRow[];
   }
 
-  getNotesWithActionItems(): NoteRow[] {
+  public getNotesWithActionItems(): NoteRow[] {
     return this.getNotesWithActionItemsStmt.all() as NoteRow[];
   }
 
-  getUntaggedNotes(): NoteRow[] {
+  public getUntaggedNotes(): NoteRow[] {
     return this.getUntaggedNotesStmt.all() as NoteRow[];
   }
 }

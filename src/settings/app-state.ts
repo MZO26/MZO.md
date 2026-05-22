@@ -11,12 +11,9 @@ const DEFAULT_STORE: AppSettings = {
   "editor-focus": "off",
   "code-theme": "balanced",
   highlight: "done",
-  "note-item-display": "tags",
-  "open-window-mode": "centered",
-  "close-window-mode": "normal",
-  "minimize-window-mode": "taskbar",
-  "window-bounds": { width: 1100, height: 600 },
   spellcheck: false,
+  "note-item-display": "tags",
+  "window-bounds": { width: 1100, height: 600 },
 };
 
 interface AppState {

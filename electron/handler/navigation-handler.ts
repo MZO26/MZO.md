@@ -1,4 +1,5 @@
 import { app, net, protocol, shell, type BrowserWindow } from "electron";
+import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 
@@ -18,22 +19,43 @@ function registerCustomProtocol() {
 
 async function setupLocalImageProtocol() {
   const imagesDir = path.join(app.getPath("userData"), "editor-images");
+  let realImagesDir = "";
+  try {
+    fs.mkdirSync(imagesDir, { recursive: true });
+    realImagesDir = fs.realpathSync(imagesDir);
+  } catch (setupError) {
+    console.warn(
+      "Failed to initialize image directory. Images will not load.",
+      setupError,
+    );
+    // Register a fallback protocol handler that returns a 500 error for all requests
+    protocol.handle("appimg", () => {
+      return new Response("Image system disabled due to startup error", {
+        status: 500,
+      });
+    });
+    return;
+  }
+  // Standard protocol handler for appimg: URLs
   protocol.handle("appimg", async (request) => {
-    // remove the appimg:// prefix
-    let pathPart = request.url.replace(/^appimg:\/+/i, "");
-    // remove trailing slashes
-    pathPart = pathPart.replace(/\/+$/, "");
-    const fileName = decodeURIComponent(pathPart);
-    const filePath = path.normalize(path.join(imagesDir, fileName));
-    if (!filePath.startsWith(imagesDir)) {
-      return new Response("Forbidden", { status: 403 });
-    }
     try {
-      const fileUrl = pathToFileURL(filePath).toString();
+      let pathPart = request.url.replace(/^appimg:\/+/i, "");
+      pathPart = pathPart.replace(/\/+$/, "");
+      const fileName = decodeURIComponent(pathPart);
+      const intendedPath = path.resolve(realImagesDir, fileName);
+      const realFilePath = await fs.promises.realpath(intendedPath);
+      const relative = path.relative(realImagesDir, realFilePath);
+      const isOutside = relative.startsWith("..") || path.isAbsolute(relative);
+      if (isOutside) {
+        return new Response("Forbidden", { status: 403 });
+      }
+      const fileUrl = pathToFileURL(realFilePath).toString();
       const result = await net.fetch(fileUrl);
-      if (!result.ok) throw new Error("File not found");
+      if (!result.ok) {
+        return new Response("Image not fetchable", { status: 404 });
+      }
       return result;
-    } catch {
+    } catch (error) {
       return new Response("Image not found", {
         status: 404,
         headers: { "Content-Type": "text/plain" },

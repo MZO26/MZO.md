@@ -59,7 +59,7 @@ function buildSelects() {
       { value: "garamond", label: "Garamond" },
       { value: "tahoma", label: "Tahoma" },
     ],
-    "typography",
+    "editor",
   );
   selectBuilder(
     "font-size",
@@ -71,7 +71,7 @@ function buildSelects() {
       { value: "20", label: "20" },
       { value: "24", label: "24" },
     ],
-    "typography",
+    "editor",
   );
   selectBuilder(
     "line-height",
@@ -83,7 +83,7 @@ function buildSelects() {
       { value: "1.6", label: "1.6" },
       { value: "1.7", label: "1.7" },
     ],
-    "typography",
+    "editor",
   );
   selectBuilder(
     "editor-focus",
@@ -91,33 +91,7 @@ function buildSelects() {
       { value: "on", label: "Activate Editor Focus" },
       { value: "off", label: "Deactivate Editor Focus" },
     ],
-    "typography",
-  );
-  selectBuilder(
-    "open-window-mode",
-    [
-      { value: "restore", label: "Restore" },
-      { value: "centered", label: "Centered" },
-      { value: "maximized", label: "Maximized" },
-    ],
-    "app",
-  );
-  selectBuilder(
-    "close-window-mode",
-    [
-      { value: "normal", label: "Normal" },
-      { value: "tray", label: "Tray" },
-      { value: "minimize", label: "Minimize" },
-    ],
-    "app",
-  );
-  selectBuilder(
-    "minimize-window-mode",
-    [
-      { value: "taskbar", label: "Minimize to taskbar" },
-      { value: "tray", label: "Minimize to tray" },
-    ],
-    "app",
+    "editor",
   );
   (selectBuilder(
     "spellcheck",
@@ -136,7 +110,7 @@ function buildSelects() {
         { value: "html", label: "HTML" },
         { value: "pdf", label: "PDF" },
       ],
-      "storage",
+      "app",
       "Backup Format",
     ));
   selectBuilder(
@@ -146,7 +120,7 @@ function buildSelects() {
       { value: "vacuum-db", label: "Free up disk space" },
       { value: "backup-db", label: "Backup database" },
     ],
-    "storage",
+    "app",
     "Database Settings",
   );
 }

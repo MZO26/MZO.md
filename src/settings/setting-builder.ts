@@ -7,7 +7,7 @@ type SelectOption = { value: string; label: string };
 function selectBuilder(
   id: string,
   options: SelectOption[],
-  category: "appearance" | "typography" | "app" | "storage",
+  category: "appearance" | "editor" | "app",
   placeholderText?: string,
 ) {
   const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
@@ -53,9 +53,8 @@ function createSettingsMenu(): HTMLDivElement {
   container.className = "settings-buttons";
   container.append(
     createSettingsButton("appearance", "palette"),
-    createSettingsButton("typography", "pen-line"),
+    createSettingsButton("editor", "pen-line"),
     createSettingsButton("app", "app-window"),
-    createSettingsButton("storage", "database-backup"),
   );
 
   return container;

@@ -34,25 +34,4 @@ function useDelayedSpinner(delay = 300) {
   };
 }
 
-function animateTextChange(
-  el: HTMLElement | null,
-  text: string,
-  duration = 200,
-) {
-  if (!el || el.textContent === text) return;
-  const half = duration / 2;
-  el.animate([{ opacity: 1 }, { opacity: 0 }], {
-    duration: half,
-    easing: "linear",
-    fill: "forwards",
-  }).finished.then(() => {
-    el.textContent = text;
-    el.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: half,
-      easing: "linear",
-      fill: "forwards",
-    });
-  });
-}
-
-export { animateTextChange, createTooltipContent, useDelayedSpinner };
+export { createTooltipContent, useDelayedSpinner };

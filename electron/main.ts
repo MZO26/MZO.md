@@ -20,7 +20,6 @@ import {
   ipcMain,
   Menu,
   nativeTheme,
-  Tray,
   type BrowserWindowConstructorOptions,
 } from "electron";
 import path from "node:path";
@@ -38,8 +37,6 @@ if (process.platform === "win32") {
 }
 
 export let win: BrowserWindow | null = null;
-let tray: Tray | null = null;
-let isForceQuitting = false;
 let isReadyToClose = false;
 
 registerCustomProtocol();
@@ -53,7 +50,6 @@ function createWindow() {
   const preloadPath = path.join(__dirname, "../preload/preload.js");
   const activeTheme = initTheme(store.get("theme"));
   const windowTheme = getTitleBarOverlay(activeTheme);
-  const openMode = store.get("open-window-mode");
   const bounds = store.get("window-bounds");
   const windowConfig: BrowserWindowConstructorOptions = {
     show: false,
@@ -82,16 +78,11 @@ function createWindow() {
       spellcheck: true,
     },
   };
-
-  if (openMode === "centered") {
+  if (bounds.x !== undefined && bounds.y !== undefined) {
+    windowConfig.x = bounds.x;
+    windowConfig.y = bounds.y;
+  } else {
     windowConfig.center = true;
-  } else if (openMode === "restore") {
-    if (bounds.x !== undefined && bounds.y !== undefined) {
-      windowConfig.x = bounds.x;
-      windowConfig.y = bounds.y;
-    } else {
-      windowConfig.center = true;
-    }
   }
   win = new BrowserWindow(windowConfig);
   // attach listeners to win after it's assigned to BrowserWindow and not null
@@ -104,18 +95,6 @@ function createWindow() {
   }
 
   win?.on("close", (e) => {
-    const closeMode = store.get("close-window-mode");
-    if (!isForceQuitting) {
-      if (closeMode === "tray") {
-        e.preventDefault();
-        win?.hide();
-        return;
-      } else if (closeMode === "minimize") {
-        e.preventDefault();
-        win?.minimize();
-        return;
-      }
-    }
     if (!isReadyToClose) {
       e.preventDefault();
       saveWindowBounds();
@@ -123,17 +102,7 @@ function createWindow() {
       return;
     }
   });
-  win.on("minimize", () => {
-    const minimizeMode = store.get("minimize-mode");
-    if (minimizeMode === "tray") {
-      win?.setSkipTaskbar(true);
-      win?.hide();
-    }
-  });
   ipcMain.once("app:start-ready", () => {
-    if (openMode === "maximized") {
-      win?.maximize();
-    }
     win?.show();
   });
 }
@@ -151,33 +120,6 @@ app.whenReady().then(async () => {
   setPermissions();
   registerIpc(win as BrowserWindow);
   setUpEditorMenu();
-  const trayIcon = await app.getFileIcon(process.execPath);
-  tray = new Tray(trayIcon);
-  const contextMenu = Menu.buildFromTemplate([
-    { label: "open", click: () => win?.show() },
-    {
-      label: "quit",
-      click: () => {
-        isForceQuitting = true;
-        app.quit();
-      },
-    },
-  ]);
-  tray.setContextMenu(contextMenu);
-  tray.on("click", () => {
-    if (win) {
-      if (win.isVisible() && !win.isMinimized()) {
-        win.focus();
-      } else {
-        win.setSkipTaskbar(false);
-        win.show();
-        if (win.isMinimized()) {
-          win.restore();
-        }
-        win.focus();
-      }
-    }
-  });
 });
 
 // global app events / lifecycle events
@@ -189,10 +131,6 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
-});
-
-app.on("before-quit", () => {
-  isForceQuitting = true;
 });
 
 app.on("window-all-closed", () => {

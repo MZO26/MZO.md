@@ -4,10 +4,8 @@ import { createNoteItem } from "@/components/sidebar/sidebar-items";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { findElement, setActiveItem } from "@/utils/dom";
-import { formatNoteDate } from "@/utils/format";
 import { getAppItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
-import { animateTextChange } from "@/utils/ui";
 import type { Note } from "@shared/schemas/note-schema";
 
 function updateNoteCount(notes: Note[]) {
@@ -29,7 +27,7 @@ function compareNotes(a: Note, b: Note): number {
   const priorityDiff = getNotePriority(a) - getNotePriority(b); // example: pinned note a (1) - regular note b(3) = -2, which means a comes before b
   if (priorityDiff !== 0) return priorityDiff;
   // if priorities are equal, they get sorted by updated_at
-  return b.updated_at > a.updated_at ? 1 : -1;
+  return String(b.updated_at).localeCompare(String(a.updated_at));
 }
 
 function addOneNoteToList(note: Note) {
@@ -107,27 +105,12 @@ async function updateNoteInList(note: Note): Promise<void> {
     console.warn("Note Element not found.");
     return;
   }
-  const titleContainer =
-    noteElement.querySelector<HTMLDivElement>(".note-title");
-  const snippetContainer =
-    noteElement.querySelector<HTMLDivElement>(".note-content");
-  const dateContainer = noteElement.querySelector<HTMLDivElement>(".note-date");
-  const tagContainer = noteElement.querySelector<HTMLDivElement>(".note-tags");
-  if (titleContainer) animateTextChange(titleContainer, note.title);
-  if (snippetContainer) animateTextChange(snippetContainer, note.snippet);
-  if (tagContainer) {
-    if (note.tags && note.tags.length > 0) {
-      tagContainer.innerHTML = "";
-      for (const tag of note.tags) {
-        const span = document.createElement("span");
-        span.classList.add("tag");
-        span.textContent = `#${tag}`;
-        tagContainer.append(span);
-      }
-    }
+  const wasActive = noteElement.classList.contains("is-active");
+  const newElement = createNoteItem(note);
+  if (wasActive) {
+    setActiveItem(newElement, getAppItem("sidebar"));
   }
-  if (dateContainer)
-    animateTextChange(dateContainer, formatNoteDate(note.updated_at));
+  noteElement.replaceWith(newElement);
 }
 
 export {

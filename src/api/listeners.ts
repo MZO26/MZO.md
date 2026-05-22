@@ -7,10 +7,10 @@ import {
   pin,
 } from "@/api/noteAPI";
 import { editor } from "@/components/editor/editor-init";
-import { updateStats } from "@/components/sidebar/info-sidebar-actions";
+import { debouncedUpdateStats } from "@/components/sidebar/info-sidebar-actions";
 import {
   addOneNoteToList,
-  reloadNoteList,
+  updateNoteInList,
 } from "@/components/sidebar/sidebar-actions";
 import {
   cleanup,
@@ -20,7 +20,7 @@ import {
   viewNote,
 } from "@/features/note-actions";
 import { stopAutoSave } from "@/features/note-auto-save";
-import { settingsStore, stateStore } from "@/settings/app-state";
+import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
 import { applyAppTheme } from "@/settings/theme-actions";
 import { findElement, setActiveItem } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
@@ -34,8 +34,6 @@ import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import { delegate } from "tippy.js";
 
 function initListeners() {
-  let lastAppliedTheme: string | null = null;
-
   window.storeAPI.onSettingsChanged((settings) => {
     settingsStore.setState(settings);
   });
@@ -239,7 +237,7 @@ function initListeners() {
         if (noteBItem) cleanupDeletedNoteUI(validatedId, noteBItem);
         stateStore.setState({ activeId: result.data.id });
         viewNote(result.data);
-        await updateStats(result.data);
+        debouncedUpdateStats(result.data);
         const noteItem = findElement<HTMLDivElement>(
           `.note-item[data-id="${result.data.id}"]`,
         );
@@ -268,7 +266,13 @@ function initListeners() {
     response.data === true
       ? showToast("Pinned note.")
       : showToast("Unpinned note.");
-    await reloadNoteList();
+    const existingNote = noteStore.get("notes").find((n) => n.id === id);
+    if (!existingNote) return;
+    const updatedNote = { ...existingNote, pinned: response.data };
+    noteStore.setState((state) => ({
+      notes: state.notes.map((n) => (n.id === id ? updatedNote : n)),
+    }));
+    await updateNoteInList(updatedNote);
   });
 
   window.noteAPI.onTriggerBookmark(async (id: string) => {
@@ -280,7 +284,13 @@ function initListeners() {
     response.data === true
       ? showToast("Bookmarked note.")
       : showToast("Removed bookmark.");
-    await reloadNoteList();
+    const existingNote = noteStore.get("notes").find((n) => n.id === id);
+    if (!existingNote) return;
+    const updatedNote = { ...existingNote, bookmarked: response.data };
+    noteStore.setState((state) => ({
+      notes: state.notes.map((n) => (n.id === id ? updatedNote : n)),
+    }));
+    await updateNoteInList(updatedNote);
   });
 
   window.noteAPI.onTriggerDuplicate(async (id: string) => {
@@ -319,8 +329,6 @@ function initListeners() {
   });
 
   window.electronAPI.onThemeChanged(async (newTheme) => {
-    if (lastAppliedTheme === newTheme) return;
-    lastAppliedTheme = newTheme;
     await applyAppTheme(newTheme, true);
   });
 

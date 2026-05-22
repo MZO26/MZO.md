@@ -1,7 +1,7 @@
 import { createNote, deleteNote, getNoteById, updateNote } from "@/api/noteAPI";
 import { editor } from "@/components/editor/editor-init";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
-import { updateStats } from "@/components/sidebar/info-sidebar-actions";
+import { debouncedUpdateStats } from "@/components/sidebar/info-sidebar-actions";
 import { updateNoteInList } from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
 import { setupAutoSave, stopAutoSave } from "@/features/note-auto-save";
@@ -61,6 +61,7 @@ function cleanupDeletedNoteUI(id: string, noteElement?: HTMLDivElement) {
 
 async function handleDeleteNote(id: string, noteElement: HTMLDivElement) {
   const editor = getAppItem("editor");
+  debouncedUpdateStats.cancel();
   stopAutoSave(editor, "cancel");
   pendingDeletions.add(id);
   const response = await deleteNote(id);
@@ -92,7 +93,7 @@ async function handleSaveNote(
     showToast(response.message);
     return;
   }
-  await updateStats(response.data);
+  debouncedUpdateStats(response.data);
   updateNoteInList(response.data);
 }
 
@@ -106,7 +107,6 @@ async function handleSelectNote(noteItem: HTMLDivElement) {
   }
   stateStore.setState({ activeId: noteID });
   viewNote(response.data);
-  await updateStats(response.data);
   setActiveItem(noteItem, getAppItem("sidebar"));
 }
 
@@ -126,14 +126,16 @@ function resetEditorHistory(editor: Editor): void {
 
 function viewNote(note: Note): void {
   const editor = getAppItem("editor");
+  debouncedUpdateStats.flush();
   stopAutoSave(editor, "flush");
   handleEditorEmptyState();
   editor.commands.setContent(note.content, {
     emitUpdate: false,
   });
   resetEditorHistory(editor);
-  editor.commands.focus();
   const newCleanup = setupAutoSave(editor, note.id);
+  debouncedUpdateStats(note);
+  debouncedUpdateStats.flush();
   cleanup.set(editor, newCleanup);
   requestAnimationFrame(() => {
     editor.commands.focus();

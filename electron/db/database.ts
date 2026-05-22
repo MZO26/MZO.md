@@ -4,24 +4,27 @@ import { Views } from "@electron/db/views";
 import { validation } from "@shared/ipc-helpers";
 import {
   CreateTransactionSchema,
-  LinkRowsSchema,
   NoteFromDB,
-  TagRowsSchema,
+  NoteRowSchema,
   ToggleBookmarkSchema,
   TogglePinSchema,
   UpdateTransactionSchema,
   type CreateNotePayload,
   type Link,
+  type LinkRow,
   type Note,
   type NoteRow,
   type Tag,
   type TagName,
+  type TagRow,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { DBBackupResult } from "@shared/types";
-import BetterSqlite from "better-sqlite3";
+import type BetterSqlite from "better-sqlite3";
 import { app } from "electron";
+import { createRequire } from "module";
 import path from "path";
+const require = createRequire(import.meta.url);
 
 class NoteDB {
   private db: BetterSqlite.Database;
@@ -33,23 +36,42 @@ class NoteDB {
   private getManyNotesByIdStmt: BetterSqlite.Statement;
   private getAllTagsStmt: BetterSqlite.Statement;
   private getAllLinksStmt: BetterSqlite.Statement;
-  public getTagsByIdStmt: BetterSqlite.Statement;
-  public getLinksByIdStmt: BetterSqlite.Statement;
+  private getTagsByIdStmt: BetterSqlite.Statement;
+  private getLinksByIdStmt: BetterSqlite.Statement;
   private toggleBookmarkStmt: BetterSqlite.Statement;
   private togglePinStmt: BetterSqlite.Statement;
   private searchByTagStmt: BetterSqlite.Statement;
   constructor() {
     const dbPath = path.join(app.getPath("userData"), "notes.db");
-    this.db = new BetterSqlite(dbPath);
-    console.log(`Database initialized at: ${dbPath}`);
+    try {
+      const BetterSqlite = require("better-sqlite3");
+      this.db = new BetterSqlite(dbPath);
+      console.log(`Database initialized at: ${dbPath}`);
+    } catch (error) {
+      console.error("Failed to initialize database:", error);
+
+      const msg = error instanceof Error ? error.message : String(error);
+
+      if (
+        msg.includes("Cannot find module") ||
+        msg.includes("compiled against a different Node.js") ||
+        msg.includes("invalid ELF header") ||
+        msg.includes("dlopen")
+      ) {
+        throw new Error(
+          "better-sqlite3 native module failed to load. " +
+            "Try: npm run rebuild && npm run pack:" +
+            process.platform,
+        );
+      }
+      throw error;
+    }
     this.db.pragma("journal_mode = WAL");
     this.db.pragma("foreign_keys = ON");
     this.createTables();
     this.search = new FTS5(this.db);
     this.views = new Views(this.db);
     this.transactions = new Transactions(this.db);
-    this.search.setupFullTextSearch();
-    this.search.populateInitialFTSIndex();
     // predefined statements to prevent parsing them for every transaction
     this.getAllNotesStmt = this.db.prepare(
       "SELECT * FROM notes ORDER BY created_at DESC",
@@ -126,7 +148,7 @@ class NoteDB {
       `);
   }
 
-  create(payload: CreateNotePayload): Note {
+  public create(payload: CreateNotePayload): Note {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
     let { tags, links, content, ...rest } = payload;
@@ -146,7 +168,7 @@ class NoteDB {
     return this.transactions.safeCreate(dbContent);
   }
 
-  createMany(payloads: CreateNotePayload[]): Note[] {
+  public createMany(payloads: CreateNotePayload[]): Note[] {
     const now = new Date().toISOString();
     const dbContents = [];
     for (const payload of payloads) {
@@ -170,7 +192,7 @@ class NoteDB {
     return this.transactions.safeCreateMany(dbContents);
   }
 
-  update(payload: UpdateNotePayload): Note {
+  public update(payload: UpdateNotePayload): Note {
     let { tags, links, content, ...rest } = payload;
     const stringifiedContent = JSON.stringify(content);
     const now = new Date().toISOString();
@@ -187,24 +209,22 @@ class NoteDB {
     return this.transactions.safeUpdate(dbContent);
   }
 
-  delete(id: string): void {
+  public delete(id: string): void {
     const result = this.transactions.safeDelete(id);
     if (!result) throw new Error("NOT_FOUND");
   }
 
-  getAll(): Note[] {
+  public getAll(): Note[] {
     const rows = this.getAllNotesStmt.all() as NoteRow[];
     if (!rows || rows.length === 0) return [];
-    const tagResult = this.getAllTagsStmt.all();
-    const allTags = TagRowsSchema.parse(tagResult);
+    const allTags = this.getAllTagsStmt.all() as TagRow[];
     const tagMap = new Map<string, string[]>();
     for (const { note_id, tag_name } of allTags) {
       const existingTags = tagMap.get(note_id) ?? [];
       existingTags.push(tag_name);
       tagMap.set(note_id, existingTags);
     }
-    const linkResult = this.getAllLinksStmt.all();
-    const allLinks = LinkRowsSchema.parse(linkResult);
+    const allLinks = this.getAllLinksStmt.all() as LinkRow[];
     const linkMap = new Map<string, Link[]>();
     for (const { source_id, target_id } of allLinks) {
       const sourceLinks = linkMap.get(source_id) ?? [];
@@ -225,7 +245,7 @@ class NoteDB {
     });
   }
 
-  getById(id: string): Note {
+  public getById(id: string): Note {
     const dbRow = this.getNoteByIdStmt.get({ id }) as NoteRow;
     if (!dbRow) {
       throw new Error("NOT_FOUND");
@@ -237,7 +257,7 @@ class NoteDB {
     });
   }
 
-  getManyById(ids: string[]): Note[] {
+  public getManyById(ids: string[]): Note[] {
     if (ids.length === 0) return [];
     const params = { idsList: JSON.stringify(ids) };
     const rows = this.getManyNotesByIdStmt.all(params) as NoteRow[];
@@ -250,7 +270,7 @@ class NoteDB {
     });
   }
 
-  toggleBookmark(id: string): boolean {
+  public toggleBookmark(id: string): boolean {
     const now = new Date().toISOString();
     const rawResult = this.toggleBookmarkStmt.get({ updated_at: now, id });
     if (!rawResult) {
@@ -259,7 +279,7 @@ class NoteDB {
     return validation(ToggleBookmarkSchema, rawResult).bookmarked;
   }
 
-  togglePin(id: string): boolean {
+  public togglePin(id: string): boolean {
     const now = new Date().toISOString();
     const rawResult = this.togglePinStmt.get({ updated_at: now, id });
     if (!rawResult) {
@@ -268,18 +288,18 @@ class NoteDB {
     return validation(TogglePinSchema, rawResult).pinned;
   }
 
-  getTagsById(id: string): Tag[] {
+  public getTagsById(id: string): Tag[] {
     const rawResult = this.getTagsByIdStmt.all({ id }) as TagName[];
     const tagArr = rawResult.map((row) => row.tag_name);
     return tagArr;
   }
 
-  getLinksById(id: string): Link[] {
+  public getLinksById(id: string): Link[] {
     const rawResult = this.getLinksByIdStmt.all({ id }) as Link[];
     return rawResult;
   }
 
-  searchByTag(tagName: string): Note[] {
+  public searchByTag(tagName: string): Note[] {
     const result = this.searchByTagStmt.all({ tag_name: tagName }) as NoteRow[];
     return result.map((note) => {
       return validation(NoteFromDB, {
@@ -290,7 +310,7 @@ class NoteDB {
     });
   }
 
-  getPinnedNotes(): Note[] {
+  public getPinnedNotes(): Note[] {
     const rows = this.views.getPinnedNotes();
     return rows.map((note) => {
       return validation(NoteFromDB, {
@@ -301,7 +321,7 @@ class NoteDB {
     });
   }
 
-  getBookMarkedNotes(): Note[] {
+  public getBookMarkedNotes(): Note[] {
     const rows = this.views.getBookmarkedNotes();
     return rows.map((note) => {
       return validation(NoteFromDB, {
@@ -312,7 +332,7 @@ class NoteDB {
     });
   }
 
-  getNotesWithActionItems(): Note[] {
+  public getNotesWithActionItems(): Note[] {
     const rows = this.views.getNotesWithActionItems();
     return rows.map((note) => {
       return validation(NoteFromDB, {
@@ -323,13 +343,25 @@ class NoteDB {
     });
   }
 
-  getUntaggedNotes(): Note[] {
+  public getUntaggedNotes(): Note[] {
     const rows = this.views.getUntaggedNotes();
     return rows.map((note) => {
       return validation(NoteFromDB, {
         ...note,
         tags: this.getTagsById(note.id) ?? [],
         links: this.getLinksById(note.id) ?? [],
+      });
+    });
+  }
+
+  public searchNotes(searchTerm: string, limit?: number): Note[] {
+    const result = this.search.query(searchTerm, limit) as NoteRow[];
+    return result.map((note) => {
+      const validatedRow = validation(NoteRowSchema, note);
+      return validation(NoteFromDB, {
+        ...validatedRow,
+        tags: this.getTagsById(validatedRow.id),
+        links: this.getLinksById(validatedRow.id),
       });
     });
   }

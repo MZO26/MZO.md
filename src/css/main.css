@@ -531,11 +531,9 @@ label {
 
 .settings-content[data-activetab="appearance"]
   .settings-row[data-category="appearance"],
-.settings-content[data-activetab="typography"]
-  .settings-row[data-category="typography"],
-.settings-content[data-activetab="app"] .settings-row[data-category="app"],
-.settings-content[data-activetab="storage"]
-  .settings-row[data-category="storage"] {
+.settings-content[data-activetab="editor"]
+  .settings-row[data-category="editor"],
+.settings-content[data-activetab="app"] .settings-row[data-category="app"] {
   display: flex;
   animation: fadeIn 0.2s ease-out;
 }

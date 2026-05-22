@@ -1,9 +1,9 @@
 import { getManyById } from "@/api/noteAPI";
+import { debounce } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
 import { formatNoteDate } from "@/utils/format";
 import { getAppItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
-import { animateTextChange } from "@/utils/ui";
 import { getTodoStats } from "@shared/generators/generators";
 import type { Note } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
@@ -73,17 +73,16 @@ async function updateStats(note: Note) {
   const wordCount = editor.storage.characterCount.words();
 
   if (!infoSidebar || !wordCountEl || !charCountEl || !readingTimeEl) return;
-  animateTextChange(charCountEl, charCount.toString());
-  animateTextChange(
-    wordCountEl,
-    wordCount === 1 ? "1 word" : `${wordCount} words`,
-  );
-  animateTextChange(readingTimeEl, estimateReadingTime(wordCount));
+  charCountEl.textContent = charCount.toString();
+  wordCountEl.textContent = wordCount === 1 ? "1 word" : `${wordCount} words`;
+  readingTimeEl.textContent = estimateReadingTime(wordCount);
   calculateToDos(note.content);
   updateNoteTags(note.tags);
   await updateNoteLinks(note.links);
   updateInfoHeader(note.created_at, note.title);
 }
+
+const debouncedUpdateStats = debounce(updateStats, 300);
 
 function estimateReadingTime(wordCount: number, wpm = 238): string {
   const s = Math.round((wordCount / wpm) * 60);
@@ -110,4 +109,4 @@ function calculateToDos(content: JSONContent) {
   }
 }
 
-export { updateStats };
+export { debouncedUpdateStats };

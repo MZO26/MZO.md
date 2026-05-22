@@ -154,6 +154,8 @@ const NoteRowSchema = z.object({
 });
 
 type NoteRow = z.infer<typeof NoteRowSchema>;
+type TagRow = z.infer<typeof TagRowSchema>;
+type LinkRow = z.infer<typeof LinkRowSchema>;
 type Tag = z.infer<typeof TagSchema>;
 type Link = z.infer<typeof LinkSchema>;
 type TagName = z.infer<typeof TagNameRowSchema>;
@@ -195,11 +197,13 @@ export {
   type CreateNotesPayload,
   type CreateTransaction,
   type Link,
+  type LinkRow,
   type MergeTransaction,
   type Note,
   type NoteRow,
   type Tag,
   type TagName,
+  type TagRow,
   type UpdateNotePayload,
   type UpdateTransaction,
 };

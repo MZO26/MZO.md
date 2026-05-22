@@ -1,7 +1,6 @@
 import { requireElement } from "@/utils/dom";
 import { formatNoteDate } from "@/utils/format";
 import { renderIcons } from "@/utils/icons";
-import { animateTextChange } from "@/utils/ui";
 import type { Note } from "@shared/schemas/note-schema";
 
 const template = requireElement<HTMLTemplateElement>("#note-item-template");
@@ -29,7 +28,7 @@ function createNoteItem(note: Note): HTMLDivElement {
     for (const tag of note.tags) {
       const span = document.createElement("span");
       span.classList.add("tag");
-      animateTextChange(span, `#${tag}`);
+      span.textContent = `#${tag}`;
       tagsContainer.append(span);
     }
   }

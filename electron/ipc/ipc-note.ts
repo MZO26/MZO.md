@@ -117,7 +117,7 @@ function registerNoteIpc(win: BrowserWindow) {
       const validatedData = validation(SearchSchema, { searchTerm, limit });
       const { searchTerm: validSearchTerm, limit: validSearchLimit } =
         validatedData;
-      const result = db.search.searchNotes(validSearchTerm, validSearchLimit);
+      const result = db.searchNotes(validSearchTerm, validSearchLimit);
       return result;
     });
   });

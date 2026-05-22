@@ -9,8 +9,8 @@ import {
   type NoteRow,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
+import type BetterSqlite from "better-sqlite3";
 import type { Database as DatabaseType } from "better-sqlite3";
-import BetterSqlite from "better-sqlite3";
 
 class Transactions {
   private db: DatabaseType;
