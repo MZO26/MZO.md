@@ -4,9 +4,6 @@ import { handleSelectNote } from "@/features/note-actions";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
-import { createTooltipContent } from "@/utils/ui";
-import tippy, { delegate } from "tippy.js";
-import "tippy.js/dist/tippy.css";
 
 const collapseInfoSidebar = (infoSidebar: HTMLDivElement) => {
   const collapsed = infoSidebar.classList.contains("collapsed");
@@ -19,22 +16,6 @@ async function initInfoSidebar() {
   const tagContainer = findElement<HTMLDivElement>(".tag-container");
   const linkContainer = findElement<HTMLDivElement>(".link-container");
   if (!toggleBtn || !infoSidebar || !tagContainer || !linkContainer) return;
-  tippy(toggleBtn, {
-    content: createTooltipContent("Toggle Infobar", "MOD+Alt+O"),
-    placement: "left",
-    theme: "app-theme",
-    trigger: "mouseenter",
-    touch: false,
-    hideOnClick: true,
-  });
-  delegate(infoSidebar, {
-    target: "[data-tippy-content]",
-    placement: "auto",
-    theme: "app-theme",
-    trigger: "mouseenter",
-    touch: false,
-    hideOnClick: true,
-  });
   setSidebarState(infoSidebar, true);
   applyInfoSidebarListeners(
     tagContainer,
@@ -78,7 +59,7 @@ function applyInfoSidebarListeners(
       const link = spanEl.dataset["link"];
       const noteElement = findElement<HTMLDivElement>(`div[data-id="${link}"]`);
       if (!link || !noteElement) return;
-      handleSelectNote(noteElement);
+      await handleSelectNote(noteElement);
     }),
   );
   toggleBtn.addEventListener("click", () => collapseInfoSidebar(infoSidebar));

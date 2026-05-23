@@ -8,11 +8,9 @@ function validation<T extends z.ZodType>(
   if (!validation.success) {
     console.error(
       "Validation failed:",
-      JSON.stringify(z.treeifyError(validation.error), null, 2),
+      JSON.stringify(validation.error, null, 2),
     );
     console.dir(validation.error.issues, { depth: null });
-    console.log(z.prettifyError(validation.error));
-
     throw validation.error;
   }
   return validation.data;

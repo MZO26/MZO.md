@@ -1,5 +1,6 @@
 import { findElement } from "@/utils/dom";
 import { formatShortcut } from "@/utils/format";
+import { delegate } from "tippy.js";
 
 function createTooltipContent(
   baseText: string,
@@ -36,4 +37,21 @@ function useDelayedSpinner(delay = 300) {
   };
 }
 
-export { createTooltipContent, useDelayedSpinner };
+function initTippyDelegate(container: HTMLElement, appendTo?: HTMLElement) {
+  delegate(container, {
+    target: "[data-tippy-content]",
+    theme: "app-theme",
+    trigger: "mouseenter focus",
+    appendTo: appendTo || container,
+    onCreate: (instance) => {
+      const reference = instance.reference;
+      const baseText = reference.getAttribute("data-tippy-content") || "";
+      if (reference.hasAttribute("data-shortcut")) {
+        const shortcut = reference.getAttribute("data-shortcut") ?? undefined;
+        instance.setContent(createTooltipContent(baseText, shortcut));
+      }
+    },
+  });
+}
+
+export { createTooltipContent, initTippyDelegate, useDelayedSpinner };

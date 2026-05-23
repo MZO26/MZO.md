@@ -161,6 +161,7 @@ html {
   height: 100%;
   width: 100%;
   font-family: var(--current-font);
+  background-color: var(--bg-editor);
   color: var(--text-main);
   transition:
     background-color 0.2s,

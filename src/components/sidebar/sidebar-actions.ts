@@ -1,4 +1,4 @@
-import { getAll } from "@/api/noteAPI";
+import { getAll } from "@/api/api";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
 import { createNoteItem } from "@/components/sidebar/sidebar-items";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
@@ -69,13 +69,13 @@ function addManyNotesToList(notes: Note[]) {
     sidebar.appendChild(fragment);
     handleEditorEmptyState();
     handleSidebarEmptyState();
+    const { activeId } = stateStore.getState();
+    if (!activeId) return;
+    const noteElement = findElement<HTMLDivElement>(
+      `.note-item[data-id="${activeId}"]`,
+    );
+    if (noteElement) setActiveItem(noteElement, sidebar);
   });
-  const { activeId } = stateStore.getState();
-  if (!activeId) return;
-  const noteElement = findElement<HTMLDivElement>(
-    `.note-item[data-id="${activeId}"]`,
-  );
-  if (noteElement) setActiveItem(noteElement, sidebar);
 }
 
 async function reloadNoteList(notes?: Note[]): Promise<void> {
@@ -94,6 +94,7 @@ async function reloadNoteList(notes?: Note[]): Promise<void> {
     const notes = response.data;
     addManyNotesToList(notes.sort(compareNotes));
     noteStore.setState({ notes });
+    return;
   }
 }
 

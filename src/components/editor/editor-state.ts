@@ -3,28 +3,25 @@ import { stateStore } from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
+import { getAppItem } from "@/utils/registry";
 
 function handleEditorEmptyState() {
-  const editorContainer = requireElement(".editor-container");
-  const editorView = requireElement(".editor-view");
+  const editorContainer = getAppItem("editorContainer") as HTMLDivElement;
+  const editorView = requireElement<HTMLDivElement>(".editor-view");
   let emptyState = editorContainer.querySelector<HTMLDivElement>(
     ".editor-empty-state",
   );
-  const { activeId } = stateStore.getState();
   if (!emptyState) {
-    const { emptyState: newEmptyState } = createEditorEmptyState();
-    editorContainer.appendChild(newEmptyState);
-    emptyState = newEmptyState;
+    emptyState = createEditorEmptyState();
+    editorContainer.appendChild(emptyState);
   }
-  if (!activeId) {
-    editorView.classList.add("hidden");
-    emptyState.classList.remove("hidden");
-    emptyState.inert = false;
-  } else {
-    editorView.classList.remove("hidden");
-    emptyState.classList.add("hidden");
-  }
+  const { activeId } = stateStore.getState();
+  const showEmptyState = !activeId;
+  editorView.classList.toggle("hidden", showEmptyState);
+  emptyState.classList.toggle("hidden", !showEmptyState);
+  emptyState.inert = !showEmptyState;
 }
+
 const template = requireElement<HTMLTemplateElement>(
   "#editor-empty-state-template",
 );
@@ -41,7 +38,7 @@ function createEditorEmptyState() {
     }
   });
   emptyState.addEventListener("click", handleClick);
-  return { emptyState };
+  return emptyState;
 }
 
 export { createEditorEmptyState, handleEditorEmptyState };

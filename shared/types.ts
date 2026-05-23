@@ -66,7 +66,7 @@ type ImportedContent = {
 
 type ExportFormat = "json" | "txt" | "md" | "html" | "pdf";
 
-type ExportItem = {
+type ExportedContent = {
   id: string;
   fileName: string;
   content: string;
@@ -99,15 +99,45 @@ type NoteMenuPayload = {
   pinned: boolean;
 };
 
+type ViewItem = {
+  id: string;
+  label: string;
+};
+
+interface AppRegistry {
+  settings: Partial<SettingsRegistry>;
+  editor: Editor;
+  appContainer: HTMLDivElement;
+  sidebar: HTMLDivElement;
+  editorWrapper: HTMLDivElement;
+  editorContainer: HTMLDivElement;
+}
+
+type SettingsKeys =
+  | "themeSelect"
+  | "codeThemeSelect"
+  | "highlightSelect"
+  | "fontFamilySelect"
+  | "fontSizeSelect"
+  | "lineHeightSelect"
+  | "focusSelect"
+  | "spellcheckSelect"
+  | "batchExportSelect"
+  | "noteItemSelect"
+  | "dbOptimizeSelect";
+
+interface SettingsRegistry extends Record<SettingsKeys, HTMLSelectElement> {}
+
 export type {
   Action,
   ActionMap,
+  AppRegistry,
   Code,
   ContentType,
   DBBackupResult,
   DbOptimization,
+  ExportedContent,
   ExportFormat,
-  ExportItem,
   ExportResult,
   Failure,
   ImportedContent,
@@ -117,8 +147,11 @@ export type {
   NoteMenuPayload,
   ResolvedTheme,
   Result,
+  SettingsKeys,
+  SettingsRegistry,
   Success,
   TitleBarOverlayOptions,
   View,
+  ViewItem,
   ZoomAction,
 };

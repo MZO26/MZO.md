@@ -1,5 +1,4 @@
-import { setTheme } from "@/api/electronAPI";
-import { updateSettings } from "@/api/settingsAPI";
+import { updateSettings, setTheme } from "@/api/api";
 import { getSettingsItem } from "@/utils/registry";
 import { CODE_THEME_MAP, THEME_MAP } from "@shared/constants";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";

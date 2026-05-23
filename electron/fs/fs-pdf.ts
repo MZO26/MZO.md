@@ -1,6 +1,6 @@
+import { writeAtomic } from "@electron/fs/fs-atomic-write";
 import { loadPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
 import type { BrowserWindow, PrintToPDFOptions } from "electron";
-import { writeAtomic } from "./fs-atomic-write";
 
 async function exportPdfNote(params: {
   win: BrowserWindow;

@@ -1,90 +1,44 @@
-import type { Editor } from "@tiptap/core";
+import type {
+  AppRegistry,
+  SettingsKeys,
+  SettingsRegistry,
+} from "@shared/types";
 
-interface AppRegistry {
-  settings?: Partial<SettingsRegistry>;
-  editor: Editor;
-  appContainer: HTMLDivElement;
-  sidebar: HTMLDivElement;
-  editorWrapper: HTMLDivElement;
-}
+// set settings to empty object to avoid undefined errors, will be populated in app.ts on startup
+const registry = { settings: {} } as AppRegistry;
 
-type SettingsKeys =
-  | "themeSelect"
-  | "codeThemeSelect"
-  | "highlightSelect"
-  | "fontFamilySelect"
-  | "fontSizeSelect"
-  | "lineHeightSelect"
-  | "focusSelect"
-  | "spellcheckSelect"
-  | "batchExportSelect"
-  | "noteItemSelect"
-  | "dbOptimizeSelect";
+const setAppItems = (obj: Partial<AppRegistry>) => {
+  Object.assign(registry, obj);
+};
 
-interface SettingsRegistry extends Record<SettingsKeys, HTMLSelectElement> {}
+const getAppItem = <K extends keyof AppRegistry>(key: K) => {
+  return registry[key];
+};
 
-const registry = {} as AppRegistry;
-
-export function setAppItem<K extends keyof Omit<AppRegistry, "settings">>(
-  key: K,
-  value: AppRegistry[K],
-): void;
-
-export function setAppItem(items: Partial<Omit<AppRegistry, "settings">>): void;
-
-export function setAppItem(first: any, second?: any): void {
-  if (typeof first === "string") {
-    registry[first as keyof AppRegistry] = second;
-  } else {
-    Object.assign(registry, first);
-  }
-}
-
-export function setSettingsItem<K extends keyof SettingsRegistry>(
-  key: K,
-  value: SettingsRegistry[K],
-): void;
-export function setSettingsItem(items: Partial<SettingsRegistry>): void;
-export function setSettingsItem(first: any, second?: any): void {
+const setSettingsItems = (obj: Partial<SettingsRegistry>) => {
   if (!registry.settings) registry.settings = {};
-  if (typeof first === "string") {
-    (registry.settings as any)[first] = second;
-  } else {
-    Object.assign(registry.settings, first);
-  }
-}
+  Object.assign(registry.settings, obj);
+};
 
-export function getAppItem<K extends keyof Omit<AppRegistry, "settings">>(
-  key: K,
-): AppRegistry[K];
-export function getAppItem(): Omit<AppRegistry, "settings">;
-export function getAppItem(key?: any): any {
-  if (key) return registry[key as keyof AppRegistry];
-  return registry as Omit<AppRegistry, "settings">;
-}
-
-export function getSettingsItem<K extends keyof SettingsRegistry>(
-  key: K,
-): SettingsRegistry[K];
-export function getSettingsItem(): SettingsRegistry;
-export function getSettingsItem(key?: any): any {
-  if (!registry.settings) throw new Error("Failed to init setttings registry");
-  if (key) return (registry.settings as any)[key];
-  return registry.settings as SettingsRegistry;
-}
+const getSettingsItem = <K extends SettingsKeys>(key: K) => {
+  return registry.settings[key] as HTMLSelectElement;
+};
 
 function registerAppEvents(
   target: EventTarget,
   events: Record<string, EventListener>,
 ) {
-  Object.entries(events).forEach(([eventName, handler]) => {
+  for (const [eventName, handler] of Object.entries(events)) {
     target.addEventListener(eventName, handler);
-  });
-  return function cleanup() {
-    Object.entries(events).forEach(([eventName, handler]) => {
-      target.removeEventListener(eventName, handler);
-    });
-  };
+  }
 }
 
-export { registerAppEvents, type AppRegistry, type SettingsRegistry };
+export {
+  getAppItem,
+  getSettingsItem,
+  registerAppEvents,
+  setAppItems,
+  setSettingsItems,
+  type AppRegistry,
+  type SettingsRegistry,
+};

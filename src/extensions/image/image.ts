@@ -1,4 +1,4 @@
-import { saveImage } from "@/api/electronAPI";
+import { saveImage } from "@/api/api";
 import { showToast } from "@/utils/toast";
 import { useDelayedSpinner } from "@/utils/ui";
 import type { Result } from "@shared/types";

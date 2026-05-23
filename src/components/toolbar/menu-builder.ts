@@ -20,7 +20,7 @@ function updateActiveStates(
   }
 }
 
-function buildMenu(container: HTMLElement, actions: ActionMap): void {
+function buildMenu(container: HTMLDivElement, actions: ActionMap): void {
   const editor = getAppItem("editor");
   container.innerHTML = "";
   const buttonMap = new Map<string, HTMLButtonElement>();
@@ -46,10 +46,10 @@ function buildMenu(container: HTMLElement, actions: ActionMap): void {
   updateActiveStates(buttonMap, actions, editor);
 }
 
-function setupToolbarListeners(container: HTMLElement, actions: ActionMap) {
+function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
   const editor = getAppItem("editor");
   container.addEventListener("click", (e) => {
-    const btn = (e.target as Element).closest<HTMLButtonElement>(
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
       "[data-action]",
     );
     const key = btn?.dataset["action"] as keyof typeof actions;

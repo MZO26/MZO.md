@@ -3,7 +3,7 @@ import { renderIcons } from "@/utils/icons";
 import { getAppItem } from "@/utils/registry";
 
 async function setSidebarState(
-  element: HTMLElement,
+  element: HTMLDivElement,
   collapsed: boolean,
 ): Promise<void> {
   const isCollapsed = element.classList.contains("collapsed");

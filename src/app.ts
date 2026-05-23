@@ -1,4 +1,4 @@
-import { initListeners } from "@/api/listeners";
+import { initListeners } from "@/api/callbacks";
 import {
   initEditor,
   setupEditorListeners,
@@ -19,16 +19,18 @@ import { initGlobalShortcuts } from "@/settings/shortcuts";
 import { startAppClock } from "@/utils/date";
 import { requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { getAppItem, setAppItem } from "@/utils/registry";
+import { getAppItem, setAppItems } from "@/utils/registry";
 import "tippy.js/dist/tippy.css";
+import { initTippyDelegate } from "./utils/ui";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const settings = await loadSettings();
-  setAppItem({
+  setAppItems({
     appContainer: requireElement<HTMLDivElement>(".app-container"),
     sidebar: requireElement<HTMLDivElement>(".notes-container"),
     editor: initEditor(settings["spellcheck"]),
     editorWrapper: requireElement<HTMLDivElement>("#editor"),
+    editorContainer: requireElement<HTMLDivElement>(".editor-container"),
   });
   setupEditorListeners(getAppItem("editorWrapper"), getAppItem("editor"));
   initGlobalShortcuts();
@@ -37,12 +39,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   initNotesSidebar();
   initInfoSidebar();
   await reloadNoteList();
-  const toolbarContainer = requireElement("#toolbar");
+  const toolbarContainer = requireElement<HTMLDivElement>("#toolbar");
   buildMenu(toolbarContainer, ToolbarActions);
   setupToolbarListeners(toolbarContainer, ToolbarActions);
-  const hoverbar = requireElement(".top-toolbar");
+  const hoverbar = requireElement<HTMLDivElement>(".top-toolbar");
   buildMenu(hoverbar, topToolbarActions);
   setupToolbarListeners(hoverbar, topToolbarActions);
+  initTippyDelegate(getAppItem("editorContainer"));
   initHoverbar();
   renderIcons();
   startAppClock();

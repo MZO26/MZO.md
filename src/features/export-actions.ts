@@ -1,18 +1,18 @@
-import { getAll } from "@/api/noteAPI";
+import { getAll } from "@/api/api";
 import { getNoteEditorExtensions } from "@/components/editor/editor-init";
-import type { ExportFormat, ExportItem, Result } from "@shared/types";
+import type { ExportedContent, ExportFormat, Result } from "@shared/types";
 import { Editor } from "@tiptap/core";
 
 async function getExportContent(
   extension: ExportFormat,
-): Promise<Result<ExportItem[]>> {
+): Promise<Result<ExportedContent[]>> {
   try {
     const result = await getAll();
     if (!result.success) {
       return { success: false, message: result.message };
     }
     const notes = result.data;
-    const data: ExportItem[] = [];
+    const data: ExportedContent[] = [];
     if (extension === "json" || extension === "txt") {
       const isJson = extension === "json";
       for (const note of notes) {

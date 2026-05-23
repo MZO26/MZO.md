@@ -1,6 +1,6 @@
-import { handleTableDelete } from "@/components/toolbar/custom-actions";
 import { promptImageUpload } from "@/extensions/image/image";
 import { Extension } from "@tiptap/core";
+import { CellSelection } from "@tiptap/pm/tables";
 
 export const MasterShortcuts = Extension.create({
   name: "masterShortcuts",
@@ -39,8 +39,23 @@ export const MasterShortcuts = Extension.create({
       "Mod-Alt-ArrowRight": () => this.editor.commands.addColumnAfter(),
       "Mod-Alt-ArrowLeft": () => this.editor.commands.addColumnBefore(),
       "Mod-Alt-Backspace": () => {
-        handleTableDelete(this.editor);
-        return true;
+        const { selection } = this.editor.state;
+        if (!(selection instanceof CellSelection)) {
+          return false;
+        }
+        const isRow = selection.isRowSelection();
+        const isCol = selection.isColSelection();
+        const isWholeTableSelected = isRow && isCol;
+        if (isWholeTableSelected) {
+          return this.editor.chain().focus().deleteTable().run();
+        }
+        if (isRow) {
+          return this.editor.chain().focus().deleteRow().run();
+        }
+        if (isCol) {
+          return this.editor.chain().focus().deleteColumn().run();
+        }
+        return false;
       },
       "Mod-Shift-F": () => {
         this.editor.view.dom.classList.toggle("focus-mode-active");

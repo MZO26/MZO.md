@@ -1,19 +1,13 @@
-import { getByTag, getViews, searchNotes } from "@/api/noteAPI";
-import { handleEditorEmptyState } from "@/components/editor/editor-state";
+import { getByTag, getViews, searchNotes } from "@/api/api";
 import {
   addManyNotesToList,
   reloadNoteList,
 } from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
-import { stateStore } from "@/settings/app-state";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
-
-interface ViewItem {
-  id: string;
-  label: string;
-}
+import type { ViewItem } from "@shared/types";
 
 const views: ViewItem[] = [
   { id: "all", label: "All Notes" },
@@ -26,7 +20,6 @@ const views: ViewItem[] = [
 async function handleSearchInput(searchInput: string) {
   const sidebar = getAppItem("sidebar");
   sidebar.innerHTML = "";
-  stateStore.setState({ activeId: null });
   try {
     if (searchInput === "") {
       await reloadNoteList();
@@ -39,7 +32,6 @@ async function handleSearchInput(searchInput: string) {
   const response = await searchNotes(searchInput, 50);
   if (!response.success) {
     showToast(response.message);
-    handleEditorEmptyState();
     return;
   }
   addManyNotesToList(response.data);
@@ -63,7 +55,7 @@ async function handleViews(view: string) {
     showToast(response.message);
     return;
   }
-  reloadNoteList(response.data);
+  await reloadNoteList(response.data);
 }
 
 async function searchByTag(tag: string) {

@@ -10,7 +10,7 @@ import {
   type ImagePayload,
   type UpdateNotePayload,
 } from "@shared/shared/types";
-import type { ExportItem, MenuType } from "@shared/types";
+import type { MenuType } from "@shared/types";
 
 declare module "*.css";
 
@@ -21,7 +21,9 @@ declare global {
       onTriggerExport: (
         callback: (id: string, extension: string) => void,
       ) => () => void;
-      noteExportMany: (payload: ExportItem[]) => Promise<Result<ExportItem[]>>;
+      noteExportMany: (
+        payload: ExportedContent[],
+      ) => Promise<Result<ExportedContent[]>>;
       noteImport: () => Promise<Result<ImportRequest[]>>;
     };
     electronAPI: {

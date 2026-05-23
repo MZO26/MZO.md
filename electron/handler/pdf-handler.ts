@@ -3,9 +3,7 @@ import * as fs from "fs";
 import path from "path";
 
 function loadPDFAssets(): { template: string; css: string } {
-  const isDev = !app.isPackaged;
-  const baseDir = isDev ? app.getAppPath() : process.resourcesPath;
-  const pdfFolder = path.join(baseDir, "shared", "pdf");
+  const pdfFolder = path.join(app.getAppPath(), "shared", "pdf");
   return {
     template: fs.readFileSync(path.join(pdfFolder, "pdf-export.html"), "utf8"),
     css: fs.readFileSync(path.join(pdfFolder, "pdf-export.css"), "utf8"),

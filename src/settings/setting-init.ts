@@ -1,11 +1,11 @@
-import { buildSelects } from "@/settings/select-items";
 import { createSettingsMenu } from "@/settings/setting-builder";
+import { buildSelects } from "@/settings/setting-items";
 import { setSelectListeners } from "@/settings/setting-items-init";
 import { applyAppTheme } from "@/settings/theme-actions";
 import { findElement, requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
+import { initTippyDelegate } from "@/utils/ui";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import { delegate } from "tippy.js";
 
 async function initAppSettings(settings: AppSettings) {
   const modal = findElement<HTMLDialogElement>(".modal-settings");
@@ -21,13 +21,7 @@ async function initAppSettings(settings: AppSettings) {
     "button:first-child",
     buttonsContainer,
   );
-  delegate(modal, {
-    target: "[data-tippy-content]",
-    content: (reference) => reference.getAttribute("data-tippy-content") || "",
-    placement: "top",
-    theme: "app-theme",
-    appendTo: modal,
-  });
+  initTippyDelegate(modal, modal);
   if (firstActiveBtn) setActiveItem(firstActiveBtn, buttonsContainer);
   await applyAppTheme(settings["theme"], false, settings["theme"]);
   applyModalListeners(openModalBtn, buttonsContainer, settingsContainer, modal);

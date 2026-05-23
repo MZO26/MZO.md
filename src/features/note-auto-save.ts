@@ -40,10 +40,7 @@ function setupAutoSave(editor: Editor, id: string) {
   };
 }
 
-function stopAutoSave(
-  editor: Editor,
-  action: "flush" | "cancel" = "flush",
-): void {
+function stopAutoSave(editor: Editor, action: "flush" | "cancel" = "flush") {
   const existingCleanup = cleanup.get(editor);
 
   if (existingCleanup) {

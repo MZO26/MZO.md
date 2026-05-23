@@ -1,4 +1,4 @@
-import { createNote, deleteNote, getNoteById, updateNote } from "@/api/noteAPI";
+import { createNote, deleteNote, updateNote, getNoteById } from "@/api/api";
 import { editor } from "@/components/editor/editor-init";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
 import { debouncedUpdateStats } from "@/components/sidebar/info-sidebar-actions";
@@ -94,11 +94,11 @@ async function handleSaveNote(
     return;
   }
   debouncedUpdateStats(response.data);
-  updateNoteInList(response.data);
+  await updateNoteInList(response.data);
 }
 
 async function handleSelectNote(noteItem: HTMLDivElement) {
-  const noteID = noteItem.dataset["id"];
+  const noteID = noteItem.getAttribute("data-id");
   if (!noteID) return;
   const response = await getNoteById(noteID);
   if (!response.success) {

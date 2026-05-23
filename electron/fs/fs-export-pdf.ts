@@ -4,13 +4,13 @@ import { createHiddenPdfWindow } from "@electron/win";
 import { validation } from "@shared/ipc-helpers";
 import { processWithLimit } from "@shared/limiter";
 import { FileNameSchema } from "@shared/schemas/export-schema";
-import type { ExportItem, ExportResult } from "@shared/types";
+import type { ExportedContent, ExportResult } from "@shared/types";
 import fs from "fs/promises";
 import path from "path";
 
 async function batchPDFExport(
   folder: string,
-  payload: ExportItem[],
+  payload: ExportedContent[],
 ): Promise<ExportResult[]> {
   await fs.mkdir(folder, { recursive: true });
   const absoluteTargetFolder = path.resolve(folder);

@@ -1,4 +1,4 @@
-import { getAllSettings } from "@/api/settingsAPI";
+import { getAllSettings } from "@/api/api";
 import { updateNoteCount } from "@/components/sidebar/sidebar-actions";
 import type { Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";

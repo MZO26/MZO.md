@@ -1,4 +1,4 @@
-import { getManyById } from "@/api/noteAPI";
+import { getManyById } from "@/api/api";
 import { debounce } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
 import { formatNoteDate } from "@/utils/format";
@@ -76,7 +76,7 @@ async function updateStats(note: Note) {
   charCountEl.textContent = charCount.toString();
   wordCountEl.textContent = wordCount === 1 ? "1 word" : `${wordCount} words`;
   readingTimeEl.textContent = estimateReadingTime(wordCount);
-  calculateToDos(note.content);
+  showTodoProgress(note.content);
   updateNoteTags(note.tags);
   await updateNoteLinks(note.links);
   updateInfoHeader(note.created_at, note.title);
@@ -90,7 +90,7 @@ function estimateReadingTime(wordCount: number, wpm = 238): string {
   return s < 30 ? "< 1 min read" : s < 60 ? "1 min read" : `${m} min read`;
 }
 
-function calculateToDos(content: JSONContent) {
+function showTodoProgress(content: JSONContent) {
   const stats = getTodoStats(content);
   const container = requireElement(".todo-progress-container");
   if (stats.total === 0) {

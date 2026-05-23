@@ -1,16 +1,16 @@
-import { exportNote } from "@/api/fileAPI";
 import {
   bookmark,
   createNote,
+  exportNote,
   getNoteById,
   mergeNotes,
   pin,
-} from "@/api/noteAPI";
+} from "@/api/api";
 import { editor } from "@/components/editor/editor-init";
 import { debouncedUpdateStats } from "@/components/sidebar/info-sidebar-actions";
 import {
   addOneNoteToList,
-  updateNoteInList,
+  reloadNoteList,
 } from "@/components/sidebar/sidebar-actions";
 import {
   cleanup,
@@ -24,14 +24,12 @@ import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
 import { applyAppTheme } from "@/settings/theme-actions";
 import { findElement, setActiveItem } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { sanitize } from "@/utils/sanitize";
+import { sanitize, validateUUID } from "@/utils/sanitize";
 import { showToast } from "@/utils/toast";
-import { useDelayedSpinner } from "@/utils/ui";
-import { validateUUID } from "@/utils/validate";
+import { initTippyDelegate, useDelayedSpinner } from "@/utils/ui";
 import { titleGenerator } from "@shared/generators/generators";
 import type { ExportRequest } from "@shared/schemas/export-schema";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
-import { delegate } from "tippy.js";
 
 function initListeners() {
   window.storeAPI.onSettingsChanged((settings) => {
@@ -156,14 +154,7 @@ function initListeners() {
   const deleteDialog = findElement("#delete-dialog") as HTMLDialogElement;
   const confirmBtn = findElement("#confirm-delete-btn") as HTMLButtonElement;
   if (deleteDialog) {
-    delegate(deleteDialog, {
-      target: "[data-tippy-content]",
-      content: (reference) =>
-        reference.getAttribute("data-tippy-content") || "",
-      placement: "top",
-      theme: "app-theme",
-      appendTo: deleteDialog,
-    });
+    initTippyDelegate(deleteDialog, deleteDialog);
   }
 
   window.noteAPI.onTriggerDelete(async (id: string) => {
@@ -195,14 +186,7 @@ function initListeners() {
   const mergeDialog = findElement<HTMLDialogElement>(".merge-modal");
   const mergeInput = findElement<HTMLInputElement>("#noteId");
   if (mergeDialog) {
-    delegate(mergeDialog, {
-      target: "[data-tippy-content]",
-      content: (reference) =>
-        reference.getAttribute("data-tippy-content") || "",
-      placement: "top",
-      theme: "app-theme",
-      appendTo: mergeDialog,
-    });
+    initTippyDelegate(mergeDialog, mergeDialog);
   }
 
   window.noteAPI.onTriggerMerge((id: string) => {
@@ -263,16 +247,12 @@ function initListeners() {
       showToast(response.message);
       return;
     }
-    response.data === true
-      ? showToast("Pinned note.")
-      : showToast("Unpinned note.");
-    const existingNote = noteStore.get("notes").find((n) => n.id === id);
-    if (!existingNote) return;
-    const updatedNote = { ...existingNote, pinned: response.data };
     noteStore.setState((state) => ({
-      notes: state.notes.map((n) => (n.id === id ? updatedNote : n)),
+      notes: state.notes.map((note) =>
+        note.id === id ? { ...note, pinned: response.data } : note,
+      ),
     }));
-    await updateNoteInList(updatedNote);
+    await reloadNoteList();
   });
 
   window.noteAPI.onTriggerBookmark(async (id: string) => {
@@ -281,16 +261,12 @@ function initListeners() {
       showToast(response.message);
       return;
     }
-    response.data === true
-      ? showToast("Bookmarked note.")
-      : showToast("Removed bookmark.");
-    const existingNote = noteStore.get("notes").find((n) => n.id === id);
-    if (!existingNote) return;
-    const updatedNote = { ...existingNote, bookmarked: response.data };
     noteStore.setState((state) => ({
-      notes: state.notes.map((n) => (n.id === id ? updatedNote : n)),
+      notes: state.notes.map((note) =>
+        note.id === id ? { ...note, bookmarked: response.data } : note,
+      ),
     }));
-    await updateNoteInList(updatedNote);
+    await reloadNoteList();
   });
 
   window.noteAPI.onTriggerDuplicate(async (id: string) => {

@@ -1,4 +1,4 @@
-import { handleZoom } from "@/api/electronAPI";
+import { handleZoom } from "@/api/api";
 import { tinykeys } from "tinykeys";
 
 function initGlobalShortcuts() {

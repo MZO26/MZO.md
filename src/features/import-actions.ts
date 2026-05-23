@@ -1,4 +1,4 @@
-import { importNote } from "@/api/fileAPI";
+import { importNote } from "@/api/api";
 import { getNoteEditorExtensions } from "@/components/editor/editor-init";
 import { sanitize } from "@/utils/sanitize";
 import { showToast } from "@/utils/toast";

@@ -1,4 +1,4 @@
-import { setTheme } from "@/api/electronAPI";
+import { setTheme } from "@/api/api";
 import { editor } from "@/components/editor/editor-init";
 import { createAsyncHandler } from "@/utils/async";
 import { getAppItem, registerAppEvents } from "@/utils/registry";

@@ -3,21 +3,21 @@ import { writeAtomic } from "@electron/fs/fs-atomic-write";
 import { validation } from "@shared/ipc-helpers";
 import { processWithLimit } from "@shared/limiter";
 import { FileNameSchema } from "@shared/schemas/export-schema";
-import type { ExportItem, ExportResult } from "@shared/types";
+import type { ExportedContent, ExportResult } from "@shared/types";
 import { app } from "electron";
 import fs from "fs/promises";
 import path from "path";
 
 async function batchExport(
   folder: string,
-  payload: ExportItem[],
+  payload: ExportedContent[],
 ): Promise<ExportResult[]> {
   await fs.mkdir(folder, { recursive: true });
   const absoluteTargetFolder = path.resolve(folder);
   const exported = await processWithLimit(
     payload,
     100,
-    async (item: ExportItem) => {
+    async (item: ExportedContent) => {
       const fileName = `${validation(FileNameSchema, item.fileName)}_${item.id.slice(0, 6)}.${item.extension}`;
       const absoluteFilePath = path.resolve(absoluteTargetFolder, fileName);
       const relative = path.relative(absoluteTargetFolder, absoluteFilePath);

@@ -1,4 +1,4 @@
-import { createManyNotes } from "@/api/noteAPI";
+import { createManyNotes } from "@/api/api";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
 import {
   addManyNotesToList,
@@ -12,7 +12,7 @@ import { handleCreateNote, viewNote } from "@/features/note-actions";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { showToast } from "@/utils/toast";
 
-async function createNoteButton(): Promise<void> {
+async function createNoteButton() {
   const response = await handleCreateNote();
   if (!response.success) {
     showToast(response.message);
@@ -23,13 +23,13 @@ async function createNoteButton(): Promise<void> {
     notes: [...state.notes, note],
   }));
   stateStore.setState({ activeId: note.id });
-  showToast("New note created");
+  showToast("New note created.");
   addOneNoteToList(note);
   handleEditorEmptyState();
   viewNote(note);
 }
 
-async function importNoteButton(): Promise<void> {
+async function importNoteButton() {
   const imported = await handleImportFile();
   if (!imported.success) {
     showToast(imported.message);

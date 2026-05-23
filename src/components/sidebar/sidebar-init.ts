@@ -6,8 +6,7 @@ import { createNoteButton, importNoteButton } from "@/features/note-buttons";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
-import { createTooltipContent } from "@/utils/ui";
-import { delegate } from "tippy.js";
+import { initTippyDelegate } from "@/utils/ui";
 import "tippy.js/dist/tippy.css";
 
 const toggleSidebar = (appContainer: HTMLDivElement) => {
@@ -22,19 +21,7 @@ async function initNotesSidebar() {
   const addNoteBtn = requireElement<HTMLButtonElement>(".add-note-btn");
   const importBtn = requireElement<HTMLButtonElement>(".import-btn");
   const searchInput = requireElement<HTMLInputElement>(".search-input");
-  delegate(sidebarContainer, {
-    target: "[data-tippy-content]",
-    theme: "app-theme",
-    trigger: "mouseenter",
-    onCreate: (instance) => {
-      const reference = instance.reference;
-      const baseText = reference.getAttribute("data-tippy-content") || "";
-      if (reference.hasAttribute("data-shortcut")) {
-        const shortcut = reference.getAttribute("data-shortcut") ?? undefined;
-        instance.setContent(createTooltipContent(baseText, shortcut));
-      }
-    },
-  });
+  initTippyDelegate(sidebarContainer);
   const viewSelect = createViews(views);
   applyFilterListeners(searchInput, viewSelect);
   applySidebarListeners(sidebar, addNoteBtn, importBtn);

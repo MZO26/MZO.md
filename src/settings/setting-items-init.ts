@@ -1,6 +1,4 @@
-import { exportManyNotes } from "@/api/fileAPI";
-import { dbMaintenance } from "@/api/noteAPI";
-import { updateSettings } from "@/api/settingsAPI";
+import { dbMaintenance, exportManyNotes, updateSettings } from "@/api/api";
 import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
 import { getExportContent } from "@/features/export-actions";
 import {
@@ -10,7 +8,7 @@ import {
 } from "@/settings/theme-actions";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
-import { getAppItem, setSettingsItem } from "@/utils/registry";
+import { getAppItem, setSettingsItems } from "@/utils/registry";
 import { showToast } from "@/utils/toast";
 import { THEME_MAP } from "@shared/constants";
 import type {
@@ -81,7 +79,7 @@ function initAppearanceSettings(settings: AppSettings) {
     }),
   );
 
-  setSettingsItem({
+  setSettingsItems({
     codeThemeSelect,
     themeSelect,
     highlightSelect,
@@ -167,7 +165,7 @@ function initEditorSettings(settings: AppSettings) {
     });
   });
 
-  setSettingsItem({
+  setSettingsItems({
     fontFamilySelect,
     fontSizeSelect,
     lineHeightSelect,
@@ -232,7 +230,7 @@ function initAppSettings(settings: AppSettings) {
     updateSettings({ spellcheck: enabled as Spellcheck });
   });
 
-  setSettingsItem({
+  setSettingsItems({
     spellcheckSelect,
     batchExportSelect,
     dbOptimizeSelect,
