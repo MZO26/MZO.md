@@ -1,5 +1,5 @@
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
-import type { Code, ResolvedTheme, ViewItem } from "@shared/types";
+import type { Code, ContentType, ResolvedTheme, ViewItem } from "@shared/types";
 
 enum WorkerErrorCode {
   CompressionError = "COMPRESSION_FAILED",
@@ -23,7 +23,7 @@ enum AppErrorCode {
 
 const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   [AppErrorCode.DBError]: "Failed to access database.",
-  [AppErrorCode.InvalidData]: "The file data is corrupted.",
+  [AppErrorCode.InvalidData]: "Couldn't read the note data.",
   [AppErrorCode.FILE_WRITE_ERROR]: "Failed to write file.",
   [AppErrorCode.RateLimitError]: "Too many attempts. Please wait.",
   [AppErrorCode.SenderError]: "Action blocked for security.",
@@ -35,7 +35,21 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   [AppErrorCode.InvalidDbAction]: "This action is not allowed.",
 };
 
+const APP_START_TIME = Date.now();
+
+const ipcTimers = new Map<string, number>();
+
+const YIELD_INTERVAL = 0;
+
+const BATCH_SIZE = 5;
+
 const ZOOMS = [1, 1.1, 1.25] as const;
+
+const CONTENT_TYPE_MAP: Record<string, ContentType> = {
+  md: "markdown",
+  html: "html",
+  json: "json",
+};
 
 const LIMITS = {
   WRITE_HEAVY: 500, // saveImage
@@ -81,7 +95,7 @@ const THEME_MAP = {
 const CODE_THEME_MAP: Record<CodeTheme, Record<ResolvedTheme, Code>> = {
   focus: { dark: "github-dark", light: "github-light" },
   balanced: { dark: "atom-one-dark", light: "atom-one-light" },
-  "eye-comfort": { dark: "solarized-dark", light: "solarized-light" },
+  colorless: { dark: "colorless", light: "colorless" },
 } as const;
 
 const THEME_DATA: Record<
@@ -124,12 +138,67 @@ const THEME_DATA: Record<
   },
 } as const;
 
+const DOMPURIFY_CONFIG = {
+  FORBID_TAGS: [
+    "script",
+    "style",
+    "iframe",
+    "object",
+    "embed",
+    "form",
+    "input",
+    "button",
+    "select",
+    "textarea",
+    "base",
+    "link",
+    "meta",
+    "noscript",
+    "template",
+  ],
+  FORBID_ATTR: [
+    // Event handlers
+    "onerror",
+    "onload",
+    "onclick",
+    "onmouseover",
+    "onmouseout",
+    "onmouseenter",
+    "onmouseleave",
+    "onfocus",
+    "onblur",
+    "onchange",
+    "oninput",
+    "onsubmit",
+    "onreset",
+    "onkeydown",
+    "onkeyup",
+    "onkeypress",
+    "oncontextmenu",
+    "ondblclick",
+    "ondrag",
+    "ondrop",
+    // Dangerous attributes
+    "style", // prevents CSS injection
+    "formaction", // hijacks form submission
+    "srcdoc", // iframe HTML injection
+    "xlink:href", // SVG-based XSS
+  ],
+  ALLOW_ONLY_SAFE_URI_ATTRIBUTES: true, // blocks javascript: and data: in href/src
+  FORCE_BODY: true, // prevents mXSS via fragment parsing edge cases
+};
+
 export {
   ALLOWED_TYPES,
+  APP_START_TIME,
   AppErrorCode,
+  BATCH_SIZE,
   CODE_THEME_MAP,
+  CONTENT_TYPE_MAP,
   DEBOUNCE_MS,
+  DOMPURIFY_CONFIG,
   ERROR_MESSAGES,
+  ipcTimers,
   LIMITS,
   MAX_SIZE,
   mimeToExt,
@@ -137,5 +206,6 @@ export {
   THEME_MAP,
   VIEWS,
   WorkerErrorCode,
+  YIELD_INTERVAL,
   ZOOMS,
 };

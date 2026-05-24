@@ -8,6 +8,18 @@ import { app } from "electron";
 import fs from "fs/promises";
 import path from "path";
 
+async function singleExport(filePath: string, data: string) {
+  const absoluteTargetFolder = path.dirname(filePath);
+  const userDataPath = app.getPath("userData");
+  const imagesFolder = path.join(userDataPath, "editor-images");
+  const portableContent = sanitizeExportString(
+    data,
+    absoluteTargetFolder,
+    imagesFolder,
+  );
+  await writeAtomic(filePath, portableContent);
+}
+
 async function batchExport(
   folder: string,
   payload: ExportedContent[],
@@ -43,4 +55,4 @@ async function batchExport(
   return exported.filter((item): item is ExportResult => item !== null);
 }
 
-export { batchExport };
+export { batchExport, singleExport };

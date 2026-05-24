@@ -1,6 +1,5 @@
+import type { AppErrorCode, WorkerErrorCode } from "@shared/constants";
 import type { Content, Editor } from "@tiptap/core";
-import type { Code } from "lucide";
-import type { AppErrorCode, WorkerErrorCode } from "./constants";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -21,8 +20,7 @@ type Code =
   | "github-dark"
   | "atom-one-light"
   | "atom-one-dark"
-  | "solarized-dark"
-  | "solarized-light";
+  | "colorless";
 
 type Result<T, E = AppErrorCode> =
   | { success: true; data: T }
@@ -64,7 +62,7 @@ type Metadata = {
 };
 
 type ImportedContent = {
-  title: string;
+  fileName: string;
   content: Content;
   extension: "md" | "html" | "json" | "txt";
 };
@@ -133,6 +131,10 @@ type SettingsKeys =
 
 interface SettingsRegistry extends Record<SettingsKeys, HTMLSelectElement> {}
 
+type ImageSrc = {
+  imageSrc: string;
+};
+
 export type {
   Action,
   ActionMap,
@@ -145,6 +147,7 @@ export type {
   ExportFormat,
   ExportResult,
   Failure,
+  ImageSrc,
   ImportedContent,
   MenuType,
   Metadata,

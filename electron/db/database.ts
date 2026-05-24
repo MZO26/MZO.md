@@ -149,6 +149,31 @@ class NoteDB {
       `);
   }
 
+  private getTagMap(): Map<string, Tag[]> {
+    const allTags = this.getAllTagsStmt.all() as TagRow[];
+    const tagMap = new Map<string, Tag[]>();
+    for (const { note_id, tag_name } of allTags) {
+      const existingTags = tagMap.get(note_id) ?? [];
+      existingTags.push(tag_name);
+      tagMap.set(note_id, existingTags);
+    }
+    return tagMap;
+  }
+
+  private getLinkMap(): Map<string, Link[]> {
+    const allLinks = this.getAllLinksStmt.all() as LinkRow[];
+    const linkMap = new Map<string, Link[]>();
+    for (const { source_id, target_id } of allLinks) {
+      const sourceLinks = linkMap.get(source_id) ?? [];
+      sourceLinks.push({ id: target_id, dir: "out" });
+      linkMap.set(source_id, sourceLinks);
+      const targetLinks = linkMap.get(target_id) ?? [];
+      targetLinks.push({ id: source_id, dir: "in" });
+      linkMap.set(target_id, targetLinks);
+    }
+    return linkMap;
+  }
+
   public create(payload: CreateNotePayload): Note {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
@@ -218,30 +243,13 @@ class NoteDB {
   public getAll(): Note[] {
     const rows = this.getAllNotesStmt.all() as NoteRow[];
     if (!rows || rows.length === 0) return [];
-    const allTags = this.getAllTagsStmt.all() as TagRow[];
-    const tagMap = new Map<string, string[]>();
-    for (const { note_id, tag_name } of allTags) {
-      const existingTags = tagMap.get(note_id) ?? [];
-      existingTags.push(tag_name);
-      tagMap.set(note_id, existingTags);
-    }
-    const allLinks = this.getAllLinksStmt.all() as LinkRow[];
-    const linkMap = new Map<string, Link[]>();
-    for (const { source_id, target_id } of allLinks) {
-      const sourceLinks = linkMap.get(source_id) ?? [];
-      sourceLinks.push({ id: target_id, dir: "out" });
-      linkMap.set(source_id, sourceLinks);
-      const targetLinks = linkMap.get(target_id) ?? [];
-      targetLinks.push({ id: source_id, dir: "in" });
-      linkMap.set(target_id, targetLinks);
-    }
+    const tagMap = this.getTagMap() ?? [];
+    const linkMap = this.getLinkMap() ?? [];
     return rows.map((note) => {
-      const noteTags = tagMap.get(note.id) ?? [];
-      const noteLinks = linkMap.get(note.id) ?? [];
       return validation(NoteFromDB, {
         ...note,
-        tags: noteTags,
-        links: noteLinks,
+        tags: tagMap.get(note.id) ?? [],
+        links: linkMap.get(note.id) ?? [],
       });
     });
   }
@@ -262,11 +270,13 @@ class NoteDB {
     if (ids.length === 0) return [];
     const params = { idsList: JSON.stringify(ids) };
     const rows = this.getManyNotesByIdStmt.all(params) as NoteRow[];
+    const tagMap = this.getTagMap() ?? [];
+    const linkMap = this.getLinkMap() ?? [];
     return rows.map((row) => {
       return validation(NoteFromDB, {
         ...row,
-        tags: this.getTagsById(row.id) ?? [],
-        links: this.getLinksById(row.id) ?? [],
+        tags: tagMap.get(row.id) ?? [],
+        links: linkMap.get(row.id) ?? [],
       });
     });
   }
@@ -302,66 +312,78 @@ class NoteDB {
 
   public searchByTag(tagName: string): Note[] {
     const result = this.searchByTagStmt.all({ tag_name: tagName }) as NoteRow[];
+    const tagMap = this.getTagMap() ?? [];
+    const linkMap = this.getLinkMap() ?? [];
     return result.map((note) => {
       return validation(NoteFromDB, {
         ...note,
-        tags: this.getTagsById(note.id) ?? [],
-        links: this.getLinksById(note.id) ?? [],
+        tags: tagMap.get(note.id) ?? [],
+        links: linkMap.get(note.id) ?? [],
       });
     });
   }
 
   public getPinnedNotes(): Note[] {
     const rows = this.views.getPinnedNotes();
+    const tagMap = this.getTagMap() ?? [];
+    const linkMap = this.getLinkMap() ?? [];
     return rows.map((note) => {
       return validation(NoteFromDB, {
         ...note,
-        tags: this.getTagsById(note.id) ?? [],
-        links: this.getLinksById(note.id) ?? [],
+        tags: tagMap.get(note.id) ?? [],
+        links: linkMap.get(note.id) ?? [],
       });
     });
   }
 
   public getBookMarkedNotes(): Note[] {
     const rows = this.views.getBookmarkedNotes();
+    const tagMap = this.getTagMap() ?? [];
+    const linkMap = this.getLinkMap() ?? [];
     return rows.map((note) => {
       return validation(NoteFromDB, {
         ...note,
-        tags: this.getTagsById(note.id) ?? [],
-        links: this.getLinksById(note.id) ?? [],
+        tags: tagMap.get(note.id) ?? [],
+        links: linkMap.get(note.id) ?? [],
       });
     });
   }
 
   public getNotesWithActionItems(): Note[] {
     const rows = this.views.getNotesWithActionItems();
+    const tagMap = this.getTagMap() ?? [];
+    const linkMap = this.getLinkMap() ?? [];
     return rows.map((note) => {
       return validation(NoteFromDB, {
         ...note,
-        tags: this.getTagsById(note.id) ?? [],
-        links: this.getLinksById(note.id) ?? [],
+        tags: tagMap.get(note.id) ?? [],
+        links: linkMap.get(note.id) ?? [],
       });
     });
   }
 
   public getUntaggedNotes(): Note[] {
     const rows = this.views.getUntaggedNotes();
+    const tagMap = this.getTagMap() ?? [];
+    const linkMap = this.getLinkMap() ?? [];
     return rows.map((note) => {
       return validation(NoteFromDB, {
         ...note,
-        tags: this.getTagsById(note.id) ?? [],
-        links: this.getLinksById(note.id) ?? [],
+        tags: tagMap.get(note.id) ?? [],
+        links: linkMap.get(note.id) ?? [],
       });
     });
   }
 
   public searchNotes(searchTerm: string, limit?: number): Note[] {
     const result = this.search.query(searchTerm, limit) as NoteRow[];
+    const tagMap = this.getTagMap() ?? [];
+    const linkMap = this.getLinkMap() ?? [];
     return result.map((note) => {
       return validation(NoteFromDB, {
         ...note,
-        tags: this.getTagsById(note.id) ?? [],
-        links: this.getLinksById(note.id) ?? [],
+        tags: tagMap.get(note.id) ?? [],
+        links: linkMap.get(note.id) ?? [],
       });
     });
   }

@@ -6,8 +6,8 @@ self.onmessage = async (e: MessageEvent) => {
   const { id, file, maxWidth, quality } = e.data;
 
   try {
-    const response = await compressImage(file, maxWidth, quality);
-    self.postMessage({ id, success: true, data: response }, [response.buffer]);
+    const result = await compressImage(file, maxWidth, quality);
+    self.postMessage({ id, success: true, data: result }, [result.buffer]);
   } catch (error) {
     self.postMessage({ id, ...handleWorkerError(error) });
   }
@@ -30,7 +30,7 @@ function handleWorkerError(err: unknown): {
   if (err instanceof WorkerTaskError) {
     return { success: false, error: err.code };
   }
-  console.error("[WORKER FATAL CRASH]: ", err);
+  console.error("[WORKER ERROR]: ", err);
   return {
     success: false,
     error: WorkerErrorCode.UnknownError,

@@ -1,12 +1,12 @@
 import { setUpEditorMenu } from "@electron/context-menu";
-import { setupGlobalErrorHandling } from "@electron/handler/error-handler";
+import { setupGlobalErrorHandling } from "@electron/handler/global-error-handler";
 import {
   navigationHandler,
   registerCustomProtocol,
   setupLocalImageProtocol,
 } from "@electron/handler/navigation-handler";
 import { setPermissions } from "@electron/handler/permission-handler";
-import { registerIpc } from "@electron/ipc/ipc-validation";
+import { registerIpc } from "@electron/ipc/ipc-registry";
 import { store } from "@electron/store";
 import {
   getTitleBarOverlay,

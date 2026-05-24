@@ -25,14 +25,14 @@ declare global {
         payload: ExportedContent[],
       ) => Promise<Result<ExportedContent[]>>;
       noteImport: () => Promise<Result<ImportRequest[]>>;
+      saveImage: (
+        payload: ImagePayload,
+      ) => Promise<Result<{ imageSrc: string }>>;
     };
     electronAPI: {
       startupReady: () => void;
       setTheme: (theme: Theme, focus?: boolean) => Promise<Result<Theme>>;
       showNotification: (title: string, body: string) => Promise<Result<void>>;
-      saveImage: (
-        payload: ImagePayload,
-      ) => Promise<Result<{ imageSrc: string }>>;
       onThemeChanged: (
         callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
       ) => () => void;

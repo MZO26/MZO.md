@@ -1,4 +1,5 @@
 import { getManyById } from "@/api/api";
+import { setSidebarState } from "@/components/sidebar/sidebar-state";
 import { debounce } from "@/utils/async";
 import { formatNoteDate } from "@/utils/date";
 import { findElement, requireElement } from "@/utils/dom";
@@ -7,7 +8,6 @@ import { DEBOUNCE_MS } from "@shared/constants";
 import { getTodoStats } from "@shared/generators/generators";
 import type { Note } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
-import { setSidebarState } from "./sidebar-state";
 
 function updateInfoHeader(date: Note["created_at"], title: Note["title"]) {
   const container = findElement<HTMLDivElement>(".info-sidebar-header");

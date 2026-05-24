@@ -38,7 +38,7 @@ function applyInfoSidebarListeners(
       }
       const linkEl = target.closest<HTMLSpanElement>(".link");
       if (linkEl) {
-        const link = linkEl?.getAttribute("data-link");
+        const link = linkEl.getAttribute("data-link");
         const noteElement = findElement<HTMLDivElement>(
           `div[data-id="${link}"]`,
         );

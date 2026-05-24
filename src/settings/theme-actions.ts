@@ -13,18 +13,15 @@ function resolveTheme(theme: Theme): ResolvedTheme {
   return THEME_MAP[theme];
 }
 
-async function applyAppTheme(preference: Theme, saveToSettings = true) {
+async function applyAppTheme(preference: Theme) {
+  const codePreference = setCodeTheme(resolveTheme(preference));
   const result = await setTheme(preference);
   if (!result.success) {
     console.error("Failed to apply theme:", result.error);
     return;
   }
-  const validatedTheme = result.data;
-  document.documentElement.dataset["theme"] = validatedTheme;
-  const codePreference = setCodeTheme(resolveTheme(validatedTheme));
-  if (saveToSettings) {
-    updateSettings({ theme: preference, "code-theme": codePreference });
-  }
+  document.documentElement.dataset["theme"] = result.data;
+  updateSettings({ theme: preference, "code-theme": codePreference });
 }
 
 function setCodeTheme(resolvedTheme: ResolvedTheme): CodeTheme {

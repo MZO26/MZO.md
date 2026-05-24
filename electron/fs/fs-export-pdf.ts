@@ -8,6 +8,19 @@ import type { ExportedContent, ExportResult } from "@shared/types";
 import fs from "fs/promises";
 import path from "path";
 
+async function singlePDFExport(filePath: string, data: string) {
+  const hiddenWin = createHiddenPdfWindow();
+  const assets = loadPDFAssets();
+  try {
+    await exportPdfNote({ win: hiddenWin, filePath, html: data, assets });
+    return filePath;
+  } finally {
+    if (hiddenWin && !hiddenWin.isDestroyed()) {
+      hiddenWin.destroy();
+    }
+  }
+}
+
 async function batchPDFExport(
   folder: string,
   payload: ExportedContent[],
@@ -44,4 +57,4 @@ async function batchPDFExport(
   }
 }
 
-export { batchPDFExport };
+export { batchPDFExport, singlePDFExport };

@@ -33,6 +33,8 @@ contextBridge.exposeInMainWorld("fileAPI", {
   noteExportMany: (payload: ExportManyRequest) =>
     ipcRenderer.invoke("note:export-many", payload),
   noteImport: () => ipcRenderer.invoke("note:import"),
+  saveImage: (payload: ImagePayload) =>
+    ipcRenderer.invoke("save:image", payload),
 });
 contextBridge.exposeInMainWorld("electronAPI", {
   startupReady: () => ipcRenderer.send("app:start-ready"),
@@ -45,8 +47,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   ) => {
     subscribe("theme-changed", callback);
   },
-  saveImage: (payload: ImagePayload) =>
-    ipcRenderer.invoke("save:image", payload),
   showContextMenu: (menuType: MenuType, payload?: NoteMenuPayload) =>
     ipcRenderer.send("show-context-menu", menuType, payload),
   onTriggerTableAction: (callback: (action: string) => void) => {

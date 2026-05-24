@@ -9,11 +9,15 @@ async function initFocusMode() {
   const newState = !appContainer.classList.contains("focus");
   requestAnimationFrame(() => {
     appContainer.classList.toggle("focus", newState);
-    setTheme(document.body.getAttribute("data-theme") as Theme, newState).catch(
-      (err) => {
-        console.error("Failed to sync theme with main process.", err);
-      },
-    );
+    setTheme(
+      document.documentElement.getAttribute("data-theme") as Exclude<
+        Theme,
+        "system"
+      >,
+      newState,
+    ).catch((err) => {
+      console.error("Failed to sync theme with main process.", err);
+    });
   });
 }
 

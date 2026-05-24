@@ -5,7 +5,7 @@ import {
   updateSettings,
 } from "@/api/api";
 import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
-import { getExportContent } from "@/features/export-actions";
+import { getBatchExportContent } from "@/features/export-actions";
 import {
   applyAppTheme,
   resolveTheme,
@@ -14,7 +14,6 @@ import {
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItem, setSettingsItems } from "@/utils/registry";
-import { THEME_MAP } from "@shared/constants";
 import type {
   AppSettings,
   EditorFocus,
@@ -52,9 +51,7 @@ function initAppearanceSettings(settings: AppSettings) {
     "change",
     createAsyncHandler(async (e: Event) => {
       const target = e.target as HTMLSelectElement;
-      const validTheme =
-        target.value in THEME_MAP ? (target.value as Theme) : "system";
-      await applyAppTheme(validTheme, false);
+      await applyAppTheme(target.value as Theme);
     }),
   );
   document.documentElement.setAttribute(
@@ -189,7 +186,7 @@ function initAppSettings(settings: AppSettings) {
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement;
       const selectedExtension = target.value as ExportFormat;
-      const exportContent = await getExportContent(selectedExtension);
+      const exportContent = await getBatchExportContent(selectedExtension);
       if (!exportContent.success) {
         console.error("Failed to get export content:", exportContent.error);
         return;
@@ -197,12 +194,16 @@ function initAppSettings(settings: AppSettings) {
       const result = await exportManyNotes(exportContent.data);
       target.value = "";
       if (!result.success) {
-        console.error("Export failed:", result.error);
+        console.error(
+          "Export failed or Operation got cancelled:",
+          result.error,
+        );
         return;
       }
+      const count = result.data.length;
       await showNotification(
         "Export Successful",
-        `Successfully exported all files to ${selectedExtension}`,
+        `${count} files exported to .${selectedExtension}`,
       );
     }),
   );

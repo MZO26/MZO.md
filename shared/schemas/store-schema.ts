@@ -13,9 +13,7 @@ const StoreSchema = z.object({
     .default("1.5"),
   "editor-focus": z.enum(["on", "off"]).default("off"),
   spellcheck: z.boolean().default(false),
-  "code-theme": z
-    .enum(["focus", "balanced", "eye-comfort"])
-    .default("balanced"),
+  "code-theme": z.enum(["focus", "balanced", "colorless"]).default("balanced"),
   highlight: z.enum(["done", "info", "idea", "focus"]).default("done"),
   "note-item-display": z.enum(["tags", "snippet", "minimal"]).default("tags"),
   "window-bounds": z

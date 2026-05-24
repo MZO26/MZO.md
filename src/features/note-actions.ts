@@ -40,9 +40,7 @@ async function handleCreateNote() {
 }
 
 function cleanupDeletedNoteUI(id: string, noteElement?: HTMLDivElement) {
-  if (noteElement) {
-    noteElement.remove();
-  }
+  if (noteElement) noteElement.remove();
   noteStore.setState((state) => ({
     notes: state.notes.filter((n) => n.id !== id),
   }));
@@ -60,9 +58,9 @@ async function handleDeleteNote(id: string, noteElement: HTMLDivElement) {
   const editor = getAppItem("editor");
   debouncedUpdateStats.cancel();
   stopAutoSave(editor, "cancel");
-  const response = await deleteNote(id);
-  if (!response.success) {
-    console.error("Failed to delete:", response.error);
+  const result = await deleteNote(id);
+  if (!result.success) {
+    console.error("Failed to delete:", result.error);
     return;
   }
   cleanupDeletedNoteUI(id, noteElement);
@@ -80,25 +78,25 @@ async function handleSaveNote(
     ...editorContent,
     ...metaData,
   };
-  const response = await updateNote(payload, flush);
-  if (!response.success) {
-    console.error("save failed", response.error);
+  const result = await updateNote(payload, flush);
+  if (!result.success) {
+    console.error("save failed", result.error);
     return;
   }
-  debouncedUpdateStats(response.data);
-  await updateNoteInList(response.data);
+  debouncedUpdateStats(result.data);
+  await updateNoteInList(result.data);
 }
 
 async function handleSelectNote(noteItem: HTMLDivElement) {
   const noteID = noteItem.getAttribute("data-id");
   if (!noteID) return;
-  const response = await getNoteById(noteID);
-  if (!response.success) {
-    console.error("Failed to fetch note:", response.error);
+  const result = await getNoteById(noteID);
+  if (!result.success) {
+    console.error("Failed to fetch note:", result.error);
     return;
   }
   stateStore.setState({ activeId: noteID });
-  viewNote(response.data);
+  viewNote(result.data);
   setActiveItem(noteItem, getAppItem("sidebar"));
 }
 

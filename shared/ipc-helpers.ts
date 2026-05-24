@@ -1,32 +1,19 @@
-import type { Result } from "@shared/types";
 import z from "zod";
-import { AppErrorCode } from "./constants";
 
 function validation<T extends z.ZodType>(
   schema: T,
   payload: unknown,
 ): z.infer<T> {
-  const validation = schema.safeParse(payload);
-  if (!validation.success) {
+  const validate = schema.safeParse(payload);
+  if (!validate.success) {
     console.error(
       "Validation failed:",
-      JSON.stringify(validation.error, null, 2),
+      JSON.stringify(validate.error, null, 2),
     );
-    console.dir(validation.error.issues, { depth: null });
-    throw validation.error;
+    console.dir(validate.error.issues, { depth: null });
+    throw validate.error;
   }
-  return validation.data;
-}
-
-async function safeInvoke<T>(
-  ipcPromise: Promise<Result<T>>,
-): Promise<Result<T>> {
-  try {
-    return await ipcPromise;
-  } catch (err: unknown) {
-    console.error("[IPC Bridge Connection Error]: ", err);
-    return { success: false, error: AppErrorCode.UnknownError };
-  }
+  return validate.data;
 }
 
 function measure<T>(fn: () => T) {
@@ -36,4 +23,4 @@ function measure<T>(fn: () => T) {
   return Math.round((end - start) * 100) / 100;
 }
 
-export { measure, safeInvoke, validation };
+export { measure, validation };

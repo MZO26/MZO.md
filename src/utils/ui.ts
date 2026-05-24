@@ -1,5 +1,6 @@
 import { findElement } from "@/utils/dom";
 import { delegate } from "tippy.js";
+import "tippy.js/dist/tippy.css";
 
 function createTooltipContent(
   baseText: string,

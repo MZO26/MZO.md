@@ -28,7 +28,7 @@ function* iterateLines(text: string): IterableIterator<string> {
   }
 }
 
-function titleGenerator(text: string): string {
+function titleGenerator(text: string) {
   if (typeof text !== "string") return "New Note";
   for (let line of iterateLines(text)) {
     line = line.replace(/#[\p{L}\p{N}_]+/gu, "").trim();

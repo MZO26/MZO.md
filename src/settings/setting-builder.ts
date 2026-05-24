@@ -1,5 +1,4 @@
 import { requireElement } from "@/utils/dom";
-import "tippy.js/dist/tippy.css";
 
 type SelectOption = { value: string; label: string };
 

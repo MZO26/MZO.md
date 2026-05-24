@@ -20,12 +20,12 @@ async function handleSearchInput(searchInput: string) {
     await reloadNoteList();
     return;
   }
-  const response = await searchNotes(searchInput, 50);
-  if (!response.success) {
-    console.error("Search failed:", response.error);
+  const result = await searchNotes(searchInput, 50);
+  if (!result.success) {
+    console.error("Search failed:", result.error);
     return;
   }
-  addManyNotesToList(response.data);
+  addManyNotesToList(result.data);
   handleSidebarEmptyState(searchInput);
 }
 
@@ -47,21 +47,21 @@ function createViews(views: ViewItem[]) {
 }
 
 async function handleViews(view: string) {
-  const response = await getViews(view);
-  if (!response.success) {
-    console.error("Failed to fetch views:", response.error);
+  const result = await getViews(view);
+  if (!result.success) {
+    console.error("Failed to fetch views:", result.error);
     return;
   }
-  await reloadNoteList(response.data);
+  await reloadNoteList(result.data);
 }
 
 async function searchByTag(tag: string) {
-  const response = await getByTag(tag);
-  if (!response.success) {
-    console.error("Failed to fetch notes by tag:", response.error);
+  const result = await getByTag(tag);
+  if (!result.success) {
+    console.error("Failed to fetch notes by tag:", result.error);
     return;
   }
-  await reloadNoteList(response.data);
+  await reloadNoteList(result.data);
 }
 
 function toggleSidebar(appContainer: HTMLDivElement) {
@@ -147,15 +147,14 @@ async function reloadNoteList(notes?: Note[]) {
     noteStore.setState({ notes });
     return;
   }
-  const response = await getAll();
-  if (!response.success) {
-    console.error("Failed to fetch all notes:", response.error);
+  const result = await getAll();
+  if (!result.success) {
+    console.error("Failed to fetch all notes:", result.error);
     return;
   } else {
-    const notes = response.data;
+    const notes = result.data;
     addManyNotesToList(notes.sort(compareNotes));
     noteStore.setState({ notes });
-    return;
   }
 }
 

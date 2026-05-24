@@ -12,7 +12,7 @@ class AppBackendError extends Error {
   }
 }
 
-function handleFatalIpcError(err: unknown): Failure {
+function handleIpcError(err: unknown): Failure {
   if (err instanceof AppBackendError) {
     return {
       success: false,
@@ -29,10 +29,10 @@ function handleFatalIpcError(err: unknown): Failure {
       error: AppErrorCode.InvalidData,
     };
   }
-  console.error("[IPC FATAL CRASH]: ", err);
+  console.error("[IPC ERROR]: ", err);
   return {
     success: false,
     error: AppErrorCode.UnknownError,
   };
 }
-export { AppBackendError, handleFatalIpcError };
+export { AppBackendError, handleIpcError };

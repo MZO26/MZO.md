@@ -1,23 +1,20 @@
-import { createManyNotes } from "@/api/api";
+import { createManyNotes, importNote, showNotification } from "@/api/api";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
 import {
   addManyNotesToList,
   addOneNoteToList,
 } from "@/components/sidebar/sidebar-actions";
-import {
-  getImportedContent,
-  handleImportFile,
-} from "@/features/import-actions";
+import { setImportedContent } from "@/features/import-actions";
 import { handleCreateNote, viewNote } from "@/features/note-actions";
 import { noteStore, stateStore } from "@/settings/app-state";
 
 async function createNoteButton() {
-  const response = await handleCreateNote();
-  if (!response.success) {
-    console.error("Failed to create note:", response.error);
+  const result = await handleCreateNote();
+  if (!result.success) {
+    console.error("Failed to create note:", result.error);
     return;
   }
-  const note = response.data;
+  const note = result.data;
   noteStore.setState((state) => ({
     notes: [...state.notes, note],
   }));
@@ -28,25 +25,24 @@ async function createNoteButton() {
 }
 
 async function importNoteButton() {
-  const imported = await handleImportFile();
-  if (!imported.success) {
-    console.error("Import failed:", imported.error);
+  const imported = await importNote();
+  if (!imported.success) return;
+  const processedPayloads = await setImportedContent(imported.data);
+  if (!processedPayloads.success) return;
+  const result = await createManyNotes(processedPayloads.data);
+  if (!result.success) {
+    console.error("Failed to create imported notes:", result.error);
     return;
   }
-  const content = await getImportedContent(imported.data);
-  if (!content.success) {
-    console.error("Failed to process imported content:", content.error);
-    return;
-  }
-  const response = await createManyNotes(content.data);
-  if (!response.success) {
-    console.error("Failed to create imported notes:", response.error);
-    return;
-  }
+  const count = imported.data.length;
+  await showNotification(
+    "Import Successful",
+    `Successfully imported ${count} file${count === 1 ? "" : "s"}.`,
+  );
   noteStore.setState((state) => ({
-    notes: [...state.notes, ...response.data],
+    notes: [...state.notes, ...result.data],
   }));
-  addManyNotesToList(response.data);
+  addManyNotesToList(result.data);
   handleEditorEmptyState();
 }
 

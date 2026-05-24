@@ -69,9 +69,9 @@ function createStore<T>(initialState: T) {
 }
 
 async function loadSettings(): Promise<AppSettings> {
-  const response = await getAllSettings();
-  if (response.success) {
-    settingsStore.setState(response.data);
+  const result = await getAllSettings();
+  if (result.success) {
+    settingsStore.setState(result.data);
   }
   return settingsStore.getState();
 }

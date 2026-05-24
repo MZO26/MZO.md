@@ -1,5 +1,7 @@
 import db from "@electron/db/database";
-import { checkRateLimit, safeResponse } from "@electron/ipc/ipc-validation";
+import { handleDBBackupDialog } from "@electron/fs/fs-dialog";
+import { AppBackendError } from "@electron/ipc/ipc-error-handler";
+import { checkRateLimit, result } from "@electron/ipc/ipc-validation";
 import { AppErrorCode, LIMITS } from "@shared/constants";
 import { measure, validation } from "@shared/ipc-helpers";
 import {
@@ -12,42 +14,37 @@ import {
   TagSchema,
   UpdateNotePayloadSchema,
 } from "@shared/schemas/note-schema";
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
-import path from "path";
-import { AppBackendError } from "./ipc-error-handler";
+import { BrowserWindow, ipcMain } from "electron";
 
 function registerNoteIpc(win: BrowserWindow) {
   ipcMain.handle("note:getAll", (e) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:getAll", LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      const result = db.getAll();
-      return result;
+      return db.getAll();
     });
   });
 
   ipcMain.handle("note:create", (e, payload: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:create", LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(CreateNotePayloadSchema, payload);
-      const result = db.create(validatedData);
-      return result;
+      return db.create(validatedData);
     });
   });
 
   ipcMain.handle("note:create-many", (e, payloads: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:create-many", LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(CreateNotesPayloadsSchema, payloads);
-      const result = db.createMany(validatedData);
-      return result;
+      return db.createMany(validatedData);
     });
   });
 
   ipcMain.handle("note:merge", (e, idA: unknown, idB: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:merge", LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedIds = validation(MergeTransactionSchema, { idA, idB });
@@ -56,7 +53,7 @@ function registerNoteIpc(win: BrowserWindow) {
   });
 
   ipcMain.handle("note:update", (e, payload: unknown, flush: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!flush) {
         if (!checkRateLimit("note:update", LIMITS.WRITE_LIGHT))
           throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -66,98 +63,86 @@ function registerNoteIpc(win: BrowserWindow) {
         }
       }
       const validatedData = validation(UpdateNotePayloadSchema, payload);
-      const result = db.update(validatedData);
-      return result;
+      return db.update(validatedData);
     });
   });
 
   ipcMain.handle("note:delete", (e, id: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:delete", LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
-      const result = db.delete(validatedData);
-      return result;
+      return db.delete(validatedData);
     });
   });
 
   ipcMain.handle("note:getById", (e, id: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:getById", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
-      const result = db.getById(validatedData);
-      return result;
+      return db.getById(validatedData);
     });
   });
 
   ipcMain.handle("note:getManyById", (e, id: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:getManyById", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, id);
-      const result = db.getManyById(validatedData);
-      return result;
+      return db.getManyById(validatedData);
     });
   });
 
   ipcMain.handle("note:getByTag", (e, tag: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:getByTag", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(TagSchema, tag);
-      const result = db.searchByTag(validatedData);
-      return result;
+      return db.searchByTag(validatedData);
     });
   });
 
   ipcMain.handle("note:search", (e, searchTerm: unknown, limit: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:search", LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(SearchSchema, { searchTerm, limit });
       const { searchTerm: validSearchTerm, limit: validSearchLimit } =
         validatedData;
-      const result = db.searchNotes(validSearchTerm, validSearchLimit);
-      return result;
+      return db.searchNotes(validSearchTerm, validSearchLimit);
     });
   });
 
   ipcMain.handle("note:pin", (e, id: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:pin", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
-      const result = db.togglePin(validatedData);
-      return result;
+      return db.togglePin(validatedData);
     });
   });
 
   ipcMain.handle("note:bookmark", (e, id: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("note:bookmark", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
-      const result = db.toggleBookmark(validatedData);
-      return result;
+      return db.toggleBookmark(validatedData);
     });
   });
 
   ipcMain.handle("views:get", (e, view: unknown) => {
-    let result;
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit(`views:get:${view}`, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       switch (view) {
         case "bookmarked":
-          result = db.getBookMarkedNotes();
-          break;
+          return db.getBookMarkedNotes();
         case "pinned":
-          result = db.getPinnedNotes();
-          break;
+          return db.getPinnedNotes();
         case "todos":
-          result = db.getNotesWithActionItems();
-          break;
+          return db.getNotesWithActionItems();
         case "all":
           return db.getAll();
         case "untagged":
@@ -165,12 +150,11 @@ function registerNoteIpc(win: BrowserWindow) {
         default:
           throw new AppBackendError(AppErrorCode.InvalidViewError);
       }
-      return result;
     });
   });
 
   ipcMain.handle("db-maintenance", (e, action: unknown) => {
-    return safeResponse(e, async () => {
+    return result(e, async () => {
       if (!checkRateLimit("db-maintenance", LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       switch (action) {
@@ -183,28 +167,8 @@ function registerNoteIpc(win: BrowserWindow) {
             db.vacuumDb();
           });
         case "backup-db":
-          const timestamp = new Date()
-            .toISOString()
-            .slice(0, 19)
-            .replace(/[:T]/g, "-");
-          const defaultPath = path.join(
-            app.getPath("documents"),
-            `db-backup-${timestamp}.sqlite`,
-          );
-          const { canceled, filePath } = await dialog.showSaveDialog(win, {
-            title: "Backup database",
-            defaultPath,
-            buttonLabel: "Save backup",
-            filters: [
-              { name: "SQLite Database", extensions: ["sqlite", "db"] },
-            ],
-            properties: ["showOverwriteConfirmation"],
-          });
-          if (canceled || !filePath) {
-            throw new AppBackendError(AppErrorCode.CancelledOperation);
-          }
-          const result = await db.backupDb(filePath);
-          return result.totalPages;
+          const filePath = await handleDBBackupDialog(win);
+          return (await db.backupDb(filePath)).totalPages;
         default: {
           throw new AppBackendError(AppErrorCode.InvalidDbAction);
         }

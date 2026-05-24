@@ -44,13 +44,13 @@ async function processAndInsertImage(file: File, editor: Editor | null) {
     return;
   }
   try {
-    const response = await compressImageInWorker(file);
-    if (!response.success) {
-      console.error("Image compression failed:", response.error);
+    const result = await compressImageInWorker(file);
+    if (!result.success) {
+      console.error("Image compression failed:", result.error);
       return;
     }
     const extension = mimeToExt[file.type as keyof typeof mimeToExt] ?? "jpeg";
-    const saved = await saveImage({ imageData: response.data, extension });
+    const saved = await saveImage({ imageData: result.data, extension });
     if (!saved.success) {
       console.error("Failed to save image:", saved.error);
       return;

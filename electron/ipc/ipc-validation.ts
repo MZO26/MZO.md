@@ -1,19 +1,13 @@
-import { registerElectronIpc } from "@electron/ipc/ipc-electron";
 import {
   AppBackendError,
-  handleFatalIpcError,
+  handleIpcError,
 } from "@electron/ipc/ipc-error-handler";
-import { registerFileIpc } from "@electron/ipc/ipc-fs";
-import { registerNoteIpc } from "@electron/ipc/ipc-note";
-import { registerSettingsIpc } from "@electron/ipc/ipc-settings";
-import { AppErrorCode } from "@shared/constants";
+import { APP_START_TIME, AppErrorCode, ipcTimers } from "@shared/constants";
 import type { Result } from "@shared/types";
-import { app, BrowserWindow, type IpcMainInvokeEvent } from "electron";
+import { BrowserWindow, app, type IpcMainInvokeEvent } from "electron";
+import type z from "zod";
 
-const APP_START_TIME = Date.now();
-const ipcTimers = new Map<string, number>();
-
-async function safeResponse<T>(
+async function result<T>(
   event: IpcMainInvokeEvent,
   action: () => Promise<T>,
 ): Promise<Result<T>> {
@@ -22,7 +16,7 @@ async function safeResponse<T>(
     const data = await action();
     return { success: true, data };
   } catch (err: unknown) {
-    return handleFatalIpcError(err);
+    return handleIpcError(err);
   }
 }
 
@@ -56,18 +50,32 @@ function checkRateLimit(channel: string, cooldownMs: number) {
     return true;
   }
   const lastCall = ipcTimers.get(channel) || 0;
-  if (now - lastCall < cooldownMs) {
-    throw new AppBackendError(AppErrorCode.RateLimitError);
-  }
+  if (now - lastCall < cooldownMs) return false;
   ipcTimers.set(channel, now);
   return true;
 }
 
-function registerIpc(win: BrowserWindow) {
-  registerElectronIpc(win);
-  registerNoteIpc(win);
-  registerSettingsIpc(win);
-  registerFileIpc(win);
+function validation<T extends z.ZodType>(
+  schema: T,
+  payload: unknown,
+): z.infer<T> {
+  const validate = schema.safeParse(payload);
+  if (!validate.success) {
+    console.error(
+      "Validation failed:",
+      JSON.stringify(validate.error, null, 2),
+    );
+    console.dir(validate.error.issues, { depth: null });
+    throw validate.error;
+  }
+  return validate.data;
 }
 
-export { checkRateLimit, registerIpc, safeResponse };
+function measure<T>(fn: () => T) {
+  const start = performance.now();
+  fn();
+  const end = performance.now();
+  return Math.round((end - start) * 100) / 100;
+}
+
+export { checkRateLimit, measure, result, validateSender, validation };

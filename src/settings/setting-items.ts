@@ -17,7 +17,7 @@ function buildSelects() {
     [
       { value: "focus", label: "Focus" },
       { value: "balanced", label: "Balanced" },
-      { value: "eye-comfort", label: "Eye Comfort" },
+      { value: "colorless", label: "Colorless" },
     ],
     "Appearance",
   );
