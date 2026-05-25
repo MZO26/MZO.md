@@ -1,7 +1,7 @@
 {
   "name": "mdeditor",
   "version": "1.0.0",
-  "description": "MZO.md is a handcrafted note-taking app built with Electron and Tiptap. It is focused on a fast, distraction-free writing experience for notes, documentation, and personal knowledge.",
+  "description": "MZO.md is a fast, distraction-free note-taking app for personal knowledge and documentation",
   "main": "dist-electron/main/main.js",
   "scripts": {
     "typecheck": "npx tsc --noEmit",
