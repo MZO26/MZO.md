@@ -22,7 +22,7 @@ async function handleSearchInput(searchInput: string) {
   }
   const result = await searchNotes(searchInput, 50);
   if (!result.success) {
-    console.error("Search failed:", result.error);
+    console.error("[searchNotes]: Search failed:", result.error);
     return;
   }
   addManyNotesToList(result.data);
@@ -49,7 +49,7 @@ function createViews(views: ViewItem[]) {
 async function handleViews(view: string) {
   const result = await getViews(view);
   if (!result.success) {
-    console.error("Failed to fetch views:", result.error);
+    console.error("[handleViews]: Failed to fetch views:", result.error);
     return;
   }
   await reloadNoteList(result.data);
@@ -58,7 +58,7 @@ async function handleViews(view: string) {
 async function searchByTag(tag: string) {
   const result = await getByTag(tag);
   if (!result.success) {
-    console.error("Failed to fetch notes by tag:", result.error);
+    console.error("[searchByTag]: Failed to fetch notes by tag:", result.error);
     return;
   }
   await reloadNoteList(result.data);
@@ -149,7 +149,7 @@ async function reloadNoteList(notes?: Note[]) {
   }
   const result = await getAll();
   if (!result.success) {
-    console.error("Failed to fetch all notes:", result.error);
+    console.error("[getAll]: Failed to fetch all notes:", result.error);
     return;
   } else {
     const notes = result.data;

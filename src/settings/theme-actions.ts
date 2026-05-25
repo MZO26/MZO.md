@@ -17,7 +17,7 @@ async function applyAppTheme(preference: Theme) {
   const codePreference = setCodeTheme(resolveTheme(preference));
   const result = await setTheme(preference);
   if (!result.success) {
-    console.error("Failed to apply theme:", result.error);
+    console.error("[applyAppTheme]: Failed to apply theme:", result.error);
     return;
   }
   document.documentElement.dataset["theme"] = result.data;

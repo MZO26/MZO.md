@@ -22,12 +22,12 @@ async function getBatchExportContent(
     return { success: false, error: result.error };
   }
   const notes = result.data;
-  const data: ExportedContent[] = [];
+  const processedPayloads: ExportedContent[] = [];
   if (extension === "json" || extension === "txt") {
     try {
       const isJson = extension === "json";
       for (const note of notes) {
-        data.push({
+        processedPayloads.push({
           id: note.id,
           fileName: note.title,
           content: isJson
@@ -36,10 +36,10 @@ async function getBatchExportContent(
           extension,
         });
       }
-      return { success: true, data };
+      return { success: true, data: processedPayloads };
     } catch (error) {
       console.error(
-        "Failed converting data for batch export (JSON / TXT): ",
+        "[getBatchExportContent]: Failed converting data for batch export (JSON / TXT): ",
         error,
       );
       return { success: false, error: AppErrorCode["InvalidData"] };
@@ -57,7 +57,7 @@ async function getBatchExportContent(
         await sleep(YIELD_INTERVAL); // prevent ui stuttering
       }
       headlessEditor.commands.setContent(note.content);
-      data.push({
+      processedPayloads.push({
         id: note.id,
         fileName: note.title,
         content: markdown
@@ -67,10 +67,10 @@ async function getBatchExportContent(
       });
       i++;
     }
-    return { success: true, data };
+    return { success: true, data: processedPayloads };
   } catch (error) {
     console.error(
-      "Failed converting data for batch export (MD / HTML):",
+      "[getBatchExportContent]: Failed converting data for batch export (MD / HTML):",
       error,
     );
     return { success: false, error: AppErrorCode["InvalidData"] };
@@ -85,60 +85,44 @@ function getExportContent(
 ): Result<ExportRequest> {
   const editor = getAppItem("editor");
   try {
-    const fileName = titleGenerator(editor.getText());
-    let payload: ExportRequest;
+    let content: string;
     switch (extension) {
       case "json":
-        payload = {
-          id,
-          extension: "json",
-          content: JSON.stringify(editor.getJSON()),
-          fileName,
-        };
+        content = JSON.stringify(editor.getJSON());
         break;
       case "html":
-        payload = {
-          id,
-          extension: "html",
-          content: DOMPurify.sanitize(editor.getHTML(), DOMPURIFY_CONFIG),
-          fileName,
-        };
+      case "pdf":
+        content = DOMPurify.sanitize(editor.getHTML(), DOMPURIFY_CONFIG);
         break;
       case "md":
-        payload = {
-          id,
-          extension: "md",
-          content: editor.getMarkdown(),
-          fileName,
-        };
+        content = editor.getMarkdown();
         break;
       case "txt":
-        payload = {
-          id,
-          extension: "txt",
-          content: editor.getText(),
-          fileName,
-        };
-        break;
-      case "pdf":
-        payload = {
-          id,
-          extension: "pdf",
-          content: DOMPurify.sanitize(editor.getHTML(), DOMPURIFY_CONFIG),
-          fileName,
-        };
+        content = editor.getText();
         break;
       default:
-        console.error("Unsupported export format:", extension);
+        console.error(
+          "[getExportContent]: Unsupported export format:",
+          extension,
+        );
         return {
           success: false,
-          error: AppErrorCode["InvalidData"],
+          error: AppErrorCode.InvalidData,
         };
     }
+    const payload: ExportRequest = {
+      id,
+      extension,
+      fileName: titleGenerator(editor.getText()),
+      content,
+    };
     return { success: true, data: payload };
   } catch (error) {
-    console.error("Failed converting data for single export:", error);
-    return { success: false, error: AppErrorCode["UnknownError"] };
+    console.error(
+      "[getExportContent]: Failed converting data for single export:",
+      error,
+    );
+    return { success: false, error: AppErrorCode.InvalidData };
   }
 }
 

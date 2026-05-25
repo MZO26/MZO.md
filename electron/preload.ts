@@ -33,22 +33,22 @@ contextBridge.exposeInMainWorld("fileAPI", {
   noteExportMany: (payload: ExportManyRequest) =>
     ipcRenderer.invoke("note:export-many", payload),
   noteImport: () => ipcRenderer.invoke("note:import"),
-  saveImage: (payload: ImagePayload) =>
-    ipcRenderer.invoke("save:image", payload),
+  imageWrite: (payload: ImagePayload) =>
+    ipcRenderer.invoke("image:write", payload),
 });
 contextBridge.exposeInMainWorld("electronAPI", {
   startupReady: () => ipcRenderer.send("app:start-ready"),
   showNotification: (title: string, body: string) =>
-    ipcRenderer.invoke("show-notification", title, body),
+    ipcRenderer.invoke("notification:show", title, body),
   setTheme: (theme: Theme, focus?: boolean) =>
-    ipcRenderer.invoke("set:theme", theme, focus),
+    ipcRenderer.invoke("theme:set", theme, focus),
   onThemeChanged: (
     callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
   ) => {
     subscribe("theme-changed", callback);
   },
   showContextMenu: (menuType: MenuType, payload?: NoteMenuPayload) =>
-    ipcRenderer.send("show-context-menu", menuType, payload),
+    ipcRenderer.send("context-menu:show", menuType, payload),
   onTriggerTableAction: (callback: (action: string) => void) => {
     subscribe("trigger:table-action", callback);
   },

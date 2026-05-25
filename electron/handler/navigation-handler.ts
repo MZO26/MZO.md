@@ -101,7 +101,7 @@ function processUrl(url: string, preventDefault?: () => void) {
     console.warn(`Blocked dangerous protocol: ${parsedUrl.protocol}`);
   } catch (error) {
     if (preventDefault) preventDefault();
-    console.error(`Blocked invalid URL: ${url}`);
+    console.error(`[processUrl]: Blocked invalid URL: ${url}`);
   }
 }
 

@@ -44,7 +44,7 @@ function createAsyncHandler<T extends Event>(
     try {
       await callback(e);
     } catch (error) {
-      console.error("Async Handler Error: ", error);
+      console.error("[createAsyncHandler]: Async Error: ", error);
     } finally {
       isProcessing = false;
     }

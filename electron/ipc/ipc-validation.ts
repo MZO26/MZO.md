@@ -22,7 +22,9 @@ async function result<T>(
 
 function validateSender(event: IpcMainInvokeEvent) {
   if (!event.senderFrame) {
-    console.error("Blocked: IPC Without valid senderFrame");
+    console.error(
+      "[IPC Sender Validation]: Blocked: IPC Without valid senderFrame",
+    );
     throw new AppBackendError(AppErrorCode.SenderError);
   }
   const mainWindow = BrowserWindow.fromWebContents(event.sender);
@@ -40,8 +42,10 @@ function validateSender(event: IpcMainInvokeEvent) {
   if (allowedProtocols.includes(senderUrl.protocol)) {
     return true;
   }
-  console.error(`Blocked senderFrame: ${senderUrl.href}`);
-  throw new AppBackendError(AppErrorCode.SenderError);
+  console.error(
+    `[IPC Sender Validation]: Blocked senderFrame: ${senderUrl.href}`,
+  );
+  throw new AppBackendError(AppErrorCode["SenderError"]);
 }
 
 function checkRateLimit(channel: string, cooldownMs: number) {

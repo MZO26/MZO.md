@@ -1,4 +1,4 @@
-import { createNoteButton } from "@/features/note-buttons";
+import { handleCreateNote } from "@/features/note-actions";
 import { stateStore } from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
@@ -37,7 +37,7 @@ function createEditorEmptyState() {
       ".empty-state-add-note-btn",
     );
     if (addNoteBtn) {
-      await createNoteButton();
+      await handleCreateNote();
     }
   });
   emptyState.addEventListener("click", handleClick);

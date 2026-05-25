@@ -25,7 +25,10 @@ async function handleDuplicateNote(note: Note) {
   };
   const result = await createNote(data);
   if (!result.success) {
-    console.error("Failed to create duplicate note:", result.error);
+    console.error(
+      "[handleDuplicateNote]: Failed to create duplicate note:",
+      result.error,
+    );
     return;
   }
   addOneNoteToList(result.data);

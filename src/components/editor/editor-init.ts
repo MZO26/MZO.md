@@ -138,7 +138,7 @@ function getNoteEditorExtensions() {
       allowBase64: true,
       resize: {
         enabled: true,
-        directions: ["top", "bottom", "left", "right"],
+        directions: ["bottom-right"],
         minWidth: 50,
         minHeight: 50,
         alwaysPreserveAspectRatio: true,

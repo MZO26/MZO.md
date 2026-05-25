@@ -1,4 +1,4 @@
-import { saveImage } from "@/api/api";
+import { imageWrite } from "@/api/api";
 import { useDelayedSpinner } from "@/utils/ui";
 import { ALLOWED_TYPES, MAX_SIZE, mimeToExt } from "@shared/constants";
 import type { Result } from "@shared/types";
@@ -36,23 +36,26 @@ function compressImageInWorker(
 async function processAndInsertImage(file: File, editor: Editor | null) {
   if (!editor) return;
   if (!ALLOWED_TYPES.includes(file.type)) {
-    console.error("Invalid file type.");
+    console.error("[processAndInsertImage]: Invalid file type.");
     return;
   }
   if (file.size > MAX_SIZE) {
-    console.error("File size exceeds the limit.");
+    console.error("[processAndInsertImage]: File size exceeds the limit.");
     return;
   }
   try {
     const result = await compressImageInWorker(file);
     if (!result.success) {
-      console.error("Image compression failed:", result.error);
+      console.error(
+        "[processAndInsertImage]: Image compression failed:",
+        result.error,
+      );
       return;
     }
     const extension = mimeToExt[file.type as keyof typeof mimeToExt] ?? "jpeg";
-    const saved = await saveImage({ imageData: result.data, extension });
+    const saved = await imageWrite({ imageData: result.data, extension });
     if (!saved.success) {
-      console.error("Failed to save image:", saved.error);
+      console.error("[imageWrite]: Failed to save image:", saved.error);
       return;
     }
     const currentPos = editor?.state.selection.to;
@@ -65,7 +68,10 @@ async function processAndInsertImage(file: File, editor: Editor | null) {
       })
       .run();
   } catch (error) {
-    console.error("Failed to process and insert image:", error);
+    console.error(
+      "[processAndInsertImage]: Unknown Error. Failed to process and insert image:",
+      error,
+    );
   }
 }
 

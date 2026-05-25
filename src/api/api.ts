@@ -23,7 +23,7 @@ async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
   try {
     return await ipcPromise;
   } catch (err: unknown) {
-    console.error("[IPC Bridge Connection Error]: ", err);
+    console.error("[IPC Bridge Error]: ", err);
     return { success: false, error: AppErrorCode.UnknownError };
   }
 }
@@ -113,10 +113,13 @@ const debouncedSetSettings = debounce(
     try {
       const result = await setSettings(settings);
       if (!result.success) {
-        console.error("Failed to update settings:", result.error);
+        console.error(
+          "[setSettings]: Failed to update settings:",
+          result.error,
+        );
       }
     } catch (err) {
-      console.error(err);
+      console.error("[setSettings]: Unknown error", err);
     }
   },
   DEBOUNCE_MS.slow,
@@ -157,8 +160,8 @@ async function showNotification(
   return invoke(window.electronAPI.showNotification(title, body));
 }
 
-async function saveImage(payload: ImagePayload): Promise<Result<ImageSrc>> {
-  return invoke(window.fileAPI.saveImage(payload));
+async function imageWrite(payload: ImagePayload): Promise<Result<ImageSrc>> {
+  return invoke(window.fileAPI.imageWrite(payload));
 }
 
 async function handleZoom(action: ZoomAction): Promise<Result<ZoomAction>> {
@@ -181,10 +184,10 @@ export {
   getSettings,
   getViews,
   handleZoom,
+  imageWrite,
   importNote,
   mergeNotes,
   pin,
-  saveImage,
   searchNotes,
   setTheme,
   showNotification,

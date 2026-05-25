@@ -49,7 +49,7 @@ function initAppearanceSettings(settings: AppSettings) {
   themeSelect.value = settings["theme"];
   themeSelect.addEventListener(
     "change",
-    createAsyncHandler(async (e: Event) => {
+    createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement;
       await applyAppTheme(target.value as Theme);
     }),
@@ -59,7 +59,7 @@ function initAppearanceSettings(settings: AppSettings) {
     settings["highlight"],
   );
   highlightSelect.value = settings["highlight"];
-  highlightSelect.addEventListener("change", (e: Event) => {
+  highlightSelect.addEventListener("change", (e) => {
     const target = e.target as HTMLSelectElement;
     document.documentElement.setAttribute("data-highlight", target.value);
     updateSettings({
@@ -70,7 +70,7 @@ function initAppearanceSettings(settings: AppSettings) {
   noteItemSelect.value = settings["note-item-display"];
   noteItemSelect.addEventListener(
     "change",
-    createAsyncHandler(async (e: Event) => {
+    createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement;
       updateSettings({
         "note-item-display": target.value as NoteItemDisplay,
@@ -150,7 +150,7 @@ function initEditorSettings(settings: AppSettings) {
   );
 
   focusSelect.value = settings["editor-focus"];
-  focusSelect.addEventListener("change", (e: Event) => {
+  focusSelect.addEventListener("change", (e) => {
     const target = e.target as HTMLSelectElement;
     const editor = getAppItem("editor");
     const editorDom = editor.view.dom;
@@ -186,22 +186,24 @@ function initAppSettings(settings: AppSettings) {
       const selectedExtension = target.value as ExportFormat;
       const exportContent = await getBatchExportContent(selectedExtension);
       if (!exportContent.success) {
-        console.error("Failed to get export content:", exportContent.error);
+        console.error(
+          "[initAppSettings -> getBatchExportContent]: Failed to get export content:",
+          exportContent.error,
+        );
         return;
       }
       const result = await exportManyNotes(exportContent.data);
       target.value = "";
       if (!result.success) {
         console.error(
-          "Export failed or Operation got cancelled:",
+          "[initAppSettings -> exportManyNotes]: Export failed or Operation got cancelled:",
           result.error,
         );
         return;
       }
-      const count = result.data.length;
       await showNotification(
         "Export Successful",
-        `${count} files exported to .${selectedExtension}`,
+        `${result.data.length} files exported to .${selectedExtension}`,
       );
     }),
   );
@@ -215,7 +217,10 @@ function initAppSettings(settings: AppSettings) {
       const result = await dbMaintenance(selectedOpt);
       target.value = "";
       if (!result.success) {
-        console.error("Database maintenance failed:", result.error);
+        console.error(
+          "[initAppSettings -> dbMaintenance]: Database maintenance failed:",
+          result.error,
+        );
         return;
       }
       if (selectedOpt === "backup-db" && result.success) {

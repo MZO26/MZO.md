@@ -37,7 +37,7 @@ function normalizeFileContent(file: ImportedContent) {
       try {
         return JSON.parse(content);
       } catch (error) {
-        console.error("Failed to parse JSON:", error);
+        console.error("[normalizeFileContent]: Failed to parse JSON:", error);
         return null;
       }
     }
@@ -64,8 +64,8 @@ async function setImportedContent(
     extensions: getNoteEditorExtensions(),
   });
   try {
-    const processedPayloads: CreateNotePayload[] = [];
     let i = 0;
+    const processedPayloads: CreateNotePayload[] = [];
     for (const file of files) {
       if (i > 0 && i % BATCH_SIZE === 0) {
         await sleep(YIELD_INTERVAL);
@@ -87,11 +87,15 @@ async function setImportedContent(
         bookmarked: false,
       };
       processedPayloads.push(payload);
+      i++;
     }
     return { success: true, data: processedPayloads };
   } catch (error) {
-    console.error("Failed to process imported content:", error);
-    return { success: false, error: AppErrorCode.UnknownError };
+    console.error(
+      "[setImportedContent]: Failed to process imported content:",
+      error,
+    );
+    return { success: false, error: AppErrorCode.InvalidData };
   } finally {
     headlessEditor.destroy();
   }

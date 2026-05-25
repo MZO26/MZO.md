@@ -1,6 +1,8 @@
 import { exportPdfNote } from "@electron/fs/fs-pdf";
 import { loadPDFAssets } from "@electron/handler/pdf-handler";
+import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { createHiddenPdfWindow } from "@electron/win";
+import { AppErrorCode } from "@shared/constants";
 import { validation } from "@shared/ipc-helpers";
 import { processWithLimit } from "@shared/limiter";
 import { FileNameSchema } from "@shared/schemas/export-schema";
@@ -50,8 +52,11 @@ async function batchPDFExport(
       };
     });
     return exported.filter((item): item is ExportResult => item !== null);
+  } catch (error) {
+    console.error("[batchPDFExport]: Error while exporting:", error);
+    throw new AppBackendError(AppErrorCode.ExportError);
   } finally {
-    if (!hiddenWin.isDestroyed()) {
+    if (hiddenWin && !hiddenWin.isDestroyed()) {
       hiddenWin.destroy();
     }
   }

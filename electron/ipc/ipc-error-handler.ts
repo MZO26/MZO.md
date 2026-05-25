@@ -29,7 +29,7 @@ function handleIpcError(err: unknown): Failure {
       error: AppErrorCode.InvalidData,
     };
   }
-  console.error("[IPC ERROR]: ", err);
+  console.error("[IPC Unknown Error]:", err);
   return {
     success: false,
     error: AppErrorCode.UnknownError,

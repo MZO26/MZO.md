@@ -49,7 +49,7 @@ class NoteDB {
       this.db = new BetterSqlite(dbPath);
       console.log(`Database initialized at: ${dbPath}`);
     } catch (error) {
-      console.error("Failed to initialize database:", error);
+      console.error("[NoteDB]: Failed to initialize database:", error);
 
       const msg = error instanceof Error ? error.message : String(error);
 

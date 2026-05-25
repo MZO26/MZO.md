@@ -8,7 +8,7 @@ import {
 import { editor } from "@/components/editor/editor-init";
 import { reloadNoteList } from "@/components/sidebar/sidebar-actions";
 import { getExportContent } from "@/features/export-actions";
-import { cleanup, handleDeleteNote } from "@/features/note-actions";
+import { handleDeleteNote } from "@/features/note-actions";
 import { handleDuplicateNote } from "@/features/note-duplicate";
 import { handleMergeNotes } from "@/features/note-merge";
 import { noteStore, settingsStore } from "@/settings/app-state";
@@ -16,7 +16,7 @@ import { initDeleteDialog, initMergeDialog } from "@/settings/dialogs";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { ERROR_MESSAGES } from "@shared/constants";
+import { CLEANUP, ERROR_MESSAGES } from "@shared/constants";
 
 const { mergeDialog, mergeInput } = initMergeDialog();
 const { deleteDialog, confirmBtn } = initDeleteDialog();
@@ -78,13 +78,16 @@ function initListeners() {
   window.fileAPI.onTriggerExport(async (id: string, extension: string) => {
     const result = getExportContent(id, extension);
     if (!result.success) {
-      console.error("Failed to fetch note data:", result.error);
+      console.error(
+        "[exportTrigger]: Failed to fetch note data:",
+        result.error,
+      );
       await showNotification("Export Failed", ERROR_MESSAGES["INVALID_DATA"]);
       return;
     }
     const exported = await exportNote(result.data);
     if (!exported.success) {
-      console.error("Failed to write file:", exported.error);
+      console.error("[exportTrigger]: Failed to write file:", exported.error);
       return;
     }
     await showNotification(
@@ -115,26 +118,27 @@ function initListeners() {
       await showNotification("ID copied to clipboard!", "");
     } catch (error) {
       await showNotification("Failed to copy ID.", "");
-      console.error("Failed to copy text: ", error);
+      console.error("[idTrigger]: Failed to copy text: ", error);
     }
   });
 
-  window.noteAPI.onTriggerMerge((id: string) => {
+  window.noteAPI.onTriggerMerge((idA: string) => {
     if (!mergeDialog || !mergeInput) return;
     const handleClose = createAsyncHandler(async () => {
       if (mergeDialog.returnValue !== "confirm") return;
-      const id2 = mergeInput.value.trim();
-      await handleMergeNotes(id, id2);
+      const idB = mergeInput.value.trim();
+      await handleMergeNotes(idA, idB);
     });
     mergeDialog.addEventListener("close", handleClose, { once: true });
     mergeDialog.returnValue = "";
+    mergeInput.value = "";
     mergeDialog.showModal();
   });
 
   window.noteAPI.onTriggerPin(async (id: string) => {
     const result = await pin(id);
     if (!result.success) {
-      console.error("Failed to toggle pin:", result.error);
+      console.error("[pinTrigger]: Failed to toggle pin:", result.error);
       return;
     }
     noteStore.setState((state) => ({
@@ -148,7 +152,10 @@ function initListeners() {
   window.noteAPI.onTriggerBookmark(async (id: string) => {
     const result = await bookmark(id);
     if (!result.success) {
-      console.error("Failed to toggle bookmark:", result.error);
+      console.error(
+        "[bookmarkTrigger]: Failed to toggle bookmark:",
+        result.error,
+      );
       return;
     }
     noteStore.setState((state) => ({
@@ -162,20 +169,22 @@ function initListeners() {
   window.noteAPI.onTriggerDuplicate(async (id: string) => {
     const result = await getNoteById(id);
     if (!result.success) {
-      console.error("Failed to fetch note for duplication:", result.error);
+      console.error(
+        "[duplicateTrigger]: Failed to fetch note for duplication:",
+        result.error,
+      );
       return;
     }
     await handleDuplicateNote(result.data);
   });
 
   window.electronAPI.onThemeChanged(async (resolvedTheme) => {
-    console.log("FRONTEND RECEIVED THEME:", resolvedTheme);
     document.documentElement.dataset["theme"] = resolvedTheme;
   });
 
   window.electronAPI.onRequestFlush(async () => {
     if (editor) {
-      const controller = cleanup.get(editor);
+      const controller = CLEANUP.get(editor);
       if (controller) {
         await controller.flush();
       }

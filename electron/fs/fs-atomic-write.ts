@@ -27,7 +27,7 @@ async function writeAtomic(
   } catch (error) {
     // ignore errors while deleting temp file to throw more important error if save failed
     await unlink(tempPath).catch(() => {});
-    throw new AppBackendError(AppErrorCode.FILE_WRITE_ERROR);
+    throw new AppBackendError(AppErrorCode.FileWriteError);
   }
 }
 

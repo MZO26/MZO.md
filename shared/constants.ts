@@ -1,5 +1,6 @@
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import type { Code, ContentType, ResolvedTheme, ViewItem } from "@shared/types";
+import type { Editor } from "@tiptap/core";
 
 enum WorkerErrorCode {
   CompressionError = "COMPRESSION_FAILED",
@@ -10,7 +11,7 @@ enum WorkerErrorCode {
 enum AppErrorCode {
   DBError = "DB_ERROR",
   InvalidData = "INVALID_DATA",
-  FILE_WRITE_ERROR = "FILE_WRITE_ERROR",
+  FileWriteError = "FILE_WRITE_ERROR",
   RateLimitError = "RATE_LIMIT",
   SenderError = "UNAUTHORIZED_SENDER",
   UnknownError = "UNKNOWN_ERROR",
@@ -19,20 +20,26 @@ enum AppErrorCode {
   CompressionError = "COMPRESSION_ERROR",
   InvalidImageError = "INVALID_IMAGE_ERROR",
   InvalidDbAction = "INVALID_ACTION",
+  ExportError = "EXPORT_ERROR",
+  AutoSaveError = "AUTOSAVE_ERROR",
+  InvalidDialog = "INVALID_DIALOG",
 }
 
 const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   [AppErrorCode.DBError]: "Failed to access database.",
-  [AppErrorCode.InvalidData]: "Couldn't read the note data.",
-  [AppErrorCode.FILE_WRITE_ERROR]: "Failed to write file.",
+  [AppErrorCode.InvalidData]: "Couldn't read the notes' data.",
+  [AppErrorCode.FileWriteError]: "Failed to write file.",
   [AppErrorCode.RateLimitError]: "Too many attempts. Please wait.",
   [AppErrorCode.SenderError]: "Action blocked for security.",
   [AppErrorCode.UnknownError]: "An unexpected error occurred.",
   [AppErrorCode.InvalidViewError]: "Cannot open this view.",
-  [AppErrorCode.CancelledOperation]: "Import cancelled.",
+  [AppErrorCode.CancelledOperation]: "Operation cancelled.",
   [AppErrorCode.CompressionError]: "Failed to compress file.",
   [AppErrorCode.InvalidImageError]: "Unsupported image format.",
   [AppErrorCode.InvalidDbAction]: "This action is not allowed.",
+  [AppErrorCode.ExportError]: "Export failed.",
+  [AppErrorCode.AutoSaveError]: "Autosave failed.",
+  [AppErrorCode.InvalidDialog]: "Unsupported Operation.",
 };
 
 const APP_START_TIME = Date.now();
@@ -51,13 +58,18 @@ const CONTENT_TYPE_MAP: Record<string, ContentType> = {
   json: "json",
 };
 
+const CLEANUP = new WeakMap<
+  Editor,
+  { flush: () => Promise<void>; cancel: () => void }
+>();
+
 const LIMITS = {
-  WRITE_HEAVY: 500, // saveImage
-  WRITE_STANDARD: 500, // create, delete, store:set
-  WRITE_LIGHT: 300, // update
-  READ_HEAVY: 500, // search, getAll
-  READ_LIGHT: 100, // getById, store:get
-  WRITE_FLUSH: 5, // update with flush arg
+  WRITE_HEAVY: 500,
+  WRITE_STANDARD: 500,
+  WRITE_LIGHT: 300,
+  READ_HEAVY: 500,
+  READ_LIGHT: 100,
+  WRITE_FLUSH: 5,
 };
 
 const DEBOUNCE_MS = {
@@ -193,6 +205,7 @@ export {
   APP_START_TIME,
   AppErrorCode,
   BATCH_SIZE,
+  CLEANUP,
   CODE_THEME_MAP,
   CONTENT_TYPE_MAP,
   DEBOUNCE_MS,

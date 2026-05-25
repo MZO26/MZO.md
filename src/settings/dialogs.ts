@@ -15,4 +15,11 @@ function initMergeDialog() {
   return { mergeDialog, mergeInput };
 }
 
-export { initDeleteDialog, initMergeDialog };
+function initSettingsDialog() {
+  const settingsDialog = requireElement<HTMLDialogElement>(".settings-modal");
+  const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
+  initTippyDelegate(settingsDialog, settingsDialog);
+  return { settingsDialog, settingsContainer };
+}
+
+export { initDeleteDialog, initMergeDialog, initSettingsDialog };

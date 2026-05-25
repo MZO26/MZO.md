@@ -29,7 +29,10 @@ async function batchImport(filePaths: string[]): Promise<ImportRequest[]> {
         content: sanitizedContent,
       });
     } catch (error) {
-      console.error(`Failed to read/validate file: ${file}:`, error);
+      console.error(
+        `[batchImport]: Failed to read/validate file: ${file}:`,
+        error,
+      );
       return null;
     }
   });

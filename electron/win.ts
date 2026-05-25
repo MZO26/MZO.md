@@ -42,7 +42,7 @@ function saveWindowBounds() {
     );
     store.set("window-bounds", result);
   } catch (error) {
-    console.error("Failed to save window bounds:", error);
+    console.error("[saveWindowBounds]: Failed to save window bounds:", error);
   }
 }
 

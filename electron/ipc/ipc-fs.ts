@@ -61,9 +61,9 @@ function registerFileIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("save:image", (e, payload: unknown) => {
+  ipcMain.handle("image:write", (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("save:image", LIMITS.WRITE_HEAVY))
+      if (!checkRateLimit("image:write", LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ImagePayloadSchema, payload);
       const result = await handleImageWrite(validatedData);

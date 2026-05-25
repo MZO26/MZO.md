@@ -16,7 +16,10 @@ async function initFocusMode() {
       >,
       newState,
     ).catch((err) => {
-      console.error("Failed to sync theme with main process.", err);
+      console.error(
+        "[initFocusMode -> setTheme]: Failed to sync theme with main process.",
+        err,
+      );
     });
   });
 }

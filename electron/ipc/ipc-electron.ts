@@ -9,10 +9,10 @@ import { BrowserWindow, ipcMain, Menu, Notification } from "electron";
 
 function registerElectronIpc(win: BrowserWindow) {
   ipcMain.on(
-    "show-context-menu",
+    "context-menu:show",
     (e, menuType: MenuType, payload: NoteMenuPayload) => {
       return result(e, async () => {
-        if (!checkRateLimit("show-context-menu", LIMITS.READ_LIGHT))
+        if (!checkRateLimit("context-menu:show", LIMITS.READ_LIGHT))
           throw new AppBackendError(AppErrorCode.RateLimitError);
         if (!win) return;
         let menu: Menu;
@@ -28,9 +28,9 @@ function registerElectronIpc(win: BrowserWindow) {
     },
   );
 
-  ipcMain.handle("set:theme", (e, theme: Theme, focus?: boolean) => {
+  ipcMain.handle("theme:set", (e, theme: Theme, focus?: boolean) => {
     return result(e, async () => {
-      if (!checkRateLimit("set:theme", LIMITS.WRITE_LIGHT))
+      if (!checkRateLimit("theme:set", LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const resolvedTheme = initTheme(theme);
       const windowTheme = getTitleBarOverlay(resolvedTheme, focus ?? false);
@@ -42,9 +42,9 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("show-notification", (e, title: string, body: string) => {
+  ipcMain.handle("notification:show", (e, title: string, body: string) => {
     return result(e, async () => {
-      if (!checkRateLimit("show-notification", LIMITS.WRITE_LIGHT))
+      if (!checkRateLimit("notification:show", LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       if (Notification.isSupported()) {
         const notif = new Notification({

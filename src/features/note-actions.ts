@@ -1,28 +1,37 @@
-import { createNote, deleteNote, getNoteById, updateNote } from "@/api/api";
+import {
+  createManyNotes,
+  createNote,
+  deleteNote,
+  getNoteById,
+  importNote,
+  showNotification,
+  updateNote,
+} from "@/api/api";
+import {
+  getContent,
+  resetEditorHistory,
+} from "@/components/editor/editor-actions";
 import { editor } from "@/components/editor/editor-init";
 import { handleEditorEmptyState } from "@/components/editor/editor-state";
 import { debouncedUpdateStats } from "@/components/sidebar/info-sidebar-actions";
-import { updateNoteInList } from "@/components/sidebar/sidebar-actions";
+import {
+  addManyNotesToList,
+  addOneNoteToList,
+  updateNoteInList,
+} from "@/components/sidebar/sidebar-actions";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-state";
 import { setupAutoSave, stopAutoSave } from "@/features/note-auto-save";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { setActiveItem } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
+import { CLEANUP } from "@shared/constants";
 import { getMetadata } from "@shared/generators/generators";
 import type {
   CreateNotePayload,
   Note,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
-import { Editor } from "@tiptap/core";
-import { EditorState } from "@tiptap/pm/state";
-
-function getContent() {
-  const editor = getAppItem("editor");
-  const plainText = editor.getText();
-  const content = editor.getJSON();
-  return { content, plainText };
-}
+import { setImportedContent } from "./import-actions";
 
 async function handleCreateNote() {
   const editorContent = {
@@ -36,7 +45,43 @@ async function handleCreateNote() {
     pinned: false,
     bookmarked: false,
   };
-  return await createNote(payload);
+  const result = await createNote(payload);
+  if (!result.success) {
+    console.error("[handleCreateNote]: Failed to create note:", result.error);
+    return;
+  }
+  noteStore.setState((state) => ({
+    notes: [...state.notes, result.data],
+  }));
+  stateStore.setState({ activeId: result.data.id });
+  addOneNoteToList(result.data);
+  handleEditorEmptyState();
+  viewNote(result.data);
+}
+
+async function handleImportNote() {
+  const imported = await importNote();
+  if (!imported.success) return;
+  const processedPayloads = await setImportedContent(imported.data);
+  if (!processedPayloads.success) return;
+  const result = await createManyNotes(processedPayloads.data);
+  if (!result.success) {
+    console.error(
+      "[handleImportNote]: Failed to create imported notes:",
+      result.error,
+    );
+    return;
+  }
+  const count = imported.data.length;
+  await showNotification(
+    "Import Successful",
+    `Successfully imported ${count} file${count === 1 ? "" : "s"}.`,
+  );
+  noteStore.setState((state) => ({
+    notes: [...state.notes, ...result.data],
+  }));
+  addManyNotesToList(result.data);
+  handleEditorEmptyState();
 }
 
 function cleanupDeletedNoteUI(id: string, noteElement?: HTMLDivElement) {
@@ -60,16 +105,13 @@ async function handleDeleteNote(id: string, noteElement: HTMLDivElement) {
   stopAutoSave(editor, "cancel");
   const result = await deleteNote(id);
   if (!result.success) {
-    console.error("Failed to delete:", result.error);
+    console.error("[handleDeleteNote]: Failed to delete:", result.error);
     return;
   }
   cleanupDeletedNoteUI(id, noteElement);
 }
 
-async function handleSaveNote(
-  id: string,
-  flush: boolean = false,
-): Promise<void> {
+async function handleSaveNote(id: string, flush: boolean = false) {
   if (!editor || !id) return;
   const editorContent = getContent();
   const metaData = getMetadata(editorContent.content, editorContent.plainText);
@@ -80,7 +122,7 @@ async function handleSaveNote(
   };
   const result = await updateNote(payload, flush);
   if (!result.success) {
-    console.error("save failed", result.error);
+    console.error("[handleSaveNote]: save failed", result.error);
     return;
   }
   debouncedUpdateStats(result.data);
@@ -92,7 +134,7 @@ async function handleSelectNote(noteItem: HTMLDivElement) {
   if (!noteID) return;
   const result = await getNoteById(noteID);
   if (!result.success) {
-    console.error("Failed to fetch note:", result.error);
+    console.error("[handleSelectNote]: Failed to fetch note:", result.error);
     return;
   }
   stateStore.setState({ activeId: noteID });
@@ -100,23 +142,9 @@ async function handleSelectNote(noteItem: HTMLDivElement) {
   setActiveItem(noteItem, getAppItem("sidebar"));
 }
 
-const cleanup = new WeakMap<
-  Editor,
-  { flush: () => Promise<void>; cancel: () => void }
->();
-
-function resetEditorHistory(editor: Editor): void {
-  const newState = EditorState.create({
-    doc: editor.state.doc,
-    plugins: editor.state.plugins,
-    schema: editor.state.schema,
-  });
-  editor.view.updateState(newState);
-}
-
 function viewNote(note: Note): void {
   const editor = getAppItem("editor");
-  debouncedUpdateStats.flush();
+  debouncedUpdateStats.cancel();
   stopAutoSave(editor, "flush");
   handleEditorEmptyState();
   editor.commands.setContent(note.content, {
@@ -126,17 +154,17 @@ function viewNote(note: Note): void {
   const newCleanup = setupAutoSave(editor, note.id);
   debouncedUpdateStats(note);
   debouncedUpdateStats.flush();
-  cleanup.set(editor, newCleanup);
+  CLEANUP.set(editor, newCleanup);
   requestAnimationFrame(() => {
     editor.commands.focus();
   });
 }
 
 export {
-  cleanup,
   cleanupDeletedNoteUI,
   handleCreateNote,
   handleDeleteNote,
+  handleImportNote,
   handleSaveNote,
   handleSelectNote,
   viewNote,

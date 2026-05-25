@@ -1,16 +1,14 @@
+import { initSettingsDialog } from "@/settings/dialogs";
 import { createSettingsMenu } from "@/settings/setting-builder";
 import { buildSelects } from "@/settings/setting-items";
 import { setSelectListeners } from "@/settings/setting-items-init";
 import { applyAppTheme } from "@/settings/theme-actions";
 import { findElement, requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
-import { initTippyDelegate } from "@/utils/ui";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 async function initAppSettings(settings: AppSettings) {
-  const modal = findElement<HTMLDialogElement>(".modal-settings");
-  const settingsContainer = findElement<HTMLDivElement>(".settings-content");
-  if (!modal || !settingsContainer) return;
+  const { settingsDialog, settingsContainer } = initSettingsDialog();
   settingsContainer.appendChild(createSettingsMenu());
   buildSelects();
   setSelectListeners(settings);
@@ -21,12 +19,16 @@ async function initAppSettings(settings: AppSettings) {
     "button:first-child",
     buttonsContainer,
   );
-  initTippyDelegate(modal, modal);
   if (firstActiveBtn) setActiveItem(firstActiveBtn, buttonsContainer);
   await applyAppTheme(settings["theme"]);
-  applyModalListeners(openModalBtn, buttonsContainer, settingsContainer, modal);
+  applyModalListeners(
+    openModalBtn,
+    buttonsContainer,
+    settingsContainer,
+    settingsDialog,
+  );
   registerAppEvents(document, {
-    "app:open-settings": () => modal.showModal(),
+    "app:open-settings": () => settingsDialog.showModal(),
   });
 }
 

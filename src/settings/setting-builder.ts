@@ -1,6 +1,5 @@
 import { requireElement } from "@/utils/dom";
-
-type SelectOption = { value: string; label: string };
+import type { SelectOption } from "@shared/types";
 
 // blueprint for select items and their options for specified categories
 function selectBuilder(

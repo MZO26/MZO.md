@@ -4,8 +4,11 @@ import {
   handleViews,
   toggleSidebar,
 } from "@/components/sidebar/sidebar-actions";
-import { handleSelectNote } from "@/features/note-actions";
-import { createNoteButton, importNoteButton } from "@/features/note-buttons";
+import {
+  handleCreateNote,
+  handleImportNote,
+  handleSelectNote,
+} from "@/features/note-actions";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
@@ -24,7 +27,7 @@ async function initNotesSidebar() {
   applySidebarListeners(sidebar, sidebarHeader, searchInput, viewSelect);
   registerAppEvents(document, {
     "app:toggle-sidebar": () => toggleSidebar(appContainer),
-    "app:create-new-note": () => createNoteButton(),
+    "app:create-new-note": () => handleCreateNote(),
   });
 }
 
@@ -41,12 +44,12 @@ function applySidebarListeners(
       if (target === sidebarHeader) return;
       const addNoteBtn = target.closest<HTMLButtonElement>(".add-note-btn");
       if (addNoteBtn) {
-        await createNoteButton();
+        await handleCreateNote();
         return;
       }
       const importBtn = target.closest<HTMLButtonElement>(".import-btn");
       if (importBtn) {
-        await importNoteButton();
+        await handleImportNote();
         return;
       }
     }),

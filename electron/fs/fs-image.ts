@@ -24,6 +24,7 @@ async function handleImageWrite(validatedData: ImagePayload) {
   try {
     fs.writeFileSync(filePath, imageBuffer, { flag: "wx" });
   } catch (error) {
+    console.log("Image error:", error);
     if (
       error instanceof Error &&
       (error as NodeJS.ErrnoException).code === "EEXIST"
@@ -32,7 +33,7 @@ async function handleImageWrite(validatedData: ImagePayload) {
         imageSrc: `appimg:///${fileName}`,
       };
     } else {
-      throw new AppBackendError(AppErrorCode.FILE_WRITE_ERROR);
+      throw new AppBackendError(AppErrorCode.FileWriteError);
     }
   }
   return { imageSrc: `appimg:///${fileName}` };

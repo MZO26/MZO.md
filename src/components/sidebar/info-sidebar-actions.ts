@@ -46,9 +46,13 @@ async function updateNoteLinks(links: Note["links"]) {
   container.replaceChildren();
   if (!links || links.length === 0) return;
   const ids: string[] = links.map((link) => link.id);
+  console.count("FETCHING_LINKS");
   const relatedNotes = await getManyById(ids);
   if (!relatedNotes.success) {
-    console.error("Failed to fetch linked notes:", relatedNotes.error);
+    console.error(
+      "[updateNoteLinks]: Failed to fetch linked notes:",
+      relatedNotes.error,
+    );
     return;
   }
   const linkMap = new Map<string, string>();

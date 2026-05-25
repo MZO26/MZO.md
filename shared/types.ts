@@ -15,6 +15,8 @@ type TitleBarOverlayOptions = {
 
 type ResolvedTheme = "light" | "dark";
 
+type SelectOption = { value: string; label: string };
+
 type Code =
   | "github-light"
   | "github-dark"
@@ -135,6 +137,16 @@ type ImageSrc = {
   imageSrc: string;
 };
 
+type SaveDialog = {
+  canceled: boolean;
+  filePath: string | null;
+};
+
+type OpenDialog = {
+  canceled: boolean;
+  filePaths: string[] | null;
+};
+
 export type {
   Action,
   ActionMap,
@@ -153,8 +165,11 @@ export type {
   Metadata,
   NativeWindowColors,
   NoteMenuPayload,
+  OpenDialog,
   ResolvedTheme,
   Result,
+  SaveDialog,
+  SelectOption,
   SettingsKeys,
   SettingsRegistry,
   Success,
