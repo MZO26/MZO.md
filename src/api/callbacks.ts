@@ -11,7 +11,7 @@ import { getExportContent } from "@/features/export-actions";
 import { handleDeleteNote } from "@/features/note-actions";
 import { handleDuplicateNote } from "@/features/note-duplicate";
 import { handleMergeNotes } from "@/features/note-merge";
-import { settingsStore } from "@/settings/app-state";
+import { noteStore, settingsStore } from "@/settings/app-state";
 import { initDeleteDialog, initMergeDialog } from "@/settings/dialogs";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
@@ -151,6 +151,11 @@ function initListeners() {
       console.error("[pinTrigger]: Failed to toggle pin:", result.error);
       return;
     }
+    noteStore.setState((state) => ({
+      notes: state.notes.map((note) =>
+        note.id === id ? { ...note, pinned: result.data } : note,
+      ),
+    }));
     await reloadNoteList();
   });
 
@@ -163,6 +168,11 @@ function initListeners() {
       );
       return;
     }
+    noteStore.setState((state) => ({
+      notes: state.notes.map((note) =>
+        note.id === id ? { ...note, bookmarked: result.data } : note,
+      ),
+    }));
     await reloadNoteList();
   });
 

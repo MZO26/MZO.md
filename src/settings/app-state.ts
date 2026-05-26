@@ -1,5 +1,6 @@
 import { getAllSettings } from "@/api/api";
 import { updateNoteCount } from "@/components/sidebar/sidebar-actions";
+import type { Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 const DEFAULT_STORE: AppSettings = {
@@ -32,11 +33,11 @@ const stateStore = createStore<AppState>(STATE_STORE);
 const settingsStore = createStore<AppSettings>(DEFAULT_STORE);
 
 interface NoteStore {
-  noteIds: string[];
+  notes: Note[];
 }
 
 const NOTE_STORE: NoteStore = {
-  noteIds: [],
+  notes: [],
 };
 
 const noteStore = createStore<NoteStore>(NOTE_STORE);
@@ -86,9 +87,9 @@ stateStore.subscribe((state) => {
 });
 
 noteStore.subscribe((state) => {
-  if (state.noteIds.length !== previousNotesLength) {
-    previousNotesLength = state.noteIds.length;
-    updateNoteCount(state.noteIds.length);
+  if (state.notes.length !== previousNotesLength) {
+    previousNotesLength = state.notes.length;
+    updateNoteCount(state.notes);
   }
 });
 

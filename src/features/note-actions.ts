@@ -26,10 +26,10 @@ import { setActiveItem } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { CLEANUP } from "@shared/constants";
 import { getMetadata } from "@shared/generators";
-import type {
-  CreateNotePayload,
-  Note,
-  UpdateNotePayload,
+import {
+  type CreateNotePayload,
+  type Note,
+  type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import { setImportedContent } from "./import-actions";
 
@@ -51,12 +51,13 @@ async function handleCreateNote() {
     return;
   }
   noteStore.setState((state) => ({
-    noteIds: [...state.noteIds, result.data.id],
+    notes: [...state.notes, result.data],
   }));
+  console.log(noteStore.getState());
   stateStore.setState({ activeId: result.data.id });
   addOneNoteToList(result.data);
   handleEditorEmptyState();
-  viewNote(result.data);
+  handleViewNote(result.data);
 }
 
 async function handleImportNote() {
@@ -78,7 +79,7 @@ async function handleImportNote() {
     `Successfully imported ${count} file${count === 1 ? "" : "s"}.`,
   );
   noteStore.setState((state) => ({
-    noteIds: [...state.noteIds, ...result.data.map((note) => note.id)],
+    notes: [...state.notes, ...result.data],
   }));
   addManyNotesToList(result.data);
   handleEditorEmptyState();
@@ -86,9 +87,6 @@ async function handleImportNote() {
 
 function cleanupDeletedNoteUI(id: string, noteElement?: HTMLDivElement) {
   if (noteElement) noteElement.remove();
-  noteStore.setState((state) => ({
-    noteIds: state.noteIds.filter((existingId) => existingId !== id),
-  }));
   handleSidebarEmptyState();
   const { activeId } = stateStore.getState();
   if (activeId === id) {
@@ -108,6 +106,9 @@ async function handleDeleteNote(id: string, noteElement: HTMLDivElement) {
     console.error("[handleDeleteNote]: Failed to delete:", result.error);
     return;
   }
+  noteStore.setState((state) => ({
+    notes: state.notes.filter((note) => note.id !== id),
+  }));
   cleanupDeletedNoteUI(id, noteElement);
 }
 
@@ -125,6 +126,9 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     console.error("[handleSaveNote]: save failed", result.error);
     return;
   }
+  noteStore.setState((state) => ({
+    notes: state.notes.map((n) => (n.id === result.data.id ? result.data : n)),
+  }));
   debouncedUpdateStats(result.data);
   await updateNoteInList(result.data);
 }
@@ -138,11 +142,11 @@ async function handleSelectNote(noteItem: HTMLDivElement) {
     return;
   }
   stateStore.setState({ activeId: noteID });
-  viewNote(result.data);
+  handleViewNote(result.data);
   setActiveItem(noteItem, getAppItem("sidebar"));
 }
 
-function viewNote(note: Note): void {
+function handleViewNote(note: Note) {
   const editor = getAppItem("editor");
   debouncedUpdateStats.cancel();
   stopAutoSave(editor, "flush");
@@ -167,5 +171,5 @@ export {
   handleImportNote,
   handleSaveNote,
   handleSelectNote,
-  viewNote,
+  handleViewNote,
 };

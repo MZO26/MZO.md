@@ -1,5 +1,6 @@
 import { createNote } from "@/api/api";
 import { addOneNoteToList } from "@/components/sidebar/sidebar-actions";
+import { noteStore } from "@/settings/app-state";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
 
 async function handleDuplicateNote(note: Note) {
@@ -32,6 +33,9 @@ async function handleDuplicateNote(note: Note) {
     );
     return;
   }
+  noteStore.setState((state) => ({
+    notes: [...state.notes, result.data],
+  }));
   addOneNoteToList(result.data);
 }
 

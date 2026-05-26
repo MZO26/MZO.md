@@ -72,9 +72,10 @@ function toggleSidebar(appContainer: HTMLDivElement) {
 
 function createNoteUpdater() {
   let element: HTMLDivElement | null = null;
-  return function updateNoteCount(count: number) {
+  return function updateNoteCount(notes: Note[]) {
     element ??= findElement<HTMLDivElement>(".note-count");
     if (!element) return;
+    const count = notes.length;
     element.textContent = `${count} ${count === 1 ? "note" : "notes"}`;
   };
 }
@@ -82,7 +83,7 @@ function createNoteUpdater() {
 const updateNoteCount = createNoteUpdater();
 
 function getNotePriority(note: Note) {
-  if (note.pinned && note.bookmarked) return 0;
+  if (note.pinned && note.bookmarked) return 0; // top priority if it happens
   if (note.pinned) return 1; // highest priority
   if (note.bookmarked) return 2; // middle
   return 3; // normal
@@ -118,7 +119,6 @@ function addOneNoteToList(note: Note) {
     }
     handleSidebarEmptyState();
   });
-  stateStore.setState({ activeId: note.id });
   setActiveItem(noteElement, sidebar);
 }
 
@@ -152,7 +152,7 @@ async function reloadNoteList(notes?: Note[]) {
     const sortedNotes = notes.sort(compareNotes);
     addManyNotesToList(sortedNotes);
     noteStore.setState({
-      noteIds: sortedNotes.map((note) => note.id),
+      notes: sortedNotes,
     });
     return;
   }
@@ -164,7 +164,7 @@ async function reloadNoteList(notes?: Note[]) {
     const sortedNotes = result.data.sort(compareNotes);
     addManyNotesToList(sortedNotes);
     noteStore.setState({
-      noteIds: sortedNotes.map((note) => note.id),
+      notes: sortedNotes,
     });
   }
 }
