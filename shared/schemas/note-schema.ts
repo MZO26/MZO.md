@@ -148,6 +148,12 @@ const NoteRowSchema = z.object({
   updated_at: DateSchema,
 });
 
+const GetByIdSchema = NoteRowSchema.extend({
+  tags_json: z.string(),
+  links_json: z.string(),
+});
+
+type GetByIdRow = z.infer<typeof GetByIdSchema>;
 type NoteRow = z.infer<typeof NoteRowSchema>;
 type TagRow = z.infer<typeof TagRowSchema>;
 type LinkRow = z.infer<typeof LinkRowSchema>;
@@ -167,6 +173,7 @@ export {
   CreateNotesPayloadsSchema,
   CreateTransactionSchema,
   DBBooleanSchema,
+  GetByIdSchema,
   IdSchema,
   IdsSchema,
   LinkRowsSchema,
@@ -190,6 +197,7 @@ export {
   type CreateNotePayload,
   type CreateNotesPayload,
   type CreateTransaction,
+  type GetByIdRow,
   type Link,
   type LinkRow,
   type MergeTransaction,

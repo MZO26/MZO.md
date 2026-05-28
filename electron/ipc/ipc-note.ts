@@ -51,7 +51,7 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit("note:merge", LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedIds = validation(MergeTransactionSchema, { idA, idB });
-      return db.transactions.safeMerge(validatedIds);
+      return db.mergeNotes(validatedIds);
     });
   });
 

@@ -1,12 +1,9 @@
-import NoteDB from "@electron/db/database";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
 import {
   NoteFromDB,
-  UpdateNotePayloadSchema,
   type CreateTransaction,
-  type MergeTransaction,
   type Note,
   type NoteRow,
   type UpdateTransaction,
@@ -14,17 +11,21 @@ import {
 import type BetterSqlite from "better-sqlite3";
 import type { Database as DatabaseType } from "better-sqlite3";
 
+type CreateManyWorkerResult = {
+  row: NoteRow;
+  safeTags: string[];
+  safeLinks: string[];
+};
+
 class Transactions {
   private db: DatabaseType;
   private createNoteStmt: BetterSqlite.Statement;
   private updateNoteStmt: BetterSqlite.Statement;
-  private selectNoteStmt: BetterSqlite.Statement;
   private deleteNoteStmt: BetterSqlite.Statement;
   private deleteTagsStmt: BetterSqlite.Statement;
   private insertTagsStmt: BetterSqlite.Statement;
   private deleteLinksStmt: BetterSqlite.Statement;
   private insertLinksStmt: BetterSqlite.Statement;
-  private checkNoteStmt: BetterSqlite.Statement;
   constructor(dbConnection: DatabaseType) {
     this.db = dbConnection;
 
@@ -34,9 +35,6 @@ class Transactions {
     this.updateNoteStmt = this.db
       .prepare(`UPDATE notes SET title = @title, content = @content, plainText = @plainText, snippet = @snippet, todos_left = @todos_left, updated_at = @updated_at WHERE id = @id RETURNING *
     `);
-    this.selectNoteStmt = this.db.prepare(
-      "SELECT id FROM notes WHERE id = @id",
-    );
     this.deleteNoteStmt = this.db.prepare("DELETE FROM notes WHERE id = @id");
     this.deleteTagsStmt = this.db.prepare(
       "DELETE FROM note_tags WHERE note_id = @note_id",
@@ -48,13 +46,15 @@ class Transactions {
       "DELETE FROM note_links WHERE source_id = @source_id",
     );
     this.insertLinksStmt = this.db.prepare(
-      "INSERT INTO note_links (source_id, target_id) VALUES (@source_id, @target_id)",
+      "INSERT INTO note_links (source_id, target_id) SELECT @source_id, @target_id WHERE EXISTS (SELECT 1 FROM notes WHERE id = @target_id)",
     );
-    this.checkNoteStmt = this.db.prepare("SELECT 1 FROM notes WHERE id = @id");
   }
 
-  safeCreateMany(paramsArr: CreateTransaction[]): Note[] {
-    const rows: Note[] = [];
+  private runCreateManyLogic(
+    paramsArr: CreateTransaction[],
+  ): CreateManyWorkerResult[] {
+    const results = new Array(paramsArr.length);
+    let i = 0;
     for (const params of paramsArr) {
       const { tags, links, ...noteParams } = params;
       const safeTags = tags ?? [];
@@ -63,118 +63,128 @@ class Transactions {
       if (!result) {
         throw new AppBackendError(AppErrorCode.DBError);
       }
-      const noteId = result.id;
       for (const link of safeLinks) {
-        const exists = this.checkNoteStmt.get({ id: link });
-        if (exists) {
-          this.insertLinksStmt.run({ source_id: noteId, target_id: link });
-        }
+        this.insertLinksStmt.run({ source_id: result.id, target_id: link });
       }
       for (const tag of safeTags) {
-        this.insertTagsStmt.run({ note_id: noteId, tag_name: tag });
+        this.insertTagsStmt.run({ note_id: result.id, tag_name: tag });
       }
-      const createdNote = validation(NoteFromDB, {
-        ...result,
-        tags: safeTags,
-        links: safeLinks,
-      });
-      rows.push(createdNote);
+      results[i] = { row: result, safeTags, safeLinks };
+      i++;
     }
-    return rows;
+    return results;
+  }
+
+  safeCreateMany(paramsArr: CreateTransaction[]): Note[] {
+    if (paramsArr.length === 0) return [];
+    const transactionRunner = this.db.transaction(
+      this.runCreateManyLogic.bind(this),
+    );
+    const dbResults = transactionRunner(paramsArr);
+    return dbResults.map((result) =>
+      validation(NoteFromDB, {
+        ...result.row,
+        tags: result.safeTags,
+        links: result.safeLinks,
+      }),
+    );
+  }
+
+  private runCreateLogic(
+    noteParams: Omit<CreateTransaction, "tags" | "links">,
+    safeTags: string[],
+    safeLinks: string[],
+  ): NoteRow {
+    const result = this.createNoteStmt.get(noteParams) as NoteRow;
+    if (!result) {
+      throw new AppBackendError(AppErrorCode.DBError);
+    }
+    for (const link of safeLinks) {
+      this.insertLinksStmt.run({ source_id: result.id, target_id: link });
+    }
+    for (const tag of safeTags) {
+      this.insertTagsStmt.run({ note_id: result.id, tag_name: tag });
+    }
+    return result;
   }
 
   safeCreate(params: CreateTransaction): Note {
     const { tags, links, ...noteParams } = params;
-    const result = this.createNoteStmt.get(noteParams) as NoteRow;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];
-    if (!result) {
-      throw new AppBackendError(AppErrorCode.DBError);
-    }
-    const noteId = result.id;
-    for (const link of safeLinks) {
-      const exists = this.checkNoteStmt.get({ id: link });
-      if (exists) {
-        this.insertLinksStmt.run({ source_id: noteId, target_id: link });
-      }
-    }
-    for (const tag of safeTags) {
-      this.insertTagsStmt.run({ note_id: noteId, tag_name: tag });
-    }
+    const transactionRunner = this.db.transaction(
+      this.runCreateLogic.bind(this),
+    );
+    const result = transactionRunner(noteParams, safeTags, safeLinks);
     return validation(NoteFromDB, {
       ...result,
-      tags: NoteDB.getTagsById(noteId),
-      links: NoteDB.getLinksById(noteId),
+      tags: safeTags,
+      links: safeLinks,
     });
   }
 
-  safeDelete(id: string): boolean {
-    const exists = this.selectNoteStmt.get({ id });
-    if (!exists) return false;
-    this.deleteTagsStmt.run({ note_id: id });
-    this.deleteLinksStmt.run({ source_id: id });
+  private deleteLogic(id: string): boolean {
     const result = this.deleteNoteStmt.run({ id });
     return result.changes > 0;
   }
 
-  safeUpdate(params: UpdateTransaction): Note {
-    const { tags, links, ...noteParams } = params;
+  public safeDelete(id: string): boolean {
+    const transactionRunner = this.db.transaction(this.deleteLogic.bind(this));
+    return transactionRunner(id);
+  }
+
+  private updateLogic(
+    noteParams: Omit<UpdateTransaction, "tags" | "links">,
+    safeTags: string[],
+    safeLinks: string[],
+  ): NoteRow {
     const result = this.updateNoteStmt.get(noteParams) as NoteRow;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
-    const noteId = result.id;
-    this.deleteLinksStmt.run({ source_id: noteId });
-    if (links && links.length > 0) {
-      for (const link of links) {
-        const exists = this.checkNoteStmt.get({ id: link });
-        if (exists) {
-          this.insertLinksStmt.run({ source_id: noteId, target_id: link });
-        }
-      }
+    this.deleteLinksStmt.run({ source_id: result.id });
+    this.deleteTagsStmt.run({ note_id: result.id });
+    for (const link of safeLinks) {
+      this.insertLinksStmt.run({ source_id: result.id, target_id: link });
     }
-    this.deleteTagsStmt.run({ note_id: noteId });
-    if (tags && tags.length > 0) {
-      for (const tag of tags) {
-        this.insertTagsStmt.run({ note_id: noteId, tag_name: tag });
-      }
+    for (const tag of safeTags) {
+      this.insertTagsStmt.run({ note_id: result.id, tag_name: tag });
     }
+    return result;
+  }
+
+  safeUpdate(params: UpdateTransaction): Note {
+    const { tags, links, ...noteParams } = params;
+    const safeTags = tags ?? [];
+    const safeLinks = links ?? [];
+    const transactionRunner = this.db.transaction(this.updateLogic.bind(this));
+    const result = transactionRunner(noteParams, safeTags, safeLinks);
     return validation(NoteFromDB, {
       ...result,
-      tags: NoteDB.getTagsById(noteId),
-      links: NoteDB.getLinksById(noteId),
+      tags: safeTags,
+      links: safeLinks,
     });
   }
 
-  safeMerge(params: MergeTransaction): Note {
-    const { idA, idB } = params;
-    const results = NoteDB.getManyById([idA, idB]);
-    const recordsMap = new Map(results.map((row) => [row.id, row]));
-    const resultA = recordsMap.get(idA);
-    const resultB = recordsMap.get(idB);
-    if (!resultA || !resultB) {
-      throw new AppBackendError(AppErrorCode.DBError);
-    }
-    const mergedJSON = {
-      type: "doc" as const,
-      content: [resultA.content, { type: "horizontalRule" }, resultB.content],
-    };
-    const outgoingA = [];
-    for (const l of resultA.links) {
-      if (l.dir === "out") outgoingA.push(l.id);
-    }
-    const outgoingB = [];
-    for (const l of resultB.links) {
-      if (l.dir === "out") outgoingB.push(l.id);
-    }
-    const mergedOutgoingLinks = [...new Set([...outgoingA, ...outgoingB])];
-    NoteDB.delete(resultB.id);
-    const validatedData = validation(UpdateNotePayloadSchema, {
-      ...resultA,
-      content: mergedJSON,
-      links: mergedOutgoingLinks,
+  private mergeLogic(
+    idToDelete: string,
+    updateParams: UpdateTransaction,
+  ): NoteRow {
+    this.deleteLogic(idToDelete);
+    const { tags, links, ...noteParams } = updateParams;
+    const safeTags = tags ?? [];
+    const safeLinks = links ?? [];
+    return this.updateLogic(noteParams, safeTags, safeLinks);
+  }
+
+  public safeMerge(idToDelete: string, updateParams: UpdateTransaction): Note {
+    const transactionRunner = this.db.transaction(this.mergeLogic.bind(this));
+    const rowResult = transactionRunner(idToDelete, updateParams);
+    return validation(NoteFromDB, {
+      ...rowResult,
+      tags: updateParams.tags ?? [],
+      links: updateParams.links ?? [],
     });
-    return NoteDB.update(validatedData);
   }
 }
 

@@ -8,10 +8,13 @@ import {
   NoteFromDB,
   ToggleBookmarkSchema,
   TogglePinSchema,
+  UpdateNotePayloadSchema,
   UpdateTransactionSchema,
   type CreateNotePayload,
+  type GetByIdRow,
   type Link,
   type LinkRow,
+  type MergeTransaction,
   type Note,
   type NoteRow,
   type Tag,
@@ -75,7 +78,7 @@ class NoteDB {
       "SELECT * FROM notes ORDER BY created_at DESC",
     );
     this.getNoteByIdStmt = this.db.prepare(
-      "SELECT * FROM notes WHERE id = @id",
+      "SELECT n.*, (SELECT json_group_array(tag_name) FROM note_tags WHERE note_id = n.id) AS tags_json, (SELECT json_group_array(target_id) FROM note_links WHERE source_id = n.id) AS links_json FROM notes n WHERE n.id = @id;",
     );
     this.getManyNotesByIdStmt = this.db.prepare(`
       SELECT * FROM notes WHERE id IN (SELECT value FROM json_each(@idsList))
@@ -146,7 +149,7 @@ class NoteDB {
       `);
   }
 
-  public getTagMap(): Map<string, Tag[]> {
+  private getTagMap(): Map<string, Tag[]> {
     const allTags = this.getAllTagsStmt.all() as TagRow[];
     const tagMap = new Map<string, Tag[]>();
     for (const { note_id, tag_name } of allTags) {
@@ -157,7 +160,7 @@ class NoteDB {
     return tagMap;
   }
 
-  public getLinkMap(): Map<string, Link[]> {
+  private getLinkMap(): Map<string, Link[]> {
     const allLinks = this.getAllLinksStmt.all() as LinkRow[];
     const linkMap = new Map<string, Link[]>();
     for (const { source_id, target_id } of allLinks) {
@@ -193,10 +196,11 @@ class NoteDB {
 
   public createMany(payloads: CreateNotePayload[]): Note[] {
     const now = new Date().toISOString();
-    const dbContents = [];
+    const dbContents = new Array(payloads.length);
+    let i = 0;
     for (const payload of payloads) {
       const id = crypto.randomUUID();
-      let { tags, links, content, ...rest } = payload;
+      const { tags, links, content, ...rest } = payload;
       const stringifiedContent = JSON.stringify(content);
       const uniqueTags = [...new Set(tags)].slice(0, 3);
       const uniqueLinks = [...new Set(links)];
@@ -209,10 +213,46 @@ class NoteDB {
         created_at: now,
         updated_at: now,
       };
-      const dbContent = validation(CreateTransactionSchema, dbPayload);
-      dbContents.push(dbContent);
+      dbContents[i] = validation(CreateTransactionSchema, dbPayload);
+      i++;
     }
     return this.transactions.safeCreateMany(dbContents);
+  }
+
+  public mergeNotes(params: MergeTransaction): Note {
+    const now = new Date().toISOString();
+    const { idA, idB } = params;
+    const results = this.getManyById([idA, idB]);
+    const recordsMap = new Map(results.map((row) => [row.id, row]));
+    const resultA = recordsMap.get(idA);
+    const resultB = recordsMap.get(idB);
+    if (!resultA || !resultB) {
+      throw new AppBackendError(AppErrorCode.DBError);
+    }
+    const mergedJSON = {
+      type: "doc" as const,
+      content: [resultA.content, { type: "horizontalRule" }, resultB.content],
+    };
+    const outgoingA = resultA.links
+      .filter((l) => l.dir === "out")
+      .map((l) => l.id);
+    const outgoingB = resultB.links
+      .filter((l) => l.dir === "out")
+      .map((l) => l.id);
+    const mergedOutgoingLinks = [...new Set([...outgoingA, ...outgoingB])];
+    const mergedTags = [...new Set([...resultA.tags, ...resultB.tags])];
+    const validatedData = validation(UpdateNotePayloadSchema, {
+      ...resultA,
+      content: mergedJSON,
+      links: mergedOutgoingLinks,
+      tags: mergedTags,
+    });
+    const dbContent = {
+      ...validatedData,
+      content: JSON.stringify(validatedData.content),
+      updated_at: now,
+    };
+    return this.transactions.safeMerge(resultB.id, dbContent);
   }
 
   public update(payload: UpdateNotePayload): Note {
@@ -252,14 +292,17 @@ class NoteDB {
   }
 
   public getById(id: string): Note {
-    const dbRow = this.getNoteByIdStmt.get({ id }) as NoteRow;
-    if (!dbRow) {
+    const rows = this.getNoteByIdStmt.get({ id }) as GetByIdRow;
+    if (!rows) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
+    const parsedTags = JSON.parse(rows.tags_json || "[]");
+    const parsedLinks = JSON.parse(rows.links_json || "[]");
+    const { tags_json, links_json, ...dbRow } = rows;
     return validation(NoteFromDB, {
       ...dbRow,
-      tags: this.getTagsById(id) ?? [],
-      links: this.getLinksById(id) ?? [],
+      tags: parsedTags,
+      links: parsedLinks,
     });
   }
 
