@@ -13,15 +13,17 @@ import type { JSONContent } from "@tiptap/core";
 // sidebar
 
 // element is either appContainer (normal sidebar is bound to grid layout) or infoSidebar itself as it's positioned absolute
+
 function setSidebarState(element: HTMLDivElement, collapsed: boolean) {
   const isCollapsed = element.classList.contains("collapsed");
   if (isCollapsed === collapsed) return;
   element.classList.toggle("collapsed", collapsed);
 }
 
-//------------------------------------------------------------
+//-----------------------------------------------------------
 
 // sidebar empty state (only applies to normal sidebar. info-sidebar does not have one)
+
 function handleSidebarEmptyState() {
   const sidebar = getAppItem("sidebar");
   const { notes } = noteStore.getState();
@@ -94,7 +96,7 @@ function createViews(views: ViewItem[]) {
   return select;
 }
 
-//------------------------------------------------------------
+//-----------------------------------------------------------
 
 // sidebar population with note items
 

@@ -92,8 +92,7 @@
 }
 
 .ProseMirror mark {
-  background-color: var(--editor-highlight);
-  color: inherit;
+  background-color: var(--tag-color);
   padding: 0.125em 0.25em;
   border-radius: 0.25em;
   transition: background-color 0.2s ease-in-out;

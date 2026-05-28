@@ -9,7 +9,7 @@
   transform: scale(1);
 }
 
-.resizer {
+.resizer-sidebar {
   position: absolute;
   top: 0;
   right: 0;
@@ -22,9 +22,29 @@
   transition: background-color 0.2s ease;
 }
 
-.resizer:hover,
-.resizer.is-resizing {
+.resizer-infobar {
+  top: 50;
+  position: absolute;
+  width: 5px;
+  height: 100%;
+  cursor: ew-resize;
+  background-color: transparent;
+  z-index: 10;
+  transition: background-color 0.2s ease;
+}
+
+.resizer-sidebar:hover,
+.resizer-infobar:hover,
+.resizer-sidebar.is-resizing,
+.resizer-infobar.is-resizing {
   background-color: var(--tag-color);
+  pointer-events: auto !important;
+}
+
+body.is-dragging,
+body.is-dragging * {
+  transition: none !important;
+  user-select: none;
 }
 
 .notes-container {
@@ -35,13 +55,6 @@
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
   contain: content;
-}
-
-body.is-dragging,
-body.is-dragging * {
-  transition: none !important;
-  pointer-events: none;
-  user-select: none;
 }
 
 .notes-container::-webkit-scrollbar {
@@ -197,10 +210,9 @@ body.is-dragging * {
   top: 50px;
   right: 0;
   bottom: 0;
-  width: 220px;
+  width: var(--infobar-width);
   gap: 10px;
   background: var(--bg-sidebar);
-  box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
   border-top: none;
   z-index: 1;
@@ -591,4 +603,10 @@ body.is-dragging * {
   font-size: 0.85rem;
   flex-shrink: 0;
   margin-top: 7px;
+}
+
+.note-content mark {
+  background-color: var(--editor-highlight);
+  color: var(--text-main);
+  box-shadow: var(--shadow);
 }

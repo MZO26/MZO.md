@@ -71,17 +71,8 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
   const { id, pinned, bookmarked } = payload;
   const noteItemMenu = Menu.buildFromTemplate([
     {
-      label: "Copy Note As...",
-      submenu: [
-        {
-          label: "Note ID",
-          click: () => win.webContents.send("note:trigger-id", id),
-        },
-        {
-          label: "[[Wiki Link]]",
-          click: () => win.webContents.send("note:trigger-id", `[[[[${id}]]]]`),
-        },
-      ],
+      label: "Copy Note ID",
+      click: () => win.webContents.send("note:trigger-id", id),
     },
     { type: "separator" },
     {

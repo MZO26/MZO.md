@@ -22,49 +22,62 @@ import type { View } from "@shared/types";
 
 // resizing logic
 
-const resizer = requireElement<HTMLDivElement>(".resizer");
-const sidebar = requireElement<HTMLDivElement>(".sidebar-container");
+interface ResizeOptions {
+  minWidth?: number;
+  maxWidth?: number;
+  cssVariable?: string;
+  side?: "left" | "right";
+}
 
-let isResizing = false;
-let ticking = false;
-let startX = 0;
-let startWidth = 0;
-
-resizer.addEventListener("mousedown", () => {
-  isResizing = true;
-  document.body.classList.add("is-dragging");
-});
-
-resizer.addEventListener("mousedown", (e: MouseEvent) => {
-  isResizing = true;
-  // exact mouse position at click
-  startX = e.clientX;
-  startWidth = sidebar.getBoundingClientRect().width;
-  document.body.classList.add("is-dragging");
-});
-
-document.addEventListener("mousemove", (e: MouseEvent) => {
-  if (!isResizing || ticking) return;
-  ticking = true;
-  requestAnimationFrame(() => {
-    // how far has mouse moved since start
-    const deltaX = e.clientX - startX;
-    const newWidth = startWidth + deltaX;
-    const width = Math.max(200, Math.min(newWidth, 600));
-    document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
-    ticking = false;
+function resizeSidebar(
+  resizerSelector: string,
+  sidebarSelector: string,
+  options: ResizeOptions = {},
+) {
+  const {
+    minWidth = 200,
+    maxWidth = 600,
+    cssVariable = "--sidebar-width",
+    side = "left",
+  } = options;
+  const resizer = requireElement<HTMLDivElement>(resizerSelector);
+  const sidebar = requireElement<HTMLDivElement>(sidebarSelector);
+  let isResizing = false;
+  let isUpdatePending = false;
+  let startX = 0;
+  let startWidth = 0;
+  resizer.addEventListener("pointerdown", (e: PointerEvent) => {
+    isResizing = true;
+    startX = e.clientX;
+    startWidth = sidebar.getBoundingClientRect().width;
+    resizer.setPointerCapture(e.pointerId);
+    document.body.classList.add("is-dragging");
+    document.body.style.userSelect = "none";
   });
-});
 
-document.addEventListener("mouseup", () => {
-  isResizing = false;
-  document.body.classList.remove("is-dragging");
-});
+  document.addEventListener("pointermove", (e: PointerEvent) => {
+    if (!isResizing || isUpdatePending) return;
+    isUpdatePending = true;
+    requestAnimationFrame(() => {
+      // how far has mouse moved since start
+      const deltaX = e.clientX - startX;
+      const adjustedWidth =
+        side === "right" ? startWidth - deltaX : startWidth + deltaX;
+      const newWidth = Math.max(minWidth, Math.min(adjustedWidth, maxWidth));
+      document.documentElement.style.setProperty(cssVariable, `${newWidth}px`);
+      isUpdatePending = false;
+    });
+  });
 
-document.addEventListener("mouseup", () => {
-  isResizing = false;
-  document.body.classList.remove("is-dragging");
-});
+  document.addEventListener("pointerup", (e: PointerEvent) => {
+    if (isResizing) {
+      isResizing = false;
+      resizer.releasePointerCapture(e.pointerId);
+      document.body.classList.remove("is-dragging");
+      document.body.style.userSelect = "";
+    }
+  });
+}
 
 //------------------------------------------------------------
 
@@ -105,6 +118,7 @@ function applySidebarListeners(
   searchInput: HTMLInputElement,
   viewSelect: HTMLSelectElement,
 ) {
+  resizeSidebar(".resizer-sidebar", ".sidebar-container");
   sidebarHeader.addEventListener(
     "click",
     createAsyncHandler(async (e) => {
@@ -130,6 +144,22 @@ function applySidebarListeners(
       await handleViews(target.value as View);
     }),
   );
+  sidebar.addEventListener("contextmenu", (e) => {
+    const target = e.target as HTMLElement;
+    if (target === sidebar) return;
+    e.preventDefault();
+    const noteElement = target.closest<HTMLDivElement>(".note-item");
+    const id = noteElement?.getAttribute("data-id");
+    const isPinned = noteElement?.getAttribute("data-pinned") === "true";
+    const isBookmarked =
+      noteElement?.getAttribute("data-bookmarked") === "true";
+    window.electronAPI.showContextMenu("note", {
+      id: id,
+      pinned: isPinned,
+      bookmarked: isBookmarked,
+    });
+    return;
+  });
   sidebar.addEventListener(
     "click",
     createAsyncHandler(async (e) => {
@@ -139,10 +169,11 @@ function applySidebarListeners(
       if (actionBtn) {
         e.preventDefault();
         e.stopPropagation();
-        const item = target.closest<HTMLElement>(".note-item");
-        const id = item?.getAttribute("data-id");
-        const isPinned = item?.getAttribute("data-pinned") === "true";
-        const isBookmarked = item?.getAttribute("data-bookmarked") === "true";
+        const noteElement = target.closest<HTMLElement>(".note-item");
+        const id = noteElement?.getAttribute("data-id");
+        const isPinned = noteElement?.getAttribute("data-pinned") === "true";
+        const isBookmarked =
+          noteElement?.getAttribute("data-bookmarked") === "true";
         window.electronAPI.showContextMenu("note", {
           id: id,
           pinned: isPinned,
@@ -184,6 +215,12 @@ function applyInfoSidebarListeners(
   toggleBtn: HTMLButtonElement,
   infoSidebar: HTMLDivElement,
 ) {
+  resizeSidebar(".resizer-infobar", ".info-sidebar", {
+    minWidth: 220,
+    maxWidth: 400,
+    cssVariable: "--infobar-width",
+    side: "right",
+  });
   infoSidebar.addEventListener(
     "click",
     createAsyncHandler(async (e: Event) => {
