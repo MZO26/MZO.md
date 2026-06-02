@@ -182,6 +182,8 @@ const PADDING = 15; // padding for highlight snippet to show context
 
 const UNTITLED = "New Note";
 
+const EMPTY_DOC = { type: "doc" as const, content: [{ type: "paragraph" }] };
+
 export {
   ALLOWED_TYPES,
   APP_START_TIME,
@@ -191,6 +193,7 @@ export {
   CONTENT_TYPE_MAP,
   DEBOUNCE_MS,
   DOMPURIFY_CONFIG,
+  EMPTY_DOC,
   FUSE_OPTIONS,
   IPC_TIMERS,
   LIMITS,

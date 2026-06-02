@@ -6,15 +6,14 @@ import {
   showNotification,
 } from "@/api/api";
 import { getExportContent } from "@/notes/export-actions";
-import { handleDeleteNote } from "@/notes/note-actions";
-import { setupAutoSave, stopAutoSave } from "@/notes/note-auto-save";
+import { debouncedSaveNote, handleDeleteNote } from "@/notes/note-actions";
 import { handleDuplicateNote } from "@/notes/note-duplicate";
 import { handleSync } from "@/notes/note-sync";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
 import { initDeleteDialog } from "@/settings/dialog-init";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { CLEANUP, DEBOUNCE_MS } from "@shared/constants";
+import { DEBOUNCE_MS } from "@shared/constants";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/types";
 
@@ -182,11 +181,7 @@ function initListeners() {
   });
 
   window.electronAPI.onRequestFlush(async () => {
-    const editor = getAppItem("editor");
-    const save = CLEANUP.get(editor);
-    if (save) {
-      await save.flush();
-    }
+    debouncedSaveNote.flush();
     window.electronAPI.confirmFlush();
   });
 
@@ -225,9 +220,7 @@ function initListeners() {
       const editor = getAppItem("editor");
       if (activeId && editor) {
         console.log("[Window-Blur-Event]: Force-flushing save...");
-        await stopAutoSave(editor, "flush");
-        const newCleanup = setupAutoSave(editor, activeId);
-        CLEANUP.set(editor, newCleanup);
+        debouncedSaveNote.flush();
       }
     }, DEBOUNCE_MS.very_fast);
   });

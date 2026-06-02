@@ -9,6 +9,7 @@ import {
 } from "@electron/ipc/ipc-validation";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
+import { runWithNoteLock } from "@shared/limiter";
 import {
   CreateNotePayloadSchema,
   CreateNotesPayloadsSchema,
@@ -56,7 +57,9 @@ function registerNoteIpc(win: BrowserWindow) {
         }
       }
       const validatedData = validation(UpdateNotePayloadSchema, payload);
-      return db.update(validatedData);
+      return runWithNoteLock(validatedData.id, async () => {
+        return db.update(validatedData);
+      });
     });
   });
 
@@ -65,7 +68,9 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit("note:delete", LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
-      return db.delete(validatedData);
+      return runWithNoteLock(validatedData, async () => {
+        return db.delete(validatedData);
+      });
     });
   });
 

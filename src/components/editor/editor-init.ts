@@ -9,8 +9,8 @@ import { CustomSearchHighlight } from "@/extensions/searchHighlight";
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
 import { WikiLink } from "@/extensions/wikilinks";
-import { handleSelectNote } from "@/notes/note-actions";
-import { noteStore } from "@/settings/app-state";
+import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
+import { noteStore, stateStore } from "@/settings/app-state";
 import { sleep } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { useDelayedSpinner } from "@/utils/ui";
@@ -33,6 +33,7 @@ import {
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import DOMPurify from "dompurify";
+import { getEditorContent } from "./editor-features";
 
 let editor: Editor | null = null;
 
@@ -98,6 +99,12 @@ function initEditor(settings: Partial<AppSettings>): Editor {
       content: [{ type: "paragraph" }],
     },
     autofocus: true,
+  });
+  editor.on("update", () => {
+    const activeId = stateStore.getState().activeId;
+    if (!activeId) return;
+    const editorContent = getEditorContent();
+    debouncedSaveNote(activeId, editorContent, false);
   });
   return editor;
 }

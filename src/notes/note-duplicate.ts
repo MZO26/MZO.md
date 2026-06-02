@@ -1,9 +1,12 @@
 import { createNote } from "@/api/api";
+import { resetEditorHistory } from "@/components/editor/editor-features";
+import { handleSyncWrite, isSyncEnabled } from "@/notes/note-sync";
 import { noteStore, stateStore } from "@/settings/app-state";
+import { getAppItem } from "@/utils/registry";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
-import { handleViewNote } from "./note-actions";
 
 async function handleDuplicateNote(note: Note) {
+  const editor = getAppItem("editor");
   const {
     id: originalId,
     links: originalLinks,
@@ -38,7 +41,15 @@ async function handleDuplicateNote(note: Note) {
     sidebarChange: { type: "prepend", noteId: result.data.id },
   }));
   stateStore.setState({ activeId: result.data.id });
-  await handleViewNote(result.data);
+  editor.commands.setContent(result.data.content, {
+    emitUpdate: false,
+  });
+  resetEditorHistory(editor);
+  requestAnimationFrame(() => {
+    editor.commands.focus();
+  });
+  if (isSyncEnabled())
+    handleSyncWrite(result.data.id, result.data.markdown, result.data.title);
 }
 
 export { handleDuplicateNote };

@@ -29,4 +29,24 @@ async function processWithLimit<T, R>(
   return results;
 }
 
-export { processWithLimit };
+const noteLocks = new Map<string, Promise<void>>(); // queue of promises for each note id
+export const lastSyncedTitle = new Map<string, string>(); // last filename that was on disk
+
+function runWithNoteLock<T>(id: string, task: () => Promise<T>): Promise<T> {
+  const prev = noteLocks.get(id) ?? Promise.resolve();
+  const result = prev.then(() => task());
+  const tail: Promise<void> = result.then(
+    () => {},
+    () => {},
+  );
+  noteLocks.set(id, tail);
+  tail.finally(() => {
+    if (noteLocks.get(id) === tail) {
+      noteLocks.delete(id);
+      lastSyncedTitle.delete(id);
+    }
+  });
+  return result;
+}
+
+export { processWithLimit, runWithNoteLock };

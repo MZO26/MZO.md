@@ -21,6 +21,7 @@ import {
 import { store } from "@electron/store";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
+import { lastSyncedTitle, runWithNoteLock } from "@shared/limiter";
 import {
   DeleteSyncRequestSchema,
   ExportManyRequestSchema,
@@ -56,8 +57,16 @@ function registerFileIpc(win: BrowserWindow) {
       const targetDir = store.get("sync-path");
       if (!targetDir) return false;
       const validatedData = validation(WriteSyncRequestSchema, payload);
-      await writeSyncedNote(targetDir, validatedData);
-      return true;
+      return runWithNoteLock(validatedData.id, async () => {
+        const effectivePreviousTitle =
+          lastSyncedTitle.get(validatedData.id) ?? validatedData.previousTitle;
+        const writtenTitle = await writeSyncedNote(targetDir, {
+          ...validatedData,
+          previousTitle: effectivePreviousTitle,
+        });
+        lastSyncedTitle.set(validatedData.id, writtenTitle);
+        return true;
+      });
     });
   });
 
@@ -69,8 +78,16 @@ function registerFileIpc(win: BrowserWindow) {
       const targetDir = store.get("sync-path");
       if (!targetDir) return false;
       const validatedData = validation(DeleteSyncRequestSchema, payload);
-      await deleteSyncedNote(targetDir, validatedData);
-      return true;
+      return runWithNoteLock(validatedData.id, async () => {
+        const effectiveFileName =
+          lastSyncedTitle.get(validatedData.id) ?? validatedData.fileName;
+        await deleteSyncedNote(targetDir, {
+          ...validatedData,
+          fileName: effectiveFileName,
+        });
+        lastSyncedTitle.delete(validatedData.id);
+        return true;
+      });
     });
   });
 

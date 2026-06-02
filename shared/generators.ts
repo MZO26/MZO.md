@@ -1,13 +1,8 @@
 import type { Metadata } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
+import type { EditorDoc } from "./schemas/editor-schema";
 
-function getMetadata(
-  content: {
-    type: "doc";
-    content: JSONContent[];
-  },
-  plainText: string,
-): Metadata {
+function getMetadata(content: EditorDoc, plainText: string): Metadata {
   const { left } = getTodoStats(content);
   return {
     snippet: snippetGenerator(plainText),
@@ -54,7 +49,7 @@ function snippetGenerator(text: string) {
     : cleanedSnippet;
 }
 
-function getTodoStats(content: JSONContent) {
+function getTodoStats(content: EditorDoc) {
   let total = 0;
   let completed = 0;
   if (!content) {
@@ -86,7 +81,7 @@ function getTodoStats(content: JSONContent) {
   };
 }
 
-function getLinks(jsonDoc: JSONContent) {
+function getLinks(jsonDoc: EditorDoc) {
   if (!jsonDoc) return [];
   const seen = new Set<string>();
   const stack: JSONContent[] = [jsonDoc];
@@ -105,7 +100,7 @@ function getLinks(jsonDoc: JSONContent) {
   return Array.from(seen);
 }
 
-function getTags(jsonDoc: JSONContent) {
+function getTags(jsonDoc: EditorDoc) {
   if (!jsonDoc) return [];
   const seen = new Set<string>();
   const stack: JSONContent[] = [jsonDoc];

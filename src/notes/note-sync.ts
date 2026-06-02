@@ -1,6 +1,5 @@
 import { sync, syncDelete, syncWrite, updateNote } from "@/api/api";
 import { getNoteEditorExtensions } from "@/components/editor/editor-init";
-import { getExportContent } from "@/notes/export-actions";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
 import { initConflictDialog } from "@/settings/dialog-init";
 import { getAppItem } from "@/utils/registry";
@@ -66,7 +65,6 @@ async function handleSync(id: string, updated_at: string) {
               content: json,
               markdown: localContent,
               plainText,
-              links: [],
             };
             await updateNote(updatePayload, true);
             if (stateStore.get("activeId") === id) {
@@ -100,25 +98,26 @@ async function handleSync(id: string, updated_at: string) {
 
 async function handleSyncWrite(
   id: string,
+  markdown: string,
   newTitle: string,
   oldTitle?: string,
 ) {
-  try {
-    const result = getExportContent(id, "md");
-    if (!result.success) {
-      console.error(result.error);
-      return;
-    }
-    const writePayload = {
-      ...result.data,
-      previousTitle: oldTitle ?? "",
-      fileName: newTitle,
-      extension: "md" as const,
-    };
-    await syncWrite(writePayload);
-  } catch (err) {
-    console.error("[handleSyncWrite]: Background sync failed:", err);
+  const writePayload = {
+    id,
+    content: markdown,
+    previousTitle: oldTitle ?? "",
+    fileName: newTitle,
+    extension: "md" as const,
+  };
+  const result = await syncWrite(writePayload);
+  if (!result.success) {
+    console.error(
+      "[handleSyncWrite]: Error synchronizing note to filesystem.",
+      result.error,
+    );
+    return;
   }
+  return result.data;
 }
 
 async function handleSyncDelete(request: DeleteSyncRequest) {
@@ -130,6 +129,7 @@ async function handleSyncDelete(request: DeleteSyncRequest) {
     );
     return;
   }
+  return result.data;
 }
 
 export { handleSync, handleSyncDelete, handleSyncWrite, isSyncEnabled };
