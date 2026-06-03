@@ -7,29 +7,11 @@ import {
   YIELD_INTERVAL,
 } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
-import { getMetadata, titleGenerator } from "@shared/generators";
+import { getMetadata, textConverter, titleGenerator } from "@shared/generators";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { ImportedContent, Result } from "@shared/types";
-import { Editor, type Content, type JSONContent } from "@tiptap/core";
+import { Editor, type Content } from "@tiptap/core";
 import DOMPurify from "dompurify";
-
-// utility for clean txt content (avoiding too many whitespaces)
-
-function textConverter(txt: string) {
-  if (!txt) return undefined;
-  const lines = txt.split(/\r?\n/);
-  const content: JSONContent[] = [];
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (trimmedLine) {
-      content.push({
-        type: "paragraph",
-        content: [{ type: "text", text: line }],
-      });
-    }
-  }
-  return content;
-}
 
 // function to either sanitize content or format it to make import cleaner
 

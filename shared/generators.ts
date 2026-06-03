@@ -1,36 +1,16 @@
+import { UNTITLED } from "@shared/constants";
+import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { Metadata } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
-import { UNTITLED } from "./constants";
-import type { EditorDoc } from "./schemas/editor-schema";
 
 function getMetadata(content: EditorDoc): Metadata {
-  const { left } = getTodoStats(content);
   return {
     snippet: snippetGenerator(content),
-    todos_left: left,
+    todos_left: getTodoStats(content).left,
     links: getLinks(content),
     tags: getTags(content),
   };
 }
-
-// function* iterateLines(text: string): IterableIterator<string> {
-//   let start = 0;
-//   while (start < text.length) {
-//     let end = text.indexOf("\n", start);
-//     if (end === -1) end = text.length;
-//     yield text.slice(start, end);
-//     start = end + 1;
-//   }
-// }
-
-// function titleGenerator(text: string) {
-//   if (typeof text !== "string") return "New Note";
-//   for (let line of iterateLines(text)) {
-//     line = line.replace(/#[\p{L}\p{N}_]+/gu, "").trim();
-//     if (line) return line.length > 50 ? line.slice(0, 47) + "..." : line;
-//   }
-//   return "New Note";
-// }
 
 function extractText(node: JSONContent): string {
   if (node.text) return node.text;
@@ -64,24 +44,6 @@ function titleGenerator(doc: EditorDoc): string {
 function truncateTitle(text: string): string {
   return text.length > 50 ? text.slice(0, 47) + "..." : text;
 }
-
-// function snippetGenerator(text: string) {
-//   if (typeof text !== "string") return "";
-//   let snippet = "";
-//   let validLineCount = 0;
-//   for (let line of iterateLines(text)) {
-//     line = line.replace(/#[\p{L}\p{N}_]+/gu, "").trim();
-//     if (!line) continue;
-//     validLineCount++;
-//     if (validLineCount === 1) continue;
-//     snippet += (snippet.length > 0 ? " " : "") + line;
-//     if (snippet.length >= 50) break;
-//   }
-//   const cleanedSnippet = snippet.replace(/\s{2,}/g, " ").trim();
-//   return cleanedSnippet.length > 47
-//     ? cleanedSnippet.slice(0, 47) + "..."
-//     : cleanedSnippet;
-// }
 
 function snippetGenerator(doc: EditorDoc | undefined): string {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0) {
@@ -176,4 +138,28 @@ function getTags(doc: EditorDoc) {
   return Array.from(seen);
 }
 
-export { getMetadata, getTodoStats, snippetGenerator, titleGenerator };
+// utility for clean txt content (avoiding too many whitespaces)
+
+function textConverter(plainText: string) {
+  if (!plainText) return undefined;
+  const lines = plainText.split(/\r?\n/);
+  const content: JSONContent[] = [];
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    if (trimmedLine) {
+      content.push({
+        type: "paragraph",
+        content: [{ type: "text", text: line }],
+      });
+    }
+  }
+  return content;
+}
+
+export {
+  getMetadata,
+  getTodoStats,
+  snippetGenerator,
+  textConverter,
+  titleGenerator,
+};

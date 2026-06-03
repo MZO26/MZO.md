@@ -18,9 +18,6 @@ async function handleImageWrite(validatedData: ImagePayload) {
   // converts frontend ArrayBuffer to NodeJS Buffer Format so file system can understand it. Hashes image name but finds duplicates compared to uuid which always creates new id's
   const fileName = `${hash}.${validatedData.extension}`;
   const filePath = path.join(imagesFolder, fileName);
-  if (fs.existsSync(filePath)) {
-    return { imageSrc: `appimg:///${fileName}` };
-  }
   try {
     fs.writeFileSync(filePath, imageBuffer, { flag: "wx" });
   } catch (error) {

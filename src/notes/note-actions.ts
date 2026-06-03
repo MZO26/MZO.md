@@ -8,8 +8,12 @@ import {
   updateNote,
 } from "@/api/api";
 import { resetEditorHistory } from "@/components/editor/editor-features";
-import { updateStats } from "@/components/sidebar/sidebar-features";
+import {
+  debouncedUpdateStats,
+  updateStats,
+} from "@/components/sidebar/sidebar-features";
 import { setImportedContent } from "@/notes/import-actions";
+import { handleConflict, isMirrorEnabled } from "@/notes/note-conflict";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { debounce } from "@/utils/async";
 import { findElement, setActiveItem } from "@/utils/dom";
@@ -21,7 +25,6 @@ import {
   type CreateNotePayload,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
-import { handleConflict, isMirrorEnabled } from "./note-conflict";
 
 // note crud operations + import
 
@@ -101,6 +104,7 @@ async function handleDeleteNote(id: string) {
   const isActiveDeletedId = activeId === id;
   if (isActiveDeletedId) {
     debouncedSaveNote.cancel();
+    debouncedUpdateStats.cancel();
   }
   const result = await deleteNote(id);
   if (!result.success) {
@@ -149,7 +153,7 @@ async function handleSaveNote(
     notes: state.notes.map((n) => (n.id === result.data.id ? result.data : n)),
     sidebarChange: { type: "update", noteId: result.data.id },
   }));
-  updateStats(result.data);
+  await updateStats(result.data);
 }
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
@@ -164,6 +168,7 @@ async function handleSelectNote(id: string) {
   debouncedSaveNote.flush();
   stateStore.setState({ activeId: id });
   const result = await getNoteById(id);
+  if (stateStore.getState().activeId !== id) return;
   if (!result.success) {
     console.error("[handleSelectNote]: Failed to fetch note:", result.error);
     return;
@@ -175,12 +180,12 @@ async function handleSelectNote(id: string) {
         error,
       ),
     );
+    if (stateStore.getState().activeId !== id) return;
   }
   const noteElement = findElement<HTMLDivElement>(
     `.note-item[data-id="${id}"]`,
     sidebar,
   );
-  if (!noteElement) return;
   editor.commands.setContent(result.data.content, {
     emitUpdate: false,
   });
@@ -188,7 +193,8 @@ async function handleSelectNote(id: string) {
   requestAnimationFrame(() => {
     editor.commands.focus();
   });
-  setActiveItem(noteElement, sidebar);
+  if (noteElement) setActiveItem(noteElement, sidebar);
+  await updateStats(result.data);
 }
 
 //------------------------------------------------------------

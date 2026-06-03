@@ -28,7 +28,7 @@ function resizeSidebar(
   options: ResizeOptions = {},
 ) {
   const {
-    minWidth = 3,
+    minWidth = 0,
     maxWidth = 600,
     cssVariable = "--sidebar-width",
     side = "left",
@@ -52,11 +52,11 @@ function resizeSidebar(
     if (!isResizing || isUpdatePending) return;
     isUpdatePending = true;
     requestAnimationFrame(() => {
-      // how far has mouse moved since start
       const deltaX = e.clientX - startX;
       const adjustedWidth =
         side === "right" ? startWidth - deltaX : startWidth + deltaX;
       const newWidth = Math.max(minWidth, Math.min(adjustedWidth, maxWidth));
+
       document.documentElement.style.setProperty(cssVariable, `${newWidth}px`);
       isUpdatePending = false;
     });
@@ -217,7 +217,7 @@ function applyInfoSidebarListeners(
   infoSidebar: HTMLDivElement,
 ) {
   resizeSidebar(".resizer-infobar", ".info-sidebar", {
-    minWidth: 5,
+    minWidth: 0,
     maxWidth: 400,
     cssVariable: "--infobar-width",
     side: "right",

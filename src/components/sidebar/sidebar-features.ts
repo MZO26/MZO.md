@@ -47,7 +47,6 @@ function handleSearchInput(searchInput: string) {
   } else {
     // case insensitive
     const exactRegex = new RegExp(safeTerm, "gi");
-
     for (const { item: note } of results) {
       const fullText = note.plainText ?? "";
       const firstMatch = exactRegex.exec(fullText);
@@ -57,7 +56,6 @@ function handleSearchInput(searchInput: string) {
         searchCache.set(note.id, { snippet: note.snippet, indices: [] });
         continue;
       }
-
       const phraseStart = firstMatch.index;
       // Math.max(0) to prevent negative index if matched word is at the start of the document. PADDING ensures context for the snippet
       let winStart = Math.max(0, phraseStart - PADDING);
@@ -71,9 +69,7 @@ function handleSearchInput(searchInput: string) {
       const snippet =
         fullText.slice(winStart, winEnd) +
         (winEnd < fullText.length ? "..." : "");
-
       const indices: [number, number][] = [];
-
       for (const match of fullText.matchAll(exactRegex)) {
         const start = match.index;
         const end = start + match[0].length - 1; // 0-indexed
@@ -206,6 +202,8 @@ const debouncedSearch = debounce((e: Event) => {
   const target = e.target as HTMLInputElement;
   const value = target.value.trim();
   handleSearchInput(value);
-}, DEBOUNCE_MS.normal);
+}, DEBOUNCE_MS.fast);
 
-export { debouncedSearch, handleViews, updateStats };
+const debouncedUpdateStats = debounce(updateStats, DEBOUNCE_MS.slow);
+
+export { debouncedSearch, debouncedUpdateStats, handleViews, updateStats };

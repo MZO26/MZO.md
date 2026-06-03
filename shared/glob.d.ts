@@ -32,8 +32,6 @@ declare global {
       onSystemResume: (callback: () => void) => () => void;
       onRequestFlush: (callback: () => void) => () => void;
       confirmFlush: () => void;
-      onWindowFocus: (callback: () => void) => () => void;
-      onWindowBlur: (callback: () => void) => () => void;
       zoom: (action: string) => Promise<Result<number>>;
     };
     noteAPI: {

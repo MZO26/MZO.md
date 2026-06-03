@@ -48,10 +48,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   onSystemResume: (callback: () => void) =>
     subscribe("system-resumed", () => callback()),
-  onWindowFocus: (callback: () => void) =>
-    subscribe("window:focus", () => callback()),
-  onWindowBlur: (callback: () => void) =>
-    subscribe("window:blur", () => callback()),
   onRequestFlush: (callback: () => void) =>
     subscribe("request-flush", () => callback()),
   confirmFlush: () => ipcRenderer.send("flush-confirmed"),

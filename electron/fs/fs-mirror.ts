@@ -45,8 +45,19 @@ function resolveMirrorPath(targetDir: string) {
     : path.join(normalized, "MZO Notes");
 }
 
-function normalizeMarkdown(content: string) {
-  return content.replace(/\r\n/g, "\n");
+function normalizeMarkdown(content: string | null | undefined) {
+  if (!content) return "";
+  const cleaned = content
+    // strip the UTF-8 byte mark
+    .replace(/^\uFEFF/, "")
+    // for single, precomposed characters that could trigger false positives
+    .normalize("NFC")
+    // forces line-break to be \n
+    .replace(/\r\n|\r/g, "\n")
+    // remove white spaces at end of file
+    .trimEnd();
+  // to respect POSIX standard: append one empty newline at the end
+  return cleaned ? cleaned + "\n" : "";
 }
 
 async function checkSyncState(
@@ -73,8 +84,8 @@ async function checkSyncState(
   const normalizedDB = normalizeMarkdown(payload.content).trimEnd();
   if (normalizedLocal === normalizedDB) {
     return { type: "IN_SYNC", content: localContent };
-  } else
-    return { type: "OUT_OF_SYNC", localContent, dbContent: payload.content };
+  } else console.log(normalizedLocal.length, normalizedDB.length);
+  return { type: "OUT_OF_SYNC", localContent, dbContent: payload.content };
 }
 
 async function writeMirroredNoteLogic(
