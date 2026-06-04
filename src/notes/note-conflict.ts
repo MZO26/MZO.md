@@ -32,9 +32,9 @@ async function handleConflict(id: string, updated_at: string) {
   if (!result.success || !result.data) return;
   switch (result.data.type) {
     case "MISSING_RESOLVED":
-      break;
+      return result.data.type;
     case "IN_SYNC":
-      break;
+      return result.data.type;
     case "OUT_OF_SYNC": {
       const { localContent } = result.data;
       conflictDialog.returnValue = "";
@@ -62,12 +62,25 @@ async function handleConflict(id: string, updated_at: string) {
               markdown: localContent,
               plainText,
             };
-            await updateNote(updatePayload, true);
+            const result = await updateNote(updatePayload, true);
+            if (!result.success) {
+              console.error(
+                "[handleConflict -> updateNote]: Update failed.",
+                result.error,
+              );
+              return;
+            }
             if (stateStore.get("activeId") === id) {
               const activeEditor = getAppItem("editor");
               if (activeEditor) {
                 activeEditor.commands.setContent(json, { emitUpdate: false });
               }
+              noteStore.setState((state) => ({
+                notes: state.notes.map((n) =>
+                  n.id === result.data.id ? result.data : n,
+                ),
+                sidebarChange: { type: "update", noteId: result.data.id },
+              }));
             }
           } catch (error) {
             console.error(
@@ -86,7 +99,13 @@ async function handleConflict(id: string, updated_at: string) {
             },
             true,
           );
-          if (!updateResult.success) return;
+          if (!updateResult.success) {
+            console.error(
+              "[handleConflict -> updateNote]: Update failed.",
+              updateResult.error,
+            );
+            return;
+          }
           noteStore.setState((state) => ({
             notes: state.notes.map((n) =>
               n.id === updateResult.data.id ? updateResult.data : n,
@@ -99,7 +118,7 @@ async function handleConflict(id: string, updated_at: string) {
         once: true,
       });
       conflictDialog.showModal();
-      break;
+      return result.data.type;
     }
   }
 }

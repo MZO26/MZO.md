@@ -1,5 +1,7 @@
-import { setTheme } from "@/api/api";
+import { setTheme, showNotification } from "@/api/api";
 import { promptImageUpload } from "@/extensions/image/image";
+import { handleConflict, isMirrorEnabled } from "@/notes/note-conflict";
+import { noteStore, stateStore } from "@/settings/app-state";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import type { Theme } from "@shared/schemas/store-schema";
 import type { ActionMap } from "@shared/types";
@@ -13,11 +15,15 @@ function initTopToolbar() {
     "app:set-editor-width": () => setEditorWidth(appContainer),
     "app:toggle-read-only": () => editor?.setEditable(!editor.isEditable),
     "app:toggle-focus-mode": () => initFocusMode(),
+    "app:check-sync-state": async () => {
+      await syncCheck();
+    },
     "app:escape": () => {
       if (appContainer.classList.contains("focus")) {
         initFocusMode();
       }
     },
+    "app:toggle-toolbar": () => toggleToolbar(),
   });
 }
 
@@ -50,18 +56,43 @@ function initFocusMode() {
   });
 }
 
+function toggleToolbar() {
+  const appContainer = getAppItem("appContainer");
+  const newState = !appContainer.classList.contains("toolbar-collapsed");
+  requestAnimationFrame(() => {
+    appContainer.classList.toggle("toolbar-collapsed", newState);
+  });
+}
+
+async function syncCheck() {
+  if (!isMirrorEnabled()) {
+    await showNotification(
+      "Unable to sync.",
+      "Enable Mirror Mode to sync notes.",
+    );
+  }
+  const activeId = stateStore.get("activeId");
+  const activeNote = noteStore.get("notes").find((n) => n.id === activeId);
+  if (!activeNote) return;
+  const result = await handleConflict(
+    activeNote.id,
+    activeNote.updated_at,
+  ).catch((error) =>
+    console.error("[handleConflict]: Error while trying to sync note", error),
+  );
+  if (!result) return;
+  await showNotification(
+    "Synced Note.",
+    `${result === "IN_SYNC" ? "No change found." : result === "MISSING_RESOLVED" ? "File is missing." : "Change found."}`,
+  );
+}
+
 const TOP_TOOLBAR_ACTIONS: ActionMap = {
   readOnly: {
     type: "action",
     run: (editor) => editor?.setEditable(!editor.isEditable),
     icon: "glasses",
     shortcut: "MOD+Shift+R",
-  },
-  focus: {
-    type: "action",
-    run: () => initFocusMode(),
-    icon: "focus",
-    shortcut: "F11",
   },
   editorWidth: {
     type: "action",
@@ -71,6 +102,26 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
     },
     icon: "ruler-dimension-line",
     shortcut: "MOD+Shift+W",
+  },
+  focus: {
+    type: "action",
+    run: () => initFocusMode(),
+    icon: "focus",
+    shortcut: "F11",
+  },
+  checkSyncState: {
+    type: "action",
+    run: async () => {
+      await syncCheck();
+    },
+    icon: "file-symlink",
+    shortcut: "MOD+Alt+S",
+  },
+  toggleToolbar: {
+    type: "action",
+    run: () => toggleToolbar(),
+    icon: "arrow-down-from-line",
+    shortcut: "MOD+Shift+T",
   },
 };
 

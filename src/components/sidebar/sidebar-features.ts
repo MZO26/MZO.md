@@ -4,12 +4,12 @@ import { showTodoProgress } from "@/components/sidebar/sidebar-ui";
 import { noteStore, searchEngine, stateStore } from "@/settings/app-state";
 import { debounce } from "@/utils/async";
 import { formatNoteDate } from "@/utils/date";
-import { findElement } from "@/utils/dom";
+import { findElement, requireElement } from "@/utils/dom";
 import { estimateReadingTime } from "@/utils/note";
 import { getAppItem, getInfobarItem, getInfobarItems } from "@/utils/registry";
 import { DEBOUNCE_MS, MAX_CHARS, PADDING } from "@shared/constants";
 import type { Note } from "@shared/schemas/note-schema";
-import type { SnippetCacheValue, View } from "@shared/types";
+import type { ResizeOptions, SnippetCacheValue, View } from "@shared/types";
 
 // sidebar
 
@@ -194,6 +194,62 @@ async function updateStats(note: Note) {
   await updateNoteLinks(note.links);
 }
 
+//---------------------------------------------------------
+
+// resizing logic
+
+function resizeSidebar(
+  resizerSelector: string,
+  sidebarSelector: string,
+  options: ResizeOptions = {},
+) {
+  const {
+    minWidth = 0,
+    maxWidth = 600,
+    cssVariable = "--sidebar-width",
+    side = "left",
+  } = options;
+  const resizer = requireElement<HTMLDivElement>(resizerSelector);
+  const sidebar = requireElement<HTMLDivElement>(sidebarSelector);
+  let isResizing = false;
+  let isUpdatePending = false;
+  let startX = 0;
+  let startWidth = 0;
+  resizer.addEventListener("pointerdown", (e: PointerEvent) => {
+    isResizing = true;
+    startX = e.clientX;
+    startWidth = sidebar.getBoundingClientRect().width;
+    resizer.setPointerCapture(e.pointerId);
+    document.body.classList.add("is-dragging");
+    document.body.style.userSelect = "none";
+  });
+
+  document.addEventListener("pointermove", (e: PointerEvent) => {
+    if (!isResizing || isUpdatePending) return;
+    isUpdatePending = true;
+    requestAnimationFrame(() => {
+      const deltaX = e.clientX - startX;
+      const adjustedWidth =
+        side === "right" ? startWidth - deltaX : startWidth + deltaX;
+      const newWidth = Math.max(minWidth, Math.min(adjustedWidth, maxWidth));
+
+      document.documentElement.style.setProperty(cssVariable, `${newWidth}px`);
+      isUpdatePending = false;
+    });
+  });
+
+  document.addEventListener("pointerup", (e: PointerEvent) => {
+    if (isResizing) {
+      isResizing = false;
+      if (resizer.hasPointerCapture(e.pointerId)) {
+        resizer.releasePointerCapture(e.pointerId);
+      }
+      document.body.classList.remove("is-dragging");
+      document.body.style.userSelect = "";
+    }
+  });
+}
+
 //------------------------------------------------------------
 
 // debounced functions
@@ -206,4 +262,10 @@ const debouncedSearch = debounce((e: Event) => {
 
 const debouncedUpdateStats = debounce(updateStats, DEBOUNCE_MS.slow);
 
-export { debouncedSearch, debouncedUpdateStats, handleViews, updateStats };
+export {
+  debouncedSearch,
+  debouncedUpdateStats,
+  handleViews,
+  resizeSidebar,
+  updateStats,
+};

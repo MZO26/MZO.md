@@ -69,10 +69,10 @@ function snippetGenerator(doc: EditorDoc | undefined): string {
 function getTodoStats(doc: EditorDoc) {
   let total = 0;
   let completed = 0;
-  if (!doc || !Array.isArray(doc.content) || doc.content.length === 0) {
+  if (!doc.content || !Array.isArray(doc.content)) {
     return { total, completed, left: 0 };
   }
-  const stack: JSONContent[] = [doc.content];
+  const stack: JSONContent[] = [...doc.content];
   while (stack.length > 0) {
     const node = stack.pop()!;
     if (node.type === "taskItem") {
@@ -81,14 +81,8 @@ function getTodoStats(doc: EditorDoc) {
         completed++;
       }
     }
-    const content = node.content;
-    if (content) {
-      for (let i = 0, len = content.length; i < len; i++) {
-        const child = content[i];
-        if (child) {
-          stack.push(child);
-        }
-      }
+    if (node.content && Array.isArray(node.content)) {
+      stack.push(...node.content);
     }
   }
   return {
@@ -99,41 +93,41 @@ function getTodoStats(doc: EditorDoc) {
 }
 
 function getLinks(doc: EditorDoc) {
-  if (!doc) return [];
+  if (!doc.content) return [];
   const seen = new Set<string>();
-  const stack: JSONContent[] = [doc];
+  const stack: JSONContent[] = [...doc.content];
   while (stack.length > 0) {
     const node = stack.pop()!;
+    if (node.type === "wikilink" && node.attrs?.["id"]) {
+      seen.add(node.attrs["id"]);
+    }
     if (node.content) {
-      for (let i = node.content.length - 1; i >= 0; i--) {
-        stack.push(node.content[i] as JSONContent);
+      for (const child of node.content) {
+        stack.push(child);
       }
     }
-    if (node.type !== "wikilink" || !node.attrs?.["id"]) continue;
-    const linkId = node.attrs["id"];
-    if (seen.has(linkId)) continue;
-    seen.add(linkId);
   }
   return Array.from(seen);
 }
 
 function getTags(doc: EditorDoc) {
-  if (!doc) return [];
+  if (!doc.content) return [];
   const seen = new Set<string>();
-  const stack: JSONContent[] = [doc.content];
+  const stack: JSONContent[] = [...doc.content];
   while (stack.length > 0) {
     const node = stack.pop()!;
-    if (node.content) {
-      for (let i = node.content.length - 1; i >= 0; i--) {
-        stack.push(node.content[i] as JSONContent);
+    if (node.type === "noteTag" && node.attrs?.["id"]) {
+      const tagText = node.attrs["id"].trim().toLowerCase();
+      if (tagText.length > 0 && tagText.length <= 40) {
+        seen.add(tagText);
       }
     }
-    if (node.type !== "noteTag" || !node.attrs?.["id"]) continue;
-    const tagText = node.attrs["id"].trim().toLowerCase();
-    if (tagText.length === 0 || tagText.length > 40) continue;
-    if (seen.has(tagText)) continue;
-    seen.add(tagText);
     if (seen.size === 3) break;
+    if (node.content) {
+      for (const child of node.content) {
+        stack.push(child);
+      }
+    }
   }
   return Array.from(seen);
 }

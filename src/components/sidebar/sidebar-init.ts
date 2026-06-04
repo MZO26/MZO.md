@@ -1,6 +1,7 @@
 import {
   debouncedSearch,
   handleViews,
+  resizeSidebar,
 } from "@/components/sidebar/sidebar-features";
 import { createViews, setSidebarState } from "@/components/sidebar/sidebar-ui";
 import {
@@ -18,63 +19,7 @@ import {
 } from "@/utils/registry";
 import { initTippyDelegate } from "@/utils/ui";
 import { VIEWS } from "@shared/constants";
-import type { ResizeOptions, View } from "@shared/types";
-
-// resizing logic
-
-function resizeSidebar(
-  resizerSelector: string,
-  sidebarSelector: string,
-  options: ResizeOptions = {},
-) {
-  const {
-    minWidth = 0,
-    maxWidth = 600,
-    cssVariable = "--sidebar-width",
-    side = "left",
-  } = options;
-  const resizer = requireElement<HTMLDivElement>(resizerSelector);
-  const sidebar = requireElement<HTMLDivElement>(sidebarSelector);
-  let isResizing = false;
-  let isUpdatePending = false;
-  let startX = 0;
-  let startWidth = 0;
-  resizer.addEventListener("pointerdown", (e: PointerEvent) => {
-    isResizing = true;
-    startX = e.clientX;
-    startWidth = sidebar.getBoundingClientRect().width;
-    resizer.setPointerCapture(e.pointerId);
-    document.body.classList.add("is-dragging");
-    document.body.style.userSelect = "none";
-  });
-
-  document.addEventListener("pointermove", (e: PointerEvent) => {
-    if (!isResizing || isUpdatePending) return;
-    isUpdatePending = true;
-    requestAnimationFrame(() => {
-      const deltaX = e.clientX - startX;
-      const adjustedWidth =
-        side === "right" ? startWidth - deltaX : startWidth + deltaX;
-      const newWidth = Math.max(minWidth, Math.min(adjustedWidth, maxWidth));
-
-      document.documentElement.style.setProperty(cssVariable, `${newWidth}px`);
-      isUpdatePending = false;
-    });
-  });
-
-  document.addEventListener("pointerup", (e: PointerEvent) => {
-    if (isResizing) {
-      isResizing = false;
-      if (resizer.hasPointerCapture(e.pointerId)) {
-        resizer.releasePointerCapture(e.pointerId);
-      }
-      document.body.classList.remove("is-dragging");
-      document.body.style.userSelect = "";
-    }
-  });
-}
-
-//---------------------------------------------------------
+import type { View } from "@shared/types";
 
 // sidebar
 
@@ -218,7 +163,7 @@ function applyInfoSidebarListeners(
 ) {
   resizeSidebar(".resizer-infobar", ".info-sidebar", {
     minWidth: 0,
-    maxWidth: 400,
+    maxWidth: 320,
     cssVariable: "--infobar-width",
     side: "right",
   });

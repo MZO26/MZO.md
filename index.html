@@ -96,7 +96,6 @@
           </button>
           <div id="editor"></div>
           <div class="info-sidebar">
-            <div class="resizer-infobar"></div>
             <div class="info-sidebar-metadata">
               <span class="info-span creation-date">Creation date:</span>
               <div class="info-sidebar-header"></div>
@@ -126,10 +125,10 @@
                 <span id="reading-time"></span>
               </div>
             </div>
+            <div class="resizer-infobar"></div>
           </div>
         </div>
       </div>
-      <div class="toast-container" popover="manual"></div>
     </div>
     <div class="spinner" popover="manual"></div>
     <dialog id="delete-dialog" class="delete-dialog">
@@ -163,7 +162,7 @@
       <form method="dialog" class="conflict-dialog-form">
         <button
           class="conflict-close-btn"
-          data-tippy-content="Close"
+          data-tippy-content="Ignore"
           data-shortcut="Escape"
           value="cancel"
         >
@@ -174,21 +173,22 @@
         </div>
         <div class="conflict-dialog-content">
           <p class="conflict-dialog-description">
-            Changes detected in mirrored file.
+            Changes detected in mirrored file.<br />Choose which version to
+            keep.
           </p>
           <button
             value="overwrite"
             class="conflict-overwrite-btn"
             id="overwrite-conflict-btn"
           >
-            Overwrite Content from FS
+            Keep File Version
           </button>
           <button
             value="accept"
             class="conflict-accept-btn"
             id="accept-conflict-btn"
           >
-            Overwrite Content from DB
+            Keep App Version
           </button>
         </div>
       </form>

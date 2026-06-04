@@ -47,14 +47,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   );
   buildMenu(toolbarContainer, TOOLBAR_ACTIONS);
   setupToolbarListeners(toolbarContainer, TOOLBAR_ACTIONS);
-  const hoverbar = requireElement<HTMLDivElement>(".top-toolbar");
-  buildMenu(hoverbar, TOP_TOOLBAR_ACTIONS);
-  setupToolbarListeners(hoverbar, TOP_TOOLBAR_ACTIONS);
+  const topToolbar = requireElement<HTMLDivElement>(".top-toolbar");
+  buildMenu(topToolbar, TOP_TOOLBAR_ACTIONS);
+  setupToolbarListeners(topToolbar, TOP_TOOLBAR_ACTIONS);
   initTopToolbar();
   renderIcons();
   startAppClock();
-  initTippyDelegate(hoverbar);
   initTippyDelegate(getAppItem("editorContainer"));
+  initTippyDelegate(topToolbar, getAppItem("appContainer"));
   requestAnimationFrame(() => {
     window.electronAPI.startupReady();
   });

@@ -61,7 +61,6 @@ function initAppearanceSettings(
   });
 
   // theme
-
   themeSelect.value = settings["theme"];
   themeSelect.addEventListener(
     "change",
@@ -311,7 +310,11 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
   });
 
   // mirror to fs mode
-
+  const mirrorPath = settings["mirror-path"];
+  mirrorModeSelect.setAttribute(
+    "data-tippy-content",
+    mirrorPath ? `Path: ${mirrorPath}` : "No path selected.",
+  );
   mirrorModeSelect.value = settings["mirror-mode"] ? "true" : "false";
   mirrorModeSelect.addEventListener(
     "change",

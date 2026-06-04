@@ -1,5 +1,6 @@
 import {
   AppWindow,
+  ArrowDownFromLine,
   ArrowLeftFromLine,
   Bold,
   Bookmark,
@@ -11,6 +12,7 @@ import {
   createIcons,
   Download,
   FileQuestion,
+  FileSymlink,
   FileUp,
   Focus,
   Glasses,
@@ -54,6 +56,7 @@ import {
 function renderIcons(scope: Document | HTMLElement = document): void {
   createIcons({
     icons: {
+      FileSymlink,
       FileUp,
       SearchX,
       Library,
@@ -101,6 +104,7 @@ function renderIcons(scope: Document | HTMLElement = document): void {
       CopyPlus,
       Repeat,
       ArrowLeftFromLine,
+      ArrowDownFromLine,
       Palette,
       AppWindow,
     },

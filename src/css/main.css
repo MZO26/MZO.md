@@ -762,7 +762,7 @@ label {
   overflow: hidden;
 }
 
-.app-container.collapsed .sidebar-notes {
+.app-container.collapsed .sidebar-container {
   opacity: 0;
   transform: scale(0.95);
   transition:
@@ -792,8 +792,10 @@ label {
     border-color 0.3s ease;
 }
 
-.app-container.focus .editor-header {
+.app-container.focus .editor-header,
+.app-container.toolbar-collapsed .editor-header {
   opacity: 0;
+  pointer-events: none;
   transform: translateY(-12px) scaleY(0.92);
   border-color: transparent;
 }
@@ -813,18 +815,23 @@ label {
   grid-template-columns: 0 minmax(0, 1fr);
 }
 
-.app-container.collapsed .collapse-icon {
+.app-container.collapsed .collapse-icon,
+.app-container.toolbar-collapsed .collapse-icon {
   transform: rotate(180deg);
 }
 
 .toggleSidebar-btn i,
-.toggleSidebar-btn svg {
+.toggleSidebar-btn svg,
+.toggleToolbar-btn i,
+.toggleToolbar-btn svg {
   display: inline-block;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-container.collapsed .toggleSidebar-btn i,
-.app-container.collapsed .toggleSidebar-btn svg {
+.app-container.collapsed .toggleSidebar-btn svg,
+.app-container.toolbar-collapsed .toggleToolbar-btn i,
+.app-container.toolbar-collapsed .toggleToolbar-btn svg {
   transform: rotate(180deg);
 }
 
@@ -970,86 +977,11 @@ svg.empty-state-icon {
   margin: 0 10px;
 }
 
+.sidebar-spacer {
+  margin: 10px 0;
+}
+
 .hidden {
   pointer-events: none;
   display: none;
-}
-
-.toast-container[popover]:popover-open {
-  position: fixed;
-  inset: auto;
-  bottom: 0;
-  right: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  overflow: visible;
-}
-
-.toast {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 5;
-  padding: 12px 20px;
-  border-radius: 12px;
-  min-width: 200px;
-  max-width: 350px;
-  box-shadow: var(--shadow);
-  background-color: var(--bg-button);
-  border: 1px solid var(--border-color);
-  font-size: 14px;
-  font-family: var(--current-font);
-  color: var(--text-main);
-  opacity: 0;
-  transform: translateX(100%) scale(0.95);
-  overflow: hidden;
-}
-
-.toast::before {
-  content: "";
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  margin-top: 1px;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-@keyframes slideUpIn {
-  0% {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideDownOut {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-}
-
-.toast.show {
-  animation: slideUpIn 0.4s forwards ease-in-out;
-}
-
-.toast.hide {
-  animation: slideDownOut 0.4s forwards ease-in-out;
 }

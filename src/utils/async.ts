@@ -37,7 +37,7 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
 // for async event listeners
 
 function createAsyncHandler<T extends Event>(
-  callback: (e: T) => Promise<void>,
+  callback: (e: T) => Promise<void> | void,
 ) {
   let isProcessing = false;
   return async (e: T) => {

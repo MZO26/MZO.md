@@ -19,6 +19,14 @@ function initGlobalShortcuts() {
       e.preventDefault();
       await handleZoom("reset");
     },
+    "$mod+Alt+S": (e) => {
+      e.preventDefault();
+      document.dispatchEvent(new CustomEvent("app:check-sync-state"));
+    },
+    "$mod+Shift+T": (e) => {
+      e.preventDefault();
+      document.dispatchEvent(new CustomEvent("app:toggle-toolbar"));
+    },
     "$mod+o": (e) => {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:toggle-sidebar"));

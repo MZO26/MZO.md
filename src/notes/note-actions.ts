@@ -8,10 +8,7 @@ import {
   updateNote,
 } from "@/api/api";
 import { resetEditorHistory } from "@/components/editor/editor-features";
-import {
-  debouncedUpdateStats,
-  updateStats,
-} from "@/components/sidebar/sidebar-features";
+import { updateStats } from "@/components/sidebar/sidebar-features";
 import { setImportedContent } from "@/notes/import-actions";
 import { handleConflict, isMirrorEnabled } from "@/notes/note-conflict";
 import { noteStore, stateStore } from "@/settings/app-state";
@@ -104,7 +101,6 @@ async function handleDeleteNote(id: string) {
   const isActiveDeletedId = activeId === id;
   if (isActiveDeletedId) {
     debouncedSaveNote.cancel();
-    debouncedUpdateStats.cancel();
   }
   const result = await deleteNote(id);
   if (!result.success) {
@@ -146,7 +142,7 @@ async function handleSaveNote(
   };
   const result = await updateNote(payload, flush);
   if (!result.success) {
-    console.error("[handleSaveNote]: save failed", result.error);
+    console.error("[handleSaveNote]: Save failed.", result.error);
     return;
   }
   noteStore.setState((state) => ({
@@ -176,7 +172,7 @@ async function handleSelectNote(id: string) {
   if (isMirrorEnabled()) {
     await handleConflict(id, result.data.updated_at).catch((error) =>
       console.error(
-        "[handleSelectNote]: Error while trying to mirror note",
+        "[handleSelectNote -> handleConflict]: Error while trying to sync note",
         error,
       ),
     );
