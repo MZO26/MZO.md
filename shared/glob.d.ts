@@ -34,6 +34,7 @@ declare global {
       onRequestFlush: (callback: () => void) => () => void;
       confirmFlush: () => void;
       zoom: (action: string) => Promise<Result<number>>;
+      openExternal: (url: string) => Promise<Result<void>>;
     };
     noteAPI: {
       getAll: () => Promise<Result<NoteListItem[]>>;

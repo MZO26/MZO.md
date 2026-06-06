@@ -197,7 +197,7 @@ function getNoteEditorExtensions() {
     StarterKit.configure({
       codeBlock: false,
       link: {
-        openOnClick: true,
+        openOnClick: false,
         autolink: true,
         defaultProtocol: "https",
         HTMLAttributes: {

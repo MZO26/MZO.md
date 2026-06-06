@@ -108,6 +108,7 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | `Mod + Alt + Arrow Right` | Add column after            |
 | `Mod + Alt + Arrow Left`  | Add column before           |
 | `Mod + Alt + Backspace`   | Delete table                |
+| `Mod + Alt + Enter`       | Open Link                   |
 | `Mod + Shift + F`         | Toggle focus mode in editor |
 
 ## Architecture

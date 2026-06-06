@@ -165,6 +165,10 @@ async function handleZoom(action: ZoomAction): Promise<Result<ZoomAction>> {
   return invoke(window.electronAPI.zoom(action));
 }
 
+async function openExternal(url: string): Promise<Result<void>> {
+  return invoke(window.electronAPI.openExternal(url));
+}
+
 //----------------------------------------------------------
 
 // debounced calls
@@ -210,6 +214,7 @@ export {
   handleZoom,
   imageWrite,
   importNote,
+  openExternal,
   openMirrorFolder,
   pin,
   setTheme,

@@ -242,6 +242,16 @@ const TOOLBAR_ACTIONS: ActionMap = {
     shortcut: "MOD-Shift--",
   },
   divider5: { type: "divider" },
+  link: {
+    run: (editor) => {
+      if (!editor) return false;
+      if (!editor.isActive("link")) return false;
+      return editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    },
+    isActive: (editor) => editor?.isActive("link"),
+    icon: "link",
+    shortcut: "MOD-K",
+  },
   image: {
     run: (editor) => editor && promptImageUpload(editor),
     isActive: (editor) => editor?.isActive("image"),

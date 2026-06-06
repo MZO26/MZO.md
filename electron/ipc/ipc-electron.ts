@@ -9,10 +9,11 @@ import {
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
+import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
 import { ImagePayloadSchema } from "@shared/schemas/image-schema";
 import { type Theme } from "@shared/schemas/store-schema";
 import type { MenuType, NoteMenuPayload } from "@shared/types";
-import { BrowserWindow, ipcMain, Menu, Notification } from "electron";
+import { BrowserWindow, ipcMain, Menu, Notification, shell } from "electron";
 
 function registerElectronIpc(win: BrowserWindow) {
   ipcMain.on(
@@ -34,6 +35,15 @@ function registerElectronIpc(win: BrowserWindow) {
       });
     },
   );
+
+  ipcMain.handle("open:external", (e, url: unknown) => {
+    return result(e, async () => {
+      if (!checkRateLimit("theme:set", LIMITS.READ_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validatedUrl = validation(ExternalUrlSchema, url);
+      shell.openExternal(validatedUrl);
+    });
+  });
 
   ipcMain.handle("theme:set", (e, theme: Theme, focus?: boolean) => {
     return result(e, async () => {

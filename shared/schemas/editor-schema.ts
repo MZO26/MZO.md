@@ -48,6 +48,13 @@ const DbContentSchema = z
 
 //input gets validated -> processed into parsed object -> piped to validate output against EditorDocSchema
 
+const ExternalUrlSchema = z.url().refine((value) => {
+  const url = new URL(value);
+  return ["http:", "https:", "mailto:", "tel:", "appimg:"].includes(
+    url.protocol,
+  );
+}, "Unsupported link protocol");
+
 type EditorDoc = z.infer<typeof EditorDocSchema>;
 
-export { DbContentSchema, EditorDocSchema, type EditorDoc };
+export { DbContentSchema, EditorDocSchema, ExternalUrlSchema, type EditorDoc };

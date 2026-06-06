@@ -1,3 +1,4 @@
+import { openExternal } from "@/api/api";
 import { promptImageUpload } from "@/extensions/image/image";
 import { Extension } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
@@ -59,6 +60,13 @@ export const MasterShortcuts = Extension.create({
       },
       "Mod-Shift-F": () => {
         this.editor.view.dom.classList.toggle("focus-mode-active");
+        return true;
+      },
+      "Mod-Alt-Enter": () => {
+        if (!this.editor.isActive("link")) return false;
+        const href = this.editor.getAttributes("link")["href"];
+        if (!href) return false;
+        void openExternal(href);
         return true;
       },
     };
