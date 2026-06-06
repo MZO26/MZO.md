@@ -43,10 +43,6 @@ function initGlobalShortcuts() {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:open-global-search"));
     },
-    "$mod+Shift+V": (e) => {
-      e.preventDefault();
-      document.dispatchEvent(new CustomEvent("app:toggle-view-filter"));
-    },
     "$mod+,": (e) => {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:open-settings"));

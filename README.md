@@ -74,7 +74,6 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | `Mod + Shift + T`     | Toggle toolbar        |
 | `Mod + Shift + R`     | Toggle read-only mode |
 | `Mod + Shift + W`     | Set editor width      |
-| `Mod + Shift + V`     | Toggle view filter    |
 | `Mod + ,`             | Open settings         |
 | `Mod + +` / `Mod + =` | Zoom in               |
 | `Mod + -`             | Zoom out              |

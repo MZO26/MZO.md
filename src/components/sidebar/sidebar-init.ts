@@ -44,7 +44,6 @@ function initNotesSidebar() {
     },
     "app:create-new-note": () => handleCreateNote(),
     "app:open-global-search": () => searchInput.focus(),
-    "app:toggle-view-filter": () => viewSelect.showPicker(),
   });
 }
 

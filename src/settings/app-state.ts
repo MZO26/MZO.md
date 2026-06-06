@@ -25,7 +25,7 @@ const DEFAULT_STORE: AppSettings = {
   "delete-confirmation": true,
   "mirror-mode": false,
   "mirror-path": null,
-  "note-item-display": "tags",
+  "note-item-display": "snippet",
   "window-bounds": { width: 1100, height: 600 },
 };
 
@@ -96,7 +96,7 @@ function createStore<T>(initialState: T) {
 async function loadSettings(): Promise<AppSettings> {
   const result = await getAllSettings();
   if (!result.success) {
-    console.error("Failed to load settings. Using defaults.");
+    console.error("[loadSettings]: Failed to load settings. Using defaults.");
     return settingsStore.getState();
   }
   settingsStore.setState(result.data);

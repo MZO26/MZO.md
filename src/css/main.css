@@ -931,6 +931,7 @@ svg.empty-state-icon {
   user-select: none;
   gap: 8px;
   color: var(--text-muted);
+  border: 1px solid var(--border-color);
   background-color: var(--bg-sidebar);
   font-size: 0.8rem;
   overflow: visible;
