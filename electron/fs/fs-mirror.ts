@@ -18,7 +18,7 @@ import type {
 import type { ExportedContent, FileContent, SyncResult } from "@shared/types";
 import console from "console";
 import { app, shell } from "electron";
-import fs, { access, constants, mkdir, readFile } from "fs/promises";
+import fs, { access, constants, mkdir, readFile, stat } from "fs/promises";
 import path from "path";
 
 function getFilePath(
@@ -75,18 +75,22 @@ async function checkSyncState(
   });
   let localContent: string | null = null;
   try {
+    const fsStat = await stat(absoluteFilePath).catch(() => null);
+    if (!fsStat) return { type: "MISSING_RESOLVED" };
+    const dbUpdatedAt = new Date(payload.updated_at).getTime();
+    if (fsStat.mtimeMs <= dbUpdatedAt) return { type: "IN_SYNC" };
     localContent = await readFile(absoluteFilePath, "utf-8");
   } catch (error: unknown) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
       console.error("[checkSyncState]: Error checking file:", error);
       throw new AppBackendError(AppErrorCode.InvalidData);
     }
-    return { type: "MISSING_RESOLVED", content: null };
+    return { type: "MISSING_RESOLVED" };
   }
   const normalizedLocal = normalizeMarkdown(localContent).trimEnd();
   const normalizedDB = normalizeMarkdown(payload.content).trimEnd();
   if (normalizedLocal === normalizedDB) {
-    return { type: "IN_SYNC", content: localContent };
+    return { type: "IN_SYNC" };
   }
   return { type: "OUT_OF_SYNC", localContent, dbContent: payload.content };
 }

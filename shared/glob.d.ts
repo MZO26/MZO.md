@@ -29,6 +29,7 @@ declare global {
       onTriggerNoteAction: (
         callback: (payload: NoteMenuPayload) => void,
       ) => void;
+      onFocus: (callback: () => void) => () => void;
       onSystemResume: (callback: () => void) => () => void;
       onRequestFlush: (callback: () => void) => () => void;
       confirmFlush: () => void;

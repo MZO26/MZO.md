@@ -51,6 +51,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onTriggerNoteAction: (callback: (payload: NoteMenuPayload) => void) => {
     subscribe("trigger:note-action", callback);
   },
+  onFocus: (callback: () => void) => subscribe("app:focus", () => callback()),
   onSystemResume: (callback: () => void) =>
     subscribe("system-resumed", () => callback()),
   onRequestFlush: (callback: () => void) =>

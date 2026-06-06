@@ -227,11 +227,8 @@ const debouncedSearch = debounce((e: Event) => {
   handleSearchInput(value);
 }, DEBOUNCE_MS.fast);
 
-const debouncedUpdateStats = debounce(updateStats, DEBOUNCE_MS.slow);
-
 export {
   debouncedSearch,
-  debouncedUpdateStats,
   handleViews,
   resizeSidebar,
   updateLinksOption,

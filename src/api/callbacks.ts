@@ -184,6 +184,21 @@ function initListeners() {
     window.electronAPI.confirmFlush();
   });
 
+  window.electronAPI.onFocus(async () => {
+    const activeId = stateStore.get("activeId");
+    const note = noteStore.get("activeNote");
+    if (!activeId || !note) return;
+    const editor = getAppItem("editor");
+    stateStore.setState({ lastSyncedAt: 0 });
+    if (isMirrorEnabled() && activeId && note) {
+      console.log("[System-Resume-Event]: Forcing JIT Sync...");
+      const markdown = editor.getMarkdown();
+      handleConflict(note, markdown).catch((error: Error) => {
+        console.error("[Focus-Event]: Sync failed", error);
+      });
+    }
+  });
+
   window.electronAPI.onSystemResume(async () => {
     const activeId = stateStore.get("activeId");
     const note = noteStore.get("activeNote");

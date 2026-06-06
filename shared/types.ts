@@ -178,8 +178,8 @@ type ResizeOptions = {
 };
 
 type SyncResult =
-  | { type: "MISSING_RESOLVED"; content: null }
-  | { type: "IN_SYNC"; content: string }
+  | { type: "MISSING_RESOLVED" }
+  | { type: "IN_SYNC" }
   | { type: "OUT_OF_SYNC"; localContent: string; dbContent: string };
 
 export type {

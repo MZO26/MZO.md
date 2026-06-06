@@ -133,7 +133,9 @@ stateStore.subscribe((state) => {
   }
   if (state.searchQuery !== previousSearchQuery) {
     previousSearchQuery = state.searchQuery;
-    handleSidebarEmptyState();
+    requestAnimationFrame(() => {
+      handleSidebarEmptyState();
+    });
   }
   if (state.lastSyncedAt !== previousSync) {
     previousSync = state.lastSyncedAt;
@@ -144,8 +146,7 @@ const searchEngine = new NoteSearch(noteStore.getState().notes);
 
 noteStore.subscribe((state) => {
   if (state.notes !== previousNotesRef) {
-    const notes = state.notes;
-    if (notes === previousNotesRef) return;
+    previousNotesRef = state.notes;
     handleSidebarEmptyState();
   }
   if (state.notes.length !== previousNotesLength) {

@@ -94,6 +94,9 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
+  win.on("focus", () => {
+    win?.webContents.send("app:focus");
+  });
 
   win.on("close", (e) => {
     if (!isReadyToClose) {

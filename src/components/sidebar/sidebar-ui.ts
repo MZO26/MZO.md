@@ -30,6 +30,7 @@ function handleSidebarEmptyState() {
     shouldShowEmptyState = true;
   } else if (searchQuery.trim() !== "") {
     const visibleItems = sidebar.querySelectorAll(".note-item:not(.hidden)");
+    console.log(visibleItems);
     shouldShowEmptyState = visibleItems.length === 0;
   } else {
     shouldShowEmptyState = false;
