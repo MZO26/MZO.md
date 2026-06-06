@@ -311,6 +311,7 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
 
   // mirror to fs mode
   const mirrorPath = settings["mirror-path"];
+  mirrorModeSelect.setAttribute("data-tippy-dynamic", "");
   mirrorModeSelect.setAttribute(
     "data-tippy-content",
     mirrorPath ? `Path: ${mirrorPath}` : "No path selected.",
@@ -331,7 +332,17 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
           "mirror-mode": true,
           "mirror-path": result.data as MirrorPath,
         });
-      } else updateSettings({ "mirror-mode": false });
+        mirrorModeSelect.setAttribute(
+          "data-tippy-content",
+          `Path: ${result.data}`,
+        );
+      } else {
+        updateSettings({ "mirror-mode": false });
+        mirrorModeSelect.setAttribute(
+          "data-tippy-content",
+          "No path selected.",
+        );
+      }
     }),
   );
 }

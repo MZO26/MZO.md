@@ -54,6 +54,11 @@ function initTippyDelegate(container: HTMLElement, appendTo?: HTMLElement) {
     appendTo: appendTo || container,
     onShow(instance) {
       hideAll({ exclude: instance });
+      if (instance.reference.hasAttribute("data-tippy-dynamic")) {
+        const baseText =
+          instance.reference.getAttribute("data-tippy-content") || "";
+        instance.setContent(baseText);
+      }
     },
     onCreate: (instance) => {
       const reference = instance.reference;
