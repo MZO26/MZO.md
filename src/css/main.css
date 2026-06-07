@@ -673,7 +673,7 @@ label {
 .top-toolbar > button {
   width: 28px;
   height: 28px;
-  min-width: 28px; /* ← override the global floor */
+  min-width: 28px;
   min-height: 28px;
   -webkit-app-region: no-drag;
 }

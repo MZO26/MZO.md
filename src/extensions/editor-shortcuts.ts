@@ -81,6 +81,7 @@ export const MasterShortcuts = Extension.create({
         }
         return this.editor.chain().focus().setLink({ href: "" }).run();
       },
+      Escape: () => this.editor.commands.blur(),
     };
   },
 });
