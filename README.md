@@ -163,11 +163,11 @@ flowchart TD
 
 Designed with security in mind:
 
-- **Context Isolation** — Renderer and main process are strictly separated via Electron's `contextBridge`
-- **No `nodeIntegration`** — Node.js APIs are never exposed to the renderer
-- **Data Validation & Sanitization** — HTML content is strictly sanitized before rendering to prevent XSS, while non-HTML payloads are validated against robust Zod Schemas
-- **Secure IPC Communication** — IPC Channels are protected by Zod Schema validation and built-in rate limiting
-- **Local-Only Storage** — No external network requests; all data stays on your machine
+- Renderer and main process are separated via Electron's `contextBridge`
+- Node.js APIs are never exposed to the renderer
+- HTML content is sanitized before rendering to prevent XSS, while non-HTML is validated against strict Zod Schemas
+- IPC Channels are protected by Zod Schema validation and built-in rate limiting
+- No external network requests
 
 ## What this project tries to demonstrate
 
@@ -182,7 +182,7 @@ Designed with security in mind:
 
 ## Bug reports
 
-If you find a bug, please open an issue with reproduction steps and any useful context.
+If you find a bug or have a feature suggestion, please let me know and share your feedback.
 
 ## License
 
