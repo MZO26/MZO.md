@@ -1,6 +1,7 @@
 import type {
   ExportRequest,
   ImportRequest,
+  SyncRequest,
 } from "@shared/schemas/export-schema";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
@@ -36,6 +37,8 @@ declare global {
       confirmFlush: () => void;
       zoom: (action: string) => Promise<Result<number>>;
       openExternal: (url: string) => Promise<Result<void>>;
+      openPath: (payload: SyncRequest) => Promise<Result<void>>;
+      openAppPath: () => Promise<Result<void>>;
     };
     noteAPI: {
       getAll: () => Promise<Result<NoteListItem[]>>;

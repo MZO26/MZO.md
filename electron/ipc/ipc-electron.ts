@@ -1,19 +1,29 @@
 import { setUpNoteMenu, setUpTableMenu } from "@electron/context-menu";
 import { handleImageWrite } from "@electron/fs/fs-image";
+import { getFilePath } from "@electron/fs/fs-mirror";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
   checkRateLimit,
   result,
   validation,
 } from "@electron/ipc/ipc-validation";
+import { store } from "@electron/store";
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
+import { SyncRequestSchema } from "@shared/schemas/export-schema";
 import { ImagePayloadSchema } from "@shared/schemas/image-schema";
 import { type Theme } from "@shared/schemas/store-schema";
 import type { MenuType, NoteMenuPayload } from "@shared/types";
-import { BrowserWindow, ipcMain, Menu, Notification, shell } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  Notification,
+  shell,
+} from "electron";
 
 function registerElectronIpc(win: BrowserWindow) {
   ipcMain.on(
@@ -41,7 +51,30 @@ function registerElectronIpc(win: BrowserWindow) {
       if (!checkRateLimit("open:external", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedUrl = validation(ExternalUrlSchema, url);
-      shell.openExternal(validatedUrl);
+      return shell.openExternal(validatedUrl);
+    });
+  });
+
+  ipcMain.handle("open:path", (e, payload: unknown) => {
+    return result(e, async () => {
+      if (!checkRateLimit("open:path", LIMITS.READ_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      if (store.get("mirror-mode") !== true) return null;
+      const validatedData = validation(SyncRequestSchema, payload);
+      if (!validatedData.updated_at) return null;
+      const targetDir = store.get("mirror-path");
+      if (!targetDir) return null;
+      const filePath = getFilePath(targetDir, validatedData);
+      return shell.openPath(filePath.absoluteFilePath);
+    });
+  });
+
+  ipcMain.handle("open:app-path", (e) => {
+    return result(e, async () => {
+      if (!checkRateLimit("open:app-path", LIMITS.READ_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const userDataPath = app.getPath("userData");
+      return shell.openPath(userDataPath);
     });
   });
 

@@ -54,7 +54,7 @@ function initTippyDelegate(container: HTMLElement, appendTo?: HTMLElement) {
   delegate(container, {
     target: "[data-tippy-content]",
     theme: "app-theme",
-    trigger: "mouseenter focus",
+    trigger: "mouseenter",
     appendTo: appendTo || container,
     onShow(instance) {
       hideAll({ exclude: instance });

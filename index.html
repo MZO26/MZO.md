@@ -47,8 +47,8 @@
                 type="search"
                 class="search-input"
                 placeholder="search notes"
-                data-tippy-content="Search Note Content"
-                data-shortcut="Mod+F"
+                data-tippy-content="Search All Notes"
+                data-shortcut="Mod+G"
               />
             </div>
             <button class="import-btn" data-tippy-content="Import File">
@@ -91,6 +91,32 @@
             <div id="toolbar"></div>
           </div>
           <div id="editor"></div>
+          <div class="input-wrapper-editor invisible" id="note-search">
+            <i data-lucide="search" class="search-icon"></i>
+            <input
+              type="search"
+              class="search-input-editor"
+              placeholder="search"
+              data-tippy-content="Search Note Content"
+              data-shortcut="Mod+F"
+            />
+            <button
+              type="button"
+              class="search-prev"
+              data-tippy-content="Previous"
+              data-shortcut="Shift+Enter"
+            >
+              <i data-lucide="chevron-up"></i>
+            </button>
+            <button
+              type="button"
+              class="search-next"
+              data-tippy-content="Next"
+              data-shortcut="Enter"
+            >
+              <i data-lucide="chevron-down"></i>
+            </button>
+          </div>
           <div class="footer-bar-hover-zone">
             <div class="footer-bar-dots"></div>
             <div class="stats">
@@ -147,28 +173,26 @@
         </div>
         <div class="conflict-dialog-content">
           <p class="conflict-dialog-description">
-            Changes detected in mirrored file.<br />Choose which version to
-            keep.
+            Changes detected in mirrored file.
           </p>
-          <button
-            value="overwrite"
-            class="conflict-overwrite-btn"
-            id="overwrite-conflict-btn"
-          >
-            Keep File Version
+          <button value="open" class="conflict-open-btn">
+            Open file in default app.
           </button>
-          <button
-            value="accept"
-            class="conflict-accept-btn"
-            id="accept-conflict-btn"
-          >
-            Keep App Version
+          <button value="overwrite" class="conflict-overwrite-btn">
+            Overwrite file.
           </button>
         </div>
       </form>
     </dialog>
     <dialog class="settings-modal">
       <form method="dialog" novalidate>
+        <button
+          class="open-app-path-btn"
+          type="button"
+          data-tippy-content="Open App Path"
+        >
+          <i data-lucide="folder-cog"></i>
+        </button>
         <button
           class="close-setting-modal-btn"
           value="cancel"

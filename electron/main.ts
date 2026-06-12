@@ -33,10 +33,6 @@ process.env["VITE_PUBLIC"] = app.isPackaged
   ? process.env["DIST"]
   : path.join(process.env["DIST"], "../public");
 
-if (process.platform === "win32") {
-  app.setAppUserModelId("MZO26.Editor");
-}
-
 export let win: BrowserWindow | null = null;
 let isReadyToClose = false;
 
@@ -59,7 +55,7 @@ function createWindow() {
     minWidth: 1100,
     minHeight: 600,
     titleBarStyle: "hidden",
-    trafficLightPosition: { x: 15, y: 7 },
+    trafficLightPosition: { x: 15, y: 9 },
     titleBarOverlay: windowTheme.overlayOptions,
     autoHideMenuBar: true,
     transparent: false,
@@ -87,6 +83,7 @@ function createWindow() {
   }
   win = new BrowserWindow(windowConfig);
   navigationHandler(win);
+  win.webContents.openDevTools();
   win.setMenuBarVisibility(false);
   if (process.env["ELECTRON_RENDERER_URL"]) {
     win.loadURL(process.env["ELECTRON_RENDERER_URL"]);

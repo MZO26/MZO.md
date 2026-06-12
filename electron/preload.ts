@@ -65,6 +65,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   confirmFlush: () => ipcRenderer.send("flush-confirmed"),
   zoom: (action: ZoomAction) => ipcRenderer.invoke("zoom", action),
   openExternal: (url: string) => ipcRenderer.invoke("open:external", url),
+  openPath: (payload: SyncRequest) => ipcRenderer.invoke("open:path", payload),
+  openAppPath: () => ipcRenderer.invoke("open:app-path"),
 });
 contextBridge.exposeInMainWorld("noteAPI", {
   getAll: () => ipcRenderer.invoke("note:get-all"),

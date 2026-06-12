@@ -123,7 +123,11 @@ async function checkSyncState(
   if (normalizedLocal === normalizedDB) {
     return { type: "IN_SYNC" };
   }
-  return { type: "OUT_OF_SYNC", localContent, dbContent: payload.content };
+  return {
+    type: "OUT_OF_SYNC",
+    localContent,
+    dbContent: payload.content,
+  };
 }
 
 async function writeMirroredNoteLogic(

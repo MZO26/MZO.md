@@ -93,7 +93,6 @@
     "@tiptap/starter-kit": "^3.26.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.10.0",
-    "@types/sanitize-html": "^2.16.1",
     "dompurify": "^3.4.8",
     "electron": "^41.0.3",
     "electron-builder": "^26.8.1",
@@ -101,7 +100,7 @@
     "fuse.js": "^7.4.2",
     "lowlight": "^3.3.0",
     "lucide": "^1.17.0",
-    "tinykeys": "^4.0.0",
+    "prosemirror-search": "^1.1.1",
     "tippy.js": "^6.3.7",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"

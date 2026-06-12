@@ -169,6 +169,14 @@ async function openExternal(url: string): Promise<Result<void>> {
   return invoke(window.electronAPI.openExternal(url));
 }
 
+async function openPath(payload: SyncRequest): Promise<Result<void>> {
+  return invoke(window.electronAPI.openPath(payload));
+}
+
+async function openAppPath(): Promise<Result<void>> {
+  return invoke(window.electronAPI.openAppPath());
+}
+
 //----------------------------------------------------------
 
 // debounced calls
@@ -214,8 +222,10 @@ export {
   handleZoom,
   imageWrite,
   importNote,
+  openAppPath,
   openExternal,
   openMirrorFolder,
+  openPath,
   pin,
   setTheme,
   showNotification,

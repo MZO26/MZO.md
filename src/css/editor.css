@@ -403,7 +403,6 @@
   color: var(--text-main);
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
-  line-height: inherit;
 }
 
 .ProseMirror li::marker {
@@ -433,7 +432,6 @@
   gap: 0.5rem;
   padding: 0;
   margin: 0;
-  line-height: inherit;
 }
 
 .ProseMirror ul[data-type="taskList"] li > label {
@@ -508,6 +506,10 @@
   color: var(--text-muted);
 }
 
+.ProseMirror ul[data-type="taskList"] li p {
+  line-height: 1.2;
+}
+
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   color: var(--text-muted);
@@ -524,7 +526,7 @@
 }
 
 .ProseMirror .editor-selection-blur {
-  background: var(--accent-hover);
+  background: var(--editor-highlight);
   color: inherit;
   border-radius: 3px;
   box-shadow: var(--shadow);
@@ -556,12 +558,10 @@
   border-radius: 999px;
 }
 
-.ProseMirror .search-highlight {
-  background-color: var(--editor-highlight);
+.ProseMirror-search-match {
+  background-color: var(--search-match-bg);
   color: var(--text-main);
   box-shadow: var(--shadow);
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
 }
 
 .ProseMirror:focus {

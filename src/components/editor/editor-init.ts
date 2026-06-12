@@ -1,11 +1,12 @@
+import { handleSearchInput } from "@/components/sidebar/sidebar-features";
 import {
   CustomTableCell,
   CustomTableHeader,
 } from "@/extensions/custom-overrides";
+import { SearchAndReplace } from "@/extensions/docSearch";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { processAndInsertImage } from "@/extensions/image/image";
 import { lowlight } from "@/extensions/lowlight";
-import { CustomSearchHighlight } from "@/extensions/searchHighlight";
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
 import { WikiLink } from "@/extensions/wikilinks";
@@ -109,12 +110,13 @@ function initEditor(settings: Partial<AppSettings>): Editor {
     const markdown = isMirrorEnabled() ? editor.getMarkdown() : undefined;
     debouncedSaveNote(activeId, content, markdown, false);
   });
+  inEditorSearch(editor);
   return editor;
 }
 
 function getNoteEditorExtensions() {
   return [
-    CustomSearchHighlight,
+    SearchAndReplace,
     Markdown.configure({ markedOptions: { gfm: true } }),
     MasterShortcuts,
     Typography,
@@ -170,7 +172,14 @@ function getNoteEditorExtensions() {
         alwaysPreserveAspectRatio: true,
       },
     }),
-    NoteTag,
+    NoteTag.configure({
+      onClick: (id: string) => {
+        const searchInput = requireElement<HTMLInputElement>(".search-input");
+        searchInput.value = `#${id}`;
+        searchInput.focus();
+        handleSearchInput(searchInput.value);
+      },
+    }),
     Table.configure({
       resizable: true,
       allowTableNodeSelection: true,
@@ -189,6 +198,10 @@ function getNoteEditorExtensions() {
     StarterKit.configure({
       codeBlock: false,
       underline: false,
+      listItem: false,
+      listKeymap: false,
+      orderedList: false,
+      bulletList: false,
       link: {
         openOnClick: false,
         autolink: true,
@@ -269,6 +282,117 @@ function getPlainTextFromJson(json: EditorDoc): string {
   return generateText(json, getNoteEditorExtensions(), {
     blockSeparator: "\n",
   });
+}
+
+function inEditorSearch(editor: Editor) {
+  const bar = requireElement<HTMLDivElement>(".input-wrapper-editor");
+  const input = requireElement<HTMLInputElement>(".search-input-editor");
+  function updateButtons() {
+    const disabled = input.value.trim() === "";
+    bar
+      .querySelectorAll<HTMLButtonElement>(".search-prev, .search-next")
+      .forEach((button) => {
+        button.disabled = disabled;
+      });
+  }
+
+  function scrollToSelection(editor: Editor) {
+    const { node } = editor.view.domAtPos(editor.state.selection.anchor);
+
+    if (node instanceof Element) {
+      node.scrollIntoView({
+        block: "center",
+        inline: "center",
+        behavior: "smooth",
+      });
+    }
+  }
+
+  function open() {
+    bar.classList.remove("invisible");
+    input.focus();
+    input.select();
+    updateButtons();
+  }
+
+  function close() {
+    input.value = "";
+    bar.classList.add("invisible");
+    editor.commands.clearSearch();
+    updateButtons();
+  }
+
+  function goPrev() {
+    editor.commands.findPrev();
+    scrollToSelection(editor);
+  }
+
+  function goNext() {
+    editor.commands.findNext();
+    scrollToSelection(editor);
+  }
+
+  bar.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest(".search-prev")) {
+      event.preventDefault();
+      goPrev();
+      return;
+    }
+
+    if (target?.closest(".search-next")) {
+      event.preventDefault();
+      goNext();
+      return;
+    }
+
+    if (target?.closest(".search-close")) {
+      event.preventDefault();
+      close();
+    }
+  });
+
+  bar.addEventListener("input", (event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest(".search-input-editor")) return;
+    editor.commands.setSearchTerm({
+      searchTerm: input.value,
+    });
+    updateButtons();
+    goNext();
+  });
+
+  bar.addEventListener("keydown", (event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest(".search-input-editor")) return;
+    if (event.repeat) return;
+    if (event.key === "Enter" && event.shiftKey) {
+      event.preventDefault();
+      goPrev();
+      return;
+    }
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      goNext();
+      return;
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      close();
+    }
+  });
+
+  window.addEventListener("keydown", (event) => {
+    const isFind =
+      (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f";
+    if (!isFind) return;
+    event.preventDefault();
+    open();
+  });
+  updateButtons();
+  return { open, close };
 }
 
 export {

@@ -245,6 +245,7 @@ const debouncedSearch = debounce((e: Event) => {
 
 export {
   debouncedSearch,
+  handleSearchInput,
   handleViews,
   resizeSidebar,
   updateLinksOption,

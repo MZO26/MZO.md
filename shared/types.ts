@@ -180,7 +180,20 @@ type ResizeOptions = {
 type SyncResult =
   | { type: "MISSING_RESOLVED" }
   | { type: "IN_SYNC" }
-  | { type: "OUT_OF_SYNC"; localContent: string; dbContent: string };
+  | {
+      type: "OUT_OF_SYNC";
+      localContent: string;
+      dbContent: string;
+    };
+
+type SearchOptions = {
+  searchTerm?: string;
+  replaceTerm?: string;
+  caseSensitive?: boolean;
+  wholeWord?: boolean;
+  regexp?: boolean;
+  literal?: boolean;
+};
 
 export type {
   Action,
@@ -207,6 +220,7 @@ export type {
   ResizeOptions,
   ResolvedTheme,
   Result,
+  SearchOptions,
   SelectOption,
   SidebarChange,
   SnippetCacheValue,

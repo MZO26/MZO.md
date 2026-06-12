@@ -119,7 +119,7 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
     run: async () => {
       await syncCheck();
     },
-    icon: "file-symlink",
+    icon: "file-check",
     shortcut: "MOD+Alt+S",
   },
   toggleToolbar: {

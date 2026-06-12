@@ -399,8 +399,8 @@
   color: var(--text-muted);
 }
 
-.conflict-overwrite-btn,
-.conflict-accept-btn {
+.conflict-open-btn,
+.conflict-overwrite-btn {
   width: 100%;
   color: var(--text-main);
   border: 1px solid var(--border-color);
@@ -415,22 +415,28 @@
     color 0.2s ease;
 }
 
+.conflict-open-btn:hover,
+.conflict-open-btn:active,
+.conflict-open-btn.is-active,
+.conflict-open-btn:focus-within,
 .conflict-overwrite-btn:hover,
 .conflict-overwrite-btn:active,
 .conflict-overwrite-btn.is-active,
-.conflict-overwrite-btn:focus-within,
-.conflict-accept-btn:hover,
-.conflict-accept-btn:active,
-.conflict-accept-btn.is-active,
-.conflict-accept-btn:focus-within {
+.conflict-overwrite-btn:focus-within {
   color: var(--bg-editor);
   background-color: var(--text-main);
 }
 
 .close-setting-modal-btn {
   position: absolute;
-  top: 8px;
+  top: 10px;
   right: 3px;
+}
+
+.open-app-path-btn {
+  position: absolute;
+  top: 10px;
+  left: 5px;
 }
 
 .settings-title {

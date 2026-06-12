@@ -1,60 +1,69 @@
 import { handleZoom } from "@/api/api";
-import { tinykeys } from "tinykeys";
 
 function initGlobalShortcuts() {
-  tinykeys(window, {
-    "$mod++": async (e) => {
+  window.addEventListener("keydown", (e) => {
+    const { key, ctrlKey, metaKey, altKey, shiftKey } = e;
+    const isMod = ctrlKey || metaKey;
+    if (isMod && (key === "+" || key === "=")) {
       e.preventDefault();
-      await handleZoom("in");
-    },
-    "$mod+=": async (e) => {
+      handleZoom("in");
+      return;
+    }
+    if (isMod && key === "-") {
       e.preventDefault();
-      await handleZoom("in");
-    },
-    "$mod+-": async (e) => {
+      handleZoom("out");
+      return;
+    }
+    if (isMod && key === "0") {
       e.preventDefault();
-      await handleZoom("out");
-    },
-    "$mod+0": async (e) => {
-      e.preventDefault();
-      await handleZoom("reset");
-    },
-    "$mod+Alt+S": (e) => {
+      handleZoom("reset");
+      return;
+    }
+    if (isMod && altKey && key === "S") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:check-sync-state"));
-    },
-    "$mod+Shift+T": (e) => {
+      return;
+    }
+    if (isMod && shiftKey && key === "T") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:toggle-toolbar"));
-    },
-    "$mod+o": (e) => {
+      return;
+    }
+    if (isMod && key === "o") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:toggle-sidebar"));
-    },
-    "$mod+Shift+R": (e) => {
+      return;
+    }
+    if (isMod && shiftKey && key === "R") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:toggle-read-only"));
-    },
-    "$mod+Shift+W": (e) => {
+      return;
+    }
+    if (isMod && shiftKey && key === "W") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:set-editor-width"));
-    },
-    "$mod+f": (e) => {
+      return;
+    }
+    if (isMod && key === "g") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:open-global-search"));
-    },
-    "$mod+,": (e) => {
+      return;
+    }
+    if (isMod && key === ",") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:open-settings"));
-    },
-    "$mod+n": (e) => {
+      return;
+    }
+    if (isMod && key === "n") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:create-new-note"));
-    },
-    F11: (e) => {
+      return;
+    }
+    if (key === "F11") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:toggle-focus-mode"));
-    },
+      return;
+    }
   });
 }
 

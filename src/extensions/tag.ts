@@ -1,24 +1,29 @@
-import { InputRule, Node, mergeAttributes } from "@tiptap/core";
+import { InputRule, mergeAttributes, Node } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 
-const NoteTag = Node.create({
+export interface NoteTagOptions {
+  onClick: (id: string) => void | Promise<void>;
+}
+
+const NoteTag = Node.create<NoteTagOptions>({
   name: "noteTag",
   group: "inline",
   inline: true,
   atom: true,
-  addAttributes() {
-    return {
-      id: {
-        default: null,
-      },
-    };
-  },
-  parseHTML() {
-    return [
-      {
-        tag: 'span[data-type="noteTag"]',
-      },
-    ];
-  },
+  selectable: false,
+
+  addOptions: () => ({
+    onClick: () => {},
+  }),
+
+  addAttributes: () => ({
+    id: {
+      default: null,
+    },
+  }),
+
+  parseHTML: () => [{ tag: 'span[data-type="noteTag"]' }],
+
   renderHTML({ node, HTMLAttributes }) {
     return [
       "span",
@@ -29,6 +34,11 @@ const NoteTag = Node.create({
       `#${node.attrs["id"]}`,
     ];
   },
+
+  renderText({ node }) {
+    return `#${node.attrs["id"]}`;
+  },
+
   addInputRules() {
     return [
       new InputRule({
@@ -44,6 +54,23 @@ const NoteTag = Node.create({
           const prefixSpace = matchString.match(/^\s/) ? 1 : 0;
           const node = this.type.create({ id: tagText });
           tr.replaceWith(start + prefixSpace, end, node).insertText(" ");
+        },
+      }),
+    ];
+  },
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey("tagClickHandler"),
+        props: {
+          handleClickOn: (_view, _pos, node, _nodePos, event) => {
+            if (node.type.name !== this.name || !node.attrs["id"]) return false;
+            event.preventDefault();
+            event.stopPropagation();
+            void this.options.onClick(node.attrs["id"]);
+            return true;
+          },
         },
       }),
     ];
