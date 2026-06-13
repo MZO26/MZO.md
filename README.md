@@ -12,8 +12,7 @@ Built with Electron, TypeScript, Better SQLite3, and TipTap.
 - Export notes to Markdown, Plain Text, HTML, JSON and PDF
 - Import notes from Markdown, Plain Text, HTML and JSON
 - Resolve external file changes with local JIT sync
-- Focus mode and read-only mode
-- Adjustable editor width (Ultrawide support)
+- Focus Mode and adjustable editor width (Ultrawide support)
 - Light and dark theme support
 - Persistent settings with electron-store
 - Sanitized rendering with DOMPurify
@@ -24,13 +23,12 @@ Built with Electron, TypeScript, Better SQLite3, and TipTap.
 - Electron
 - TypeScript
 - Better SQLite 3
-- TipTap
+- TipTap / ProseMirror
 - fuse.js
 - electron-vite
 - Vite
 - DOMPurify
 - Zod
-- tinykeys
 - Lucide
 - Tippy.js
 
@@ -73,7 +71,8 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | Shortcut                                                      | Action                |
 | ------------------------------------------------------------- | --------------------- |
 | <kbd>Mod</kbd> + <kbd>N</kbd>                                 | Create new note       |
-| <kbd>Mod</kbd> + <kbd>F</kbd>                                 | Open global search    |
+| <kbd>Mod</kbd> + <kbd>G</kbd>                                 | Open global search    |
+| <kbd>Mod</kbd> + <kbd>F</kbd>                                 | Open doc search       |
 | <kbd>Mod</kbd> + <kbd>O</kbd>                                 | Toggle sidebar        |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>              | Toggle toolbar        |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>              | Toggle read-only mode |
@@ -158,16 +157,6 @@ flowchart TD
     A[Renderer] -- IPC via preload --> B[Main Process]
     B --> C[(SQLite Database)]
 ```
-
-## Security
-
-Designed with security in mind:
-
-- Renderer and main process are separated via Electron's `contextBridge`
-- Node.js APIs are never exposed to the renderer
-- HTML content is sanitized before rendering to prevent XSS, while non-HTML is validated against strict Zod Schemas
-- IPC Channels are protected by Zod Schema validation and built-in rate limiting
-- No external network requests
 
 ## What this project tries to demonstrate
 

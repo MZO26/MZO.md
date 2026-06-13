@@ -22,6 +22,7 @@ declare global {
       imageWrite: (payload: ImagePayload) => Promise<Result<ImageSrc>>;
       startupReady: () => void;
       setTheme: (theme: Theme, focus?: boolean) => Promise<Result<Theme>>;
+      windowPin: () => Promise<Result<boolean>>;
       showNotification: (title: string, body: string) => Promise<Result<void>>;
       onThemeChanged: (
         callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
@@ -37,7 +38,7 @@ declare global {
       confirmFlush: () => void;
       zoom: (action: string) => Promise<Result<number>>;
       openExternal: (url: string) => Promise<Result<void>>;
-      openPath: (payload: SyncRequest) => Promise<Result<void>>;
+      openSyncPath: (payload: SyncRequest) => Promise<Result<void>>;
       openAppPath: () => Promise<Result<void>>;
     };
     noteAPI: {

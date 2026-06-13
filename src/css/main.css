@@ -30,8 +30,8 @@
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.app-container.collapsed .frame-right time,
-.app-container.focus .frame-right time {
+.app-container.collapsed .frame-info,
+.app-container.focus .frame-info {
   opacity: 0;
   transform: scale(0.85);
   pointer-events: none;
@@ -906,19 +906,44 @@ svg.empty-state-icon {
 }
 
 #datetime-display {
-  position: absolute;
-  top: 3px;
-  left: 10px;
   padding: 5px;
   margin: 0;
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 500;
   white-space: nowrap;
   user-select: none;
+}
+
+.frame-info {
+  padding: 0 10px;
+  display: flex;
+  margin-right: auto;
+  width: fit-content;
+  justify-content: center;
+  align-items: center;
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-pin-btn {
+  -webkit-app-region: no-drag;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  height: 25px;
+  width: 25px;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.app-pin-btn.window-pinned svg {
+  stroke: var(--tag-color);
+  fill: var(--tag-bg);
+  transition:
+    stroke 0.3s ease,
+    fill 0.3s ease;
 }
 
 .stats {

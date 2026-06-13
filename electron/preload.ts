@@ -42,6 +42,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("notification:show", title, body),
   setTheme: (theme: Theme, focus?: boolean) =>
     ipcRenderer.invoke("theme:set", theme, focus),
+  windowPin: () => ipcRenderer.invoke("app:pin"),
   imageWrite: (payload: ImagePayload) =>
     ipcRenderer.invoke("image:write", payload),
   onThemeChanged: (
@@ -65,7 +66,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   confirmFlush: () => ipcRenderer.send("flush-confirmed"),
   zoom: (action: ZoomAction) => ipcRenderer.invoke("zoom", action),
   openExternal: (url: string) => ipcRenderer.invoke("open:external", url),
-  openPath: (payload: SyncRequest) => ipcRenderer.invoke("open:path", payload),
+  openSyncPath: (payload: SyncRequest) =>
+    ipcRenderer.invoke("open:sync-path", payload),
   openAppPath: () => ipcRenderer.invoke("open:app-path"),
 });
 contextBridge.exposeInMainWorld("noteAPI", {

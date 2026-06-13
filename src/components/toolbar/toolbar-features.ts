@@ -1,7 +1,9 @@
-import { setTheme, showNotification } from "@/api/api";
+import { pinWindow, setTheme, showNotification } from "@/api/api";
 import { promptImageUpload } from "@/extensions/image/image";
 import { handleConflict, isMirrorEnabled } from "@/notes/note-conflict";
 import { noteStore, stateStore } from "@/settings/app-state";
+import { createAsyncHandler } from "@/utils/async";
+import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import type { Theme } from "@shared/schemas/store-schema";
 import type { ActionMap } from "@shared/types";
@@ -11,6 +13,11 @@ import type { ActionMap } from "@shared/types";
 function initTopToolbar() {
   const appContainer = getAppItem("appContainer");
   const editor = getAppItem("editor");
+  const appPinBtn = requireElement<HTMLButtonElement>(".app-pin-btn");
+  appPinBtn.addEventListener(
+    "click",
+    createAsyncHandler(async () => setWindowTop(appPinBtn)),
+  );
   registerAppEvents(document, {
     "app:set-editor-width": () => setEditorWidth(appContainer),
     "app:toggle-read-only": () => editor?.setEditable(!editor.isEditable),
@@ -34,6 +41,15 @@ function setEditorWidth(container: HTMLDivElement) {
   const next = widths[(index + 1) % widths.length];
   if (!next) return;
   container.setAttribute("data-width", next);
+}
+
+async function setWindowTop(toggleBtn: HTMLButtonElement) {
+  const result = await pinWindow();
+  if (!result.success) {
+    console.error("[setWindowTop]: Failed to pin window:", result.error);
+    return;
+  }
+  toggleBtn.classList.toggle("window-pinned", result.data);
 }
 
 function initFocusMode() {

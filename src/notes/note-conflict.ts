@@ -1,4 +1,4 @@
-import { openPath, sync } from "@/api/api";
+import { openSyncPath, sync } from "@/api/api";
 import { settingsStore, stateStore } from "@/settings/app-state";
 import { initConflictDialog } from "@/settings/dialog-init";
 import { getAppItem } from "@/utils/registry";
@@ -20,7 +20,7 @@ async function handleConflicDecision(
   note: Note,
 ) {
   if (decision === "open") {
-    await openPath(syncPayload);
+    await openSyncPath(syncPayload);
   } else if (decision === "overwrite") {
     const editor = getAppItem("editor");
     const markdown = isMirrorEnabled() ? editor.getMarkdown() : undefined;

@@ -5,6 +5,7 @@ import {
   Bold,
   Bookmark,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Code,
   CodeXml,
@@ -36,6 +37,8 @@ import {
   Pin,
   Plus,
   Redo2,
+  Replace,
+  ReplaceAll,
   RulerDimensionLine,
   Search,
   SearchX,
@@ -51,8 +54,11 @@ function renderIcons(scope: Document | HTMLElement = document): void {
   createIcons({
     icons: {
       FileSymlink,
+      Replace,
+      ReplaceAll,
       ChevronDown,
       ChevronUp,
+      ChevronRight,
       FileCheck,
       FolderCog,
       FileUp,

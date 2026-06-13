@@ -1,8 +1,9 @@
-import { handleSearchInput } from "@/components/sidebar/sidebar-features";
 import {
-  CustomTableCell,
-  CustomTableHeader,
-} from "@/extensions/custom-overrides";
+  getPlainTextFromJson,
+  inEditorSearch,
+  resetEditorHistory,
+} from "@/components/editor/editor-features";
+import { handleSearchInput } from "@/components/sidebar/sidebar-features";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { processAndInsertImage } from "@/extensions/image/image";
@@ -18,22 +19,20 @@ import { requireElement } from "@/utils/dom";
 import { useDelayedSpinner } from "@/utils/ui";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { processWithLimit } from "@shared/limiter";
-import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import { Editor, generateText } from "@tiptap/core";
+import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
-import { Table, TableRow } from "@tiptap/extension-table";
 import {
-  CharacterCount,
-  Focus,
-  Placeholder,
-  Selection,
-} from "@tiptap/extensions";
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "@tiptap/extension-table";
+import { CharacterCount, Focus, Placeholder } from "@tiptap/extensions";
 import { Markdown } from "@tiptap/markdown";
-import { EditorState } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
 import DOMPurify from "dompurify";
 
@@ -159,9 +158,6 @@ function getNoteEditorExtensions() {
         return words ? words.length : 0;
       },
     }),
-    Selection.configure({
-      className: "editor-selection-blur",
-    }),
     Image.configure({
       allowBase64: true,
       resize: {
@@ -188,10 +184,10 @@ function getNoteEditorExtensions() {
       HTMLAttributes: { class: "table" },
     }),
     TableRow,
-    CustomTableHeader.configure({
+    TableHeader.configure({
       HTMLAttributes: { class: "th" },
     }),
-    CustomTableCell.configure({
+    TableCell.configure({
       HTMLAttributes: { class: "td" },
     }),
     Highlight.configure({ multicolor: true }),
@@ -267,132 +263,6 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
     },
     true,
   );
-}
-
-function resetEditorHistory(editor: Editor) {
-  const newState = EditorState.create({
-    doc: editor.state.doc,
-    plugins: editor.state.plugins,
-    schema: editor.state.schema,
-  });
-  editor.view.updateState(newState);
-}
-
-function getPlainTextFromJson(json: EditorDoc): string {
-  return generateText(json, getNoteEditorExtensions(), {
-    blockSeparator: "\n",
-  });
-}
-
-function inEditorSearch(editor: Editor) {
-  const bar = requireElement<HTMLDivElement>(".input-wrapper-editor");
-  const input = requireElement<HTMLInputElement>(".search-input-editor");
-  function updateButtons() {
-    const disabled = input.value.trim() === "";
-    bar
-      .querySelectorAll<HTMLButtonElement>(".search-prev, .search-next")
-      .forEach((button) => {
-        button.disabled = disabled;
-      });
-  }
-
-  function scrollToSelection(editor: Editor) {
-    const { node } = editor.view.domAtPos(editor.state.selection.anchor);
-
-    if (node instanceof Element) {
-      node.scrollIntoView({
-        block: "center",
-        inline: "center",
-        behavior: "smooth",
-      });
-    }
-  }
-
-  function open() {
-    bar.classList.remove("invisible");
-    input.focus();
-    input.select();
-    updateButtons();
-  }
-
-  function close() {
-    input.value = "";
-    bar.classList.add("invisible");
-    editor.commands.clearSearch();
-    updateButtons();
-  }
-
-  function goPrev() {
-    editor.commands.findPrev();
-    scrollToSelection(editor);
-  }
-
-  function goNext() {
-    editor.commands.findNext();
-    scrollToSelection(editor);
-  }
-
-  bar.addEventListener("click", (event) => {
-    const target = event.target as HTMLElement | null;
-    if (target?.closest(".search-prev")) {
-      event.preventDefault();
-      goPrev();
-      return;
-    }
-
-    if (target?.closest(".search-next")) {
-      event.preventDefault();
-      goNext();
-      return;
-    }
-
-    if (target?.closest(".search-close")) {
-      event.preventDefault();
-      close();
-    }
-  });
-
-  bar.addEventListener("input", (event) => {
-    const target = event.target as HTMLElement | null;
-    if (!target?.closest(".search-input-editor")) return;
-    editor.commands.setSearchTerm({
-      searchTerm: input.value,
-    });
-    updateButtons();
-    goNext();
-  });
-
-  bar.addEventListener("keydown", (event) => {
-    const target = event.target as HTMLElement | null;
-    if (!target?.closest(".search-input-editor")) return;
-    if (event.repeat) return;
-    if (event.key === "Enter" && event.shiftKey) {
-      event.preventDefault();
-      goPrev();
-      return;
-    }
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      event.stopPropagation();
-      goNext();
-      return;
-    }
-    if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      close();
-    }
-  });
-
-  window.addEventListener("keydown", (event) => {
-    const isFind =
-      (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f";
-    if (!isFind) return;
-    event.preventDefault();
-    open();
-  });
-  updateButtons();
-  return { open, close };
 }
 
 export {

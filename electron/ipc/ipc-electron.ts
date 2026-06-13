@@ -55,9 +55,9 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("open:path", (e, payload: unknown) => {
+  ipcMain.handle("open:sync-path", (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("open:path", LIMITS.READ_LIGHT))
+      if (!checkRateLimit("open:sync-path", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       if (store.get("mirror-mode") !== true) return null;
       const validatedData = validation(SyncRequestSchema, payload);
@@ -89,6 +89,28 @@ function registerElectronIpc(win: BrowserWindow) {
         window.setTitleBarOverlay?.(windowTheme.overlayOptions);
       }
       return resolvedTheme;
+    });
+  });
+
+  ipcMain.handle("app:pin", (e) => {
+    return result(e, async () => {
+      if (!checkRateLimit("app:pin", LIMITS.WRITE_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      if (win && !win.isDestroyed()) {
+        const isCurrentlyPinned = win.isAlwaysOnTop();
+        const nextState = !isCurrentlyPinned;
+        if (win.isMinimized()) {
+          win.restore();
+        }
+        win.setAlwaysOnTop(nextState, "floating");
+        if (process.platform === "darwin") {
+          win.setVisibleOnAllWorkspaces(nextState, {
+            visibleOnFullScreen: nextState,
+          });
+        }
+        return nextState;
+      }
+      return false;
     });
   });
 

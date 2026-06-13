@@ -106,28 +106,24 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-.ProseMirror u {
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
-  text-decoration-color: var(--text-muted);
-}
-
 .ProseMirror .wikilink {
   display: inline-flex;
   align-items: center;
   padding: 0 0.2em;
-  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  box-shadow: none;
   border-radius: 0.25em;
   cursor: pointer;
   white-space: nowrap;
   font-weight: 500;
-  box-shadow: none;
   user-select: all;
   transition: all 0.2s ease;
 }
 
 .ProseMirror .wikilink:hover {
   box-shadow: var(--shadow);
+  color: var(--text-main);
   background: var(--tag-bg);
 }
 
@@ -167,14 +163,6 @@
   padding: 0.15em 0.4em;
   border-radius: 4px;
   white-space: pre-wrap;
-}
-
-.ProseMirror p.is-editor-empty:first-child::before {
-  color: var(--text-muted);
-  content: attr(data-placeholder);
-  float: left;
-  height: 0;
-  pointer-events: none;
 }
 
 .ProseMirror .tableWrapper {
@@ -231,42 +219,6 @@
   pointer-events: none;
   border: 2px solid var(--tag-color);
   box-sizing: border-box;
-}
-
-.ProseMirror .column-resize-handle {
-  position: absolute;
-  top: 0;
-  right: -2px;
-  bottom: 0;
-  width: 4px;
-  background: var(--tag-color);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.ProseMirror th:hover .column-resize-handle,
-.ProseMirror td:hover .column-resize-handle {
-  opacity: 1;
-}
-
-.ProseMirror.resize-cursor {
-  cursor: col-resize;
-}
-
-.ProseMirror.resize-cursor .tableWrapper {
-  overflow-y: hidden;
-  overscroll-behavior: contain;
-}
-
-.ProseMirror.resize-cursor,
-.ProseMirror.resize-cursor * {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.ProseMirror.resize-cursor {
-  cursor: col-resize;
 }
 
 .ProseMirror table p {
@@ -525,20 +477,6 @@
   font-style: normal;
 }
 
-.ProseMirror .editor-selection-blur {
-  background: var(--editor-highlight);
-  color: inherit;
-  border-radius: 3px;
-  box-shadow: var(--shadow);
-}
-
-.ProseMirror mark.editor-selection-blur,
-.ProseMirror code.editor-selection-blur,
-.ProseMirror .editor-selection-blur strong,
-.ProseMirror .editor-selection-blur em {
-  background: var(--accent-hover);
-}
-
 .ProseMirror .editor-dropcursor {
   position: relative;
   background: var(--accent-primary);
@@ -561,7 +499,17 @@
 .ProseMirror-search-match {
   background-color: var(--search-match-bg);
   color: var(--text-main);
-  box-shadow: var(--shadow);
+  border-radius: 3px;
+}
+
+.ProseMirror-active-search-match {
+  background-color: color-mix(
+    in srgb,
+    var(--search-match-bg) 75%,
+    var(--accent-hover)
+  );
+  color: var(--text-main);
+  border-radius: 3px;
 }
 
 .ProseMirror:focus {

@@ -169,12 +169,16 @@ async function openExternal(url: string): Promise<Result<void>> {
   return invoke(window.electronAPI.openExternal(url));
 }
 
-async function openPath(payload: SyncRequest): Promise<Result<void>> {
-  return invoke(window.electronAPI.openPath(payload));
+async function openSyncPath(payload: SyncRequest): Promise<Result<void>> {
+  return invoke(window.electronAPI.openSyncPath(payload));
 }
 
 async function openAppPath(): Promise<Result<void>> {
   return invoke(window.electronAPI.openAppPath());
+}
+
+async function pinWindow(): Promise<Result<boolean>> {
+  return invoke(window.electronAPI.windowPin());
 }
 
 //----------------------------------------------------------
@@ -225,8 +229,9 @@ export {
   openAppPath,
   openExternal,
   openMirrorFolder,
-  openPath,
+  openSyncPath,
   pin,
+  pinWindow,
   setTheme,
   showNotification,
   sync,

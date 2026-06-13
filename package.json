@@ -19,6 +19,17 @@
     "asarUnpack": [
       "**/*.node"
     ],
+    "fileAssociations": [
+      {
+        "ext": [
+          "md",
+          "markdown"
+        ],
+        "name": "Markdown document",
+        "description": "Markdown document",
+        "role": "Editor"
+      }
+    ],
     "npmRebuild": false,
     "productName": "MZO.md",
     "directories": {

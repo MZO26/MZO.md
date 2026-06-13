@@ -182,7 +182,6 @@ button:hover {
 
 button:active {
   transform: scale(0.95);
-  background: var(--bg-button);
 }
 
 button.is-active,

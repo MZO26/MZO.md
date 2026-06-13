@@ -30,8 +30,12 @@
       <div class="drag-region">
         <div class="frame-left"></div>
         <div class="frame-right">
-          <time id="datetime-display"></time>
-          <div class="filter-container"></div>
+          <div class="frame-info">
+            <button class="app-pin-btn">
+              <i data-lucide="pin"></i>
+            </button>
+            <time id="datetime-display"></time>
+          </div>
           <div class="toolbar-hover-zone">
             <span class="top-toolbar-dots"></span>
             <div class="top-toolbar"></div>
@@ -46,7 +50,7 @@
               <input
                 type="search"
                 class="search-input"
-                placeholder="search notes"
+                placeholder="Search Notes"
                 data-tippy-content="Search All Notes"
                 data-shortcut="Mod+G"
               />
@@ -84,19 +88,20 @@
         </div>
         <div class="resizer-sidebar"></div>
       </div>
-
       <div class="editor-container">
         <div class="editor-view hidden">
           <div class="editor-header">
             <div id="toolbar"></div>
           </div>
           <div id="editor"></div>
-          <div class="input-wrapper-editor invisible" id="note-search">
-            <i data-lucide="search" class="search-icon"></i>
+          <div class="input-wrapper-editor invisible">
+            <button class="input-wrapper-chevron">
+              <i data-lucide="chevron-right"></i>
+            </button>
             <input
               type="search"
               class="search-input-editor"
-              placeholder="search"
+              placeholder="Search Note"
               data-tippy-content="Search Note Content"
               data-shortcut="Mod+F"
             />
@@ -115,6 +120,29 @@
               data-shortcut="Enter"
             >
               <i data-lucide="chevron-down"></i>
+            </button>
+          </div>
+          <div class="input-wrapper-editor-replace invisible">
+            <input
+              type="text"
+              class="replace-input-editor"
+              placeholder="Replace"
+            />
+            <button
+              type="button"
+              class="replace-one"
+              data-tippy-content="Replace"
+              data-shortcut="Enter"
+            >
+              <i data-lucide="replace"></i>
+            </button>
+            <button
+              type="button"
+              class="replace-all"
+              data-tippy-content="Replace All"
+              data-shortcut="Mod+Alt+Enter"
+            >
+              <i data-lucide="replace-all"></i>
             </button>
           </div>
           <div class="footer-bar-hover-zone">

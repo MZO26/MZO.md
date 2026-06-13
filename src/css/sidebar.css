@@ -173,38 +173,17 @@ body.is-dragging * {
   color: var(--text-muted);
 }
 
-.input-wrapper {
-  background-color: var(--bg-editor);
-  border: 1px solid var(--border-color);
-  max-width: 180px;
-  min-width: 120px;
-  height: 35px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  padding: 0 3px;
-  border-radius: 12px;
-  transition:
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
-}
-
-.input-wrapper-editor {
-  position: absolute;
+.input-wrapper,
+.input-wrapper-editor,
+.input-wrapper-editor-replace {
   background-color: var(--bg-sidebar);
   border: 1px solid var(--border-color);
-  opacity: 1;
-  visibility: visible;
-  top: 65px;
-  right: 20px;
-  width: 240px;
-  min-width: 120px;
-  height: 35px;
   display: flex;
   align-items: center;
   overflow: hidden;
   padding: 0 3px;
-  border-radius: 12px;
+  border-radius: 8px;
+  min-width: 120px;
   transition:
     top 0.3s ease,
     right 0.3s ease,
@@ -214,81 +193,135 @@ body.is-dragging * {
     visibility 0s linear 0s;
 }
 
-.input-wrapper-editor.invisible {
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    top 0.3s ease,
-    right 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease,
-    opacity 0.3s ease,
-    visibility 0s linear 0.3s;
+.input-wrapper {
+  background-color: var(--bg-editor);
+  max-width: 180px;
+  height: 35px;
 }
 
-.app-container.focus .input-wrapper-editor {
-  top: 20px;
-  right: 180px;
+.input-wrapper-editor,
+.input-wrapper-editor-replace {
+  position: absolute;
+  right: 20px;
+  opacity: 1;
+  visibility: visible;
+}
+
+.input-wrapper-editor {
+  top: 60px;
+  width: 300px;
+  height: 35px;
+}
+
+.input-wrapper-editor-replace {
+  top: 100px;
+  width: 200px;
+  height: 30px;
 }
 
 .input-wrapper:hover,
-.input-wrapper-editor:hover {
+.input-wrapper-editor:hover,
+.input-wrapper-editor-replace:hover {
   box-shadow: var(--shadow);
 }
 
 .input-wrapper:focus-within,
-.input-wrapper-editor:focus-within {
+.input-wrapper-editor:focus-within,
+.input-wrapper-editor-replace:focus-within {
   border-color: var(--accent-primary);
   box-shadow: var(--shadow);
 }
 
+.app-container.focus .input-wrapper-editor,
+.app-container.toolbar-collapsed .input-wrapper-editor {
+  top: 14px;
+  right: 40px;
+}
+
+.app-container.focus .input-wrapper-editor-replace,
+.app-container.toolbar-collapsed .input-wrapper-editor-replace {
+  top: 54px;
+  right: 40px;
+}
+
+.input-wrapper-editor.invisible,
+.input-wrapper-editor-replace.invisible {
+  opacity: 0;
+  visibility: hidden;
+  transition-delay: 0s, 0s, 0s, 0s, 0s, 0.3s;
+}
+
 .search-prev,
-.search-next {
+.search-next,
+.input-wrapper-chevron {
   padding: 2px 6px;
   min-width: 0 !important;
   min-height: 0 !important;
   height: 25px;
   width: 25px;
+  cursor: pointer;
+}
+
+.replace-one,
+.replace-all {
+  padding: 2px 6px;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 25px;
+  width: 25px;
+  cursor: pointer;
+}
+
+.input-wrapper-chevron.open i,
+.input-wrapper-chevron.open svg {
+  transform: rotate(90deg);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-icon,
+#sidebar-empty-icon {
+  color: var(--text-muted);
+  margin: 8px;
+  flex-shrink: 0;
 }
 
 .search-icon {
   width: 15px;
   height: 15px;
-  color: var(--text-muted);
-  margin: 8px;
-  flex-shrink: 0;
 }
 
 #sidebar-empty-icon {
   width: 50px;
   height: 50px;
-  color: var(--text-muted);
-  margin: 8px;
-  flex-shrink: 0;
 }
 
 .search-input,
-.search-input-editor {
+.search-input-editor,
+.replace-input-editor {
   flex: 1;
   background: transparent;
-  text-overflow: ellipsis;
   border: none;
   color: var(--text-main);
   font-size: 14px;
   outline: none;
   width: 100%;
+  text-overflow: ellipsis;
+}
+
+.replace-input-editor {
+  padding: 10px;
 }
 
 .search-input::placeholder,
-.search-input-editor::placeholder {
+.search-input-editor::placeholder,
+.replace-input-editor::placeholder {
   color: var(--text-muted);
   font-weight: 500;
 }
 
 .search-input::-webkit-search-cancel-button,
 .search-input-editor::-webkit-search-cancel-button {
-  margin-right: 5px;
-  margin-left: 5px;
+  margin: 0 5px;
   appearance: none;
   height: 12px;
   width: 12px;
@@ -540,5 +573,4 @@ body.is-dragging * {
 .note-content mark {
   background-color: var(--editor-highlight);
   color: var(--text-main);
-  box-shadow: var(--shadow);
 }

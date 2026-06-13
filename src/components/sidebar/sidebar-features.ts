@@ -98,10 +98,8 @@ function search(searchInput: string) {
 }
 
 function handleSearchInput(searchInput: string) {
-  const editor = getAppItem("editor");
   const sidebar = getAppItem("sidebar");
   stateStore.setState({ searchQuery: searchInput });
-  editor.commands.setSearchTerm(searchInput);
   const noteElements = Array.from(
     sidebar.getElementsByClassName("note-item"),
   ) as HTMLDivElement[];
@@ -123,9 +121,7 @@ async function handleViews(view: View) {
   if (view === "links" && !activeId) {
     return;
   }
-  const editor = getAppItem("editor");
   stateStore.setState({ searchQuery: "" });
-  editor.commands.setSearchTerm("");
   const result = await getViews(view, activeId);
   if (!result.success) {
     console.error("[handleViews]: Failed to fetch views:", result.error);
@@ -190,7 +186,7 @@ function resizeSidebar(
 ) {
   const {
     minWidth = 0,
-    maxWidth = 600,
+    maxWidth = 500,
     cssVariable = "--sidebar-width",
   } = options;
   const resizer = requireElement<HTMLDivElement>(resizerSelector);
