@@ -70,7 +70,7 @@ type Metadata = {
 type ImportedContent = {
   fileName: string;
   content: Content;
-  extension: "md" | "html" | "json" | "txt";
+  extension: "md" | "html" | "json";
 };
 
 type ExportFormat = "json" | "txt" | "md" | "html" | "pdf";

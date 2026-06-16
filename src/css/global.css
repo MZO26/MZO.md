@@ -186,7 +186,7 @@ button:active {
 
 button.is-active,
 button:focus-within {
-  background-color: var(--bg-sidebar-section);
+  background-color: var(--bg-editor);
   color: var(--text-muted);
   border-color: var(--accent-primary);
   font-weight: bold;
@@ -283,6 +283,7 @@ select:focus-within {
   user-select: none;
   pointer-events: none;
   -webkit-user-select: none;
+  z-index: 9999;
 }
 
 .tippy-box[data-theme~="none"] {

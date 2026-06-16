@@ -145,29 +145,10 @@ function getTags(doc: EditorDoc) {
   return Array.from(seen);
 }
 
-// utility for clean txt content (avoiding too many whitespaces)
-
-function textConverter(plainText: string) {
-  if (!plainText) return undefined;
-  const lines = plainText.split(/\r?\n/);
-  const content: JSONContent[] = [];
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (trimmedLine) {
-      content.push({
-        type: "paragraph",
-        content: [{ type: "text", text: line }],
-      });
-    }
-  }
-  return content;
-}
-
 export {
   extractText,
   getMetadata,
   getTodoStats,
   snippetGenerator,
-  textConverter,
   titleGenerator,
 };

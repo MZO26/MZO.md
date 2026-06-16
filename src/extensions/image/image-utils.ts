@@ -16,8 +16,8 @@ function getScaledSize(
 
 async function compressImage(
   file: File,
-  maxWidth = 800,
-  quality = 0.8,
+  maxWidth = 1400,
+  quality = 0.9,
 ): Promise<Uint8Array> {
   // decodes the image file into a drawable ImageBitmap object, ready to be drawn onto a canvas
   const bitmap = await createImageBitmap(file).catch(() => {
@@ -41,6 +41,7 @@ async function compressImage(
     .catch(() => {
       throw new WorkerTaskError(WorkerErrorCode.CompressionError);
     });
+  console.log(blob.type);
   // because you can't access bytes inside blob, it gets turned into an arrayBuffer. (blob contains metadata and acts as a reference, arrayBuffer is the actual memory)
   const buffer = await blob.arrayBuffer();
   canvas.width = 0;

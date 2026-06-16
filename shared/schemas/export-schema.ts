@@ -109,7 +109,6 @@ const ExportManyRequestSchema = z.array(ExportItemSchema);
 const ImportRequestSchema = z.discriminatedUnion("extension", [
   HtmlSchema.omit({ id: true }),
   MdSchema.omit({ id: true }),
-  TxtSchema.omit({ id: true }),
   JsonSchema.omit({ id: true }),
 ]);
 

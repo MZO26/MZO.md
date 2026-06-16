@@ -15,10 +15,9 @@ async function handleImportDialog(win: BrowserWindow) {
     filters: [
       {
         name: "Supported files",
-        extensions: ["md", "txt", "html", "json"],
+        extensions: ["md", "html", "json"],
       },
       { name: "Markdown", extensions: ["md"] },
-      { name: "Text", extensions: ["txt"] },
       { name: "HTML", extensions: ["html"] },
       { name: "JSON", extensions: ["json"] },
     ],

@@ -1,5 +1,10 @@
 import { noteStore } from "@/settings/app-state";
-import { Node, nodeInputRule, nodePasteRule } from "@tiptap/core";
+import {
+  mergeAttributes,
+  Node,
+  nodeInputRule,
+  nodePasteRule,
+} from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 
 const UUID_PATTERN = "([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})";
@@ -11,7 +16,6 @@ const PASTE_REGEX = new RegExp(
 
 export interface WikiLinkOptions {
   onClick: (id: string) => void | Promise<void>;
-  getLabel: (id: string) => string;
 }
 
 const WikiLink = Node.create<WikiLinkOptions>({
@@ -23,32 +27,69 @@ const WikiLink = Node.create<WikiLinkOptions>({
 
   addOptions: () => ({
     onClick: () => {},
-    getLabel: (id) => id, // Fallback to id if no name is provided
   }),
 
   addAttributes: () => ({
     id: {
       default: null,
+      parseHTML: (el) =>
+        el
+          .getAttribute("data-id")
+          ?.replace(/[\[\]]/g, "")
+          .trim() || "",
     },
   }),
+
+  parseHTML: () => [{ tag: "span[data-wikilink]" }],
   renderHTML({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
-    const note = noteStore.get("notes").find((n) => n.id === id);
+    const title = noteStore.get("notes").find((n) => n.id === id)?.title;
+    const display = title || id;
     return [
       "span",
-      { class: "wikilink" },
-      note ? `[[${note.title}]]` : id ? `[[${id}]]` : "",
+      mergeAttributes({
+        "data-wikilink": "",
+        "data-id": id,
+        class: "wikilink",
+      }),
+      display ? `[[${display}]]` : "",
     ];
+  },
+  markdownTokenizer: {
+    name: "wikilink",
+    level: "inline" as const,
+    start: "[[",
+    tokenize(src: string) {
+      const match = src.match(/^\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/);
+      const id = match?.[1]?.trim();
+      if (!match || !id) return undefined;
+
+      return {
+        type: "wikilink",
+        raw: match[0],
+        text: id,
+      };
+    },
+  },
+
+  parseMarkdown(token, helpers) {
+    const id = String(token.text ?? "").trim();
+    if (!id) {
+      return helpers.createTextNode(token.raw || "");
+    }
+    return helpers.createNode("wikilink", { id });
   },
   renderText({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
-    const note = noteStore.get("notes").find((n) => n.id === id);
-    return note ? `[[${note.title}]]` : id ? `[[${id}]]` : "";
+    if (!id) return "";
+    const title = noteStore.get("notes").find((n) => n.id === id)?.title;
+    return title ? `[[${id}|${title}]]` : `[[${id}]]`;
   },
   renderMarkdown(node) {
     const id = String(node.attrs?.["id"] ?? "").trim();
-    const note = noteStore.get("notes").find((n) => n.id === id);
-    return note ? `[[${note.title}]]` : id ? `[[${id}]]` : "";
+    if (!id) return "";
+    const title = noteStore.get("notes").find((n) => n.id === id)?.title;
+    return title ? `[[${id}|${title}]]` : `[[${id}]]`;
   },
   addInputRules() {
     return [

@@ -202,7 +202,7 @@ body.is-dragging * {
 .input-wrapper-editor,
 .input-wrapper-editor-replace {
   position: absolute;
-  right: 20px;
+  right: 50px;
   opacity: 1;
   visibility: visible;
 }
@@ -235,13 +235,13 @@ body.is-dragging * {
 .app-container.focus .input-wrapper-editor,
 .app-container.toolbar-collapsed .input-wrapper-editor {
   top: 14px;
-  right: 40px;
+  right: 60px;
 }
 
 .app-container.focus .input-wrapper-editor-replace,
 .app-container.toolbar-collapsed .input-wrapper-editor-replace {
   top: 54px;
-  right: 40px;
+  right: 60px;
 }
 
 .input-wrapper-editor.invisible,
@@ -275,7 +275,7 @@ body.is-dragging * {
 .input-wrapper-chevron.open i,
 .input-wrapper-chevron.open svg {
   transform: rotate(90deg);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-icon,

@@ -1,5 +1,5 @@
 import { findElement } from "@/utils/dom";
-import { delegate, hideAll } from "tippy.js";
+import { delegate, hideAll, type Placement } from "tippy.js";
 import "tippy.js/dist/tippy.css";
 
 function createTooltipContent(baseText: string, shortcut?: string) {
@@ -50,10 +50,15 @@ function useDelayedSpinner(delay = 100) {
   };
 }
 
-function initTippyDelegate(container: HTMLElement, appendTo?: HTMLElement) {
+function initTippyDelegate(
+  container: HTMLElement,
+  appendTo?: HTMLElement,
+  placement?: Placement,
+) {
   delegate(container, {
     target: "[data-tippy-content]",
     theme: "app-theme",
+    placement: placement ?? "auto",
     trigger: "mouseenter",
     appendTo: appendTo || container,
     onShow(instance) {

@@ -6,8 +6,13 @@ import {
 import { handleSearchInput } from "@/components/sidebar/sidebar-features";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
+import { CustomHeading } from "@/extensions/headings";
 import { processAndInsertImage } from "@/extensions/image/image";
 import { lowlight } from "@/extensions/lowlight";
+import {
+  getTableOfContents,
+  initTableOfContents,
+} from "@/extensions/tableOfContents";
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
 import { CustomUnderline } from "@/extensions/underline";
@@ -41,6 +46,8 @@ import StarterKit from "@tiptap/starter-kit";
 import DOMPurify from "dompurify";
 
 let editor: Editor | null = null;
+
+export const updateToc = initTableOfContents();
 
 function initEditor(settings: Partial<AppSettings>): Editor {
   const editorWrapper = requireElement<HTMLDivElement>("#editor");
@@ -112,7 +119,10 @@ function initEditor(settings: Partial<AppSettings>): Editor {
     const content = editor?.getJSON();
     const markdown = isAutoExportEnabled() ? editor.getMarkdown() : undefined;
     debouncedSaveNote(activeId, content, markdown, false);
+    const currentHeadings = getTableOfContents(editor);
+    updateToc(currentHeadings);
   });
+
   inEditorSearch(editor);
   return editor;
 }
@@ -135,10 +145,6 @@ function getNoteEditorExtensions() {
           return;
         }
         handleSelectNote(id);
-      },
-      getLabel: (id) => {
-        const note = noteStore.get("notes").find((n) => n.id === id);
-        return note?.title ?? id;
       },
     }),
     Focus.configure({
@@ -196,7 +202,11 @@ function getNoteEditorExtensions() {
       HTMLAttributes: { class: "td" },
     }),
     Highlight.configure({ multicolor: true }),
+    CustomHeading.configure({
+      levels: [1, 2, 3],
+    }),
     StarterKit.configure({
+      heading: false,
       codeBlock: false,
       listItem: false,
       listKeymap: false,

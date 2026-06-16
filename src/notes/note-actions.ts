@@ -7,8 +7,9 @@ import {
   showNotification,
   updateNote,
 } from "@/api/api";
-import { resetEditorHistory } from "@/components/editor/editor-init";
+import { resetEditorHistory, updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/sidebar/sidebar-features";
+import { getTableOfContents } from "@/extensions/tableOfContents";
 import { setImportedContent } from "@/notes/import-actions";
 import {
   noteStore,
@@ -201,6 +202,8 @@ async function handleSelectNote(id: string) {
   requestAnimationFrame(() => {
     editor.commands.focus();
   });
+  const headings = getTableOfContents(editor);
+  updateToc(headings);
   updateStats();
 }
 

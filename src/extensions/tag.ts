@@ -21,6 +21,7 @@ const NoteTag = Node.create<NoteTagOptions>({
       default: null,
     },
   }),
+  parseHTML: () => [{ tag: 'span[data-type="noteTag"]' }],
   renderHTML({ node, HTMLAttributes }) {
     const id = node.attrs?.["id"] || "";
     return [
@@ -36,10 +37,40 @@ const NoteTag = Node.create<NoteTagOptions>({
     const id = String(node.attrs?.["id"] ?? "").trim();
     return id ? `#${id}` : "";
   },
+
+  markdownTokenName: "noteTag",
+
+  markdownTokenizer: {
+    name: "noteTag",
+    level: "inline" as const,
+    start: "#",
+    tokenize(src: string) {
+      const match = src.match(/^#([\p{L}\p{N}_-]+)/u);
+      const text = match?.[1]?.trim();
+      if (!match || !text) {
+        return undefined;
+      }
+      return {
+        type: "noteTag",
+        raw: match[0],
+        text,
+      };
+    },
+  },
+
+  parseMarkdown(token, helpers) {
+    const id = String(token.text ?? "").trim();
+    if (!id) {
+      return helpers.createTextNode(token.raw || "");
+    }
+    return helpers.createNode("noteTag", { id });
+  },
+
   renderMarkdown(node) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     return id ? `#${id}` : "";
   },
+
   addInputRules() {
     return [
       new InputRule({
@@ -59,6 +90,7 @@ const NoteTag = Node.create<NoteTagOptions>({
       }),
     ];
   },
+
   addProseMirrorPlugins() {
     return [
       new Plugin({

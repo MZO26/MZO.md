@@ -6,7 +6,7 @@ import {
   updateSettings,
 } from "@/api/api";
 import { getBatchExportContent } from "@/notes/export-actions";
-import { stateStore, syncNoteStore } from "@/settings/app-state";
+import { syncNoteStore } from "@/settings/app-state";
 import { applyAppTheme, resolveTheme, setCodeTheme } from "@/settings/theme";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
@@ -354,7 +354,6 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
           );
         } else {
           updateSettings({ "auto-export": false, "auto-export-path": null });
-          stateStore.setState({ activeExportPath: null });
           autoExportSelect.setAttribute(
             "data-tippy-content",
             "No path selected.",
