@@ -123,7 +123,6 @@ const DOMPURIFY_CONFIG = {
     "object",
     "embed",
     "form",
-    "input",
     "button",
     "select",
     "textarea",
@@ -134,7 +133,6 @@ const DOMPURIFY_CONFIG = {
     "template",
   ],
   FORBID_ATTR: [
-    // Event handlers
     "onerror",
     "onload",
     "onclick",
@@ -155,14 +153,15 @@ const DOMPURIFY_CONFIG = {
     "ondblclick",
     "ondrag",
     "ondrop",
-    // Dangerous attributes
-    "style", // prevents CSS injection
-    "formaction", // hijacks form submission
-    "srcdoc", // iframe HTML injection
-    "xlink:href", // SVG-based XSS
+    "style",
+    "formaction",
+    "srcdoc",
+    "xlink:href",
   ],
-  ALLOW_ONLY_SAFE_URI_ATTRIBUTES: true, // blocks javascript: and data: in href/src
-  FORCE_BODY: true, // prevents mXSS via fragment parsing edge cases
+  ALLOW_ONLY_SAFE_URI_ATTRIBUTES: true,
+  FORCE_BODY: true,
+  ALLOWED_URI_REGEXP:
+    /^(?:(?:https?|mailto|tel|appimg):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
 };
 
 const FUSE_OPTIONS: IFuseOptions<NoteSearchDoc> = {

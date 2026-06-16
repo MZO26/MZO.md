@@ -279,11 +279,23 @@ select:focus-within {
   background-color: var(--tooltip-bg);
   color: var(--tooltip-text);
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   user-select: none;
   pointer-events: none;
   -webkit-user-select: none;
-  z-index: 9999;
+}
+
+.tippy-box[data-theme~="preview-theme"] {
+  font-size: 14px;
+  padding: 0;
+  margin: 0;
+  background-color: var(--bg-editor);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  user-select: none;
+  pointer-events: auto;
+  -webkit-user-select: none;
 }
 
 .tippy-box[data-theme~="none"] {
@@ -311,6 +323,22 @@ select:focus-within {
   border-right-color: var(--tooltip-bg);
 }
 
+.tippy-box[data-theme~="preview-theme"][data-placement^="top"]
+  > .tippy-arrow::before {
+  border-top-color: var(--border-color);
+}
+.tippy-box[data-theme~="preview-theme"][data-placement^="bottom"]
+  > .tippy-arrow::before {
+  border-bottom-color: var(--border-color);
+}
+.tippy-box[data-theme~="preview-theme"][data-placement^="left"]
+  > .tippy-arrow::before {
+  border-left-color: var(--border-color);
+}
+.tippy-box[data-theme~="preview-theme"][data-placement^="right"]
+  > .tippy-arrow::before {
+  border-right-color: var(--border-color);
+}
 .tippy-shortcut {
   display: flex;
   flex-direction: row;

@@ -1,3 +1,4 @@
+import hljs from "highlight.js/lib/core";
 import bash from "highlight.js/lib/languages/bash";
 import c from "highlight.js/lib/languages/c";
 import cpp from "highlight.js/lib/languages/cpp";
@@ -22,7 +23,7 @@ import { createLowlight } from "lowlight";
 
 const lowlight = createLowlight();
 
-lowlight.register({
+const customLanguages = {
   css,
   javascript: js,
   typescript: ts,
@@ -43,7 +44,13 @@ lowlight.register({
   rust,
   powershell,
   json,
-});
+};
+
+lowlight.register(customLanguages);
+
+for (const [name, definition] of Object.entries(customLanguages)) {
+  hljs.registerLanguage(name, definition);
+}
 
 lowlight.registerAlias({
   javascript: ["js", "jsx"],

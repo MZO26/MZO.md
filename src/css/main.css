@@ -966,3 +966,34 @@ svg.empty-state-icon {
   display: none;
   pointer-events: none;
 }
+
+.wikilink-preview {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  text-align: left;
+  width: min(50vw, 80ch);
+  height: min(50vh, 80ch);
+}
+
+.wikilink-preview.is-empty {
+  width: 16rem;
+  height: 4rem;
+}
+
+.wikilink-preview-content {
+  overflow: auto;
+  padding: 14px;
+  white-space: pre-wrap;
+  overscroll-behavior: contain;
+  padding: 15px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.wikilink-preview-content::-webkit-scrollbar-corner {
+  background-color: transparent;
+}

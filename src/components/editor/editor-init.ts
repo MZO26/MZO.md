@@ -16,6 +16,7 @@ import {
 import { NoteTag } from "@/extensions/tag";
 import { Typography } from "@/extensions/typography";
 import { CustomUnderline } from "@/extensions/underline";
+import { WikiLinkPreview } from "@/extensions/wikilink-preview";
 import { WikiLink } from "@/extensions/wikilinks";
 import {
   debouncedSaveNote,
@@ -137,6 +138,7 @@ function getNoteEditorExtensions() {
       taskItem: { nested: true },
     }),
     CustomUnderline,
+    WikiLinkPreview,
     WikiLink.configure({
       onClick: async (id) => {
         const noteExists = noteStore.get("notes").some((n) => n.id === id);
@@ -203,7 +205,7 @@ function getNoteEditorExtensions() {
     }),
     Highlight.configure({ multicolor: true }),
     CustomHeading.configure({
-      levels: [1, 2, 3],
+      levels: [1, 2, 3, 4, 5, 6],
     }),
     StarterKit.configure({
       heading: false,

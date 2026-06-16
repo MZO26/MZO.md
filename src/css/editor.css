@@ -70,11 +70,39 @@
   margin-bottom: 0.5em;
 }
 
+.ProseMirror h4 {
+  font-size: 1.15em;
+  line-height: 1.45;
+  font-weight: 600;
+  margin-top: 1.1em;
+  margin-bottom: 0.45em;
+}
+
+.ProseMirror h5 {
+  font-size: 1em;
+  line-height: 1.5;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.4em;
+}
+
+.ProseMirror h6 {
+  font-size: 0.9em;
+  line-height: 1.5;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.35em;
+  letter-spacing: 0.04em;
+}
+
 .ProseMirror h1,
 .ProseMirror h2,
-.ProseMirror h3 {
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
   padding: 2px 6px;
-  margin-left: -6px;
+  margin-left: -2px;
   border-radius: 6px;
   outline: 1px solid transparent;
   box-shadow: 0 0 0 0 transparent;
@@ -87,18 +115,23 @@
 
 .ProseMirror h1:first-child,
 .ProseMirror h2:first-child,
-.ProseMirror h3:first-child {
+.ProseMirror h3:first-child,
+.ProseMirror h4:first-child,
+.ProseMirror h5:first-child,
+.ProseMirror h6:first-child {
   margin-top: 0;
 }
 
-.ProseMirror p {
+.ProseMirror p,
+.wikilink-preview-content p {
   font-size: 1em;
   margin-top: 0;
   margin-bottom: 1em;
   color: var(--text-main);
 }
 
-.ProseMirror mark {
+.ProseMirror mark,
+.wikilink-preview-content mark {
   background-color: var(--editor-highlight);
   color: var(--text-main);
   padding: 0.125em 0.25em;
@@ -106,7 +139,8 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-.ProseMirror .wikilink {
+.ProseMirror .wikilink,
+.wikilink-preview-content .wikilink {
   display: inline-flex;
   align-items: center;
   padding: 0 0.2em;
@@ -114,11 +148,19 @@
   color: var(--text-muted);
   box-shadow: none;
   border-radius: 0.25em;
-  cursor: pointer;
   white-space: nowrap;
   font-weight: 500;
   user-select: all;
   transition: all 0.2s ease;
+}
+
+.ProseMirror .wikilink {
+  cursor: pointer;
+}
+
+.wikilink-preview-content .wikilink {
+  pointer-events: none;
+  cursor: default;
 }
 
 .ProseMirror .wikilink:hover {
@@ -127,19 +169,31 @@
   background: var(--tag-bg);
 }
 
-.ProseMirror a {
+.ProseMirror a,
+.wikilink-preview-content a {
   color: var(--tag-color);
   text-decoration: underline;
   text-underline-offset: 3px;
-  cursor: pointer;
   transition: opacity 0.2s ease;
 }
 
-.ProseMirror a:hover {
+.ProseMirror a {
+  cursor: pointer;
+}
+
+.ProseMirror a:hover,
+.wikilink-preview-content a:hover {
   opacity: 0.8;
 }
 
-.ProseMirror blockquote {
+.wikilink-preview-content a {
+  pointer-events: none;
+  margin-top: 4px;
+  cursor: default;
+}
+
+.ProseMirror blockquote,
+.wikilink-preview-content blockquote {
   margin: 1.5em 0;
   padding: 0.875em 1em;
   border-left: 3px solid var(--border-color);
@@ -157,7 +211,8 @@
   margin-top: 0.75em;
 }
 
-.ProseMirror code {
+.ProseMirror code,
+.wikilink-preview-content code {
   color: var(--text-main);
   background-color: var(--bg-button);
   padding: 0.15em 0.4em;
@@ -167,6 +222,7 @@
 
 .ProseMirror .tableWrapper {
   margin: 1.5em 0;
+  padding: 0;
   overflow-x: auto;
   overflow-y: hidden;
   background: transparent;
@@ -174,7 +230,8 @@
   border-radius: 8px;
 }
 
-.ProseMirror table {
+.ProseMirror table,
+.wikilink-preview-content table {
   border-collapse: collapse;
   margin: 0;
   width: 100%;
@@ -186,7 +243,9 @@
 }
 
 .ProseMirror th,
-.ProseMirror td {
+.ProseMirror td,
+.wikilink-preview-content th,
+.wikilink-preview-content td {
   border: 1px solid var(--border-color);
   padding: 0.5em 0.75em;
   vertical-align: top;
@@ -198,13 +257,15 @@
   color: var(--text-main);
 }
 
-.ProseMirror th {
+.ProseMirror th,
+.wikilink-preview-content th {
   background: var(--bg-sidebar-section);
   color: var(--text-main);
   font-weight: 600;
 }
 
-.ProseMirror tbody tr:hover td {
+.ProseMirror tbody tr:hover td,
+.wikilink-preview-content tbody tr:hover td {
   background: color-mix(in oklab, var(--bg-sidebar) 85%, var(--border-color));
 }
 
@@ -223,14 +284,6 @@
 
 .ProseMirror table p {
   margin: 0;
-}
-
-.ProseMirror table a {
-  color: var(--tag-color);
-}
-
-.ProseMirror table a:hover {
-  color: var(--text-main);
 }
 
 .ProseMirror .ProseMirror-gapcursor {
@@ -264,7 +317,8 @@
   display: block;
 }
 
-.ProseMirror hr {
+.ProseMirror hr,
+.wikilink-preview-content hr {
   border: none;
   border-top: 1px solid var(--accent-primary);
   border-radius: 0;
@@ -275,7 +329,8 @@
   border-top-color: var(--tag-color);
 }
 
-.ProseMirror pre {
+.ProseMirror pre,
+.wikilink-preview-content pre {
   position: relative;
   border: 1px solid var(--border-color);
   background-color: var(--hljs-bg);
@@ -286,7 +341,8 @@
   overflow-wrap: break-word;
 }
 
-.ProseMirror pre code {
+.ProseMirror pre code,
+.wikilink-preview-content pre code {
   display: block;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.9em;
@@ -297,7 +353,8 @@
   white-space: inherit;
 }
 
-.ProseMirror img {
+.ProseMirror img,
+.wikilink-preview-content img {
   max-width: 100%;
   background-color: var(--bg-sidebar);
   border: 1px solid var(--border-color);
@@ -336,49 +393,54 @@
   pointer-events: auto;
 }
 
-.ProseMirror ul:not([data-type="taskList"]),
-.ProseMirror ol {
-  padding-left: 1.75rem;
-  margin: 0.75rem 0;
-}
-
-.ProseMirror ul:not([data-type="taskList"]) {
-  list-style-type: disc;
-}
-
-.ProseMirror ol {
-  list-style-type: decimal;
-  margin-left: 0;
-}
-
-.ProseMirror li {
+.ProseMirror li,
+.wikilink-preview-content li {
   color: var(--text-main);
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
 
-.ProseMirror li::marker {
+.ProseMirror li::marker,
+.wikilink-preview-content li::marker {
   color: var(--text-muted);
 }
 
-.ProseMirror li > p {
+.ProseMirror li > p,
+.wikilink-preview-content li > p {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-.ProseMirror li > ul:not([data-type="taskList"]),
-.ProseMirror li > ol {
-  margin-top: 0.25rem;
-  margin-bottom: 0;
+.ProseMirror ol,
+.wikilink-preview-content ol {
+  list-style-type: decimal;
+  margin-left: 0;
+  padding-left: 1.7rem;
+  margin: 0.75rem 0;
 }
 
-.ProseMirror ul[data-type="taskList"] {
+.ProseMirror ul:not([data-type="taskList"]),
+.wikilink-preview-content ul:not([data-type="taskList"]) {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.ProseMirror ul[data-type="taskList"],
+.wikilink-preview-content ul[data-type="taskList"] {
   list-style: none;
   padding: 0;
   margin: 0.75rem 0;
 }
 
-.ProseMirror ul[data-type="taskList"] li {
+.wikilink-preview-content ul[data-type="taskList"] {
+  pointer-events: none;
+  margin-top: 4px;
+  cursor: default;
+}
+
+.ProseMirror ul[data-type="taskList"] li,
+.wikilink-preview-content ul[data-type="taskList"] li {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
@@ -386,7 +448,8 @@
   margin: 0;
 }
 
-.ProseMirror ul[data-type="taskList"] li > label {
+.ProseMirror ul[data-type="taskList"] li > label,
+.wikilink-preview-content ul[data-type="taskList"] li > label {
   flex: 0 0 auto;
   display: inline-block;
   user-select: none;
@@ -394,7 +457,8 @@
   align-items: center;
 }
 
-.ProseMirror ul[data-type="taskList"] li > div {
+.ProseMirror ul[data-type="taskList"] li > div,
+.wikilink-preview-content ul[data-type="taskList"] li > div {
   flex: 1 1 auto;
   min-width: 0;
 }
@@ -405,7 +469,8 @@
     text-decoration-color 0.2s ease;
 }
 
-.ProseMirror ul[data-type="taskList"] li input[type="checkbox"] {
+.ProseMirror ul[data-type="taskList"] li input[type="checkbox"],
+.wikilink-preview-content ul[data-type="taskList"] li input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
   margin: 0;
@@ -413,6 +478,7 @@
   width: 1.15em;
   height: 1.15em;
   flex-shrink: 0;
+  margin-left: 0.5rem;
   border: 1.5px solid var(--accent-primary);
   border-radius: 4px;
   background-color: var(--bg-editor);
@@ -438,12 +504,20 @@
   outline-offset: 2px;
 }
 
-.ProseMirror ul[data-type="taskList"] li input[type="checkbox"]:checked {
+.ProseMirror ul[data-type="taskList"] li input[type="checkbox"]:checked,
+.wikilink-preview-content
+  ul[data-type="taskList"]
+  li
+  input[type="checkbox"]:checked {
   background-color: var(--tag-color);
   border-color: var(--tag-color);
 }
 
-.ProseMirror ul[data-type="taskList"] li input[type="checkbox"]:checked::after {
+.ProseMirror ul[data-type="taskList"] li input[type="checkbox"]:checked::after,
+.wikilink-preview-content
+  ul[data-type="taskList"]
+  li
+  input[type="checkbox"]:checked::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -452,7 +526,12 @@
   transform: scale(0.55);
 }
 
-.ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div > p {
+.ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div > p,
+.wikilink-preview-content
+  ul[data-type="taskList"]
+  li[data-checked="true"]
+  > div
+  > p {
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
   color: var(--text-muted);
