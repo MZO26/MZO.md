@@ -410,23 +410,6 @@ class NoteDB {
     return results;
   }
 
-  public getIncomingLinks(id: string): NoteListItem[] {
-    const tagMap = this.getTagMap() ?? new Map();
-    const linkMap = this.getLinkMap() ?? new Map();
-    const results: NoteListItem[] = [];
-    for (const row of this.views.getIncomingLinks(id)) {
-      const validatedNote = validation(NoteFromDB, {
-        ...row,
-        tags: tagMap.get(row.id),
-        links: linkMap.get(row.id),
-      });
-      const plainText = extractText(validatedNote.content);
-      const { content, ...lightweightNote } = validatedNote;
-      results.push({ ...lightweightNote, plainText });
-    }
-    return results;
-  }
-
   public getOldNoteTitle(id: string): Note["title"] {
     const title = this.getOldTitleStmt.get({ id }) as Note["title"] | undefined;
     if (!title) {

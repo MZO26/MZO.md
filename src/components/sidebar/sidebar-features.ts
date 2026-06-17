@@ -118,30 +118,16 @@ function handleSearchInput(searchInput: string) {
 
 async function handleViews(view: ViewId) {
   const activeId = stateStore.getState().activeId;
-  if (view === "links" && !activeId) {
-    return;
-  }
   stateStore.setState({ searchQuery: "" });
   const result = await getViews(view, activeId);
   if (!result.success) {
     console.error("[handleViews]: Failed to fetch views:", result.error);
     return;
   }
-  if (view === "links" && !activeId) return;
   noteStore.setState({
     notes: result.data as NoteListItem[],
     sidebarChange: { type: "reload" },
   });
-}
-
-function updateLinksOption(activeId?: string | null) {
-  const select = requireElement<HTMLSelectElement>(".view-select");
-  const linksOption = findElement<HTMLOptionElement>(
-    'option[value="links"]',
-    select,
-  );
-  if (!linksOption) return;
-  linksOption.disabled = !activeId;
 }
 
 //------------------------------------------------------------
@@ -173,7 +159,7 @@ function resizeSidebar(
 ) {
   const {
     minWidth = 0,
-    maxWidth = 500,
+    maxWidth = 450,
     cssVariable = "--sidebar-width",
   } = options;
   const resizer = requireElement<HTMLDivElement>(resizerSelector);
@@ -231,6 +217,5 @@ export {
   handleSearchInput,
   handleViews,
   resizeSidebar,
-  updateLinksOption,
   updateStats,
 };

@@ -1,14 +1,9 @@
 import { noteStore } from "@/settings/app-state";
-import {
-  mergeAttributes,
-  Node,
-  nodeInputRule,
-  nodePasteRule,
-} from "@tiptap/core";
+import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 
 const UUID_PATTERN = "([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})";
-const INPUT_REGEX = new RegExp(`\\[\\[\\s*${UUID_PATTERN}\\s*\\]\\]$`, "i");
+const INPUT_REGEX = /\[\[([^\]]+)\]\]$/;
 const PASTE_REGEX = new RegExp(
   `(?:\\[\\[)?\\s*${UUID_PATTERN}\\s*(?:\\]\\])?`,
   "gi",
@@ -63,7 +58,6 @@ const WikiLink = Node.create<WikiLinkOptions>({
       const match = src.match(/^\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/);
       const id = match?.[1]?.trim();
       if (!match || !id) return undefined;
-
       return {
         type: "wikilink",
         raw: match[0],
@@ -93,10 +87,26 @@ const WikiLink = Node.create<WikiLinkOptions>({
   },
   addInputRules() {
     return [
-      nodeInputRule({
+      new InputRule({
         find: INPUT_REGEX,
-        type: this.type,
-        getAttributes: (match) => ({ id: match[1] }),
+        handler: ({ state, range, match }) => {
+          const typedTitle = match[1]?.trim();
+          if (!typedTitle) return null;
+          const targetNote = noteStore
+            .get("notes")
+            .find((n) => n.title.toLowerCase() === typedTitle.toLowerCase());
+          if (!targetNote) return null;
+          const nodeType = state.schema.nodes[this.name];
+          if (!nodeType) return null;
+          const node = nodeType.create({
+            id: targetNote.id,
+            label: targetNote.title,
+          });
+          const tr = state.tr;
+          tr.replaceWith(range.from, range.to, node);
+          tr.insertText(" ", range.from + node.nodeSize);
+          return;
+        },
       }),
     ];
   },

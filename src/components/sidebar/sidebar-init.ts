@@ -9,7 +9,6 @@ import {
   handleImportNote,
   handleSelectNote,
 } from "@/notes/note-actions";
-import { stateStore } from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
@@ -76,11 +75,6 @@ function applySidebarListeners(
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement | null;
       const view = target?.value as ViewId;
-      const activeId = stateStore.getState().activeId;
-      if (view === "links" && !activeId) {
-        if (target) target.value = "all";
-        return;
-      }
       await handleViews(view);
     }),
   );

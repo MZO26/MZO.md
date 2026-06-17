@@ -437,10 +437,14 @@ body.is-dragging * {
 
 .note-item[data-pinned="true"] .icon-div .pin {
   display: inline-block;
+  stroke: var(--tag-color);
+  fill: var(--tag-bg);
 }
 
 .note-item[data-bookmarked="true"] .icon-div .bookmark {
   display: inline-block;
+  stroke: var(--tag-color);
+  fill: var(--tag-bg);
 }
 
 .note-item:hover:not(.is-active) {

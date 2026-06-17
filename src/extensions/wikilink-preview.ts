@@ -1,6 +1,6 @@
 import { getNoteById } from "@/api/api";
 import { getNoteEditorExtensions } from "@/components/editor/editor-init";
-import { stateStore } from "@/settings/app-state";
+import { noteStore, stateStore } from "@/settings/app-state";
 import { getAppItem } from "@/utils/registry";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
 import type { Note } from "@shared/schemas/note-schema";
@@ -41,6 +41,18 @@ export const WikiLinkPreview = Extension.create({
         const el = instance.reference as HTMLElement | null;
         const id = (el?.getAttribute("data-id") || "").trim();
         if (!id) return false;
+        const notes = noteStore.get("notes");
+        const targetNote = notes.find((n) => n.id === id);
+        if (!targetNote) return false;
+        const matchingNotes = notes.filter(
+          (n) => n.title.toLowerCase() === targetNote.title.toLowerCase(),
+        );
+        if (matchingNotes.length > 1) {
+          instance.setContent(
+            `Warning: There are ${matchingNotes.length} notes named "${targetNote.title}".`,
+          );
+          return;
+        }
         instance.state.isFetching = true;
         const loadPreviewData = async () => {
           try {

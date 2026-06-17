@@ -472,7 +472,8 @@ label {
   align-items: center;
   padding: 10px 10px 0 10px;
   bottom: 0;
-  border-radius: 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
   background-color: var(--bg-sidebar);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
@@ -480,7 +481,7 @@ label {
   flex-direction: row;
   width: 100%;
   gap: 5px;
-  height: 50px;
+  height: 42px;
   overflow-x: scroll;
   overflow-y: hidden;
   z-index: 5;
@@ -1047,8 +1048,8 @@ svg.empty-state-icon {
   justify-content: center;
   overflow: hidden;
   text-align: left;
-  width: min(50vw, 80ch);
-  height: min(50vh, 80ch);
+  width: min(40vw, 80ch);
+  height: min(40vh, 300px);
 }
 
 .wikilink-preview.is-empty {

@@ -52,7 +52,6 @@ const VIEWS = [
   { id: "untagged", label: "Untagged Notes" },
   { id: "unlinked", label: "Unlinked Notes" },
   { id: "hubs", label: "Most Links" },
-  { id: "links", label: "Incoming Links" },
 ] as const satisfies readonly ViewItem[];
 
 const THEME_MAP = {

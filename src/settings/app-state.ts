@@ -1,6 +1,5 @@
 import { getAll, getAllSettings } from "@/api/api";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
-import { updateLinksOption } from "@/components/sidebar/sidebar-features";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-note-items";
 import {
   handleSidebarEmptyState,
@@ -126,7 +125,6 @@ stateStore.subscribe((state) => {
     );
     if (noteElement) setActiveItem(noteElement, sidebar);
     handleEditorEmptyState();
-    updateLinksOption(state.activeId);
   }
   if (state.searchQuery !== previousSearchQuery) {
     previousSearchQuery = state.searchQuery;
