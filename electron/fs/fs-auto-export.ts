@@ -45,7 +45,7 @@ async function isAutoExport(id: string) {
     return false;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return;
+      return false;
     }
     console.error(
       "[isAutoExport]: Failed to detect if note is on file system:",

@@ -186,7 +186,7 @@ function getNoteEditorExtensions() {
         const searchInput = requireElement<HTMLInputElement>(".search-input");
         searchInput.value = `#${id}`;
         searchInput.focus();
-        handleSearchInput(searchInput.value);
+        handleSearchInput(id);
       },
     }),
     Table.configure({

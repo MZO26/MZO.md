@@ -9,9 +9,9 @@ Built with Electron, TypeScript, Better SQLite3, and TipTap.
 - Local-first note storage with SQLite
 - Fast in-memory fuzzy search with fuse.js
 - Markdown-focused editing with TipTap
+- Connect and organize notes with links and tags
 - Export notes to Markdown, Plain Text, HTML, JSON and PDF
-- Import notes from Markdown, Plain Text, HTML and JSON
-- Resolve external file changes with local JIT sync
+- Import notes from Markdown, HTML and JSON
 - Focus Mode and adjustable editor width (Ultrawide support)
 - Light and dark theme support
 - Persistent settings with electron-store

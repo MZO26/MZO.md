@@ -10,7 +10,7 @@ const NoteTag = Node.create<NoteTagOptions>({
   group: "inline",
   inline: true,
   atom: true,
-  selectable: false,
+  selectable: true,
 
   addOptions: () => ({
     onClick: () => {},
@@ -57,7 +57,6 @@ const NoteTag = Node.create<NoteTagOptions>({
       };
     },
   },
-
   parseMarkdown(token, helpers) {
     const id = String(token.text ?? "").trim();
     if (!id) {
@@ -65,7 +64,6 @@ const NoteTag = Node.create<NoteTagOptions>({
     }
     return helpers.createNode("noteTag", { id });
   },
-
   renderMarkdown(node) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     return id ? `#${id}` : "";

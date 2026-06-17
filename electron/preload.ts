@@ -12,7 +12,7 @@ import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type {
   MenuType,
   NoteMenuPayload,
-  View,
+  ViewId,
   ZoomAction,
 } from "@shared/types";
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
@@ -123,7 +123,7 @@ contextBridge.exposeInMainWorld("noteAPI", {
   getManyById: (ids: string[]) => ipcRenderer.invoke("note:getManyById", ids),
   pin: (id: string) => ipcRenderer.invoke("note:pin", id),
   bookmark: (id: string) => ipcRenderer.invoke("note:bookmark", id),
-  getViews: (view: View, id: string | null) =>
+  getViews: (view: ViewId, id: string | null) =>
     ipcRenderer.invoke("views:get", view, id),
   dbMaintenance: (action: string) =>
     ipcRenderer.invoke("db-maintenance", action),

@@ -87,7 +87,7 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement) {
 
 // create view options
 
-function createViews(views: ViewItem[], activeId?: string | null) {
+function createViews(views: readonly ViewItem[], activeId?: string | null) {
   const select = requireElement<HTMLSelectElement>(".view-select");
   for (const view of views) {
     const option = document.createElement("option");

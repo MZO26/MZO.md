@@ -15,8 +15,7 @@ import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { initTippyDelegate } from "@/utils/ui";
 import { VIEWS } from "@shared/constants";
-import type { View } from "@shared/types";
-
+import type { ViewId } from "@shared/types";
 // sidebar
 
 function initNotesSidebar() {
@@ -76,7 +75,7 @@ function applySidebarListeners(
     "change",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement | null;
-      const view = target?.value as View;
+      const view = target?.value as ViewId;
       const activeId = stateStore.getState().activeId;
       if (view === "links" && !activeId) {
         if (target) target.value = "all";

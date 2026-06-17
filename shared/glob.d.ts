@@ -11,7 +11,7 @@ import {
   type ImagePayload,
   type UpdateNotePayload,
 } from "@shared/shared/types";
-import type { ImageSrc, MenuType, View } from "@shared/types";
+import type { ImageSrc, MenuType, ViewId } from "@shared/types";
 
 declare module "*.css";
 
@@ -82,7 +82,7 @@ declare global {
       pin: (id: string) => Promise<Result<boolean>>;
       bookmark: (id: string) => Promise<Result<boolean>>;
       getViews: (
-        view: View,
+        view: ViewId,
         id: string | null,
       ) => Promise<Result<Note[] | NoteListItem[]>>;
       dbMaintenance: (action) => Promise<Result<number>>;

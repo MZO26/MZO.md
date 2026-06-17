@@ -19,7 +19,7 @@ import type {
   ExportedContent,
   ImageSrc,
   Result,
-  View,
+  ViewId,
   ZoomAction,
 } from "@shared/types";
 
@@ -100,9 +100,9 @@ async function bookmark(id: string): Promise<Result<boolean>> {
 }
 
 async function getViews(
-  view: View,
+  view: ViewId,
   id: string | null,
-): Promise<Result<Note[] | NoteListItem[]>> {
+): Promise<Result<NoteListItem[]>> {
   return invoke(window.noteAPI.getViews(view, id));
 }
 

@@ -30,7 +30,7 @@ export const WikiLinkPreview = Extension.create({
       delay: [300, 50],
       theme: "preview-theme",
       appendTo: () => document.body,
-      placement: "auto",
+      placement: "bottom-start",
       maxWidth: "none",
       content: "",
       onShow: (instance: PreviewInstance) => {
@@ -53,6 +53,7 @@ export const WikiLinkPreview = Extension.create({
             }
             const activeId = stateStore.get("activeId");
             if (result.data.id === activeId) {
+              instance.state.isDataFetched = true;
               instance.hide();
               return;
             }

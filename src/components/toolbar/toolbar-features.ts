@@ -1,10 +1,14 @@
 import { pinWindow, setTheme } from "@/api/api";
 import { promptImageUpload } from "@/extensions/image/image";
+import { handleSelectNote } from "@/notes/note-actions";
+import { noteStore, stateStore } from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
+import { renderIcons } from "@/utils/icons";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import type { Theme } from "@shared/schemas/store-schema";
 import type { ActionMap } from "@shared/types";
+import { handleSearchInput } from "../sidebar/sidebar-features";
 
 // top-toolbar for quick actions
 
@@ -16,6 +20,32 @@ function initTopToolbar() {
     "click",
     createAsyncHandler(async () => setWindowTop(appPinBtn)),
   );
+  const metadataContainer = requireElement<HTMLDivElement>(
+    ".metadata-container",
+  );
+  metadataContainer.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement | null;
+    const clickedLink = target?.closest(".link") as HTMLElement | null;
+    const linkId = clickedLink?.getAttribute("data-link");
+    if (linkId === stateStore.get("activeId")) return;
+    if (clickedLink && linkId) {
+      handleSelectNote(linkId);
+      return;
+    }
+    const clickedTag = target?.closest(".tag-node") as HTMLElement | null;
+    const tagId = clickedTag?.getAttribute("data-tag");
+    if (clickedTag && tagId) {
+      const searchInput = requireElement<HTMLInputElement>(".search-input");
+      searchInput.value = `#${tagId}`;
+      searchInput.focus();
+      handleSearchInput(tagId);
+      return;
+    }
+  });
+  const editorWrapper = getAppItem("editorWrapper");
+  editorWrapper.addEventListener("focusin", () => {
+    metadataContainer.classList.add("collapsed");
+  });
   registerAppEvents(document, {
     "app:set-editor-width": () => setEditorWidth(appContainer),
     "app:toggle-read-only": () => editor?.setEditable(!editor.isEditable),
@@ -70,9 +100,119 @@ function initFocusMode() {
 function toggleToolbar() {
   const appContainer = getAppItem("appContainer");
   const newState = !appContainer.classList.contains("toolbar-collapsed");
-  requestAnimationFrame(() => {
-    appContainer.classList.toggle("toolbar-collapsed", newState);
-  });
+  appContainer.classList.toggle("toolbar-collapsed", newState);
+}
+
+function openMetadataContainer() {
+  const container = requireElement<HTMLDivElement>(".metadata-container");
+  const collapsed = container.classList.contains("collapsed");
+  if (collapsed) container.classList.remove("collapsed");
+  return container;
+}
+
+function createTagElement(
+  container: HTMLDivElement,
+  tag: string,
+  count?: number,
+) {
+  const span = document.createElement("span");
+  span.classList.add("tag-node");
+  span.setAttribute("data-tag", tag);
+  const text = count
+    ? `Often used: Appears ${count} time${count === 1 ? "" : "s"} in other note${count === 1 ? "" : "s"}`
+    : "Tag in this note";
+  span.setAttribute("data-tippy-content", text);
+  span.textContent = `#${tag}`;
+  container.appendChild(span);
+}
+
+function renderTags(container: HTMLDivElement) {
+  const tags = noteStore.get("activeNote")?.tags;
+  const id = stateStore.get("activeId");
+  container.replaceChildren();
+  if (!tags || tags.length === 0) {
+    const span = document.createElement("span");
+    span.textContent = "No tags here.";
+    container.appendChild(span);
+    return;
+  }
+  for (const tag of tags) createTagElement(container, tag);
+  const tagMap = new Map<string, number>();
+  const tagArr = noteStore
+    .get("notes")
+    .filter((n) => n.id !== id)
+    .flatMap((n) => n.tags);
+  for (const entry of tagArr) {
+    tagMap.set(entry, (tagMap.get(entry) || 0) + 1);
+  }
+  const sortedTags = [...tagMap.entries()].sort((a, b) => b[1] - a[1]);
+  const divider = document.createElement("div");
+  divider.classList.add("divider");
+  container.appendChild(divider);
+  for (const [item, count] of sortedTags.slice(0, 10)) {
+    createTagElement(container, item, count);
+  }
+}
+
+function renderLinks(container: HTMLDivElement) {
+  const activeNote = noteStore.get("activeNote");
+  container.replaceChildren();
+  if (!activeNote) return;
+  const backlinks = activeNote.links.filter((l) => l.dir === "in") ?? [];
+  const outgoingLinks = activeNote.links.filter((l) => l.dir === "out") ?? [];
+  if (backlinks.length === 0 && outgoingLinks.length === 0) {
+    const span = document.createElement("span");
+    span.classList.add("link", `link-current`);
+    span.setAttribute("data-link", activeNote.id);
+    span.setAttribute("data-tippy-content", "Current Note");
+    span.textContent = `[${activeNote.title}]`;
+    span.classList.add("active-node");
+    container.appendChild(span);
+    return;
+  }
+  const displaySequence = [
+    ...backlinks.map((b) => ({ id: b.id, type: "in" })),
+    { id: activeNote.id, type: "current" },
+    ...outgoingLinks.map((l) => ({ id: l.id, type: "out" })),
+  ];
+  const relatedIds = new Set([...backlinks, ...outgoingLinks].map((n) => n.id));
+  const relatedNotes = noteStore
+    .get("notes")
+    .filter((n) => relatedIds.has(n.id));
+  const linkMap = new Map<string, string>();
+  for (const note of relatedNotes) {
+    linkMap.set(note.id, note.title.trim());
+  }
+  for (const [index, item] of displaySequence.entries()) {
+    const span = document.createElement("span");
+    span.classList.add("link", `link-${item.type}`);
+    span.setAttribute("data-link", item.id);
+    const text =
+      item.type === "in"
+        ? "Incoming Link"
+        : item.type === "out"
+          ? "Outgoing Link"
+          : "Current Note";
+    span.setAttribute("data-tippy-content", text);
+    const title =
+      item.type === "current"
+        ? activeNote.title
+        : (linkMap.get(item.id) ?? item.id);
+    if (item.type === "current") {
+      span.textContent = `[${title}]`;
+      span.classList.add("active-node");
+    } else {
+      span.textContent = title;
+    }
+    container.appendChild(span);
+    if (index < displaySequence.length - 1) {
+      const icon = document.createElement("i");
+      icon.setAttribute("data-lucide", "arrow-right");
+      icon.classList.add("separator-icon");
+      container.appendChild(icon);
+    }
+  }
+  renderIcons(container);
 }
 
 const TOP_TOOLBAR_ACTIONS: ActionMap = {
@@ -126,6 +266,22 @@ const TOOLBAR_ACTIONS: ActionMap = {
     isDisabled: (editor) => !editor.can().redo(),
     icon: "redo2",
     shortcut: "MOD+Shift+Z",
+  },
+  tags: {
+    run: () => {
+      const container = openMetadataContainer();
+      renderTags(container);
+    },
+    icon: "tag",
+    shortcut: "MOD+Shift+T",
+  },
+  wikilinks: {
+    run: () => {
+      const container = openMetadataContainer();
+      renderLinks(container);
+    },
+    icon: "git-compare-arrows",
+    shortcut: "MOD+Shift+W",
   },
   divider1: { type: "divider" },
   bold: {
@@ -254,4 +410,10 @@ const TOOLBAR_ACTIONS: ActionMap = {
   },
 };
 
-export { initTopToolbar, TOOLBAR_ACTIONS, TOP_TOOLBAR_ACTIONS };
+export {
+  initTopToolbar,
+  renderLinks,
+  renderTags,
+  TOOLBAR_ACTIONS,
+  TOP_TOOLBAR_ACTIONS,
+};

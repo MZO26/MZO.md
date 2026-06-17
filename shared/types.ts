@@ -1,6 +1,7 @@
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import type { Content, Editor } from "@tiptap/core";
+import type { VIEWS } from "./constants";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -97,8 +98,6 @@ type ExportResult = {
 
 type PDFAssets = { template: string; css: string };
 
-type View = "all" | "bookmarked" | "pinned" | "todos" | "untagged" | "links";
-
 type ContentType = "markdown" | "html" | "json";
 
 type ZoomAction = "get" | "in" | "out" | "reset";
@@ -186,6 +185,8 @@ type SearchOptions = {
   literal?: boolean;
 };
 
+type ViewId = (typeof VIEWS)[number]["id"];
+
 export type {
   Action,
   ActionMap,
@@ -220,7 +221,7 @@ export type {
   TemplateRegistry,
   ThemeResult,
   TitleBarOverlayOptions,
-  View,
+  ViewId,
   ViewItem,
   WorkerResult,
   ZoomAction,

@@ -1,6 +1,7 @@
+import { isAutoExport } from "@electron/fs/fs-auto-export";
+import { store } from "@electron/store";
 import type { NoteMenuPayload } from "@shared/types";
 import { ipcMain, Menu, type BrowserWindow } from "electron";
-import { isAutoExport } from "./fs/fs-auto-export";
 
 let activeId: string | null = null;
 
@@ -84,7 +85,11 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
         },
         {
           label: "File Path",
-          enabled: activeId !== null && activeId === id,
+          enabled:
+            activeId !== null &&
+            activeId === id &&
+            store.get("auto-export") === true,
+          visible: store.get("auto-export") === true,
           click: async () => {
             const autoExported = (await isAutoExport(id)) ? true : false;
             if (!autoExported) {
@@ -136,7 +141,11 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
     },
     {
       label: "Open File Path",
-      enabled: activeId !== null && activeId === id,
+      enabled:
+        activeId !== null &&
+        activeId === id &&
+        store.get("auto-export") === true,
+      visible: store.get("auto-export") === true,
       click: async () => {
         const autoExported = (await isAutoExport(id)) ? true : false;
         if (!autoExported) {
@@ -147,7 +156,11 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
     },
     {
       label: "View in Editor",
-      enabled: activeId !== null && activeId === id,
+      enabled:
+        activeId !== null &&
+        activeId === id &&
+        store.get("auto-export") === true,
+      visible: store.get("auto-export") === true,
       click: async () => {
         const autoExported = (await isAutoExport(id)) ? true : false;
         if (!autoExported) {

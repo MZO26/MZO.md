@@ -3,11 +3,11 @@ import { updateSnippetHighlight } from "@/components/sidebar/sidebar-note-items"
 import { noteStore, searchEngine, stateStore } from "@/settings/app-state";
 import { debounce } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
-import { estimateReadingTime, toNoteListItem } from "@/utils/note";
+import { estimateReadingTime } from "@/utils/note";
 import { getAppItem, getStatItems } from "@/utils/registry";
 import { DEBOUNCE_MS, MAX_CHARS, PADDING } from "@shared/constants";
-import type { Note, NoteListItem } from "@shared/schemas/note-schema";
-import type { ResizeOptions, SnippetCacheValue, View } from "@shared/types";
+import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { ResizeOptions, SnippetCacheValue, ViewId } from "@shared/types";
 
 // sidebar
 
@@ -116,7 +116,7 @@ function handleSearchInput(searchInput: string) {
 
 // views handled by db
 
-async function handleViews(view: View) {
+async function handleViews(view: ViewId) {
   const activeId = stateStore.getState().activeId;
   if (view === "links" && !activeId) {
     return;
@@ -127,22 +127,9 @@ async function handleViews(view: View) {
     console.error("[handleViews]: Failed to fetch views:", result.error);
     return;
   }
-  if (view === "all") {
-    noteStore.setState({
-      notes: result.data as NoteListItem[],
-      sidebarChange: { type: "reload" },
-    });
-    return;
-  }
-  const notes = new Array(result.data.length);
-  let i = 0;
-  for (const note of result.data as Note[]) {
-    const noteListItem = toNoteListItem(note);
-    notes[i] = noteListItem;
-    i++;
-  }
+  if (view === "links" && !activeId) return;
   noteStore.setState({
-    notes: notes,
+    notes: result.data as NoteListItem[],
     sidebarChange: { type: "reload" },
   });
 }

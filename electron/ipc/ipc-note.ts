@@ -216,27 +216,21 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("views:get", (e, view: unknown, id: unknown) => {
+  ipcMain.handle("views:get", (e, view: unknown) => {
     return result(e, async () => {
       if (!checkRateLimit(`views:get:${view}`, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       switch (view) {
-        case "bookmarked":
-          return db.getBookMarkedNotes();
-        case "pinned":
-          return db.getPinnedNotes();
-        case "todos":
-          return db.getNotesWithActionItems();
         case "all":
           return db.getAll();
+        case "todos":
+          return db.getNotesWithActionItems();
         case "untagged":
           return db.getUntaggedNotes();
-        case "links":
-          if (id) {
-            const validatedId = validation(IdSchema, id);
-            return db.getIncomingLinks(validatedId);
-          }
-          return db.getAll();
+        case "unlinked":
+          return db.getUnlinkedNotes();
+        case "hubs":
+          return db.getNotesWithMostLinks();
         default:
           throw new AppBackendError(AppErrorCode.InvalidViewError);
       }

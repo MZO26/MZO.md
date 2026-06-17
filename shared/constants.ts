@@ -1,7 +1,6 @@
 import type { NoteSearchDoc } from "@shared/schemas/note-schema";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import type { Code, ContentType, ResolvedTheme, ViewItem } from "@shared/types";
-import type { Editor } from "@tiptap/core";
 import type { IFuseOptions } from "fuse.js";
 
 const APP_START_TIME = Date.now();
@@ -19,11 +18,6 @@ const CONTENT_TYPE_MAP: Record<string, ContentType> = {
   html: "html",
   json: "json",
 };
-
-const CLEANUP = new WeakMap<
-  Editor,
-  { flush: () => Promise<void>; cancel: () => void }
->();
 
 const LIMITS = {
   WRITE_HEAVY: 500,
@@ -52,14 +46,14 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 26,214,400B. file.size from JS is always in bytes
 
-const VIEWS: ViewItem[] = [
+const VIEWS = [
   { id: "all", label: "All Notes" },
-  { id: "bookmarked", label: "Bookmarked" },
-  { id: "pinned", label: "Pinned" },
   { id: "todos", label: "Pending Todos" },
   { id: "untagged", label: "Untagged Notes" },
+  { id: "unlinked", label: "Unlinked Notes" },
+  { id: "hubs", label: "Most Links" },
   { id: "links", label: "Incoming Links" },
-];
+] as const satisfies readonly ViewItem[];
 
 const THEME_MAP = {
   system: "system",
@@ -197,7 +191,6 @@ export {
   APP_START_TIME,
   BATCH_SIZE,
   BLOCK_TYPES,
-  CLEANUP,
   CODE_THEME_MAP,
   CONTENT_TYPE_MAP,
   DEBOUNCE_MS,

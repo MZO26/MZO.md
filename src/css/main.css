@@ -457,6 +457,79 @@ label {
   flex-direction: row;
   width: 100%;
   max-width: 80ch;
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.metadata-container {
+  position: absolute;
+  display: flex;
+  justify-self: center;
+  max-width: 50ch;
+  align-items: center;
+  padding: 10px 10px 0 10px;
+  bottom: 0;
+  border-radius: 5px;
+  background-color: var(--bg-sidebar);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  flex-wrap: nowrap;
+  flex-direction: row;
+  width: 100%;
+  gap: 5px;
+  height: 50px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  z-index: 5;
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    top 0.3s ease;
+}
+
+.metadata-container.collapsed {
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.link {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-decoration: none;
+  user-select: none;
+}
+
+.link.active-node {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.link:hover {
+  opacity: 1;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.separator-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(0.03em);
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.app-container.toolbar-collapsed .metadata-container {
+  top: 2px;
 }
 
 .toolbar-hover-zone {
@@ -680,6 +753,7 @@ label {
 .sidebar-empty-state {
   opacity: 0;
   animation: fadeSlideIn 0.3s ease-out forwards;
+  pointer-events: none;
 }
 
 @keyframes fadeSlideIn {
@@ -797,7 +871,7 @@ svg.empty-state-icon {
   color: var(--text-main);
   border: 1px solid var(--border-color);
   border-top: none;
-  background-color: var(--bg-sidebar-section);
+  background-color: var(--bg-sidebar);
   box-shadow: var(--shadow);
   font-size: 0.8rem;
   z-index: 5;
@@ -807,7 +881,6 @@ svg.empty-state-icon {
   overflow-x: hidden;
   cursor: pointer;
   user-select: none;
-
   transition:
     opacity 0.3s ease-in-out,
     visibility 0.3s ease-in-out;
@@ -829,7 +902,7 @@ svg.empty-state-icon {
   color: var(--text-muted);
   text-align: left;
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   line-height: 1.5;
   padding: 6px 8px;
   border-radius: 6px;
@@ -911,6 +984,7 @@ svg.empty-state-icon {
   background-color: var(--bg-sidebar);
   box-shadow: var(--shadow);
   font-size: 0.8rem;
+  z-index: 10;
   overflow: visible;
   width: max-content;
   transition:

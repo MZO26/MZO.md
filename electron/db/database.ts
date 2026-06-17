@@ -342,69 +342,89 @@ class NoteDB {
     });
   }
 
-  public getPinnedNotes(): Note[] {
-    const rows = this.views.getPinnedNotes();
+  public getNotesWithActionItems(): NoteListItem[] {
     const tagMap = this.getTagMap() ?? new Map();
     const linkMap = this.getLinkMap() ?? new Map();
-    return rows.map((note) => {
-      return validation(NoteFromDB, {
-        ...note,
-        tags: tagMap.get(note.id) ?? [],
-        links: linkMap.get(note.id) ?? [],
+    const results: NoteListItem[] = [];
+    for (const row of this.views.getNotesWithActionItems()) {
+      const validatedNote = validation(NoteFromDB, {
+        ...row,
+        tags: tagMap.get(row.id),
+        links: linkMap.get(row.id),
       });
-    });
+      const plainText = extractText(validatedNote.content);
+      const { content, ...lightweightNote } = validatedNote;
+      results.push({ ...lightweightNote, plainText });
+    }
+    return results;
   }
 
-  public getBookMarkedNotes(): Note[] {
-    const rows = this.views.getBookmarkedNotes();
+  public getUntaggedNotes(): NoteListItem[] {
     const tagMap = this.getTagMap() ?? new Map();
     const linkMap = this.getLinkMap() ?? new Map();
-    return rows.map((note) => {
-      return validation(NoteFromDB, {
-        ...note,
-        tags: tagMap.get(note.id) ?? [],
-        links: linkMap.get(note.id) ?? [],
+    const results: NoteListItem[] = [];
+    for (const row of this.views.getUntaggedNotes()) {
+      const validatedNote = validation(NoteFromDB, {
+        ...row,
+        tags: tagMap.get(row.id),
+        links: linkMap.get(row.id),
       });
-    });
+      const plainText = extractText(validatedNote.content);
+      const { content, ...lightweightNote } = validatedNote;
+      results.push({ ...lightweightNote, plainText });
+    }
+    return results;
   }
 
-  public getNotesWithActionItems(): Note[] {
-    const rows = this.views.getNotesWithActionItems();
+  public getUnlinkedNotes(): NoteListItem[] {
     const tagMap = this.getTagMap() ?? new Map();
     const linkMap = this.getLinkMap() ?? new Map();
-    return rows.map((note) => {
-      return validation(NoteFromDB, {
-        ...note,
-        tags: tagMap.get(note.id) ?? [],
-        links: linkMap.get(note.id) ?? [],
+    const results: NoteListItem[] = [];
+    for (const row of this.views.getUnlinkedNotes()) {
+      const validatedNote = validation(NoteFromDB, {
+        ...row,
+        tags: tagMap.get(row.id),
+        links: linkMap.get(row.id),
       });
-    });
+      const plainText = extractText(validatedNote.content);
+      const { content, ...lightweightNote } = validatedNote;
+      results.push({ ...lightweightNote, plainText });
+    }
+    return results;
   }
 
-  public getUntaggedNotes(): Note[] {
-    const rows = this.views.getUntaggedNotes();
+  public getNotesWithMostLinks(): NoteListItem[] {
     const tagMap = this.getTagMap() ?? new Map();
     const linkMap = this.getLinkMap() ?? new Map();
-    return rows.map((note) => {
-      return validation(NoteFromDB, {
-        ...note,
-        tags: tagMap.get(note.id) ?? [],
-        links: linkMap.get(note.id) ?? [],
+    const results: NoteListItem[] = [];
+    for (const row of this.views.getMostLinkedNotes()) {
+      const validatedNote = validation(NoteFromDB, {
+        ...row,
+        tags: tagMap.get(row.id),
+        links: linkMap.get(row.id),
       });
-    });
+      const plainText = extractText(validatedNote.content);
+      const { content, ...lightweightNote } = validatedNote;
+      results.push({ ...lightweightNote, plainText });
+    }
+    return results;
   }
 
-  public getIncomingLinks(id: string): Note[] {
+  public getIncomingLinks(id: string): NoteListItem[] {
     const tagMap = this.getTagMap() ?? new Map();
     const linkMap = this.getLinkMap() ?? new Map();
-    const rows = this.views.getIncomingLinks(id);
-    return rows.map((note) => {
-      return validation(NoteFromDB, {
-        ...note,
-        tags: tagMap.get(note.id) ?? [],
-        links: linkMap.get(note.id) ?? [],
+    const results: NoteListItem[] = [];
+    for (const row of this.views.getIncomingLinks(id)) {
+      const validatedNote = validation(NoteFromDB, {
+        ...row,
+        tags: tagMap.get(row.id),
+        links: linkMap.get(row.id),
       });
-    });
+      const plainText = extractText(validatedNote.content);
+      const { content, ...lightweightNote } = validatedNote;
+      results.push({ ...lightweightNote, plainText });
+    }
+    return results;
   }
 
   public getOldNoteTitle(id: string): Note["title"] {
