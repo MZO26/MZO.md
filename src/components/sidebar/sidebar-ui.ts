@@ -23,17 +23,9 @@ function setSidebarState(element: HTMLDivElement, collapsed: boolean) {
 
 function handleSidebarEmptyState() {
   const sidebar = getAppItem("sidebar");
-  const { notes } = noteStore.getState();
-  const { searchQuery } = stateStore.getState();
+  const { visibleIds } = noteStore.getState();
   let shouldShowEmptyState = false;
-  if (notes.length === 0) {
-    shouldShowEmptyState = true;
-  } else if (searchQuery.trim() !== "") {
-    const visibleItems = sidebar.querySelectorAll(".note-item:not(.hidden)");
-    shouldShowEmptyState = visibleItems.length === 0;
-  } else {
-    shouldShowEmptyState = false;
-  }
+  if (visibleIds.length === 0) shouldShowEmptyState = true;
   const existingEmptyState = findElement<HTMLDivElement>(
     ".sidebar-empty-state",
     sidebar,

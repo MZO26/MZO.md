@@ -57,13 +57,15 @@ async function handleDuplicateNote(note: Note) {
     );
     return;
   }
-  const updatedListItem = toNoteListItem(result.data);
+  const noteListItem = toNoteListItem(result.data);
   noteStore.setState((state) => ({
     activeNote: result.data,
-    notes: [updatedListItem, ...state.notes],
+    notes: [noteListItem, ...state.notes],
+    visibleIds: [noteListItem.id, ...state.visibleIds],
+    noteIndex: new Map(state.noteIndex).set(noteListItem.id, noteListItem),
     sidebarChange: { type: "prepend", noteId: result.data.id },
   }));
-  searchEngine.upsertNote(updatedListItem);
+  searchEngine.upsertNote(noteListItem);
   stateStore.setState({ activeId: result.data.id });
   editor.commands.setContent(result.data.content, {
     emitUpdate: false,

@@ -4,10 +4,9 @@ import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 
 function createNoteUpdater() {
   let element: HTMLDivElement | null = null;
-  return function updateNoteCount(notes: NoteListItem[]) {
+  return function updateNoteCount(count: number) {
     element ??= findElement<HTMLDivElement>(".note-count");
     if (!element) return;
-    const count = notes.length;
     element.textContent = `${count} ${count === 1 ? "note" : "notes"}`;
   };
 }

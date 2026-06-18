@@ -110,6 +110,7 @@ function initializeStatRegistry() {
     wordCountEl: requireElement<HTMLSpanElement>("#word-count"),
     charCountEl: requireElement<HTMLSpanElement>("#char-count"),
     readingTime: requireElement<HTMLSpanElement>("#reading-time"),
+    metadataContainer: requireElement<HTMLDivElement>(".metadata-container"),
   });
 }
 

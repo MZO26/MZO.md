@@ -5,7 +5,7 @@ import { noteStore, stateStore } from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { getAppItem, registerAppEvents } from "@/utils/registry";
+import { getAppItem, getStatItem, registerAppEvents } from "@/utils/registry";
 import type { Theme } from "@shared/schemas/store-schema";
 import type { ActionMap } from "@shared/types";
 import { handleSearchInput } from "../sidebar/sidebar-features";
@@ -20,9 +20,7 @@ function initTopToolbar() {
     "click",
     createAsyncHandler(async () => setWindowTop(appPinBtn)),
   );
-  const metadataContainer = requireElement<HTMLDivElement>(
-    ".metadata-container",
-  );
+  const metadataContainer = getStatItem("metadataContainer");
   metadataContainer.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     const clickedLink = target?.closest(".link") as HTMLElement | null;
@@ -104,10 +102,10 @@ function toggleToolbar() {
 }
 
 function openMetadataContainer() {
-  const container = requireElement<HTMLDivElement>(".metadata-container");
-  const collapsed = container.classList.contains("collapsed");
-  if (collapsed) container.classList.remove("collapsed");
-  return container;
+  const metadataContainer = getStatItem("metadataContainer");
+  const collapsed = metadataContainer.classList.contains("collapsed");
+  if (collapsed) metadataContainer.classList.remove("collapsed");
+  return metadataContainer;
 }
 
 function createTagElement(
@@ -273,7 +271,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
       renderTags(container);
     },
     icon: "tag",
-    shortcut: "MOD+Shift+T",
+    shortcut: "#tag",
   },
   wikilinks: {
     run: () => {
@@ -281,7 +279,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
       renderLinks(container);
     },
     icon: "git-compare-arrows",
-    shortcut: "MOD+Shift+W",
+    shortcut: "[[Note]]",
   },
   divider1: { type: "divider" },
   bold: {

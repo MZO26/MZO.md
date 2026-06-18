@@ -140,6 +140,7 @@ interface StatRegistry {
   wordCountEl: HTMLSpanElement;
   charCountEl: HTMLSpanElement;
   readingTime: HTMLSpanElement;
+  metadataContainer: HTMLDivElement;
 }
 
 interface TemplateRegistry {
@@ -167,8 +168,7 @@ type SidebarChange =
   | { type: "reload" }
   | { type: "update"; noteId: string }
   | { type: "prepend"; noteId: string }
-  | { type: "remove"; noteId: string }
-  | null;
+  | { type: "remove"; noteId: string };
 
 type ResizeOptions = {
   minWidth?: number;

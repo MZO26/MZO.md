@@ -6,45 +6,40 @@ import { findElement, requireElement } from "@/utils/dom";
 import { estimateReadingTime } from "@/utils/note";
 import { getAppItem, getStatItems } from "@/utils/registry";
 import { DEBOUNCE_MS, MAX_CHARS, PADDING } from "@shared/constants";
-import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { ResizeOptions, SnippetCacheValue, ViewId } from "@shared/types";
 
 // sidebar
 
 // search handled by fuse
 
-function revertSearchItems(noteElements: HTMLDivElement[]) {
-  for (const element of noteElements) {
-    element.classList.remove("hidden");
-    const contentEl = findElement<HTMLDivElement>(".note-content", element);
-    const noteId = element.getAttribute("data-id");
-    const note = noteStore.get("notes").find((n) => n.id === noteId);
-    if (contentEl && note) contentEl.textContent = note.snippet;
-  }
-}
-
 function showSearchItems(
   noteElements: HTMLDivElement[],
   searchCache: Map<string, SnippetCacheValue>,
-  noteMap: Map<string, NoteListItem>,
 ) {
+  const noteIndex = noteStore.get("noteIndex");
   for (const element of noteElements) {
     const noteId = element.getAttribute("data-id");
     if (!noteId) continue;
     const matchData = searchCache.get(noteId);
-    const isMatch = matchData !== undefined;
-    element.classList.toggle("hidden", !isMatch);
     const contentEl = findElement<HTMLDivElement>(".note-content", element);
     if (!contentEl) continue;
-    if (isMatch) {
+    if (matchData) {
       updateSnippetHighlight(contentEl, matchData.snippet, matchData.indices);
     } else {
-      const note = noteMap.get(noteId);
+      const note = noteIndex.get(noteId);
       if (note && contentEl.textContent !== note.snippet) {
         contentEl.textContent = note.snippet;
       }
     }
   }
+}
+
+function applySearch(searchCache: Map<string, SnippetCacheValue>) {
+  const matchedIds = [...searchCache.keys()];
+  noteStore.setState({
+    visibleIds: matchedIds,
+    sidebarChange: { type: "reload" },
+  });
 }
 
 function search(searchInput: string) {
@@ -100,18 +95,19 @@ function search(searchInput: string) {
 function handleSearchInput(searchInput: string) {
   const sidebar = getAppItem("sidebar");
   stateStore.setState({ searchQuery: searchInput });
-  const noteElements = Array.from(
-    sidebar.getElementsByClassName("note-item"),
-  ) as HTMLDivElement[];
-  // revert ui to normal if search input is empty and go back to normal content snippets instead of highlight snippets as well as unhide any note item
   if (searchInput === "") {
-    revertSearchItems(noteElements);
+    noteStore.setState((state) => ({
+      visibleIds: state.notes.map((n) => n.id),
+      sidebarChange: { type: "reload" },
+    }));
     return;
   }
   const searchCache = search(searchInput);
-  // for fast lookups to avoid calling note store everytime
-  const noteMap = new Map(noteStore.get("notes").map((n) => [n.id, n]));
-  showSearchItems(noteElements, searchCache, noteMap);
+  applySearch(searchCache);
+  const noteElements = Array.from(
+    sidebar.getElementsByClassName("note-item"),
+  ) as HTMLDivElement[];
+  showSearchItems(noteElements, searchCache);
 }
 
 // views handled by db
@@ -125,7 +121,7 @@ async function handleViews(view: ViewId) {
     return;
   }
   noteStore.setState({
-    notes: result.data as NoteListItem[],
+    visibleIds: result.data.map((n) => n.id),
     sidebarChange: { type: "reload" },
   });
 }

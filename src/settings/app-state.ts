@@ -1,13 +1,10 @@
 import { getAll, getAllSettings } from "@/api/api";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-note-items";
-import {
-  handleSidebarEmptyState,
-  updateNoteCount,
-} from "@/components/sidebar/sidebar-ui";
+import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-ui";
 import { NoteSearch } from "@/notes/search";
 import { findElement, setActiveItem } from "@/utils/dom";
-import { compareNotes } from "@/utils/note";
+import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
@@ -38,11 +35,10 @@ const STATE_STORE: AppState = {
   searchQuery: "",
 };
 
-let previousId: string | null = null;
-let previousSearchQuery: string = "";
-let previousNotesRef: NoteListItem[] = [];
-let previousNotesLength: number | null = null;
-let previousSidebarChange: SidebarChange = null;
+let prevId: string | null = null;
+let prevSearchQuery: string = "";
+let prevVisibleIds: string[] | null = null;
+let prevSidebarChange: SidebarChange | null = null;
 
 const stateStore = createStore<AppState>(STATE_STORE);
 
@@ -50,12 +46,16 @@ const settingsStore = createStore<AppSettings>(DEFAULT_STORE);
 
 interface NoteStore {
   notes: NoteListItem[];
+  visibleIds: string[];
+  noteIndex: Map<string, NoteListItem>;
   activeNote: Note | null;
-  sidebarChange: SidebarChange;
+  sidebarChange: SidebarChange | null;
 }
 
 const NOTE_STORE: NoteStore = {
   notes: [],
+  visibleIds: [],
+  noteIndex: new Map<string, NoteListItem>(),
   activeNote: null,
   sidebarChange: null,
 };
@@ -108,15 +108,25 @@ async function syncNoteStore() {
     const sortedNotes = result.data.sort(compareNotes);
     noteStore.setState({
       notes: sortedNotes,
+      visibleIds: sortedNotes.map((n) => n.id),
+      noteIndex: new Map(sortedNotes.map((n) => [n.id, n] as const)),
       sidebarChange: { type: "reload" },
     });
     searchEngine.bulkLoad(sortedNotes);
   }
 }
 
+function getVisibleNotes(state: NoteStore) {
+  const notes = state.visibleIds
+    .map((id) => state.noteIndex.get(id))
+    .filter((note): note is NoteListItem => !!note);
+  console.log(notes);
+  return notes;
+}
+
 stateStore.subscribe((state) => {
-  if (state.activeId !== previousId) {
-    previousId = state.activeId;
+  if (state.activeId !== prevId) {
+    prevId = state.activeId;
     window.noteAPI.setActiveNote(state.activeId);
     const sidebar = getAppItem("sidebar");
     const noteElement = findElement<HTMLDivElement>(
@@ -126,8 +136,8 @@ stateStore.subscribe((state) => {
     if (noteElement) setActiveItem(noteElement, sidebar);
     handleEditorEmptyState();
   }
-  if (state.searchQuery !== previousSearchQuery) {
-    previousSearchQuery = state.searchQuery;
+  if (state.searchQuery !== prevSearchQuery) {
+    prevSearchQuery = state.searchQuery;
     requestAnimationFrame(() => {
       handleSidebarEmptyState();
     });
@@ -137,19 +147,15 @@ stateStore.subscribe((state) => {
 const searchEngine = new NoteSearch(noteStore.getState().notes);
 
 noteStore.subscribe((state) => {
-  if (state.notes !== previousNotesRef) {
-    previousNotesRef = state.notes;
-    handleSidebarEmptyState();
+  if (state.visibleIds !== prevVisibleIds) {
+    prevVisibleIds = state.visibleIds;
+    updateNoteCount(state.visibleIds.length);
   }
-  if (state.notes.length !== previousNotesLength) {
-    previousNotesLength = state.notes.length;
-    updateNoteCount(state.notes);
-  }
-  if (state.sidebarChange !== previousSidebarChange) {
+  if (state.sidebarChange !== prevSidebarChange) {
     const change = state.sidebarChange;
-    previousSidebarChange = change;
+    prevSidebarChange = change;
     if (change) {
-      handleSidebarChange(change, state.notes);
+      handleSidebarChange(change, getVisibleNotes(state));
       noteStore.setState({ sidebarChange: null });
     }
   }

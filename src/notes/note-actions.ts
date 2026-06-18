@@ -60,6 +60,8 @@ async function handleCreateNote() {
   noteStore.setState((state) => ({
     activeNote: result.data,
     notes: [noteListItem, ...state.notes],
+    visibleIds: [noteListItem.id, ...state.visibleIds],
+    noteIndex: new Map(state.noteIndex).set(noteListItem.id, noteListItem),
     sidebarChange: { type: "prepend", noteId: result.data.id },
   }));
   searchEngine.upsertNote(noteListItem);
@@ -105,6 +107,11 @@ async function handleImportNote() {
   }
   noteStore.setState((state) => ({
     notes: [...notes, ...state.notes],
+    visibleIds: [...notes.map((n) => n.id), ...state.visibleIds],
+    noteIndex: new Map([
+      ...state.noteIndex,
+      ...notes.map((n) => [n.id, n] as const),
+    ]),
     sidebarChange: { type: "reload" },
   }));
   searchEngine.addMany(notes);
@@ -126,11 +133,17 @@ async function handleDeleteNote(id: string) {
     console.error("[handleDeleteNote]: Failed to delete:", result.error);
     return;
   }
-  noteStore.setState((state) => ({
-    activeNote: state.activeNote?.id === id ? null : state.activeNote,
-    notes: state.notes.filter((note) => note.id !== id),
-    sidebarChange: { type: "remove", noteId: id },
-  }));
+  noteStore.setState((state) => {
+    const noteIndex = new Map(state.noteIndex);
+    noteIndex.delete(id);
+    return {
+      activeNote: state.activeNote?.id === id ? null : state.activeNote,
+      notes: state.notes.filter((note) => note.id !== id),
+      visibleIds: state.visibleIds.filter((noteId) => noteId !== id),
+      noteIndex,
+      sidebarChange: { type: "remove", noteId: id },
+    };
+  });
   searchEngine.removeNote(id);
   if (isActiveDeletedId) {
     stateStore.setState({ activeId: null });
@@ -165,13 +178,18 @@ async function handleSaveNote(
   }
   const note = result.data;
   const updatedListItem = toNoteListItem(note);
-  noteStore.setState((state) => ({
-    activeNote: state.activeNote?.id === note.id ? note : state.activeNote,
-    notes: state.notes.map((n) =>
-      n.id === updatedListItem.id ? updatedListItem : n,
-    ),
-    sidebarChange: { type: "update", noteId: note.id },
-  }));
+  noteStore.setState((state) => {
+    const noteIndex = new Map(state.noteIndex);
+    noteIndex.set(updatedListItem.id, updatedListItem);
+    return {
+      activeNote: state.activeNote?.id === note.id ? note : state.activeNote,
+      notes: state.notes.map((n) =>
+        n.id === updatedListItem.id ? updatedListItem : n,
+      ),
+      noteIndex,
+      sidebarChange: { type: "update", noteId: note.id },
+    };
+  });
   searchEngine.upsertNote(updatedListItem);
   updateStats();
 }

@@ -1,11 +1,7 @@
 import { stateStore } from "@/settings/app-state";
 import { findElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import {
-  getAppItem,
-  getTemplateItem,
-  initializeStatRegistry,
-} from "@/utils/registry";
+import { getAppItem, getTemplateItem } from "@/utils/registry";
 
 function handleEditorEmptyState() {
   const editorContainer = getAppItem("editorContainer");
@@ -39,7 +35,5 @@ function createEditorEmptyState() {
   renderIcons(emptyState);
   return emptyState;
 }
-
-initializeStatRegistry();
 
 export { createEditorEmptyState, handleEditorEmptyState };

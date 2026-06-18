@@ -7,12 +7,6 @@ function initDeleteDialog() {
   return { deleteDialog };
 }
 
-function initConflictDialog() {
-  const conflictDialog = requireElement<HTMLDialogElement>("#conflict-dialog");
-  initTippyDelegate(conflictDialog, conflictDialog);
-  return { conflictDialog };
-}
-
 function initSettingsDialog() {
   const settingsDialog = requireElement<HTMLDialogElement>(".settings-modal");
   const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
@@ -20,4 +14,4 @@ function initSettingsDialog() {
   return { settingsDialog, settingsContainer };
 }
 
-export { initConflictDialog, initDeleteDialog, initSettingsDialog };
+export { initDeleteDialog, initSettingsDialog };
