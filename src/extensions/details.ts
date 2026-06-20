@@ -11,9 +11,8 @@ declare module "@tiptap/core" {
 
 export const DetailsBlock = Node.create({
   name: "detailsBlock",
-
   group: "block",
-  content: "block+",
+  content: "block*",
   defining: true,
   isolating: true,
 
@@ -68,12 +67,10 @@ export const DetailsBlock = Node.create({
       const summary = document.createElement("summary");
       summary.className = "details-summary";
       summary.contentEditable = "false";
-      const input = document.createElement("input");
-      input.type = "text";
-      input.className = "details-summary-input";
-      input.value = currentNode.attrs["summary"] || "Details";
-      input.placeholder = "Summary";
-      input.contentEditable = "false";
+      summary.setAttribute(
+        "aria-label",
+        String(currentNode.attrs["summary"] || "Details"),
+      );
       const content = document.createElement("div");
       content.className = "details-content";
       const updateAttrs = (attrs: Record<string, unknown>) => {
@@ -89,70 +86,76 @@ export const DetailsBlock = Node.create({
       };
 
       summary.addEventListener("click", (event) => {
-        if (event.target === input) return;
         event.preventDefault();
         updateAttrs({ open: !currentNode.attrs["open"] });
       });
 
       summary.addEventListener("keydown", (event) => {
-        if (event.target === input) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           updateAttrs({ open: !currentNode.attrs["open"] });
         }
       });
-
-      input.addEventListener("blur", () => {
-        if (input.value !== currentNode.attrs["summary"]) {
-          updateAttrs({ summary: input.value });
-        }
-      });
-
-      input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          input.blur();
-          const pos = getPos();
-          if (typeof pos === "number") {
-            editor.commands.focus(pos + 2);
-          }
-        }
-      });
-
-      summary.append(input);
       dom.append(summary, content);
 
       return {
         dom, // details node
         contentDOM: content, // nested content inside the details node
-
         update(updatedNode) {
           if (updatedNode.type !== currentNode.type) return false;
-
           currentNode = updatedNode;
           dom.open = !!currentNode.attrs["open"];
-
-          const nextSummary = currentNode.attrs["summary"] || "Details";
-          if (input.value !== nextSummary) input.value = nextSummary;
+          summary.setAttribute(
+            "aria-label",
+            String(currentNode.attrs["summary"] || "Details"),
+          );
           return true;
-        },
-
-        stopEvent(event) {
-          return event.target === input;
-        },
-
-        ignoreMutation(mutation) {
-          return mutation.target === input;
         },
       };
     };
   },
 
+  markdownTokenName: "detailsBlock",
+
+  markdownTokenizer: {
+    name: "detailsBlock",
+    level: "block" as const,
+    start(src) {
+      return src.indexOf("<details");
+    },
+    tokenize(src, _tokens, lexer) {
+      const rule =
+        /^<details(?: open)?>\s*<summary>(.*?)<\/summary>\s*([\s\S]*?)\s*<\/details>/;
+      // don't include open attribute so toggles don't trigger file saves
+      const match = rule.exec(src);
+      if (match) {
+        const raw = match[0];
+        const summary = match[1]?.trim();
+        const innerContent = match[2];
+        return {
+          type: "detailsBlock",
+          raw,
+          summary: summary,
+          tokens: lexer.blockTokens(innerContent ?? ""),
+        };
+      }
+      return undefined;
+    },
+  },
+
+  parseMarkdown: (token, helpers) => {
+    return {
+      type: "detailsBlock",
+      attrs: {
+        summary: token["summary"] || "Details",
+      },
+      content: helpers.parseBlockChildren?.(token.tokens || []) || [],
+    };
+  },
+
   renderMarkdown(node, helpers) {
-    const openAttr = node.attrs?.["open"] ? " open" : "";
     const summary = String(node.attrs?.["summary"] || "Details");
     const content = helpers.renderChildren(node);
-
-    return `<details${openAttr}>\n<summary>${summary}</summary>\n\n${content}\n\n</details>`;
+    return `<details>\n<summary>${summary}</summary>\n\n${content}\n\n</details>\n\n`;
   },
 });

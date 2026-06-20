@@ -20,8 +20,8 @@ import { renderIcons } from "@/utils/icons";
 import {
   getAppItem,
   initializeCoreRegistry,
-  initializeStatRegistry,
   initializeTemplateRegistry,
+  initializeUIRegistry,
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { initTippyDelegate } from "@/utils/ui";
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const settings = await loadSettings();
   initializeCoreRegistry(settings);
   initializeTemplateRegistry();
-  initializeStatRegistry();
+  initializeUIRegistry();
   setupEditorListeners(getAppItem("editorWrapper"), getAppItem("editor"));
   initGlobalShortcuts();
   await initAppSettings(settings);

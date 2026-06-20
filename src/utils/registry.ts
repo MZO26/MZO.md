@@ -4,14 +4,14 @@ import type { AppSettings } from "@shared/schemas/store-schema";
 import type {
   AppRegistry,
   CoreRegistry,
-  StatRegistry,
   TemplateRegistry,
+  UIRegistry,
 } from "@shared/types";
 
 // set settings to empty object to avoid undefined errors, will be populated in app.ts on startup
 const registry = {
   core: {},
-  stats: {},
+  ui: {},
   template: {},
 } as AppRegistry;
 
@@ -28,9 +28,9 @@ const getAppItem = <K extends keyof CoreRegistry>(key: K): CoreRegistry[K] => {
   return item;
 };
 
-const setStatItems = (obj: Partial<StatRegistry>) => {
-  if (!registry.stats) registry.stats = {};
-  Object.assign(registry.stats, obj);
+const setUIItems = (obj: Partial<UIRegistry>) => {
+  if (!registry.ui) registry.ui = {};
+  Object.assign(registry.ui, obj);
 };
 
 const setTemplateItems = (obj: Partial<TemplateRegistry>) => {
@@ -62,20 +62,34 @@ const getTemplateItem = <K extends keyof TemplateRegistry>(
   return item;
 };
 
-const getStatItem = <K extends keyof StatRegistry>(key: K): StatRegistry[K] => {
-  const item = registry.stats[key];
+const getUIItem = <K extends keyof UIRegistry>(key: K): UIRegistry[K] => {
+  const item = registry.ui[key];
   if (!item) {
     throw new Error(`Element "${key}" is missing from the registry.`);
   }
   return item;
 };
 
-const getStatItems = <K extends keyof StatRegistry>(
+const getAppItems = <K extends keyof CoreRegistry>(
   keys: K[],
-): Pick<StatRegistry, K> => {
-  const result = {} as Pick<StatRegistry, K>;
+): Pick<CoreRegistry, K> => {
+  const result = {} as Pick<CoreRegistry, K>;
   for (const key of keys) {
-    const item = registry.stats[key];
+    const item = registry.core[key];
+    if (!item) {
+      throw new Error(`Element "${key}" is missing from the registry.`);
+    }
+    result[key] = item;
+  }
+  return result;
+};
+
+const getUIItems = <K extends keyof UIRegistry>(
+  keys: K[],
+): Pick<UIRegistry, K> => {
+  const result = {} as Pick<UIRegistry, K>;
+  for (const key of keys) {
+    const item = registry.ui[key];
     if (!item) {
       throw new Error(`Element "${key}" is missing from the registry.`);
     }
@@ -99,18 +113,22 @@ function initializeCoreRegistry(settings: AppSettings) {
   setAppItems({
     appContainer: requireElement<HTMLDivElement>(".app-container"),
     sidebar: requireElement<HTMLDivElement>(".notes-container"),
+    sidebarContainer: requireElement<HTMLDivElement>(".sidebar-container"),
     editor: initEditor(settings),
     editorWrapper: requireElement<HTMLDivElement>("#editor"),
     editorContainer: requireElement<HTMLDivElement>(".editor-container"),
   });
 }
 
-function initializeStatRegistry() {
-  setStatItems({
+function initializeUIRegistry() {
+  setUIItems({
     wordCountEl: requireElement<HTMLSpanElement>("#word-count"),
     charCountEl: requireElement<HTMLSpanElement>("#char-count"),
     readingTime: requireElement<HTMLSpanElement>("#reading-time"),
     metadataContainer: requireElement<HTMLDivElement>(".metadata-container"),
+    searchInput: requireElement<HTMLInputElement>(".search-input"),
+    deleteBtn: requireElement<HTMLButtonElement>(".delete-btn"),
+    selectionBtn: requireElement<HTMLButtonElement>(".selection-btn"),
   });
 }
 
@@ -131,15 +149,16 @@ function initializeTemplateRegistry() {
 
 export {
   getAppItem,
-  getStatItem,
-  getStatItems,
+  getAppItems,
   getTemplateItem,
   getTemplateItems,
+  getUIItem,
+  getUIItems,
   initializeCoreRegistry,
-  initializeStatRegistry,
   initializeTemplateRegistry,
+  initializeUIRegistry,
   registerAppEvents,
   setAppItems,
-  setStatItems,
+  setUIItems,
   type AppRegistry,
 };

@@ -5,6 +5,7 @@ import type { Editor } from "@tiptap/core";
 function getTableOfContents(editor: Editor) {
   const headings: Array<{ id: string; level: number; text: string }> = [];
   editor.state.doc.descendants((node) => {
+    if (node.type.name === "detailsBlock") return false;
     if (node.type.name === "heading") {
       headings.push({
         id: node.attrs["id"],
@@ -38,10 +39,10 @@ function initTableOfContents() {
   });
   return function updateToc(items: TocItem[]) {
     if (items.length === 0) {
-      const p = document.createElement("p");
-      p.className = "empty-toc";
-      p.textContent = "No headings here.";
-      container.replaceChildren(p);
+      const span = document.createElement("span");
+      span.textContent = "No headings here.";
+      span.classList.add("info-span");
+      container.replaceChildren(span);
       return;
     }
     const ul = document.createElement("ul");

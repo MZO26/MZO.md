@@ -1,6 +1,7 @@
 import {
   createManyNotes,
   createNote,
+  deleteManyNotes,
   deleteNote,
   getNoteById,
   importNote,
@@ -72,6 +73,8 @@ async function handleCreateNote() {
   requestAnimationFrame(() => {
     editor.commands.focus();
   });
+  const headings = getTableOfContents(editor);
+  updateToc(headings);
   updateStats();
 }
 
@@ -119,6 +122,42 @@ async function handleImportNote() {
 //----------------------------------------------------------
 
 // delete
+
+async function handleDeleteManyNotes(ids: string[]) {
+  const editor = getAppItem("editor");
+  const { activeId } = stateStore.getState();
+  const deletedIds = new Set(ids);
+  const isActiveDeleted = activeId !== null && deletedIds.has(activeId);
+  if (isActiveDeleted) {
+    debouncedSaveNote.cancel();
+  }
+  const result = await deleteManyNotes(ids);
+  if (!result.success) {
+    console.error("[handleDeleteManyNotes]: Failed to delete:", result.error);
+    return;
+  }
+  noteStore.setState((state) => {
+    const noteIndex = new Map(state.noteIndex);
+    for (const id of deletedIds) {
+      noteIndex.delete(id);
+    }
+    return {
+      activeNote:
+        state.activeNote && deletedIds.has(state.activeNote.id)
+          ? null
+          : state.activeNote,
+      notes: state.notes.filter((note) => !deletedIds.has(note.id)),
+      visibleIds: state.visibleIds.filter((noteId) => !deletedIds.has(noteId)),
+      noteIndex,
+      sidebarChange: { type: "reload" },
+    };
+  });
+  searchEngine.removeMany([...deletedIds]);
+  if (isActiveDeleted) {
+    stateStore.setState({ activeId: null });
+    editor.commands.clearContent();
+  }
+}
 
 async function handleDeleteNote(id: string) {
   const editor = getAppItem("editor");
@@ -229,6 +268,7 @@ async function handleSelectNote(id: string) {
 export {
   debouncedSaveNote,
   handleCreateNote,
+  handleDeleteManyNotes,
   handleDeleteNote,
   handleImportNote,
   handleSaveNote,

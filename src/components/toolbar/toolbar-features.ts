@@ -5,7 +5,7 @@ import { noteStore, stateStore } from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { getAppItem, getStatItem, registerAppEvents } from "@/utils/registry";
+import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
 import type { Theme } from "@shared/schemas/store-schema";
 import type { ActionMap } from "@shared/types";
 import { handleSearchInput } from "../sidebar/sidebar-features";
@@ -20,7 +20,7 @@ function initTopToolbar() {
     "click",
     createAsyncHandler(async () => setWindowTop(appPinBtn)),
   );
-  const metadataContainer = getStatItem("metadataContainer");
+  const metadataContainer = getUIItem("metadataContainer");
   metadataContainer.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     const clickedLink = target?.closest(".link") as HTMLElement | null;
@@ -102,7 +102,7 @@ function toggleToolbar() {
 }
 
 function openMetadataContainer() {
-  const metadataContainer = getStatItem("metadataContainer");
+  const metadataContainer = getUIItem("metadataContainer");
   const collapsed = metadataContainer.classList.contains("collapsed");
   if (collapsed) metadataContainer.classList.remove("collapsed");
   return metadataContainer;
@@ -125,16 +125,9 @@ function createTagElement(
 }
 
 function renderTags(container: HTMLDivElement) {
-  const tags = noteStore.get("activeNote")?.tags;
+  const activeTags = noteStore.get("activeNote")?.tags;
   const id = stateStore.get("activeId");
   container.replaceChildren();
-  if (!tags || tags.length === 0) {
-    const span = document.createElement("span");
-    span.textContent = "No tags here.";
-    container.appendChild(span);
-    return;
-  }
-  for (const tag of tags) createTagElement(container, tag);
   const tagMap = new Map<string, number>();
   const tagArr = noteStore
     .get("notes")
@@ -143,11 +136,25 @@ function renderTags(container: HTMLDivElement) {
   for (const entry of tagArr) {
     tagMap.set(entry, (tagMap.get(entry) || 0) + 1);
   }
-  const sortedTags = [...tagMap.entries()].sort((a, b) => b[1] - a[1]);
-  const divider = document.createElement("div");
-  divider.classList.add("divider");
-  container.appendChild(divider);
-  for (const [item, count] of sortedTags.slice(0, 10)) {
+  const sortedTags = [...tagMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  if (activeTags && activeTags.length > 0) {
+    for (const tag of activeTags) createTagElement(container, tag);
+    const divider = document.createElement("div");
+    divider.classList.add("divider");
+    container.appendChild(divider);
+  }
+  if (activeTags && activeTags.length === 0 && sortedTags.length === 0) {
+    const span = document.createElement("span");
+    span.textContent =
+      "No tags here. Create your first tag by writing #tag + Space";
+    span.classList.add("info-span");
+    container.appendChild(span);
+    return;
+  }
+  for (const [item, count] of sortedTags) {
     createTagElement(container, item, count);
   }
 }
@@ -275,7 +282,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
       renderTags(container);
     },
     icon: "tag",
-    shortcut: "#tag",
+    shortcut: "#tag + Space",
   },
   wikilinks: {
     run: () => {
@@ -322,30 +329,24 @@ const TOOLBAR_ACTIONS: ActionMap = {
     icon: "sticky-note",
     shortcut: "MOD+Shift+A | //text//",
   },
-  conceal: {
-    run: (editor) => editor?.chain().focus().toggleConceal().run(),
-    isActive: (editor) => editor?.isActive("conceal"),
-    icon: "eye-off",
-    shortcut: "MOD+Shift+C | ||text||",
-  },
   divider2: { type: "divider" },
   heading1: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
     isActive: (editor) => editor?.isActive("heading", { level: 1 }),
     icon: "heading-1",
-    shortcut: "MOD+Alt+1 | # ",
+    shortcut: "MOD+Alt+1 | # + Space",
   },
   heading2: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
     isActive: (editor) => editor?.isActive("heading", { level: 2 }),
     icon: "heading-2",
-    shortcut: "MOD+Alt+2 | ## ",
+    shortcut: "MOD+Alt+2 | ## + Space",
   },
   heading3: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
     isActive: (editor) => editor?.isActive("heading", { level: 3 }),
     icon: "heading-3",
-    shortcut: "MOD+Alt+3 | ### ",
+    shortcut: "MOD+Alt+3 | ### + Space",
   },
   divider3: { type: "divider" },
   details: {
@@ -358,25 +359,25 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().toggleBulletList().run(),
     isActive: (editor) => editor?.isActive("bulletList"),
     icon: "list",
-    shortcut: "MOD+Shift+8 | - ",
+    shortcut: "MOD+Shift+8 | - + Space",
   },
   orderedList: {
     run: (editor) => editor?.chain().focus().toggleOrderedList().run(),
     isActive: (editor) => editor?.isActive("orderedList"),
     icon: "list-ordered",
-    shortcut: "MOD+Shift+7 | 1. ",
+    shortcut: "MOD+Shift+7 | 1. + Space",
   },
   taskList: {
     run: (editor) => editor?.chain().focus().toggleTaskList().run(),
     isActive: (editor) => editor?.isActive("taskList"),
     icon: "list-todo",
-    shortcut: "MOD+Shift+9 | [] ",
+    shortcut: "MOD+Shift+9 | [] + Space",
   },
   blockQuote: {
     run: (editor) => editor?.chain().focus().toggleBlockquote().run(),
     isActive: (editor) => editor?.isActive("blockquote"),
     icon: "text-quote",
-    shortcut: "MOD+Shift+B | > ",
+    shortcut: "MOD+Shift+B | > + Space",
   },
   divider4: { type: "divider" },
   inlineCode: {
@@ -389,7 +390,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().toggleCodeBlock().run(),
     isActive: (editor) => editor?.isActive("codeBlock"),
     icon: "code-xml",
-    shortcut: "MOD+Alt+C | ```",
+    shortcut: "MOD+Alt+C | ``` + Space",
   },
   horizontalRule: {
     run: (editor) => editor?.chain().focus().setHorizontalRule().run(),

@@ -183,20 +183,6 @@
   cursor: pointer;
 }
 
-/* .ProseMirror .annotation {
-  color: inherit;
-  text-decoration-line: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.12em;
-  text-decoration-color: rgba(99, 99, 112, 0.24);
-  transition: text-decoration-color 0.2s ease-in-out;
-}
-
-.ProseMirror .annotation:hover {
-  text-decoration-color: rgba(99, 99, 112, 0.72);
-  background-color: rgba(99, 99, 112, 0.04);
-} */
-
 .ProseMirror .annotation {
   color: var(--text-muted);
   font-style: italic;
@@ -217,24 +203,6 @@
 .ProseMirror .annotation.has-focus,
 .ProseMirror .annotation:focus-visible {
   outline: none;
-}
-
-.ProseMirror .conceal {
-  color: rgba(24, 24, 27, 0.18);
-  background: linear-gradient(to bottom, var(--bg-button), var(--accent-hover));
-  border-radius: 4px;
-  filter: blur(2.4px);
-  cursor: pointer;
-  transition:
-    filter 0.2s ease,
-    color 0.2s ease,
-    background-color 0.2s ease;
-}
-
-.ProseMirror .conceal:hover,
-.ProseMirror .conceal:focus {
-  color: var(--text-main);
-  filter: blur(0);
 }
 
 .footnote-anchor {
@@ -763,15 +731,15 @@
 .ProseMirror .details-block,
 .wikilink-preview-content details {
   margin: 1rem 0;
+  border-radius: 5px;
 }
 
 .ProseMirror .details-root,
 .wikilink-preview-content details {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin: 1rem 0;
-  box-shadow: var(--shadow);
-  overflow: hidden;
+  margin: 0.75rem 0;
+  border: 0;
+  border-radius: 5px;
+  box-shadow: none;
   background: transparent;
 }
 
@@ -782,7 +750,7 @@
   align-items: center;
   gap: 0.4rem;
   margin: 0;
-  padding: 0.45rem 0.65rem;
+  padding: 0.45rem 0;
   list-style: none;
   cursor: pointer;
   user-select: none;
@@ -807,11 +775,11 @@
   border-right: 1.5px solid var(--text-muted);
   border-bottom: 1.5px solid var(--text-muted);
   transform: rotate(-45deg);
+  opacity: 0.9;
+  margin: 0.1rem 0.8rem 0.2rem 0.5rem;
   transition:
     transform 0.2s ease,
     opacity 0.2s ease;
-  opacity: 0.9;
-  margin: 0 0.8rem 0.18rem 0.3rem;
 }
 
 .ProseMirror .details-root[open] > .details-summary::before,
@@ -821,45 +789,24 @@
 
 .ProseMirror .details-summary:hover,
 .wikilink-preview-content details:hover {
-  background: color-mix(in srgb, var(--text-main) 4%, transparent);
+  background-color: color-mix(in srgb, var(--text-main) 4%, transparent);
+  border-radius: 5px;
 }
 
-.ProseMirror .details-summary-input,
-.wikilink-preview-content details::details-content {
+.ProseMirror .details-summary::after,
+.wikilink-preview-content summary::after {
+  content: "";
   flex: 1;
-  min-width: 0;
-  margin: 0;
-  padding: 0.1rem 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  box-shadow: none;
-  appearance: none;
-  -webkit-appearance: none;
-  font: inherit;
-  font-weight: 600;
-  color: var(--text-main);
-  caret-color: var(--text-main);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.ProseMirror .details-summary-input::placeholder,
-.wikilink-preview-content summary > input::placeholder {
-  color: var(--text-muted);
-  opacity: 1;
+  height: 0;
+  margin: 0 12px;
+  border-top: 1px solid var(--text-main);
 }
 
 .ProseMirror .details-content {
-  padding: 0 0.65rem 0.65rem 1.55rem;
+  padding: 0.3rem 0.65rem 0.3rem 0.2rem;
 }
 
 .ProseMirror .details-root.has-focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 1px var(--accent-primary);
-}
-
-.ProseMirror .details-root:focus-within {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 1px var(--accent-primary);
 }

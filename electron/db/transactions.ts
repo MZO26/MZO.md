@@ -45,6 +45,24 @@ class Transactions {
     );
   }
 
+  private runDeleteManyLogic(ids: string[]): boolean {
+    let deleted = false;
+    for (const id of ids) {
+      const result = this.deleteNoteStmt.run({ id });
+      if (result.changes > 0) {
+        deleted = true;
+      }
+    }
+    return deleted;
+  }
+
+  public safeDeleteMany(ids: string[]): boolean {
+    const transactionRunner = this.db.transaction(
+      this.runDeleteManyLogic.bind(this),
+    );
+    return transactionRunner(ids);
+  }
+
   private runCreateManyLogic(paramsArr: CreateTransaction[]): {
     row: NoteRow;
     safeTags: string[];
@@ -127,17 +145,19 @@ class Transactions {
     });
   }
 
-  private deleteLogic(id: string): boolean {
+  private runDeleteLogic(id: string): boolean {
     const result = this.deleteNoteStmt.run({ id });
     return result.changes > 0;
   }
 
   public safeDelete(id: string): boolean {
-    const transactionRunner = this.db.transaction(this.deleteLogic.bind(this));
+    const transactionRunner = this.db.transaction(
+      this.runDeleteLogic.bind(this),
+    );
     return transactionRunner(id);
   }
 
-  private updateLogic(
+  private runUpdateLogic(
     noteParams: Omit<UpdateTransaction, "tags" | "links">,
     safeTags: string[],
     safeLinks: string[],
@@ -161,7 +181,9 @@ class Transactions {
     const { tags, links, ...noteParams } = params;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];
-    const transactionRunner = this.db.transaction(this.updateLogic.bind(this));
+    const transactionRunner = this.db.transaction(
+      this.runUpdateLogic.bind(this),
+    );
     const result = transactionRunner(noteParams, safeTags, safeLinks);
     const allLinks = NoteDB.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== params.id);

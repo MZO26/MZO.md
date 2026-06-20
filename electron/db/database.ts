@@ -72,9 +72,9 @@ class NoteDB {
       this.getLinksByIdStmt = this.db.prepare(`
       SELECT target_id AS id, 'out' AS dir FROM note_links WHERE source_id = @id UNION ALL SELECT source_id AS id, 'in' AS dir FROM note_links WHERE target_id = @id
       `);
-      this.getOldTitleStmt = this.db
-        .prepare(`SELECT title FROM notes WHERE id = @id`)
-        .pluck();
+      this.getOldTitleStmt = this.db.prepare(
+        `SELECT title FROM notes WHERE id = @id`,
+      );
       this.togglePinStmt = this.db.prepare(`
       UPDATE notes 
       SET pinned = NOT pinned, updated_at = @updated_at
@@ -221,6 +221,11 @@ class NoteDB {
 
   public delete(id: string) {
     const result = this.transactions.safeDelete(id);
+    if (!result) throw new AppBackendError(AppErrorCode.DBError);
+  }
+
+  public deleteMany(ids: string[]) {
+    const result = this.transactions.safeDeleteMany(ids);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
   }
 
@@ -393,12 +398,20 @@ class NoteDB {
     return results;
   }
 
-  public getOldNoteTitle(id: string): Note["title"] {
-    const title = this.getOldTitleStmt.get({ id }) as Note["title"] | undefined;
-    if (!title) {
-      throw new AppBackendError(AppErrorCode.DBError);
+  public getOldNotes(
+    ids: string[],
+  ): Array<{ id: string; title: Note["title"] }> {
+    const notes: Array<{ id: string; title: Note["title"] }> = [];
+    for (const id of ids) {
+      const row = this.getOldTitleStmt.get({ id }) as
+        | { title: Note["title"] }
+        | undefined;
+      if (!row) {
+        throw new AppBackendError(AppErrorCode.DBError);
+      }
+      notes.push({ id, title: row.title });
     }
-    return title;
+    return notes;
   }
 
   optimizeDb() {

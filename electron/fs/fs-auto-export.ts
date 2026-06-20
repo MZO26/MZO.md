@@ -5,6 +5,7 @@ import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { store } from "@electron/store";
 import { AppErrorCode } from "@shared/errors";
+import { processWithLimit } from "@shared/limiter";
 import {
   DeleteAutoExportRequestSchema,
   FileNameSchema,
@@ -214,27 +215,24 @@ async function deleteAutoExportFileLogic(
 
 async function deleteAutoExportFile(
   targetDir: string,
-  id: Note["id"],
-  oldTitle: Note["title"],
+  oldNotes: Array<{ id: string; title: Note["title"] }>,
 ) {
-  const deletePayload = {
-    id,
-    fileName: oldTitle,
-    extension: "md",
-  };
-  const validatedFileData = validation(
-    DeleteAutoExportRequestSchema,
-    deletePayload,
-  );
-  try {
-    await deleteAutoExportFileLogic(targetDir, validatedFileData);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return;
+  await processWithLimit(oldNotes, 10, async (note) => {
+    const validatedFileData = validation(DeleteAutoExportRequestSchema, {
+      id: note.id,
+      fileName: note.title,
+      extension: "md" as const,
+    });
+    try {
+      await deleteAutoExportFileLogic(targetDir, validatedFileData);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        return;
+      }
+      console.error("[deleteFile]: Failed to delete file:", error);
+      throw new AppBackendError(AppErrorCode.FileWriteError);
     }
-    console.error("[deleteFile]: Failed to delete file:", error);
-    throw new AppBackendError(AppErrorCode.FileWriteError);
-  }
+  });
 }
 
 export {

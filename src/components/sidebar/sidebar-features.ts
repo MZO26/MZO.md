@@ -4,7 +4,7 @@ import { noteStore, searchEngine, stateStore } from "@/settings/app-state";
 import { debounce } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
 import { estimateReadingTime } from "@/utils/note";
-import { getAppItem, getStatItems } from "@/utils/registry";
+import { getAppItem, getUIItems } from "@/utils/registry";
 import { DEBOUNCE_MS, MAX_CHARS, PADDING } from "@shared/constants";
 import type { ResizeOptions, SnippetCacheValue, ViewId } from "@shared/types";
 
@@ -132,7 +132,7 @@ async function handleViews(view: ViewId) {
 
 function updateStats() {
   const editor = getAppItem("editor");
-  const { wordCountEl, charCountEl, readingTime } = getStatItems([
+  const { wordCountEl, charCountEl, readingTime } = getUIItems([
     "wordCountEl",
     "charCountEl",
     "readingTime",

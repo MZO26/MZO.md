@@ -65,8 +65,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   confirmFlush: () => ipcRenderer.send("flush-confirmed"),
   zoom: (action: ZoomAction) => ipcRenderer.invoke("zoom", action),
   openExternal: (url: string) => ipcRenderer.invoke("open:external", url),
-  openAutoExportPath: (payload: OpenAutoExportPathRequest) =>
-    ipcRenderer.invoke("open:auto-export-path", payload),
   openAutoExportFolder: (payload: OpenAutoExportPathRequest) =>
     ipcRenderer.invoke("open:auto-export-folder", payload),
   getAutoExportPath: (payload: OpenAutoExportPathRequest) =>
@@ -83,6 +81,7 @@ contextBridge.exposeInMainWorld("noteAPI", {
   update: (payload: UpdateNotePayload, flush: boolean) =>
     ipcRenderer.invoke("note:update", payload, flush),
   delete: (id: string) => ipcRenderer.invoke("note:delete", id),
+  deleteMany: (ids: string[]) => ipcRenderer.invoke("note:delete-many", ids),
   selectAutoExportFolder: () => ipcRenderer.invoke("select:auto-export-folder"),
   noteExport: (payload: ExportRequest) =>
     ipcRenderer.invoke("note:export", payload),
@@ -91,9 +90,6 @@ contextBridge.exposeInMainWorld("noteAPI", {
   noteImport: () => ipcRenderer.invoke("note:import"),
   onTriggerExport: (callback: (id: string, extension: string) => void) => {
     subscribe("note:trigger-export", callback);
-  },
-  onTriggerView: (callback: (id: string) => void) => {
-    subscribe("note:trigger-view", callback);
   },
   onTriggerPath: (callback: (id: string) => void) => {
     subscribe("note:trigger-path", callback);

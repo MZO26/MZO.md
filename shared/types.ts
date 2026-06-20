@@ -113,7 +113,7 @@ type MenuType = "table" | "text" | "note";
 
 type NoteMenuPayload = {
   id: string;
-  pinned: boolean;
+  pinned?: boolean;
 };
 
 type ViewItem = {
@@ -122,7 +122,7 @@ type ViewItem = {
 };
 
 interface AppRegistry {
-  stats: Partial<StatRegistry>;
+  ui: Partial<UIRegistry>;
   core: Partial<CoreRegistry>;
   template: Partial<TemplateRegistry>;
 }
@@ -131,15 +131,19 @@ interface CoreRegistry {
   editor: Editor;
   appContainer: HTMLDivElement;
   sidebar: HTMLDivElement;
+  sidebarContainer: HTMLDivElement;
   editorWrapper: HTMLDivElement;
   editorContainer: HTMLDivElement;
 }
 
-interface StatRegistry {
+interface UIRegistry {
   wordCountEl: HTMLSpanElement;
   charCountEl: HTMLSpanElement;
   readingTime: HTMLSpanElement;
   metadataContainer: HTMLDivElement;
+  searchInput: HTMLInputElement;
+  deleteBtn: HTMLButtonElement;
+  selectionBtn: HTMLButtonElement;
 }
 
 interface TemplateRegistry {
@@ -215,11 +219,11 @@ export type {
   SelectOption,
   SidebarChange,
   SnippetCacheValue,
-  StatRegistry,
   Success,
   TemplateRegistry,
   ThemeResult,
   TitleBarOverlayOptions,
+  UIRegistry,
   ViewId,
   ViewItem,
   WorkerResult,

@@ -3,7 +3,6 @@ import {
   getAutoExportPath,
   getNoteById,
   openAutoExportFolder,
-  openAutoExportPath,
   pin,
   showNotification,
 } from "@/api/api";
@@ -16,7 +15,7 @@ import {
 import { handleDuplicateNote } from "@/notes/note-duplicate";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
 import { initDeleteDialog } from "@/settings/dialog-init";
-import { findElement } from "@/utils/dom";
+import { findElement, requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/types";
@@ -25,7 +24,7 @@ import type { NoteMenuPayload } from "@shared/types";
 
 // helper functions for callbacks
 
-const { deleteDialog } = initDeleteDialog();
+export const { deleteDialog } = initDeleteDialog();
 
 async function ensureNoteSaved(id: string) {
   const note = noteStore.get("notes").find((n) => n.id === id);
@@ -117,16 +116,6 @@ function initListeners() {
     );
   });
 
-  window.noteAPI.onTriggerView(async (id: string) => {
-    const syncPayload = await ensureNoteSaved(id);
-    if (!syncPayload) return;
-    const result = await openAutoExportPath(syncPayload);
-    if (!result.success || result.data === false) {
-      await showNotification("Could not open note in editor.", "");
-      return;
-    }
-  });
-
   window.noteAPI.onTriggerPath(async (id: string) => {
     const autoExportPayload = await ensureNoteSaved(id);
     if (!autoExportPayload) return;
@@ -186,21 +175,22 @@ function initListeners() {
   window.noteAPI.onTriggerDelete(async (id: string) => {
     const confirmationEnabled =
       settingsStore.get("delete-confirmation") === true;
-    const executeDelete = async () => {
-      const noteElement = findElement<HTMLDivElement>(
-        `.note-item[data-id="${id}"]`,
-        getAppItem("sidebar"),
-      );
-      if (!noteElement) return;
-      await handleDeleteNote(id);
-    };
     if (!confirmationEnabled) {
-      await executeDelete();
+      await handleDeleteNote(id);
       return;
     }
+    const deleteDialogTitle = requireElement<HTMLSpanElement>(
+      ".delete-dialog-title",
+      deleteDialog,
+    );
+    deleteDialogTitle.textContent = "Delete this note?";
     const handleClose = async () => {
-      if (deleteDialog.returnValue !== "confirm") return;
-      await executeDelete();
+      if (deleteDialog.returnValue !== "confirm") {
+        deleteDialogTitle.textContent = "";
+        return;
+      }
+      await handleDeleteNote(id);
+      deleteDialogTitle.textContent = "";
     };
     deleteDialog.addEventListener("close", handleClose, { once: true });
     deleteDialog.returnValue = "";

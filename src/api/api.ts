@@ -67,6 +67,10 @@ async function deleteNote(id: string): Promise<Result<void>> {
   return invoke(window.noteAPI.delete(id));
 }
 
+async function deleteManyNotes(ids: string[]): Promise<Result<void>> {
+  return invoke(window.noteAPI.deleteMany(ids));
+}
+
 async function getNoteById(id: string): Promise<Result<Note>> {
   return invoke(window.noteAPI.getById(id));
 }
@@ -160,12 +164,6 @@ async function openExternal(url: string): Promise<Result<void>> {
   return invoke(window.electronAPI.openExternal(url));
 }
 
-async function openAutoExportPath(
-  payload: OpenAutoExportPathRequest,
-): Promise<Result<boolean>> {
-  return invoke(window.electronAPI.openAutoExportPath(payload));
-}
-
 async function openAutoExportFolder(
   payload: OpenAutoExportPathRequest,
 ): Promise<Result<boolean>> {
@@ -217,6 +215,7 @@ export {
   createManyNotes,
   createNote,
   dbMaintenance,
+  deleteManyNotes,
   deleteNote,
   exportManyNotes,
   exportNote,
@@ -233,7 +232,6 @@ export {
   importNote,
   openAppPath,
   openAutoExportFolder,
-  openAutoExportPath,
   openExternal,
   pin,
   pinWindow,

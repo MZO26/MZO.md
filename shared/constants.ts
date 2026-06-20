@@ -47,10 +47,10 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 26,214,400B. file.size from JS is always in bytes
 
 const VIEWS = [
-  { id: "all", label: "All Notes" },
-  { id: "todos", label: "Pending Todos" },
-  { id: "untagged", label: "Untagged Notes" },
-  { id: "unlinked", label: "Unlinked Notes" },
+  { id: "all", label: "All" },
+  { id: "todos", label: "Todos" },
+  { id: "untagged", label: "Untagged" },
+  { id: "unlinked", label: "Unlinked" },
   { id: "hubs", label: "Most Links" },
 ] as const satisfies readonly ViewItem[];
 

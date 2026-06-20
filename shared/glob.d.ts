@@ -11,7 +11,12 @@ import {
   type ImagePayload,
   type UpdateNotePayload,
 } from "@shared/shared/types";
-import type { ImageSrc, MenuType, ViewId } from "@shared/types";
+import type {
+  ImageSrc,
+  MenuType,
+  NoteMenuPayload,
+  ViewId,
+} from "@shared/types";
 
 declare module "*.css";
 
@@ -38,9 +43,6 @@ declare global {
       confirmFlush: () => void;
       zoom: (action: string) => Promise<Result<number>>;
       openExternal: (url: string) => Promise<Result<void>>;
-      openAutoExportPath: (
-        payload: OpenAutoExportPathRequest,
-      ) => Promise<Result<boolean>>;
       openAutoExportFolder: (
         payload: OpenAutoExportPathRequest,
       ) => Promise<Result<boolean>>;
@@ -61,12 +63,12 @@ declare global {
         flush: boolean,
       ) => Promise<Result<Note>>;
       delete: (id: string) => Promise<Result<void>>;
+      deleteMany: (ids: string[]) => Promise<Result<void>>;
       selectAutoExportFolder: () => Promise<Result<string>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
       onTriggerExport: (
         callback: (id: string, extension: string) => void,
       ) => () => void;
-      onTriggerView: (callback: (id: string) => void) => () => void;
       onTriggerPath: (callback: (id: string) => void) => () => void;
       onTriggerCopyMarkdown: (callback: (id: string) => void) => () => void;
       onTriggerCopyPath: (callback: (id: string) => void) => () => void;

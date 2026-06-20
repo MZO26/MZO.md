@@ -12,7 +12,7 @@ import path from "path";
 async function batchImport(filePaths: string[]): Promise<ImportRequest[]> {
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
-  const imported = await processWithLimit(filePaths, 50, async (file) => {
+  const imported = await processWithLimit(filePaths, 10, async (file) => {
     try {
       const content = await fs.readFile(file, "utf8");
       const extension = path.extname(file).slice(1).toLowerCase();

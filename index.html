@@ -75,10 +75,22 @@
             >
               <i data-lucide="sliders-horizontal"></i>
             </button>
+            <button
+              class="selection-btn"
+              data-tippy-content="Toggle selection mode"
+            >
+              <i data-lucide="square-check"></i>
+            </button>
             <select
               class="view-select"
               data-tippy-content="Filter Notes"
             ></select>
+            <button
+              class="delete-btn"
+              data-tippy-content="Delete current view of notes"
+            >
+              <i data-lucide="trash-2"></i>
+            </button>
             <span
               class="info-span note-count"
               data-tippy-content="Total Notes"
@@ -174,7 +186,7 @@
           <i data-lucide="x" class="delete-close-icon"></i>
         </button>
         <div class="delete-dialog-header">
-          <span class="delete-dialog-title">Delete this note?</span>
+          <span class="delete-dialog-title"></span>
         </div>
         <div class="delete-dialog-content">
           <p class="delete-dialog-description">
@@ -185,7 +197,7 @@
             class="delete-confirm-btn"
             id="confirm-delete-btn"
           >
-            Delete Note
+            Confirm Delete
           </button>
         </div>
       </form>
@@ -250,6 +262,11 @@
           <button class="menu-btn">
             <span class="dots"></span>
           </button>
+          <input
+            class="select-checkbox"
+            type="checkbox"
+            aria-label="Select note"
+          />
         </div>
         <div class="note-metadata">
           <div class="note-date"></div>

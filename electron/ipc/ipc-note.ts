@@ -91,7 +91,7 @@ function registerNoteIpc(win: BrowserWindow) {
       const targetDir = isAutoExport ? store.get("auto-export-path") : null;
       const oldTitle =
         isAutoExport && targetDir
-          ? db.getOldNoteTitle(validatedData.id)
+          ? db.getOldNotes([validatedData.id])
           : undefined;
       if (!isAutoExport || !targetDir) return result;
       if (markdown === undefined)
@@ -101,7 +101,7 @@ function registerNoteIpc(win: BrowserWindow) {
         fileName: result.title,
         markdown: markdown,
         targetDir: targetDir,
-        oldFileName: oldTitle,
+        oldFileName: oldTitle?.[0]?.title,
       });
       return result;
     });
@@ -114,10 +114,25 @@ function registerNoteIpc(win: BrowserWindow) {
       const validatedData = validation(IdSchema, id);
       const isAutoExport = store.get("auto-export") === true;
       const targetDir = isAutoExport ? store.get("auto-export-path") : null;
-      const oldTitle = db.getOldNoteTitle(validatedData);
+      const oldNote = db.getOldNotes([validatedData]);
       const result = db.delete(validatedData);
       if (!isAutoExport || !targetDir) return result;
-      await deleteAutoExportFile(targetDir, validatedData, oldTitle);
+      await deleteAutoExportFile(targetDir, oldNote);
+      return result;
+    });
+  });
+
+  ipcMain.handle("note:delete-many", (e, ids: unknown) => {
+    return result(e, async () => {
+      if (!checkRateLimit("note:delete-many", LIMITS.WRITE_HEAVY))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validatedData = validation(IdsSchema, ids);
+      const isAutoExport = store.get("auto-export") === true;
+      const targetDir = isAutoExport ? store.get("auto-export-path") : null;
+      const oldNotes = db.getOldNotes(validatedData);
+      const result = db.deleteMany(validatedData);
+      if (!isAutoExport || !targetDir) return result;
+      await deleteAutoExportFile(targetDir, oldNotes);
       return result;
     });
   });

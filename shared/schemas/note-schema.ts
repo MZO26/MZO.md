@@ -35,7 +35,7 @@ const TogglePinSchema = z.object({
   pinned: DBBooleanSchema,
 });
 
-const TagSchema = z.string().trim().min(1).max(40).toLowerCase();
+const TagSchema = z.string().trim().min(1).max(100).toLowerCase();
 
 const TagsSchema = z.array(TagSchema).max(3).default([]);
 

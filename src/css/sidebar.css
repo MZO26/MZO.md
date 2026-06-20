@@ -169,7 +169,7 @@ body.is-dragging * {
 }
 
 .info-span {
-  font-size: 0.8em;
+  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
@@ -372,30 +372,28 @@ body.is-dragging * {
   justify-content: space-between;
   height: 40px;
   padding: 10px;
-  min-width: 180px;
-  flex-shrink: 0;
 }
 
 .view-select {
   display: flex;
-  width: 150px;
-  text-align: center;
+  width: 120px;
+  min-width: 100px;
+  padding: 5px;
+  margin: 0;
   color: var(--text-muted);
   border: none;
-  background: none;
-  text-align: center;
-  text-align-last: center;
   align-items: center;
   justify-content: center;
-  padding: 6px 0;
+  text-overflow: ellipsis;
+  background: none;
 }
 
 .view-select::picker-icon {
   display: none;
 }
 
-.note-count {
-  margin-right: 3px;
+.delete-btn {
+  margin: 0 6px 0 0;
 }
 
 .note-item {
@@ -457,7 +455,7 @@ body.is-dragging * {
 .note-header {
   display: grid;
   grid-template-columns: auto 1fr 30px;
-  align-items: center;
+  align-items: flex-end;
   width: 100%;
   height: fit-content;
 }
@@ -471,13 +469,15 @@ body.is-dragging * {
 .note-title {
   grid-column: 2;
   font-size: 0.9rem;
+  margin: 0 0 7px 0;
   font-weight: bold;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
-.menu-btn {
+.menu-btn,
+.select-checkbox {
   grid-column: 3;
 }
 
@@ -568,6 +568,64 @@ body.is-dragging * {
   margin-top: 7px;
 }
 
+.note-item .select-box {
+  display: none;
+}
+
+.selection-mode .note-item .menu-btn {
+  display: none;
+}
+
+.selection-mode .note-item .select-box {
+  display: inline-flex;
+}
+
+.note-item .select-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  display: none;
+  margin: 7px 5px;
+  padding: 0;
+  cursor: pointer;
+  width: 17px;
+  height: 17px;
+  min-width: 17px;
+  min-height: 17px;
+  border-radius: 6px;
+  border: 1.5px solid var(--accent-primary);
+  border-radius: 4px;
+  background: var(--bg-editor);
+  position: relative;
+  z-index: 1;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.notes-container.selection-mode .note-item .select-checkbox {
+  display: inline-block;
+}
+
+.notes-container.selection-mode .note-item .menu-btn {
+  display: none;
+}
+
+.note-item .select-checkbox:checked {
+  background-color: var(--tag-color);
+  border-color: var(--tag-color);
+}
+
+.note-item .select-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-editor);
+  clip-path: polygon(14% 44%, 0% 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0.55);
+}
 .note-content mark {
   background-color: var(--editor-highlight);
   color: var(--text-main);

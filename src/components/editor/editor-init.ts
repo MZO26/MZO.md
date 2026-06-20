@@ -5,7 +5,6 @@ import {
 } from "@/components/editor/editor-features";
 import { handleSearchInput } from "@/components/sidebar/sidebar-features";
 import { Annotation } from "@/extensions/annotation";
-import { Conceal } from "@/extensions/conceal";
 import { DetailsBlock } from "@/extensions/details";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
@@ -32,7 +31,7 @@ import { noteStore, stateStore } from "@/settings/app-state";
 import { sleep } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { useDelayedSpinner } from "@/utils/ui";
-import { DOMPURIFY_CONFIG } from "@shared/constants";
+import { ALLOWED_TYPES, DOMPURIFY_CONFIG } from "@shared/constants";
 import { processWithLimit } from "@shared/limiter";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
@@ -45,7 +44,12 @@ import {
   TableHeader,
   TableRow,
 } from "@tiptap/extension-table";
-import { CharacterCount, Focus, Placeholder } from "@tiptap/extensions";
+import {
+  CharacterCount,
+  Focus,
+  Placeholder,
+  TrailingNode,
+} from "@tiptap/extensions";
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import DOMPurify from "dompurify";
@@ -72,11 +76,16 @@ function initEditor(settings: Partial<AppSettings>): Editor {
       handleDrop(view, event, _slice, moved) {
         if (!editor || !event.dataTransfer?.files?.length || moved)
           return false;
-        const images = Array.from(event.dataTransfer.files).filter((f: File) =>
-          f.type.startsWith("image/"),
-        );
+        const files = Array.from(event.dataTransfer.files);
+        const images = files.filter((f) => f.type.startsWith("image/"));
         if (images.length === 0) return false;
-        event.preventDefault();
+        const unsupportedFiles = files.some(
+          (file) => !ALLOWED_TYPES.includes(file.type),
+        );
+        if (unsupportedFiles) {
+          event.preventDefault();
+          return;
+        }
         const coordinates = view.posAtCoords({
           left: event.clientX,
           top: event.clientY,
@@ -87,18 +96,16 @@ function initEditor(settings: Partial<AppSettings>): Editor {
         const stopSpinner = useDelayedSpinner();
         void processWithLimit(images, 1, async (file) => {
           await sleep(1000);
-          await processAndInsertImage(file, editor!);
+          await processAndInsertImage(file, editor);
         }).finally(() => {
           if (stopSpinner) stopSpinner();
         });
-
         return true;
       },
       handlePaste(_view, event) {
         if (!editor || !event.clipboardData?.files?.length) return false;
-        const images = Array.from(event.clipboardData.files).filter((f: File) =>
-          f.type.startsWith("image/"),
-        );
+        const files = Array.from(event.clipboardData.files);
+        const images = files.filter((f) => f.type.startsWith("image/"));
         if (images.length === 0) return false;
         event.preventDefault();
         const stopSpinner = useDelayedSpinner();
@@ -120,7 +127,8 @@ function initEditor(settings: Partial<AppSettings>): Editor {
   editor.on("update", ({ editor, transaction }) => {
     if (!transaction.docChanged) return;
     const activeId = stateStore.getState().activeId;
-    if (!activeId) return;
+    const activeNote = noteStore.get("activeNote");
+    if (!activeId || !activeNote) return;
     const content = editor?.getJSON();
     const markdown = isAutoExportEnabled() ? editor.getMarkdown() : undefined;
     debouncedSaveNote(activeId, content, markdown, false);
@@ -144,7 +152,6 @@ function getNoteEditorExtensions() {
     CustomUnderline,
     DetailsBlock,
     Annotation,
-    Conceal,
     Footnote,
     Highlight,
     WikiLinkPreview,
@@ -215,6 +222,10 @@ function getNoteEditorExtensions() {
     CustomHeading.configure({
       levels: [1, 2, 3, 4, 5, 6],
     }),
+    TrailingNode.configure({
+      node: "paragraph",
+      notAfter: ["paragraph"],
+    }),
     StarterKit.configure({
       heading: false,
       codeBlock: false,
@@ -223,6 +234,7 @@ function getNoteEditorExtensions() {
       orderedList: false,
       bulletList: false,
       underline: false,
+      trailingNode: false,
       link: {
         openOnClick: false,
         autolink: true,
@@ -288,6 +300,33 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
     },
     true,
   );
+  editorWrapper.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    const dataTransfer = event.dataTransfer;
+    if (!dataTransfer) return;
+    const items = Array.from(dataTransfer.items);
+    const hasFile = items.some((item) => item.kind === "file");
+    const hasUnsupportedFile = items.some((item) => {
+      if (item.kind !== "file") return false;
+      if (!item.type) return false;
+      return !ALLOWED_TYPES.includes(item.type);
+    });
+    dataTransfer.dropEffect = hasFile && !hasUnsupportedFile ? "copy" : "none";
+  });
+
+  editorWrapper.addEventListener("paste", (event) => {
+    const dataTransfer = event.clipboardData;
+    if (!dataTransfer) return;
+    const files = Array.from(dataTransfer.files);
+    if (files.length === 0) return;
+    const unsupported = files.some(
+      (file) => !ALLOWED_TYPES.includes(file.type),
+    );
+    if (unsupported) {
+      event.preventDefault();
+      return;
+    }
+  });
 }
 
 export {

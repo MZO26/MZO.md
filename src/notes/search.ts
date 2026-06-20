@@ -26,6 +26,11 @@ class NoteSearch {
     );
   }
 
+  private resetSearchCache() {
+    this.lastQuery = "";
+    this.lastResults = [];
+  }
+
   public bulkLoad(notes: NoteListItem[]) {
     this.fuse.setCollection(
       notes.map((note) => ({
@@ -36,16 +41,15 @@ class NoteSearch {
         tags: note.tags,
       })),
     );
-    this.lastQuery = "";
-    this.lastResults = [];
+    this.resetSearchCache();
   }
 
   public addMany(notes: NoteListItem[]) {
+    if (notes.length === 0) return;
     for (const note of notes) {
       this.fuse.add(note);
     }
-    this.lastQuery = "";
-    this.lastResults = [];
+    this.resetSearchCache();
   }
 
   public upsertNote(note: NoteListItem) {
@@ -57,21 +61,24 @@ class NoteSearch {
       plainText: note.plainText,
       tags: note.tags,
     });
-    this.lastQuery = "";
-    this.lastResults = [];
+    this.resetSearchCache();
   }
 
   public removeNote(id: string) {
     this.fuse.remove((doc) => doc.id === id);
-    this.lastQuery = "";
-    this.lastResults = [];
+    this.resetSearchCache();
+  }
+
+  public removeMany(ids: string[]) {
+    const deletedIds = new Set(ids);
+    this.fuse.remove((doc) => deletedIds.has(doc.id));
+    this.resetSearchCache();
   }
 
   public search(query: string): FuseResult<NoteSearchDoc>[] {
     const trimmed = query.trim();
     if (!trimmed) {
-      this.lastQuery = "";
-      this.lastResults = [];
+      this.resetSearchCache();
       return [];
     }
     if (trimmed === this.lastQuery) return this.lastResults;

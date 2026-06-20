@@ -56,24 +56,7 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  // opens note in editor
-  ipcMain.handle("open:auto-export-path", (e, payload: unknown) => {
-    return result(e, async () => {
-      if (!checkRateLimit("open:auto-export-path", LIMITS.READ_LIGHT))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      if (store.get("auto-export") !== true) return null;
-      const validatedData = validation(OpenAutoExportPathSchema, payload);
-      if (!validatedData.updated_at) return null;
-      const targetDir = store.get("auto-export-path");
-      if (!targetDir) return null;
-      const filePath = getFilePath(targetDir, validatedData);
-      const error = await shell.openPath(filePath.absoluteFilePath);
-      if (error === "") return true;
-      else return false;
-    });
-  });
-
-  // opens auto dir and shows note
+  // opens auto-export directory and shows note
   ipcMain.handle("open:auto-export-folder", (e, payload: unknown) => {
     return result(e, async () => {
       if (!checkRateLimit("open:auto-export-folder", LIMITS.READ_LIGHT))

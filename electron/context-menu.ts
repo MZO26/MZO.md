@@ -150,21 +150,6 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
         win.webContents.send("note:trigger-path", id);
       },
     },
-    {
-      label: "View in Editor",
-      enabled:
-        activeId !== null &&
-        activeId === id &&
-        store.get("auto-export") === true,
-      visible: store.get("auto-export") === true,
-      click: async () => {
-        const autoExported = (await isAutoExport(id)) ? true : false;
-        if (!autoExported) {
-          console.log("Note has no auto-exported file.");
-        }
-        win.webContents.send("note:trigger-view", id);
-      },
-    },
     { type: "separator" },
     {
       label: "Delete Note",

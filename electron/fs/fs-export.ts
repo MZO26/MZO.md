@@ -39,7 +39,7 @@ async function batchExport(
   const imagesFolder = path.join(userDataPath, "editor-images");
   const exported = await processWithLimit(
     payload,
-    50,
+    10,
     async (item: ExportedContent) => {
       try {
         const { absoluteFilePath } = getFilePath(absoluteTargetFolder, item);
