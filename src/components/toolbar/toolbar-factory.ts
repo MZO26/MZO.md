@@ -87,4 +87,4 @@ function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
   });
 }
 
-export { buildMenu, setupToolbarListeners };
+export { buildMenu, createDivider, setupToolbarListeners };

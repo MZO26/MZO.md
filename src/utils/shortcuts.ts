@@ -1,5 +1,6 @@
 import { handleZoom } from "@/api/api";
-import { setSelectionMode } from "@/components/sidebar/sidebar-init";
+import { setSelectionMode } from "@/components/sidebar/sidebar-selection";
+import { stateStore } from "@/settings/app-state";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 
@@ -8,7 +9,7 @@ function isFocusActive() {
 }
 
 function isSelectionActive() {
-  return getAppItem("sidebar").classList.contains("selection-mode");
+  return stateStore.get("selectionMode") === true;
 }
 
 function isEditorFocused(target: EventTarget | null) {

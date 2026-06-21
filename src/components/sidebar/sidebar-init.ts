@@ -1,25 +1,28 @@
-import { deleteDialog } from "@/api/callbacks";
 import {
   debouncedSearch,
   handleViews,
   resizeSidebar,
 } from "@/components/sidebar/sidebar-features";
+import {
+  copyLinkSelection,
+  copyMarkdownSelection,
+  deleteSelection,
+  exportSelection,
+  pinSelection,
+  selectAllVisibleNotes,
+  setSelectionMode,
+  updateSelectionUI,
+} from "@/components/sidebar/sidebar-selection";
 import { createViews, setSidebarState } from "@/components/sidebar/sidebar-ui";
 import {
   handleCreateNote,
-  handleDeleteManyNotes,
   handleImportNote,
   handleSelectNote,
 } from "@/notes/note-actions";
-import { noteStore, settingsStore } from "@/settings/app-state";
+import { stateStore } from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
-import { findElement, requireElement } from "@/utils/dom";
-import {
-  getAppItem,
-  getAppItems,
-  getUIItems,
-  registerAppEvents,
-} from "@/utils/registry";
+import { findElement } from "@/utils/dom";
+import { getAppItems, getUIItems, registerAppEvents } from "@/utils/registry";
 import { initTippyDelegate } from "@/utils/ui";
 import { VIEWS } from "@shared/constants";
 import type { ViewId } from "@shared/types";
@@ -32,16 +35,18 @@ function initNotesSidebar() {
     "sidebar",
     "sidebarContainer",
   ]);
-  const sidebarHeader = requireElement<HTMLDivElement>(
-    ".sidebar-header",
-    sidebarContainer,
+  const { searchInput, selectionBtn, selectionFooter, sidebarHeader } =
+    getUIItems([
+      "searchInput",
+      "selectionBtn",
+      "selectionFooter",
+      "sidebarHeader",
+    ]);
+  const deleteBtn = findElement<HTMLButtonElement>(
+    ".delete-btn",
+    selectionFooter,
   );
-  const { searchInput, deleteBtn, selectionBtn } = getUIItems([
-    "searchInput",
-    "deleteBtn",
-    "selectionBtn",
-  ]);
-  deleteBtn.disabled = selectedIds.size === 0;
+  if (deleteBtn) deleteBtn.disabled = stateStore.get("selectedIds").size === 0;
   const viewSelect = createViews(VIEWS);
   initTippyDelegate(sidebarContainer);
   applySidebarListeners(
@@ -49,8 +54,8 @@ function initNotesSidebar() {
     sidebarHeader,
     searchInput,
     viewSelect,
-    deleteBtn,
     selectionBtn,
+    selectionFooter,
   );
   registerAppEvents(document, {
     "app:toggle-sidebar": () => {
@@ -60,75 +65,9 @@ function initNotesSidebar() {
     "app:create-new-note": () => handleCreateNote(),
     "app:open-global-search": () => searchInput.focus(),
     "app:exit-selection-mode": () => setSelectionMode(false),
-    "app:delete-selected": () => handleSelectionDelete(),
+    "app:delete-selected": () => deleteSelection(),
     "app:select-all-visible": () => selectAllVisibleNotes(),
   });
-}
-
-let isSelectionMode = false;
-const selectedIds = new Set<string>();
-
-function selectAllVisibleNotes() {
-  const visibleIds = noteStore.get("visibleIds") ?? [];
-  selectedIds.clear();
-  for (const id of visibleIds) {
-    selectedIds.add(id);
-  }
-  setSelectionMode(true);
-  updateSelectionUI();
-}
-async function handleSelectionDelete() {
-  const ids = [...selectedIds];
-  if (ids.length === 0) return;
-  const deleteDialogTitle = requireElement<HTMLSpanElement>(
-    ".delete-dialog-title",
-    deleteDialog,
-  );
-  const confirmationEnabled = settingsStore.get("delete-confirmation") === true;
-  if (!confirmationEnabled) {
-    await handleDeleteManyNotes(ids);
-    return;
-  }
-  deleteDialogTitle.textContent =
-    ids.length === 1 ? `Delete this note?` : `Delete ${ids.length} notes?`;
-  const handleClose = async () => {
-    if (deleteDialog.returnValue !== "confirm") {
-      deleteDialogTitle.textContent = "";
-      return;
-    }
-    await handleDeleteManyNotes(ids);
-    setSelectionMode(false);
-    deleteDialogTitle.textContent = "";
-  };
-  deleteDialog.addEventListener("close", handleClose, { once: true });
-  deleteDialog.returnValue = "";
-  deleteDialog.showModal();
-}
-
-export function setSelectionMode(enabled: boolean) {
-  const sidebar = getAppItem("sidebar");
-  isSelectionMode = enabled;
-  sidebar.classList.toggle("selection-mode", enabled);
-  if (!enabled) {
-    selectedIds.clear();
-  }
-  updateSelectionUI();
-}
-
-function updateSelectionUI() {
-  const sidebar = getAppItem("sidebar");
-  const noteItems = sidebar.querySelectorAll<HTMLDivElement>(".note-item");
-  const deleteBtn = requireElement<HTMLButtonElement>(".delete-btn");
-  for (const item of noteItems) {
-    const id = item.getAttribute("data-id");
-    const isSelected = !!id && selectedIds.has(id);
-    item.classList.toggle("selected", isSelected);
-    const checkbox = findElement<HTMLInputElement>(".select-checkbox", item);
-    if (checkbox) {
-      checkbox.checked = isSelected;
-    }
-  }
-  deleteBtn.disabled = selectedIds.size === 0;
 }
 
 function applySidebarListeners(
@@ -136,8 +75,8 @@ function applySidebarListeners(
   sidebarHeader: HTMLDivElement,
   searchInput: HTMLInputElement,
   viewSelect: HTMLSelectElement,
-  deleteBtn: HTMLButtonElement,
   selectionBtn: HTMLButtonElement,
+  selectionFooter: HTMLDivElement,
 ) {
   resizeSidebar(".resizer-sidebar", ".sidebar-container");
   sidebarHeader.addEventListener(
@@ -158,23 +97,49 @@ function applySidebarListeners(
     }),
   );
   searchInput.addEventListener("input", debouncedSearch);
-  deleteBtn.addEventListener(
-    "click",
-    createAsyncHandler(async () => handleSelectionDelete()),
-  );
   selectionBtn.addEventListener("click", () => {
-    setSelectionMode(!isSelectionMode);
+    const selectionMode = stateStore.get("selectionMode");
+    setSelectionMode(!selectionMode);
   });
+  selectionFooter.addEventListener(
+    "click",
+    createAsyncHandler(async (e) => {
+      const target = e.target as HTMLButtonElement | null;
+      const button = target?.closest<HTMLButtonElement>("button[data-action]");
+      if (!button) return;
+      const selectedIds = stateStore.get("selectedIds");
+      const action = button.getAttribute("data-action");
+      if (selectedIds.size === 0) return;
+      switch (action) {
+        case "pin":
+          await pinSelection([...selectedIds]);
+          break;
+        case "export":
+          await exportSelection([...selectedIds]);
+          break;
+        case "copy-links":
+          await copyLinkSelection([...selectedIds]);
+          break;
+        case "copy-markdown":
+          await copyMarkdownSelection([...selectedIds]);
+          break;
+        case "delete":
+          await deleteSelection();
+          break;
+      }
+    }),
+  );
   viewSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement | null;
-      const view = target?.value as ViewId;
+      if (!target) return;
+      const view = target.value as ViewId;
       await handleViews(view);
     }),
   );
   sidebar.addEventListener("contextmenu", (e) => {
-    if (isSelectionMode) return;
+    if (stateStore.get("selectionMode") === true) return;
     const target = e.target as HTMLElement | null;
     const isEmptySidebar =
       sidebar.childElementCount === 1 &&
@@ -198,12 +163,12 @@ function applySidebarListeners(
     "click",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLElement | null;
-      if (target === sidebar) return;
+      if (target === sidebar || !target) return;
       const actionBtn = target?.closest<HTMLButtonElement>(".menu-btn");
       if (actionBtn) {
         e.preventDefault();
         e.stopPropagation();
-        const noteElement = target?.closest<HTMLElement>(".note-item");
+        const noteElement = target.closest<HTMLElement>(".note-item");
         const id = noteElement?.getAttribute("data-id");
         if (!id) return;
         const isPinned = noteElement?.getAttribute("data-pinned") === "true";
@@ -216,7 +181,8 @@ function applySidebarListeners(
       const noteItem = target?.closest<HTMLDivElement>(".note-item");
       const id = noteItem?.getAttribute("data-id");
       if (!id) return;
-      if (isSelectionMode) {
+      if (stateStore.get("selectionMode") === true) {
+        const selectedIds = stateStore.get("selectedIds");
         if (selectedIds.has(id)) {
           selectedIds.delete(id);
         } else {

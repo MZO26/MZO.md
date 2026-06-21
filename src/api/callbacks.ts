@@ -20,7 +20,7 @@ import { getAppItem } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/types";
 
-//----------------------------------------------------------
+//-------------------------------------------------------
 
 // helper functions for callbacks
 
@@ -214,7 +214,6 @@ function initListeners() {
       return;
     }
     console.log("need reload");
-
     noteStore.setState((state) => {
       const existingNote = state.notes.find((n) => n.id === id);
       if (!existingNote) return state;

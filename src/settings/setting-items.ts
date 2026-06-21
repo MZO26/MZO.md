@@ -84,7 +84,7 @@ function buildSelects() {
       "Editor",
     ),
     selectBuilder(
-      "file-backup",
+      "export-format",
       [
         { value: "json", label: "JSON" },
         { value: "md", label: "Markdown" },
@@ -93,7 +93,6 @@ function buildSelects() {
         { value: "pdf", label: "PDF" },
       ],
       "App",
-      "Backup Format",
     ),
     selectBuilder(
       "database",

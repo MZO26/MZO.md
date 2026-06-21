@@ -1,5 +1,9 @@
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
-import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
+import type {
+  CodeTheme,
+  ExportFormat,
+  Theme,
+} from "@shared/schemas/store-schema";
 import type { Content, Editor } from "@tiptap/core";
 import type { VIEWS } from "./constants";
 
@@ -74,8 +78,6 @@ type ImportedContent = {
   extension: "md" | "html" | "json";
 };
 
-type ExportFormat = "json" | "txt" | "md" | "html" | "pdf";
-
 type ExportedContent = {
   id: string;
   fileName: string;
@@ -142,8 +144,10 @@ interface UIRegistry {
   readingTime: HTMLSpanElement;
   metadataContainer: HTMLDivElement;
   searchInput: HTMLInputElement;
-  deleteBtn: HTMLButtonElement;
   selectionBtn: HTMLButtonElement;
+  sidebarHeader: HTMLDivElement;
+  sidebarFooter: HTMLDivElement;
+  selectionFooter: HTMLDivElement;
 }
 
 interface TemplateRegistry {
@@ -190,6 +194,18 @@ type SearchOptions = {
 
 type ViewId = (typeof VIEWS)[number]["id"];
 
+type SelectionAction =
+  | "pin"
+  | "export"
+  | "copy-links"
+  | "copy-markdown"
+  | "delete";
+
+type SelectionActionConfig = {
+  id: SelectionAction;
+  icon: string;
+};
+
 export type {
   Action,
   ActionMap,
@@ -216,6 +232,8 @@ export type {
   ResolvedTheme,
   Result,
   SearchOptions,
+  SelectionAction,
+  SelectionActionConfig,
   SelectOption,
   SidebarChange,
   SnippetCacheValue,

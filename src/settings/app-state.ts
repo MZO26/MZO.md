@@ -21,6 +21,7 @@ const DEFAULT_STORE: AppSettings = {
   "delete-confirmation": true,
   "auto-export": false,
   "auto-export-path": null,
+  "export-format": "md",
   "note-item-display": "snippet",
   "window-bounds": { width: 1100, height: 600 },
 };
@@ -28,11 +29,15 @@ const DEFAULT_STORE: AppSettings = {
 interface AppState {
   activeId: string | null;
   searchQuery: string;
+  selectionMode: boolean;
+  selectedIds: Set<string>;
 }
 
 const STATE_STORE: AppState = {
   activeId: null,
   searchQuery: "",
+  selectionMode: false,
+  selectedIds: new Set<string>(),
 };
 
 let prevId: string | null = null;

@@ -364,7 +364,8 @@ body.is-dragging * {
     );
 }
 
-.sidebar-footer {
+.sidebar-footer,
+.sidebar-selection-footer {
   color: var(--text-muted);
   background-color: var(--bg-sidebar-section);
   display: flex;
@@ -374,9 +375,38 @@ body.is-dragging * {
   padding: 10px;
 }
 
+.sidebar-footer {
+  height: 40px;
+}
+
+.sidebar-selection-footer {
+  position: absolute;
+  bottom: 40px;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  width: 100%;
+  gap: 5px;
+  height: 40px;
+  z-index: 5;
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    top 0.3s ease;
+}
+
+.sidebar-selection-footer.collapsed {
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
 .view-select {
   display: flex;
-  width: 120px;
+  width: 100px;
   min-width: 100px;
   padding: 5px;
   margin: 0;
@@ -386,14 +416,6 @@ body.is-dragging * {
   justify-content: center;
   text-overflow: ellipsis;
   background: none;
-}
-
-.view-select::picker-icon {
-  display: none;
-}
-
-.delete-btn {
-  margin: 0 6px 0 0;
 }
 
 .note-item {
@@ -420,7 +442,7 @@ body.is-dragging * {
 
 .note-item .icon-div {
   display: none;
-  margin: 2px 4px 0 0;
+  margin: 0 4px 6px 0;
 }
 
 .note-item[data-pinned="true"] .icon-div {

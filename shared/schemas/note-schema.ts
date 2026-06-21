@@ -35,6 +35,8 @@ const TogglePinSchema = z.object({
   pinned: DBBooleanSchema,
 });
 
+const ToggleManyPinsSchema = z.array(TogglePinSchema);
+
 const TagSchema = z.string().trim().min(1).max(100).toLowerCase();
 
 const TagsSchema = z.array(TagSchema).max(3).default([]);
@@ -200,6 +202,7 @@ export {
   TagSchema,
   TagsSchema,
   TitleSchema,
+  ToggleManyPinsSchema,
   TogglePinSchema,
   UpdateNotePayloadSchema,
   UpdateTransactionSchema,

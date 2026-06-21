@@ -99,6 +99,10 @@ async function pin(id: string): Promise<Result<boolean>> {
   return invoke(window.noteAPI.pin(id));
 }
 
+async function pinMany(ids: string[]): Promise<Result<boolean>> {
+  return invoke(window.noteAPI.pinMany(ids));
+}
+
 async function getViews(
   view: ViewId,
   id: string | null,
@@ -234,6 +238,7 @@ export {
   openAutoExportFolder,
   openExternal,
   pin,
+  pinMany,
   pinWindow,
   selectAutoExportFolder,
   setTheme,

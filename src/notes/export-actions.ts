@@ -1,4 +1,4 @@
-import { getAllBackup, getNoteById } from "@/api/api";
+import { getNoteById } from "@/api/api";
 import {
   getNoteEditorExtensions,
   getPlainTextFromJson,
@@ -23,13 +23,9 @@ import DOMPurify from "dompurify";
 // batch export function triggered by file backup setting
 
 async function getBatchExportContent(
+  notes: Note[],
   extension: ExportFormat,
 ): Promise<Result<ExportedContent[]>> {
-  const result = await getAllBackup();
-  if (!result.success) {
-    return { success: false, error: result.error };
-  }
-  const notes = result.data;
   const processedPayloads: ExportedContent[] = [];
   if (extension === "json" || extension === "txt") {
     try {

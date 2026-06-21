@@ -115,6 +115,7 @@ contextBridge.exposeInMainWorld("noteAPI", {
   getById: (id: string) => ipcRenderer.invoke("note:getById", id),
   getManyById: (ids: string[]) => ipcRenderer.invoke("note:getManyById", ids),
   pin: (id: string) => ipcRenderer.invoke("note:pin", id),
+  pinMany: (ids: string[]) => ipcRenderer.invoke("note:pin-many", ids),
   getViews: (view: ViewId, id: string | null) =>
     ipcRenderer.invoke("views:get", view, id),
   dbMaintenance: (action: string) =>

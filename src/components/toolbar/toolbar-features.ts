@@ -9,6 +9,7 @@ import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
 import type { Theme } from "@shared/schemas/store-schema";
 import type { ActionMap } from "@shared/types";
 import { handleSearchInput } from "../sidebar/sidebar-features";
+import { createDivider } from "./toolbar-factory";
 
 // top-toolbar for quick actions
 
@@ -142,9 +143,7 @@ function renderTags(container: HTMLDivElement) {
 
   if (activeTags && activeTags.length > 0) {
     for (const tag of activeTags) createTagElement(container, tag);
-    const divider = document.createElement("div");
-    divider.classList.add("divider");
-    container.appendChild(divider);
+    container.appendChild(createDivider());
   }
   if (activeTags && activeTags.length === 0 && sortedTags.length === 0) {
     const span = document.createElement("span");

@@ -11,6 +11,7 @@ const StoreSchema = z.object({
   "delete-confirmation": z.boolean().catch(false),
   "auto-export": z.boolean().catch(false),
   "auto-export-path": z.string().nullable().catch(null),
+  "export-format": z.enum(["md", "json", "html", "txt", "pdf"]).catch("md"),
   "code-theme": z.enum(["focus", "balanced", "colorless"]).catch("balanced"),
   highlight: z.enum(["context", "insight", "action"]).catch("context"),
   "note-item-display": z.enum(["tags", "snippet", "minimal"]).catch("tags"),
@@ -28,6 +29,7 @@ type AppSettings = z.infer<typeof StoreSchema>;
 type Spellcheck = AppSettings["spellcheck"];
 type AutoExportPath = AppSettings["auto-export-path"];
 type AutoExport = AppSettings["auto-export"];
+type ExportFormat = AppSettings["export-format"];
 type DeleteConfirmation = AppSettings["delete-confirmation"];
 type NoteItemDisplay = AppSettings["note-item-display"];
 type HighlightTheme = AppSettings["highlight"];
@@ -48,6 +50,7 @@ export {
   type AutoExportPath,
   type CodeTheme,
   type DeleteConfirmation,
+  type ExportFormat,
   type FontFamily,
   type FontSize,
   type HighlightTheme,

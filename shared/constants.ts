@@ -1,6 +1,12 @@
 import type { NoteSearchDoc } from "@shared/schemas/note-schema";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
-import type { Code, ContentType, ResolvedTheme, ViewItem } from "@shared/types";
+import type {
+  Code,
+  ContentType,
+  ResolvedTheme,
+  SelectionActionConfig,
+  ViewItem,
+} from "@shared/types";
 import type { IFuseOptions } from "fuse.js";
 
 const APP_START_TIME = Date.now();
@@ -53,6 +59,20 @@ const VIEWS = [
   { id: "unlinked", label: "Unlinked" },
   { id: "hubs", label: "Most Links" },
 ] as const satisfies readonly ViewItem[];
+
+const SELECTION_ACTIONS: SelectionActionConfig[] = [
+  { id: "pin", icon: "pin" },
+  { id: "export", icon: "download" },
+  {
+    id: "copy-links",
+    icon: "git-compare-arrows",
+  },
+  {
+    id: "copy-markdown",
+    icon: "file-symlink",
+  },
+  { id: "delete", icon: "trash-2" },
+];
 
 const THEME_MAP = {
   system: "system",
@@ -202,6 +222,7 @@ export {
   MAX_SIZE,
   MIME_TO_EXT,
   PADDING,
+  SELECTION_ACTIONS,
   THEME_DATA,
   THEME_MAP,
   UNTITLED,

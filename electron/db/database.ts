@@ -7,6 +7,7 @@ import { extractText } from "@shared/generators";
 import {
   CreateTransactionSchema,
   NoteFromDB,
+  ToggleManyPinsSchema,
   TogglePinSchema,
   UpdateTransactionSchema,
   type CreateNotePayload,
@@ -39,6 +40,7 @@ class NoteDB {
   private getLinksByIdStmt: BetterSqlite.Statement;
   private getOldTitleStmt: BetterSqlite.Statement;
   private togglePinStmt: BetterSqlite.Statement;
+  private toggleManyPinStmt: BetterSqlite.Statement;
   private searchByTagStmt: BetterSqlite.Statement;
   constructor() {
     const dbPath = path.join(app.getPath("userData"), "notes.db");
@@ -80,6 +82,12 @@ class NoteDB {
       SET pinned = NOT pinned, updated_at = @updated_at
       WHERE id = @id RETURNING pinned
     `);
+      this.toggleManyPinStmt = this.db.prepare(`
+      UPDATE notes
+      SET pinned = NOT pinned, updated_at = @updated_at
+      WHERE id IN (SELECT value FROM json_each(@ids))
+      RETURNING id
+      `);
       this.searchByTagStmt = this.db.prepare(`
       SELECT notes.* 
       FROM notes
@@ -298,6 +306,20 @@ class NoteDB {
       throw new AppBackendError(AppErrorCode.DBError);
     }
     return validation(TogglePinSchema, result).pinned;
+  }
+
+  public toggleManyPins(ids: string[]): boolean {
+    if (ids.length === 0) return false;
+    const now = new Date().toISOString();
+    const result = this.toggleManyPinStmt.all({
+      updated_at: now,
+      ids: JSON.stringify(ids),
+    });
+    if (!result) {
+      throw new AppBackendError(AppErrorCode.DBError);
+    }
+    const rows = validation(ToggleManyPinsSchema, result);
+    return rows.length > 0;
   }
 
   public getTagsById(id: string): Tag[] {

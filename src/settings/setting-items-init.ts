@@ -1,11 +1,9 @@
 import {
   dbMaintenance,
-  exportManyNotes,
   selectAutoExportFolder,
   showNotification,
   updateSettings,
 } from "@/api/api";
-import { getBatchExportContent } from "@/notes/export-actions";
 import { syncNoteStore } from "@/settings/app-state";
 import { applyAppTheme, resolveTheme, setCodeTheme } from "@/settings/theme";
 import { createAsyncHandler } from "@/utils/async";
@@ -222,8 +220,8 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
 //--------------------------------------------------------------
 
 function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
-  const batchExportSelect = findElement<HTMLSelectElement>(
-    "#file-backup",
+  const exportFormatSelect = findElement<HTMLSelectElement>(
+    "#export-format",
     container,
   );
   const databaseSelect = findElement<HTMLSelectElement>("#database", container);
@@ -236,7 +234,7 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
     container,
   );
   if (
-    !batchExportSelect ||
+    !exportFormatSelect ||
     !databaseSelect ||
     !deleteConfirmSelect ||
     !autoExportSelect
@@ -245,34 +243,14 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
 
   // file backup
 
-  batchExportSelect.value = "";
-  batchExportSelect.addEventListener(
+  exportFormatSelect.value = settings["export-format"];
+  exportFormatSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement | null;
       if (!target) return;
       const selectedExtension = target.value as ExportFormat;
-      const exportContent = await getBatchExportContent(selectedExtension);
-      if (!exportContent.success) {
-        console.error(
-          "[initAppSettings -> getBatchExportContent]: Failed to get export content:",
-          exportContent.error,
-        );
-        return;
-      }
-      const result = await exportManyNotes(exportContent.data);
-      target.value = "";
-      if (!result.success) {
-        console.error(
-          "[initAppSettings -> exportManyNotes]: Export failed or Operation got cancelled:",
-          result.error,
-        );
-        return;
-      }
-      await showNotification(
-        "Export Successful.",
-        `${result.data.length} files exported to .${selectedExtension}`,
-      );
+      updateSettings({ "export-format": selectedExtension });
     }),
   );
 
@@ -309,7 +287,6 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
     const target = e.target as HTMLSelectElement | null;
     if (!target) return;
     const enabled = target.value === "true";
-    console.log(enabled);
     updateSettings({ "delete-confirmation": enabled });
   });
 

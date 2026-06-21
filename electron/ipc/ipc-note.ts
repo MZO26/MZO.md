@@ -222,6 +222,15 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
+  ipcMain.handle("note:pin-many", (e, ids: unknown) => {
+    return result(e, async () => {
+      if (!checkRateLimit("note:pin-many", LIMITS.READ_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validatedData = validation(IdsSchema, ids);
+      return db.toggleManyPins(validatedData);
+    });
+  });
+
   ipcMain.handle("views:get", (e, view: unknown) => {
     return result(e, async () => {
       if (!checkRateLimit(`views:get:${view}`, LIMITS.READ_HEAVY))
