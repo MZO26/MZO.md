@@ -11,6 +11,7 @@ function buildSelects() {
       { value: "dark-warm", label: "Dark · Warm" },
     ],
     "Appearance",
+    "App-Theme",
   );
   selectBuilder(
     "code-theme",
@@ -20,6 +21,7 @@ function buildSelects() {
       { value: "colorless", label: "Colorless" },
     ],
     "Appearance",
+    "Code-Theme",
   );
   selectBuilder(
     "highlight-theme",
@@ -29,6 +31,7 @@ function buildSelects() {
       { value: "action", label: "Action" },
     ],
     "Appearance",
+    "Highlight-Theme",
   );
   selectBuilder(
     "note-item-display",
@@ -47,6 +50,7 @@ function buildSelects() {
       },
     ],
     "Appearance",
+    "Note-Item-Display",
   );
   selectBuilder(
     "font-family",
@@ -56,6 +60,7 @@ function buildSelects() {
       { value: "serif", label: "Serif" },
     ],
     "Editor",
+    "Font-Family",
   );
   selectBuilder(
     "font-size",
@@ -65,6 +70,7 @@ function buildSelects() {
       { value: "20", label: "Large" },
     ],
     "Editor",
+    "Font-Size",
   );
   (selectBuilder(
     "line-height",
@@ -74,6 +80,7 @@ function buildSelects() {
       { value: "1.6", label: "Large" },
     ],
     "Editor",
+    "Line-Height",
   ),
     selectBuilder(
       "spellcheck",
@@ -82,6 +89,7 @@ function buildSelects() {
         { value: "false", label: "Disable" },
       ],
       "Editor",
+      "Spellcheck",
     ),
     selectBuilder(
       "export-format",
@@ -93,23 +101,17 @@ function buildSelects() {
         { value: "pdf", label: "PDF" },
       ],
       "App",
+      "Manual Export-Format",
     ),
     selectBuilder(
-      "delete-confirm",
+      "auto-export",
       [
         { value: "true", label: "Enable" },
         { value: "false", label: "Disable" },
       ],
       "App",
+      "Auto-Export (.md)",
     ));
-  selectBuilder(
-    "auto-export",
-    [
-      { value: "true", label: "Enable" },
-      { value: "false", label: "Disable" },
-    ],
-    "App",
-  );
 }
 
 export { buildSelects };

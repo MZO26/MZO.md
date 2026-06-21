@@ -219,15 +219,11 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
     "#export-format",
     container,
   );
-  const deleteConfirmSelect = findElement<HTMLSelectElement>(
-    "#delete-confirm",
-    container,
-  );
   const autoExportSelect = findElement<HTMLSelectElement>(
     "#auto-export",
     container,
   );
-  if (!exportFormatSelect || !deleteConfirmSelect || !autoExportSelect) return;
+  if (!exportFormatSelect || !autoExportSelect) return;
 
   // file backup
 
@@ -241,17 +237,6 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
       updateSettings({ "export-format": selectedExtension });
     }),
   );
-
-  // delete confirmation
-  deleteConfirmSelect.value = settings["delete-confirmation"]
-    ? "true"
-    : "false";
-  deleteConfirmSelect.addEventListener("change", (e) => {
-    const target = e.target as HTMLSelectElement | null;
-    if (!target) return;
-    const enabled = target.value === "true";
-    updateSettings({ "delete-confirmation": enabled });
-  });
 
   // auto export setting
   const autoExportPath = settings["auto-export-path"];

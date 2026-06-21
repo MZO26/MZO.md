@@ -8,7 +8,6 @@ const StoreSchema = z.object({
   "font-size": z.enum(["16", "18", "20"]).catch("18"),
   "line-height": z.enum(["1.4", "1.5", "1.6"]).catch("1.5"),
   spellcheck: z.boolean().catch(false),
-  "delete-confirmation": z.boolean().catch(false),
   "auto-export": z.boolean().catch(false),
   "auto-export-path": z.string().nullable().catch(null),
   "export-format": z.enum(["md", "json", "html", "txt", "pdf"]).catch("md"),
@@ -30,7 +29,6 @@ type Spellcheck = AppSettings["spellcheck"];
 type AutoExportPath = AppSettings["auto-export-path"];
 type AutoExport = AppSettings["auto-export"];
 type ExportFormat = AppSettings["export-format"];
-type DeleteConfirmation = AppSettings["delete-confirmation"];
 type NoteItemDisplay = AppSettings["note-item-display"];
 type HighlightTheme = AppSettings["highlight"];
 type Theme = AppSettings["theme"];
@@ -49,7 +47,6 @@ export {
   type AutoExport,
   type AutoExportPath,
   type CodeTheme,
-  type DeleteConfirmation,
   type ExportFormat,
   type FontFamily,
   type FontSize,

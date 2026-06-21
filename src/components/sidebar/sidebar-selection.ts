@@ -53,13 +53,13 @@ function getActionLabel(actionId: string, selectedCount: number): string {
     case "cancel":
       return "Cancel selection";
     case "pin":
-      return `Pin ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
+      return `Toggle Pin for ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
     case "export":
       return `Export ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
     case "copy-links":
       return `Copy ${selectedCount} ${selectedCount === 1 ? "wikilink" : "wikilinks"}`;
-    case "copy-markdown":
-      return `Copy markdown of ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
+    case "copy-rich-text":
+      return `Copy rich-text of ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
     case "delete":
       return `Delete ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
     default:
@@ -115,7 +115,7 @@ function updateSelectionUI() {
 
 // selection actions
 
-async function copyMarkdownSelection(selectedIds: string[]) {
+async function copyRichTextSelection(selectedIds: string[]) {
   const notes = noteStore.get("notes");
   const allSelected =
     selectedIds.length === notes.length &&
@@ -130,7 +130,7 @@ async function copyMarkdownSelection(selectedIds: string[]) {
     );
     return;
   }
-  const content = await getBatchExportContent(result.data, "md");
+  const content = await getBatchExportContent(result.data, "html");
   if (!content.success) {
     console.error(
       "[copyMarkdownSelection -> getBatchExportContent]: Failed to get markdown:",
@@ -140,8 +140,22 @@ async function copyMarkdownSelection(selectedIds: string[]) {
     return;
   }
   try {
-    const text = content.data.map((item) => item.content).join("\n\n");
-    await navigator.clipboard.writeText(text);
+    const html = content.data
+      .map((item) => item.content.trim())
+      .filter(Boolean)
+      .join("\n<hr>\n");
+
+    const plain = content.data
+      .map((item) => item.content.trim())
+      .filter(Boolean)
+      .join("\n\n");
+
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([plain], { type: "text/plain" }),
+      }),
+    ]);
     await showNotification("Copied to clipboard.", "");
   } catch (error) {
     await showNotification("Failed to copy to clipboard.", "");
@@ -226,6 +240,7 @@ async function pinSelection(selectedIds: string[]) {
       sidebarChange: { type: "reload" },
     };
   });
+  updateSelectionUI();
 }
 
 async function deleteSelection() {
@@ -236,11 +251,6 @@ async function deleteSelection() {
     ".delete-dialog-title",
     deleteDialog,
   );
-  const confirmationEnabled = settingsStore.get("delete-confirmation") === true;
-  if (!confirmationEnabled) {
-    await handleDeleteManyNotes(ids);
-    return;
-  }
   deleteDialogTitle.textContent =
     ids.length === 1 ? `Delete this note?` : `Delete ${ids.length} notes?`;
   const handleClose = async () => {
@@ -249,7 +259,17 @@ async function deleteSelection() {
       return;
     }
     await handleDeleteManyNotes(ids);
-    setSelectionMode(false);
+    const nextSelectedIds = new Set(
+      [...stateStore.get("selectedIds")].filter((id) => !ids.includes(id)),
+    );
+    stateStore.setState({
+      selectedIds: nextSelectedIds,
+    });
+    if (nextSelectedIds.size === 0) {
+      setSelectionMode(false);
+    } else {
+      updateSelectionUI();
+    }
     deleteDialogTitle.textContent = "";
   };
   deleteDialog.addEventListener("close", handleClose, { once: true });
@@ -259,7 +279,7 @@ async function deleteSelection() {
 
 export {
   copyLinkSelection,
-  copyMarkdownSelection,
+  copyRichTextSelection,
   deleteSelection,
   exportSelection,
   pinSelection,

@@ -6,11 +6,12 @@ function selectBuilder(
   id: string,
   options: SelectOption[],
   category: "Appearance" | "Editor" | "App",
+  labelText: string,
 ) {
   const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
   const label = document.createElement("label");
   label.htmlFor = id;
-  label.textContent = id;
+  label.textContent = labelText ?? id;
   const select = document.createElement("select");
   select.id = id;
   const optionNodes = options.map((opt) => new Option(opt.label, opt.value));

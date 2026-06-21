@@ -5,7 +5,7 @@ import {
 } from "@/components/sidebar/sidebar-features";
 import {
   copyLinkSelection,
-  copyMarkdownSelection,
+  copyRichTextSelection,
   deleteSelection,
   exportSelection,
   pinSelection,
@@ -116,8 +116,8 @@ function applySidebarListeners(
         case "copy-links":
           await copyLinkSelection([...selectedIds]);
           break;
-        case "copy-markdown":
-          await copyMarkdownSelection([...selectedIds]);
+        case "copy-rich-text":
+          await copyRichTextSelection([...selectedIds]);
           break;
         case "delete":
           await deleteSelection();

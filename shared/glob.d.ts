@@ -70,7 +70,7 @@ declare global {
         callback: (id: string, extension: string) => void,
       ) => () => void;
       onTriggerPath: (callback: (id: string) => void) => () => void;
-      onTriggerCopyMarkdown: (callback: (id: string) => void) => () => void;
+      onTriggerCopyRichText: (callback: (id: string) => void) => () => void;
       onTriggerCopyPath: (callback: (id: string) => void) => () => void;
       noteExportMany: (
         payload: ExportedContent[],

@@ -80,8 +80,8 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
           click: () => win.webContents.send("note:trigger-id", id),
         },
         {
-          label: "Markdown Content",
-          click: () => win.webContents.send("note:trigger-copy-markdown", id),
+          label: "Rich Text",
+          click: () => win.webContents.send("note:trigger-copy-rich-text", id),
         },
         {
           label: "File Path",

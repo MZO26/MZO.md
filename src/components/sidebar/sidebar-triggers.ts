@@ -10,7 +10,7 @@ import { deleteDialog } from "@/api/callbacks";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote } from "@/notes/note-actions";
 import { handleDuplicateNote } from "@/notes/note-duplicate";
-import { noteStore, settingsStore } from "@/settings/app-state";
+import { noteStore } from "@/settings/app-state";
 import { findElement, requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
@@ -114,19 +114,27 @@ async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
   }
 }
 
-async function triggerCopyMarkdown(id: string) {
-  const result = await getExportContent(id, "md");
+async function triggerCopyRichText(id: string) {
+  const result = await getExportContent(id, "html");
   if (!result.success) {
     console.error(
-      "[onTriggerCopyMarkdown]: Failed to fetch note data:",
+      "[onTriggerCopyRichText]: Failed to fetch note data:",
       result.error,
     );
-    await showNotification("Failed to get Markdown.", "");
+    await showNotification("Failed to get html.", "");
     return;
   }
-  const markdown = result.data.content;
+  const note = noteStore.get("notes").find((n) => n.id === id);
+  if (!note) return;
+  const html = result.data.content.trim();
+  const plain = note?.plainText.trim() || "";
   try {
-    await navigator.clipboard.writeText(markdown);
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([plain], { type: "text/plain" }),
+      }),
+    ]);
     await showNotification("Copied to clipboard.", "");
   } catch (error) {
     await showNotification("Failed to copy to clipboard.", "");
@@ -135,11 +143,6 @@ async function triggerCopyMarkdown(id: string) {
 }
 
 async function triggerSingleDelete(id: string) {
-  const confirmationEnabled = settingsStore.get("delete-confirmation") === true;
-  if (!confirmationEnabled) {
-    await handleDeleteNote(id);
-    return;
-  }
   const deleteDialogTitle = requireElement<HTMLSpanElement>(
     ".delete-dialog-title",
     deleteDialog,
@@ -207,7 +210,7 @@ async function triggerDuplicate(id: string) {
 
 export {
   triggerCopyFilePath,
-  triggerCopyMarkdown,
+  triggerCopyRichText,
   triggerCopyWikilink,
   triggerDuplicate,
   triggerNoteItemMenu,

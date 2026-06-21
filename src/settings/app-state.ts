@@ -18,7 +18,6 @@ const DEFAULT_STORE: AppSettings = {
   "code-theme": "balanced",
   highlight: "context",
   spellcheck: false,
-  "delete-confirmation": true,
   "auto-export": false,
   "auto-export-path": null,
   "export-format": "md",

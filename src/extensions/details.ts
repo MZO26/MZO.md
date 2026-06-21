@@ -155,7 +155,9 @@ export const DetailsBlock = Node.create({
 
   renderMarkdown(node, helpers) {
     const summary = String(node.attrs?.["summary"] || "Details");
-    const content = helpers.renderChildren(node);
-    return `<details>\n<summary>${summary}</summary>\n\n${content}\n\n</details>\n\n`;
+    const content = helpers.renderChildren(node.content || []);
+    return content.trim().length > 0
+      ? `<details>\n<summary>${summary}</summary>\n\n${content}\n\n</details>\n`
+      : `<details>\n<summary>${summary}</summary>\n</details>\n`;
   },
 });

@@ -370,7 +370,7 @@ body.is-dragging * {
   background-color: var(--bg-sidebar-section);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
   height: 40px;
   padding: 10px;
 }
@@ -382,6 +382,7 @@ body.is-dragging * {
 .sidebar-selection-footer {
   position: absolute;
   bottom: 40px;
+  border: 1px solid var(--border-color);
   flex-wrap: nowrap;
   flex-direction: row;
   width: 100%;
@@ -406,8 +407,8 @@ body.is-dragging * {
 
 .view-select {
   display: flex;
-  width: 100px;
-  min-width: 100px;
+  width: 110px;
+  min-width: 110px;
   padding: 5px;
   margin: 0;
   color: var(--text-muted);

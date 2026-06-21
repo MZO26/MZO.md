@@ -20,8 +20,6 @@ import DOMPurify from "dompurify";
 
 // gets called in frontend because headless editor is needed to convert content to markdown or html
 
-// batch export function triggered by file backup setting
-
 async function getBatchExportContent(
   notes: Note[],
   extension: ExportFormat,

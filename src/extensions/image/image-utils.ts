@@ -16,7 +16,7 @@ function getScaledSize(
 
 async function compressImage(
   file: File,
-  maxWidth = 1400,
+  maxWidth = 1000,
   quality = 0.9,
 ): Promise<Uint8Array> {
   // decodes the image file into a drawable ImageBitmap object, ready to be drawn onto a canvas

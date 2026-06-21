@@ -29,12 +29,18 @@ function initTableOfContents() {
   initTippyDelegate(container, document.documentElement, "left");
   container.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
-    const button = target?.closest("button[data-target-id]");
+    if (!target) return;
+    const button = target.closest("button[data-target-id]");
     if (!button) return;
     e.preventDefault();
     const targetId = button.getAttribute("data-target-id");
     if (targetId) {
-      findElement(`[id="${targetId}"]`)?.scrollIntoView({ behavior: "smooth" });
+      const heading = findElement(`[id="${targetId}"]`) as HTMLElement | null;
+      if (!heading) return;
+      heading.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     }
   });
   return function updateToc(items: TocItem[]) {

@@ -10,8 +10,8 @@ const worker = new Worker(new URL("./image-worker.ts", import.meta.url), {
 
 function compressImageInWorker(
   file: File,
-  maxWidth = 800,
-  quality = 0.8,
+  maxWidth = 1000,
+  quality = 0.9,
 ): Promise<Result<Uint8Array>> {
   return new Promise((resolve) => {
     // uuid for compression job. functions like a tracking number to identify request

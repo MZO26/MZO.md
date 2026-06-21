@@ -300,33 +300,6 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
     },
     true,
   );
-  editorWrapper.addEventListener("dragover", (event) => {
-    event.preventDefault();
-    const dataTransfer = event.dataTransfer;
-    if (!dataTransfer) return;
-    const items = Array.from(dataTransfer.items);
-    const hasFile = items.some((item) => item.kind === "file");
-    const hasUnsupportedFile = items.some((item) => {
-      if (item.kind !== "file") return false;
-      if (!item.type) return false;
-      return !ALLOWED_TYPES.includes(item.type);
-    });
-    dataTransfer.dropEffect = hasFile && !hasUnsupportedFile ? "copy" : "none";
-  });
-
-  editorWrapper.addEventListener("paste", (event) => {
-    const dataTransfer = event.clipboardData;
-    if (!dataTransfer) return;
-    const files = Array.from(dataTransfer.files);
-    if (files.length === 0) return;
-    const unsupported = files.some(
-      (file) => !ALLOWED_TYPES.includes(file.type),
-    );
-    if (unsupported) {
-      event.preventDefault();
-      return;
-    }
-  });
 }
 
 export {

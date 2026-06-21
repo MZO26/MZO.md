@@ -1,7 +1,7 @@
 import { setSelectionMode } from "@/components/sidebar/sidebar-selection";
 import {
   triggerCopyFilePath,
-  triggerCopyMarkdown,
+  triggerCopyRichText,
   triggerCopyWikilink,
   triggerDuplicate,
   triggerNoteItemMenu,
@@ -69,8 +69,8 @@ function initListeners() {
     await triggerCopyFilePath(syncPayload);
   });
 
-  window.noteAPI.onTriggerCopyMarkdown(async (id: string) => {
-    await triggerCopyMarkdown(id);
+  window.noteAPI.onTriggerCopyRichText(async (id: string) => {
+    await triggerCopyRichText(id);
   });
 
   window.noteAPI.onTriggerDelete(async (id: string) => {

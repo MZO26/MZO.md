@@ -657,6 +657,7 @@
 }
 
 .ProseMirror-search-match {
+  forced-color-adjust: none;
   background-color: var(--search-match-bg);
   color: var(--text-main);
   border-radius: 3px;
@@ -736,7 +737,6 @@
 
 .ProseMirror .details-root,
 .wikilink-preview-content details {
-  margin: 0.75rem 0;
   border: 0;
   border-radius: 5px;
   box-shadow: none;

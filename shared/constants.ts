@@ -69,7 +69,7 @@ const SELECTION_ACTIONS: SelectionActionConfig[] = [
     icon: "git-compare-arrows",
   },
   {
-    id: "copy-markdown",
+    id: "copy-rich-text",
     icon: "file-symlink",
   },
   { id: "delete", icon: "trash-2" },
@@ -194,7 +194,7 @@ const FUSE_OPTIONS: IFuseOptions<NoteSearchDoc> = {
 const MAX_CHARS = 47; // snippet max chars before appending ...
 const PADDING = 15; // padding for highlight snippet to show context
 
-const UNTITLED = "New Note";
+const UNTITLED = "Untitled";
 
 const EMPTY_DOC = { type: "doc" as const, content: [{ type: "paragraph" }] };
 

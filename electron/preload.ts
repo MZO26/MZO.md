@@ -94,8 +94,8 @@ contextBridge.exposeInMainWorld("noteAPI", {
   onTriggerPath: (callback: (id: string) => void) => {
     subscribe("note:trigger-path", callback);
   },
-  onTriggerCopyMarkdown: (callback: (id: string) => void) => {
-    subscribe("note:trigger-copy-markdown", callback);
+  onTriggerCopyRichText: (callback: (id: string) => void) => {
+    subscribe("note:trigger-copy-rich-text", callback);
   },
   onTriggerCopyPath: (callback: (id: string) => void) => {
     subscribe("note:trigger-copy-path", callback);

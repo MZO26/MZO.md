@@ -382,7 +382,6 @@ label {
   font-size: 14px;
   color: var(--text-muted);
   font-weight: 500;
-  text-transform: capitalize;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

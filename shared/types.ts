@@ -198,7 +198,7 @@ type SelectionAction =
   | "pin"
   | "export"
   | "copy-links"
-  | "copy-markdown"
+  | "copy-rich-text"
   | "delete";
 
 type SelectionActionConfig = {
