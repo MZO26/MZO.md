@@ -11,12 +11,7 @@ import {
   type ImagePayload,
   type UpdateNotePayload,
 } from "@shared/shared/types";
-import type {
-  ImageSrc,
-  MenuType,
-  NoteMenuPayload,
-  ViewId,
-} from "@shared/types";
+import type { ImageSrc, MenuType, NoteMenuPayload } from "@shared/types";
 
 declare module "*.css";
 
@@ -83,10 +78,6 @@ declare global {
       onTriggerSelect: (callback: (id: string) => void) => () => void;
       pin: (id: string) => Promise<Result<boolean>>;
       pinMany: (ids: string[]) => Promise<Result<boolean>>;
-      getViews: (
-        view: ViewId,
-        id: string | null,
-      ) => Promise<Result<Note[] | NoteListItem[]>>;
       databaseBackup: () => Promise<Result<number>>;
       setActiveNote: (id: string | null) => void;
     };

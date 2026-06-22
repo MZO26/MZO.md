@@ -22,9 +22,10 @@ function buildPreviewCard(content: Note["content"]) {
   const sanitized = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
   if (sanitized) {
     cardContent.innerHTML = sanitized;
-    cardContent.querySelectorAll("pre code").forEach((block) => {
-      hljs.highlightElement(block as HTMLElement);
-    });
+    const blocks = cardContent.querySelectorAll<HTMLElement>("pre code");
+    for (const block of blocks) {
+      hljs.highlightElement(block);
+    }
   }
   const hasText = (cardContent.textContent || "").trim().length > 0;
   const hasMedia = cardContent.querySelectorAll("img, hr").length > 0;

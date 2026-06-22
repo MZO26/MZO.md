@@ -129,9 +129,10 @@ function initEditor(settings: Partial<AppSettings>): Editor {
     const activeId = stateStore.getState().activeId;
     const activeNote = noteStore.get("activeNote");
     if (!activeId || !activeNote) return;
-    const content = editor?.getJSON();
+    const content = editor.getJSON();
+    const text = editor.getText();
     const markdown = isAutoExportEnabled() ? editor.getMarkdown() : undefined;
-    debouncedSaveNote(activeId, content, markdown, false);
+    debouncedSaveNote(activeId, content, text, markdown, false);
     const currentHeadings = getTableOfContents(editor);
     updateToc(currentHeadings);
   });

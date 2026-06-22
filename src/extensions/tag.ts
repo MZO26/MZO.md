@@ -1,9 +1,22 @@
+import { noteStore } from "@/settings/app-state";
 import { InputRule, mergeAttributes, Node } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 export interface NoteTagOptions {
   onClick: (id: string) => void | Promise<void>;
 }
+
+interface TagAutocompleteState {
+  from: number;
+  to: number;
+  autocompleteText: string;
+  tagId: string;
+}
+
+const tagAutocompleteKey = new PluginKey<TagAutocompleteState>(
+  "tagAutocomplete",
+);
 
 const NoteTag = Node.create<NoteTagOptions>({
   name: "noteTag",
@@ -88,6 +101,31 @@ const NoteTag = Node.create<NoteTagOptions>({
       }),
     ];
   },
+  addKeyboardShortcuts() {
+    return {
+      Tab: ({ editor }) => {
+        const state = tagAutocompleteKey.getState(editor.state);
+        if (!state) return false;
+
+        editor
+          .chain()
+          .focus()
+          .insertContentAt({ from: state.from, to: state.to }, [
+            {
+              type: this.name,
+              attrs: { id: state.tagId },
+            },
+            {
+              type: "text",
+              text: " ",
+            },
+          ])
+          .run();
+
+        return true;
+      },
+    };
+  },
 
   addProseMirrorPlugins() {
     return [
@@ -100,6 +138,68 @@ const NoteTag = Node.create<NoteTagOptions>({
             event.stopPropagation();
             void this.options.onClick(node.attrs["id"]);
             return true;
+          },
+        },
+      }),
+      new Plugin({
+        key: tagAutocompleteKey,
+        state: {
+          init: () => null,
+          apply: (
+            _tr,
+            _value,
+            _oldState,
+            newState,
+          ): TagAutocompleteState | null => {
+            const { selection } = newState;
+            if (!selection.empty) return null;
+            const $head = selection.$head;
+            const textBefore = $head.parent.textContent.slice(
+              0,
+              $head.parentOffset,
+            );
+            const match = textBefore.match(/(?:^|\s)#([\p{L}\p{N}_-]+)$/u);
+            if (!match) return null;
+            const rawQuery = match[1];
+            if (!rawQuery) return null;
+            const normalizedQuery = rawQuery.trim().toLowerCase();
+            let bestMatch: string | null = null;
+            let exactMatchFound = false;
+            for (const note of noteStore.get("notes")) {
+              for (const tag of note.tags) {
+                if (tag === normalizedQuery) {
+                  bestMatch = tag;
+                  exactMatchFound = true;
+                  break;
+                }
+                if (
+                  tag.startsWith(normalizedQuery) &&
+                  (bestMatch === null || tag.length < bestMatch.length)
+                ) {
+                  bestMatch = tag;
+                }
+              }
+              if (exactMatchFound) break;
+            }
+            if (!bestMatch) return null;
+            return {
+              from: $head.pos - rawQuery.length - 1,
+              to: $head.pos,
+              autocompleteText: bestMatch.slice(rawQuery.length),
+              tagId: bestMatch,
+            };
+          },
+        },
+        props: {
+          decorations(state) {
+            const pluginState = tagAutocompleteKey.getState(state);
+            if (!pluginState) return DecorationSet.empty;
+            const span = document.createElement("span");
+            span.className = "autocomplete";
+            span.textContent = pluginState.autocompleteText;
+            return DecorationSet.create(state.doc, [
+              Decoration.widget(pluginState.to, span, { side: 1 }),
+            ]);
           },
         },
       }),

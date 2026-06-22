@@ -1,4 +1,3 @@
-import { getViews } from "@/api/api";
 import { updateSnippetHighlight } from "@/components/sidebar/sidebar-note-items";
 import { noteStore, searchEngine, stateStore } from "@/settings/app-state";
 import { debounce } from "@/utils/async";
@@ -6,7 +5,7 @@ import { findElement, requireElement } from "@/utils/dom";
 import { estimateReadingTime } from "@/utils/note";
 import { getAppItem, getUIItems } from "@/utils/registry";
 import { DEBOUNCE_MS, MAX_CHARS, PADDING } from "@shared/constants";
-import type { ResizeOptions, SnippetCacheValue, ViewId } from "@shared/types";
+import type { ResizeOptions, SnippetCacheValue } from "@shared/types";
 
 // sidebar
 
@@ -109,23 +108,6 @@ function handleSearchInput(searchInput: string) {
   ) as HTMLDivElement[];
   showSearchItems(noteElements, searchCache);
 }
-
-// views handled by db
-
-async function handleViews(view: ViewId) {
-  const activeId = stateStore.getState().activeId;
-  stateStore.setState({ searchQuery: "" });
-  const result = await getViews(view, activeId);
-  if (!result.success) {
-    console.error("[handleViews]: Failed to fetch views:", result.error);
-    return;
-  }
-  noteStore.setState({
-    visibleIds: result.data.map((n) => n.id),
-    sidebarChange: { type: "reload" },
-  });
-}
-
 //------------------------------------------------------------
 
 // footer-bar
@@ -209,10 +191,4 @@ const debouncedSearch = debounce((e: Event) => {
   handleSearchInput(value ?? "");
 }, DEBOUNCE_MS.fast);
 
-export {
-  debouncedSearch,
-  handleSearchInput,
-  handleViews,
-  resizeSidebar,
-  updateStats,
-};
+export { debouncedSearch, handleSearchInput, resizeSidebar, updateStats };

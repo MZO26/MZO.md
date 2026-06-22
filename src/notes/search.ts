@@ -46,7 +46,14 @@ class NoteSearch {
 
   public addMany(notes: NoteListItem[]) {
     if (notes.length === 0) return;
-    for (const note of notes) {
+    const mappedNotes = notes.map((note) => ({
+      id: note.id,
+      snippet: note.snippet,
+      title: note.title,
+      plainText: note.plainText,
+      tags: note.tags,
+    }));
+    for (const note of mappedNotes) {
       this.fuse.add(note);
     }
     this.resetSearchCache();

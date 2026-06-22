@@ -25,10 +25,10 @@ class Transactions {
     this.db = dbConnection;
 
     this.createNoteStmt = this.db.prepare(
-      `INSERT INTO notes (id, title, content, snippet, pinned, todos_left, created_at, updated_at) VALUES (@id, @title, @content, @snippet, @pinned, @todos_left, @created_at, @updated_at) RETURNING *`,
+      `INSERT INTO notes (id, title, content, plainText, snippet, pinned, created_at, updated_at) VALUES (@id, @title, @content, @plainText, @snippet, @pinned, @created_at, @updated_at) RETURNING *`,
     );
     this.updateNoteStmt = this.db
-      .prepare(`UPDATE notes SET title = @title, content = @content, snippet = @snippet, todos_left = @todos_left, updated_at = @updated_at WHERE id = @id RETURNING *
+      .prepare(`UPDATE notes SET title = @title, content = @content, plainText = @plainText, snippet = @snippet, updated_at = @updated_at WHERE id = @id RETURNING *
     `);
     this.deleteNoteStmt = this.db.prepare("DELETE FROM notes WHERE id = @id");
     this.deleteTagsStmt = this.db.prepare(
@@ -68,13 +68,12 @@ class Transactions {
     safeTags: string[];
     safeLinks: string[];
   }[] {
-    const results = new Array(paramsArr.length);
-    let i = 0;
+    const results = [];
     for (const params of paramsArr) {
       const { tags, links, ...noteParams } = params;
       const safeTags = tags ?? [];
       const safeLinks = links ?? [];
-      const result = this.createNoteStmt.get(noteParams) as NoteRow;
+      const result = this.createNoteStmt.get(noteParams) as NoteRow | undefined;
       if (!result) {
         throw new AppBackendError(AppErrorCode.DBError);
       }
@@ -87,8 +86,7 @@ class Transactions {
       for (const tag of safeTags) {
         this.insertTagsStmt.run({ note_id: result.id, tag_name: tag });
       }
-      results[i] = { row: result, safeTags, safeLinks };
-      i++;
+      results.push({ row: result, safeTags, safeLinks });
     }
     return results;
   }
@@ -115,7 +113,7 @@ class Transactions {
     safeTags: string[],
     safeLinks: string[],
   ): NoteRow {
-    const result = this.createNoteStmt.get(noteParams) as NoteRow;
+    const result = this.createNoteStmt.get(noteParams) as NoteRow | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -162,7 +160,7 @@ class Transactions {
     safeTags: string[],
     safeLinks: string[],
   ): NoteRow {
-    const result = this.updateNoteStmt.get(noteParams) as NoteRow;
+    const result = this.updateNoteStmt.get(noteParams) as NoteRow | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }

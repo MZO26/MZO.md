@@ -26,6 +26,7 @@ import { getMetadata, titleGenerator } from "@shared/generators";
 import {
   type CreateNotePayload,
   type Note,
+  type NoteListItem,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 
@@ -47,6 +48,7 @@ async function handleCreateNote() {
   const metadata = getMetadata(editorContent);
   const payload: CreateNotePayload = {
     content: editorContent,
+    plainText: "",
     ...metadata,
     title: UNTITLED,
     pinned: false,
@@ -100,12 +102,10 @@ async function handleImportNote() {
     "Import Successful.",
     `Successfully imported ${count} file${count === 1 ? "" : "s"}`,
   );
-  const notes = new Array(result.data.length);
-  let i = 0;
+  const notes: NoteListItem[] = [];
   for (const note of result.data) {
     const noteListItem = toNoteListItem(note);
-    notes[i] = noteListItem;
-    i++;
+    notes.push(noteListItem);
   }
   noteStore.setState((state) => ({
     notes: [...notes, ...state.notes],
@@ -196,6 +196,7 @@ async function handleDeleteNote(id: string) {
 async function handleSaveNote(
   id: string,
   content: Note["content"],
+  plainText: Note["plainText"],
   markdown?: string,
   flush: boolean = false,
 ) {
@@ -206,6 +207,7 @@ async function handleSaveNote(
     id,
     title: newTitle,
     content,
+    plainText,
     ...metaData,
     ...(autoExportEnabled && markdown !== undefined ? { markdown } : {}),
   };

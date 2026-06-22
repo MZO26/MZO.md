@@ -496,7 +496,7 @@
 .wikilink-preview-content ol {
   list-style-type: decimal;
   margin-left: 0;
-  padding-left: 1.7rem;
+  padding-left: 1.8rem;
   margin: 0.75rem 0;
 }
 
@@ -821,4 +821,40 @@
 
 .wikilink-preview-content summary::before {
   margin-top: 0.18rem;
+}
+
+.autocomplete {
+  color: var(--text-muted);
+  pointer-events: none;
+  user-select: none;
+}
+
+.transclusion-wrapper {
+  margin: 0.75rem 0;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--surface-1);
+  overflow: hidden;
+  max-width: 42rem;
+}
+
+.transclusion-header {
+  display: flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-2);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.transclusion-body {
+  height: 14rem;
+  overflow: auto;
+  padding: 0.5rem;
+}
+
+.transclusion-preview-card {
+  min-height: 100%;
 }

@@ -1,6 +1,8 @@
 import { noteStore } from "@/settings/app-state";
+import type { NoteListItem } from "@shared/schemas/note-schema";
 import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 const UUID_PATTERN = "([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})";
 const INPUT_REGEX = /(?<!!)\[\[([^\]]+)\]\]$/;
@@ -12,6 +14,17 @@ const PASTE_REGEX = new RegExp(
 export interface WikiLinkOptions {
   onClick: (id: string) => void | Promise<void>;
 }
+
+type AutocompleteState = {
+  from: number;
+  to: number;
+  autocompleteText: string;
+  noteId: string;
+};
+
+const autocompleteKey = new PluginKey<AutocompleteState>(
+  "wikilinkAutocomplete",
+);
 
 const WikiLink = Node.create<WikiLinkOptions>({
   name: "wikilink",
@@ -133,7 +146,90 @@ const WikiLink = Node.create<WikiLinkOptions>({
           },
         },
       }),
+      new Plugin({
+        key: autocompleteKey,
+        state: {
+          init: () => null,
+          apply: (
+            _tr,
+            _value,
+            _oldState,
+            newState,
+          ): AutocompleteState | null => {
+            const { selection } = newState;
+            if (!selection.empty) return null;
+            const $head = selection.$head;
+            const textBefore = $head.parent.textContent.slice(
+              0,
+              $head.parentOffset,
+            );
+            const match = textBefore.match(/\[\[([^\]]*)$/);
+            if (!match) return null;
+            const rawQuery = match[1];
+            if (!rawQuery) return null;
+            const normalizedQuery = rawQuery.trim().toLowerCase();
+            const notes = noteStore.get("notes");
+            let bestMatch: NoteListItem | null = null;
+            for (const note of notes) {
+              const normalizedTitle = note.title.toLowerCase();
+              if (normalizedTitle === normalizedQuery) {
+                bestMatch = note;
+                break;
+              }
+              if (
+                normalizedTitle.startsWith(normalizedQuery) &&
+                (bestMatch === null ||
+                  note.title.length < bestMatch.title.length)
+              ) {
+                bestMatch = note;
+              }
+            }
+            if (!bestMatch) return null;
+            return {
+              from: $head.pos - rawQuery.length - 2,
+              to: $head.pos,
+              autocompleteText: bestMatch.title.slice(rawQuery.length) + "]]",
+              noteId: bestMatch.id,
+            };
+          },
+        },
+        props: {
+          decorations(state) {
+            const pluginState = autocompleteKey.getState(state);
+            if (!pluginState) return DecorationSet.empty;
+            const span = document.createElement("span");
+            span.className = "autocomplete";
+            span.textContent = pluginState.autocompleteText;
+            return DecorationSet.create(state.doc, [
+              Decoration.widget(pluginState.to, span, { side: 1 }),
+            ]);
+          },
+        },
+      }),
     ];
+  },
+  addKeyboardShortcuts() {
+    return {
+      Tab: ({ editor }) => {
+        const state = autocompleteKey.getState(editor.state);
+        if (!state) return false;
+        editor
+          .chain()
+          .focus()
+          .insertContentAt({ from: state.from, to: state.to }, [
+            {
+              type: this.name,
+              attrs: { id: state.noteId },
+            },
+            {
+              type: "text",
+              text: " ",
+            },
+          ])
+          .run();
+        return true;
+      },
+    };
   },
 });
 

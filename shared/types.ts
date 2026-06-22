@@ -5,7 +5,6 @@ import type {
   Theme,
 } from "@shared/schemas/store-schema";
 import type { Content, Editor } from "@tiptap/core";
-import type { VIEWS } from "./constants";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -68,7 +67,6 @@ type ActionMap = Record<string, ToolbarItem>;
 type Metadata = {
   snippet: string;
   tags: string[];
-  todos_left: number;
   links: string[];
 };
 
@@ -116,11 +114,6 @@ type MenuType = "table" | "text" | "note";
 type NoteMenuPayload = {
   id: string;
   pinned?: boolean;
-};
-
-type ViewItem = {
-  id: string;
-  label: string;
 };
 
 interface AppRegistry {
@@ -191,8 +184,6 @@ type SearchOptions = {
   literal?: boolean;
 };
 
-type ViewId = (typeof VIEWS)[number]["id"];
-
 type SelectionAction =
   | "cancel"
   | "pin"
@@ -242,8 +233,6 @@ export type {
   ThemeResult,
   TitleBarOverlayOptions,
   UIRegistry,
-  ViewId,
-  ViewItem,
   WorkerResult,
   ZoomAction,
 };

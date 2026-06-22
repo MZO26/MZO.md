@@ -19,7 +19,6 @@ import type {
   ExportedContent,
   ImageSrc,
   Result,
-  ViewId,
   ZoomAction,
 } from "@shared/types";
 
@@ -101,13 +100,6 @@ async function pin(id: string): Promise<Result<boolean>> {
 
 async function pinMany(ids: string[]): Promise<Result<boolean>> {
   return invoke(window.noteAPI.pinMany(ids));
-}
-
-async function getViews(
-  view: ViewId,
-  id: string | null,
-): Promise<Result<NoteListItem[]>> {
-  return invoke(window.noteAPI.getViews(view, id));
 }
 
 async function databaseBackup(): Promise<Result<number>> {
@@ -230,7 +222,6 @@ export {
   getManyById,
   getNoteById,
   getSettings,
-  getViews,
   handleZoom,
   imageWrite,
   importNote,

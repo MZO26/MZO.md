@@ -38,7 +38,6 @@ function toNoteListItem(note: Note): NoteListItem {
     title: note.title,
     snippet: note.snippet,
     plainText: extractText(note.content),
-    todos_left: note.todos_left,
     created_at: note.created_at,
     updated_at: note.updated_at,
     pinned: note.pinned,

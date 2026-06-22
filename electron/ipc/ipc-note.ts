@@ -230,27 +230,6 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("views:get", (e, view: unknown) => {
-    return result(e, async () => {
-      if (!checkRateLimit(`views:get:${view}`, LIMITS.READ_HEAVY))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      switch (view) {
-        case "all":
-          return db.getAll();
-        case "todos":
-          return db.getNotesWithActionItems();
-        case "untagged":
-          return db.getUntaggedNotes();
-        case "unlinked":
-          return db.getUnlinkedNotes();
-        case "hubs":
-          return db.getNotesWithMostLinks();
-        default:
-          throw new AppBackendError(AppErrorCode.InvalidViewError);
-      }
-    });
-  });
-
   ipcMain.handle("db-backup", (e) => {
     return result(e, async () => {
       if (!checkRateLimit("db-backup", LIMITS.WRITE_HEAVY))

@@ -9,12 +9,7 @@ import type {
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import type {
-  MenuType,
-  NoteMenuPayload,
-  ViewId,
-  ZoomAction,
-} from "@shared/types";
+import type { MenuType, NoteMenuPayload, ZoomAction } from "@shared/types";
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
 
 function subscribe<T extends unknown[]>(
@@ -119,8 +114,6 @@ contextBridge.exposeInMainWorld("noteAPI", {
   getManyById: (ids: string[]) => ipcRenderer.invoke("note:getManyById", ids),
   pin: (id: string) => ipcRenderer.invoke("note:pin", id),
   pinMany: (ids: string[]) => ipcRenderer.invoke("note:pin-many", ids),
-  getViews: (view: ViewId, id: string | null) =>
-    ipcRenderer.invoke("views:get", view, id),
   databaseBackup: () => ipcRenderer.invoke("db-backup"),
   setActiveNote: (id: string | null) => ipcRenderer.send("note:set-active", id),
 });

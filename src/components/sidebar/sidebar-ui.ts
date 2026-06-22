@@ -5,8 +5,6 @@ import { renderIcons } from "@/utils/icons";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem, getTemplateItem } from "@/utils/registry";
 import type { NoteListItem } from "@shared/schemas/note-schema";
-import type { ViewItem } from "@shared/types";
-
 // sidebar
 
 // element is either appContainer (normal sidebar is bound to grid layout) or infoSidebar itself as it's positioned absolute
@@ -77,21 +75,6 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement) {
 
 //----------------------------------------------------------
 
-// create view options
-
-function createViews(views: readonly ViewItem[]) {
-  const select = requireElement<HTMLSelectElement>(".view-select");
-  for (const view of views) {
-    const option = document.createElement("option");
-    option.textContent = view["label"];
-    option.value = view["id"];
-    select.append(option);
-  }
-  return select;
-}
-
-//-----------------------------------------------------------
-
 // render note list
 
 function renderNoteList(notes: NoteListItem[]) {
@@ -157,7 +140,6 @@ function updateNoteInList(note: NoteListItem) {
 }
 
 export {
-  createViews,
   handleSidebarEmptyState,
   prependNoteToList,
   removeNoteFromList,

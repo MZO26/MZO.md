@@ -6,7 +6,6 @@ import type { JSONContent } from "@tiptap/core";
 function getMetadata(content: EditorDoc): Metadata {
   return {
     snippet: snippetGenerator(content),
-    todos_left: getTodoStats(content).left,
     links: getLinks(content),
     tags: getTags(content),
   };
@@ -79,32 +78,6 @@ function snippetGenerator(doc: EditorDoc | undefined): string {
   return cleaned.length > 50 ? cleaned.slice(0, 47) + "..." : cleaned;
 }
 
-function getTodoStats(doc: EditorDoc) {
-  let total = 0;
-  let completed = 0;
-  if (!doc.content || !Array.isArray(doc.content)) {
-    return { total, completed, left: 0 };
-  }
-  const stack: JSONContent[] = [...doc.content];
-  while (stack.length > 0) {
-    const node = stack.pop()!;
-    if (node.type === "taskItem") {
-      total++;
-      if (node.attrs?.["checked"]) {
-        completed++;
-      }
-    }
-    if (node.content && Array.isArray(node.content)) {
-      stack.push(...node.content);
-    }
-  }
-  return {
-    total,
-    completed,
-    left: total - completed,
-  };
-}
-
 function getLinks(doc: EditorDoc) {
   if (!doc.content) return [];
   const seen = new Set<string>();
@@ -131,11 +104,11 @@ function getTags(doc: EditorDoc) {
     const node = stack.pop()!;
     if (node.type === "noteTag" && node.attrs?.["id"]) {
       const tagText = node.attrs["id"].trim().toLowerCase();
-      if (tagText.length > 0 && tagText.length <= 40) {
+      if (tagText.length > 0 && tagText.length <= 100) {
         seen.add(tagText);
       }
     }
-    if (seen.size === 3) break;
+    if (seen.size === 5) break;
     if (node.content) {
       for (const child of node.content) {
         stack.push(child);
@@ -145,10 +118,4 @@ function getTags(doc: EditorDoc) {
   return Array.from(seen);
 }
 
-export {
-  extractText,
-  getMetadata,
-  getTodoStats,
-  snippetGenerator,
-  titleGenerator,
-};
+export { extractText, getMetadata, snippetGenerator, titleGenerator };

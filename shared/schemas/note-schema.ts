@@ -25,8 +25,6 @@ const BooleanSchema = z
   .default(false)
   .transform((val) => (val ? 1 : 0) as 0 | 1);
 
-const TodoSchema = z.number().int().min(0).default(0);
-
 const PlainTextSchema = z.string().default("");
 
 const DateSchema = z.iso.datetime();
@@ -39,7 +37,7 @@ const ToggleManyPinsSchema = z.array(TogglePinSchema);
 
 const TagSchema = z.string().trim().min(1).max(100).toLowerCase();
 
-const TagsSchema = z.array(TagSchema).max(3).default([]);
+const TagsSchema = z.array(TagSchema).max(5).default([]);
 
 const TagRowSchema = z.object({
   note_id: IdSchema,
@@ -72,7 +70,7 @@ const NoteTableSchema = z.object({
   title: TitleSchema,
   snippet: SnippetSchema,
   content: EditorDocSchema,
-  todos_left: TodoSchema,
+  plainText: PlainTextSchema,
   pinned: z.boolean(),
   created_at: DateSchema,
   updated_at: DateSchema,
@@ -140,7 +138,6 @@ const NoteRowSchema = z.object({
   content: z.string(),
   snippet: SnippetSchema,
   pinned: z.union([z.literal(0), z.literal(1)]).default(0),
-  todos_left: TodoSchema,
   created_at: DateSchema,
   updated_at: DateSchema,
 });
@@ -151,8 +148,7 @@ const NoteSearchDoc = NoteSchema.omit({
   links: true,
   created_at: true,
   updated_at: true,
-  todos_left: true,
-}).extend({ plainText: PlainTextSchema });
+});
 
 const AutoExportWritePayloadSchema = z.object({
   id: IdSchema,

@@ -1,6 +1,5 @@
 import {
   debouncedSearch,
-  handleViews,
   resizeSidebar,
 } from "@/components/sidebar/sidebar-features";
 import {
@@ -9,11 +8,11 @@ import {
   deleteSelection,
   exportSelection,
   pinSelection,
-  selectAllVisibleNotes,
   setSelectionMode,
   updateSelectionUI,
 } from "@/components/sidebar/sidebar-selection";
-import { createViews, setSidebarState } from "@/components/sidebar/sidebar-ui";
+import { selectAllVisibleNotes } from "@/components/sidebar/sidebar-selection-ui";
+import { setSidebarState } from "@/components/sidebar/sidebar-ui";
 import {
   handleCreateNote,
   handleImportNote,
@@ -24,8 +23,6 @@ import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItems, getUIItems, registerAppEvents } from "@/utils/registry";
 import { initTippyDelegate } from "@/utils/ui";
-import { VIEWS } from "@shared/constants";
-import type { ViewId } from "@shared/types";
 
 // sidebar
 
@@ -45,15 +42,8 @@ function initNotesSidebar() {
     selectionFooter,
   );
   if (deleteBtn) deleteBtn.disabled = stateStore.get("selectedIds").size === 0;
-  const viewSelect = createViews(VIEWS);
   initTippyDelegate(sidebarContainer);
-  applySidebarListeners(
-    sidebar,
-    sidebarHeader,
-    searchInput,
-    viewSelect,
-    selectionFooter,
-  );
+  applySidebarListeners(sidebar, sidebarHeader, searchInput, selectionFooter);
   registerAppEvents(document, {
     "app:toggle-sidebar": () => {
       const collapsed = appContainer.classList.contains("collapsed");
@@ -71,7 +61,6 @@ function applySidebarListeners(
   sidebar: HTMLDivElement,
   sidebarHeader: HTMLDivElement,
   searchInput: HTMLInputElement,
-  viewSelect: HTMLSelectElement,
   selectionFooter: HTMLDivElement,
 ) {
   resizeSidebar(".resizer-sidebar", ".sidebar-container");
@@ -123,15 +112,6 @@ function applySidebarListeners(
           await deleteSelection();
           break;
       }
-    }),
-  );
-  viewSelect.addEventListener(
-    "change",
-    createAsyncHandler(async (e) => {
-      const target = e.target as HTMLSelectElement | null;
-      if (!target) return;
-      const view = target.value as ViewId;
-      await handleViews(view);
     }),
   );
   sidebar.addEventListener("contextmenu", (e) => {

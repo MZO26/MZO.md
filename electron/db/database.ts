@@ -1,9 +1,7 @@
 import { Transactions } from "@electron/db/transactions";
-import { Views } from "@electron/db/views";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
-import { extractText } from "@shared/generators";
 import {
   CreateTransactionSchema,
   NoteFromDB,
@@ -30,7 +28,6 @@ const require = createRequire(import.meta.url);
 class NoteDB {
   private db: BetterSqlite.Database;
   public transactions: Transactions;
-  public views: Views;
   private getAllNotesStmt: BetterSqlite.Statement;
   private getNoteByIdStmt: BetterSqlite.Statement;
   private getManyNotesByIdStmt: BetterSqlite.Statement;
@@ -50,11 +47,11 @@ class NoteDB {
       this.db.pragma("journal_mode = WAL");
       this.db.pragma("foreign_keys = ON");
       this.createTables();
-      this.views = new Views(this.db);
       this.transactions = new Transactions(this.db);
       // predefined statements to prevent parsing them for every transaction
       this.getAllNotesStmt = this.db.prepare(
-        "SELECT * FROM notes ORDER BY created_at DESC",
+        `SELECT * FROM notes 
+        ORDER BY updated_at DESC`,
       );
       this.getNoteByIdStmt = this.db.prepare(
         "SELECT * FROM notes WHERE id = @id",
@@ -112,8 +109,8 @@ class NoteDB {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL CHECK(length(title) > 0),
         content TEXT NOT NULL,
+        plainText TEXT NOT NULL DEFAULT '',
         pinned INTEGER NOT NULL DEFAULT 0,
-        todos_left INTEGER NOT NULL DEFAULT 0,
         snippet TEXT DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -170,7 +167,7 @@ class NoteDB {
     const now = new Date().toISOString();
     let { tags, links, content, ...rest } = payload;
     const stringifiedContent = JSON.stringify(content);
-    const uniqueTags = [...new Set(tags)].slice(0, 3);
+    const uniqueTags = [...new Set(tags)].slice(0, 5);
     const uniqueLinks = [...new Set(links)];
     const dbPayload = {
       id,
@@ -187,8 +184,7 @@ class NoteDB {
 
   public createMany(payloads: CreateNotePayload[]): Note[] {
     const now = new Date().toISOString();
-    const dbContents = new Array(payloads.length);
-    let i = 0;
+    const dbContents = [];
     for (const payload of payloads) {
       const id = crypto.randomUUID();
       const { tags, links, content, ...rest } = payload;
@@ -204,8 +200,7 @@ class NoteDB {
         created_at: now,
         updated_at: now,
       };
-      dbContents[i] = validation(CreateTransactionSchema, dbPayload);
-      i++;
+      dbContents.push(validation(CreateTransactionSchema, dbPayload));
     }
     return this.transactions.safeCreateMany(dbContents);
   }
@@ -214,7 +209,7 @@ class NoteDB {
     let { tags, links, content, ...rest } = payload;
     const stringifiedContent = JSON.stringify(content);
     const now = new Date().toISOString();
-    const uniqueTags = [...new Set(tags)].slice(0, 3);
+    const uniqueTags = [...new Set(tags)].slice(0, 5);
     const uniqueLinks = [...new Set(links)];
     const dbPayload = {
       ...rest,
@@ -247,9 +242,8 @@ class NoteDB {
         tags: tagMap.get(row.id),
         links: linkMap.get(row.id),
       });
-      const plainText = extractText(validatedNote.content);
       const { content, ...lightweightNote } = validatedNote;
-      results.push({ ...lightweightNote, plainText });
+      results.push(lightweightNote);
     }
     return results;
   }
@@ -350,74 +344,6 @@ class NoteDB {
         links: linkMap.get(note.id) ?? [],
       });
     });
-  }
-
-  public getNotesWithActionItems(): NoteListItem[] {
-    const tagMap = this.getTagMap() ?? new Map();
-    const linkMap = this.getLinkMap() ?? new Map();
-    const results: NoteListItem[] = [];
-    for (const row of this.views.getNotesWithActionItems()) {
-      const validatedNote = validation(NoteFromDB, {
-        ...row,
-        tags: tagMap.get(row.id),
-        links: linkMap.get(row.id),
-      });
-      const plainText = extractText(validatedNote.content);
-      const { content, ...lightweightNote } = validatedNote;
-      results.push({ ...lightweightNote, plainText });
-    }
-    return results;
-  }
-
-  public getUntaggedNotes(): NoteListItem[] {
-    const tagMap = this.getTagMap() ?? new Map();
-    const linkMap = this.getLinkMap() ?? new Map();
-    const results: NoteListItem[] = [];
-    for (const row of this.views.getUntaggedNotes()) {
-      const validatedNote = validation(NoteFromDB, {
-        ...row,
-        tags: tagMap.get(row.id),
-        links: linkMap.get(row.id),
-      });
-      const plainText = extractText(validatedNote.content);
-      const { content, ...lightweightNote } = validatedNote;
-      results.push({ ...lightweightNote, plainText });
-    }
-    return results;
-  }
-
-  public getUnlinkedNotes(): NoteListItem[] {
-    const tagMap = this.getTagMap() ?? new Map();
-    const linkMap = this.getLinkMap() ?? new Map();
-    const results: NoteListItem[] = [];
-    for (const row of this.views.getUnlinkedNotes()) {
-      const validatedNote = validation(NoteFromDB, {
-        ...row,
-        tags: tagMap.get(row.id),
-        links: linkMap.get(row.id),
-      });
-      const plainText = extractText(validatedNote.content);
-      const { content, ...lightweightNote } = validatedNote;
-      results.push({ ...lightweightNote, plainText });
-    }
-    return results;
-  }
-
-  public getNotesWithMostLinks(): NoteListItem[] {
-    const tagMap = this.getTagMap() ?? new Map();
-    const linkMap = this.getLinkMap() ?? new Map();
-    const results: NoteListItem[] = [];
-    for (const row of this.views.getMostLinkedNotes()) {
-      const validatedNote = validation(NoteFromDB, {
-        ...row,
-        tags: tagMap.get(row.id),
-        links: linkMap.get(row.id),
-      });
-      const plainText = extractText(validatedNote.content);
-      const { content, ...lightweightNote } = validatedNote;
-      results.push({ ...lightweightNote, plainText });
-    }
-    return results;
   }
 
   public getOldNotes(
