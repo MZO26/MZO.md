@@ -5,6 +5,7 @@ import type {
   Theme,
 } from "@shared/schemas/store-schema";
 import type { Content, Editor } from "@tiptap/core";
+import type { Instance } from "tippy.js";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -197,9 +198,17 @@ type SelectionActionConfig = {
   icon: string;
 };
 
+type AllTagsMenu = {
+  button: HTMLButtonElement;
+  popover: HTMLDivElement;
+  content: HTMLDivElement;
+  tippy: Instance;
+};
+
 export type {
   Action,
   ActionMap,
+  AllTagsMenu,
   AppRegistry,
   Code,
   ContentType,

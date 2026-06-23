@@ -370,6 +370,14 @@ class NoteDB {
     this.db.close();
   }
 
+  public vacuum() {
+    this.db.exec("VACUUM");
+  }
+
+  public pathDb() {
+    return this.db.name;
+  }
+
   async backupDb(destination: string): Promise<DBBackupResult> {
     return this.db.backup(destination);
   }

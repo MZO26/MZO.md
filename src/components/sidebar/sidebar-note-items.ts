@@ -36,6 +36,7 @@ function createNoteItem(note: NoteListItem) {
     for (const tag of note.tags) {
       const span = document.createElement("span");
       span.classList.add("tag");
+      span.setAttribute("data-tippy-content", `#${tag}`);
       span.textContent = `#${tag}`;
       tagsContainer.append(span);
     }

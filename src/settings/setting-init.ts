@@ -1,4 +1,10 @@
-import { databaseBackup, openAppPath, showNotification } from "@/api/api";
+import {
+  databaseBackup,
+  databaseVacuum,
+  openAppPath,
+  showNotification,
+} from "@/api/api";
+import { exportSelection } from "@/components/sidebar/sidebar-selection";
 import { initSettingsDialog } from "@/settings/dialog-init";
 import { createSettingsMenu } from "@/settings/setting-factory";
 import { buildSelects } from "@/settings/setting-items";
@@ -7,7 +13,9 @@ import { applyAppTheme } from "@/settings/theme";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
+import { formatBytes, useDelayedSpinner } from "@/utils/ui";
 import type { AppSettings } from "@shared/schemas/store-schema";
+import { noteStore } from "./app-state";
 
 async function initAppSettings(settings: AppSettings) {
   const { settingsDialog, settingsContainer } = initSettingsDialog();
@@ -67,16 +75,42 @@ function applyModalListeners(
           }
           break;
         case "backup-db":
-          const backup = await databaseBackup();
-          if (!backup.success) {
+          const dbBackup = await databaseBackup();
+          if (!dbBackup.success) {
             console.error(
               "[quickActions -> backup-db]: Failed to backup db:",
-              backup.error,
+              dbBackup.error,
             );
             return;
           }
           await showNotification("Backup saved.", "");
           return;
+        case "backup-notes":
+          const allIds = noteStore.get("notes").map((n) => n.id);
+          await exportSelection(allIds);
+          break;
+        case "vacuum-db":
+          const stopSpinner = useDelayedSpinner();
+          try {
+            const savedBytes = await databaseVacuum();
+            if (savedBytes.success) {
+              await showNotification(
+                "Optimized Database.",
+                savedBytes.data === 0
+                  ? "Database already compact"
+                  : `Reclaimed ${formatBytes(savedBytes.data)} of space`,
+              );
+            }
+          } catch (err) {
+            console.error(
+              "[quickActions -> vacuum-db]: Failed to vacuum db:",
+              err,
+            );
+            showNotification("Failed to optimize database.", "");
+          } finally {
+            if (stopSpinner) stopSpinner();
+          }
+          break;
       }
     }),
   );

@@ -1,4 +1,6 @@
 import { pinWindow, setTheme } from "@/api/api";
+import { handleSearchInput } from "@/components/sidebar/sidebar-features";
+import { createDivider } from "@/components/toolbar/toolbar-factory";
 import { promptImageUpload } from "@/extensions/image/image";
 import { handleSelectNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/settings/app-state";
@@ -6,12 +8,14 @@ import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
+import { initTippyDelegate } from "@/utils/ui";
 import type { Theme } from "@shared/schemas/store-schema";
-import type { ActionMap } from "@shared/types";
-import { handleSearchInput } from "../sidebar/sidebar-features";
-import { createDivider } from "./toolbar-factory";
+import type { ActionMap, AllTagsMenu } from "@shared/types";
+import tippy from "tippy.js";
 
 // top-toolbar for quick actions
+
+let allTagsMenu: AllTagsMenu | null = null;
 
 function initTopToolbar() {
   const appContainer = getAppItem("appContainer");
@@ -24,14 +28,15 @@ function initTopToolbar() {
   const metadataContainer = getUIItem("metadataContainer");
   metadataContainer.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
-    const clickedLink = target?.closest(".link") as HTMLElement | null;
+    if (!target) return;
+    const clickedLink = target.closest(".link") as HTMLElement | null;
     const linkId = clickedLink?.getAttribute("data-link");
     if (linkId === stateStore.get("activeId")) return;
     if (clickedLink && linkId) {
       handleSelectNote(linkId);
       return;
     }
-    const clickedTag = target?.closest(".tag-node") as HTMLElement | null;
+    const clickedTag = target.closest(".tag-node") as HTMLElement | null;
     const tagId = clickedTag?.getAttribute("data-tag");
     if (clickedTag && tagId) {
       const searchInput = requireElement<HTMLInputElement>(".search-input");
@@ -73,7 +78,7 @@ async function setWindowTop(toggleBtn: HTMLButtonElement) {
     console.error("[setWindowTop]: Failed to pin window:", result.error);
     return;
   }
-  toggleBtn.classList.toggle("window-pinned", result.data);
+  toggleBtn.classList.toggle("pin", result.data);
 }
 
 function initFocusMode() {
@@ -115,7 +120,7 @@ function createTagElement(
   count?: number,
 ) {
   const span = document.createElement("span");
-  span.classList.add("tag-node");
+  span.className = "tag-node";
   span.setAttribute("data-tag", tag);
   const text = count
     ? `Often used: Appears ${count} time${count === 1 ? "" : "s"} in other note${count === 1 ? "" : "s"}`
@@ -123,6 +128,62 @@ function createTagElement(
   span.setAttribute("data-tippy-content", text);
   span.textContent = `#${tag}`;
   container.appendChild(span);
+}
+
+function createAllTagsMenu() {
+  const button = document.createElement("button");
+  button.className = "all-tags-btn";
+  const icon = document.createElement("i");
+  icon.setAttribute("data-lucide", "tag");
+  button.appendChild(icon);
+  const popover = document.createElement("div");
+  popover.className = "tags-popover";
+  const content = document.createElement("div");
+  content.className = "tags-popover-content";
+  const span = document.createElement("span");
+  span.className = "info-span tags-popover-title";
+  span.textContent = "All Tags";
+  popover.append(span, content);
+  content.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+    const clickedTag = target?.closest(".tag-node") as HTMLElement | null;
+    const tagId = clickedTag?.getAttribute("data-tag");
+    if (clickedTag && tagId) {
+      const searchInput = requireElement<HTMLInputElement>(".search-input");
+      searchInput.value = `#${tagId}`;
+      searchInput.focus();
+      handleSearchInput(tagId);
+      return;
+    }
+  });
+  const instance = tippy(button, {
+    content: popover,
+    trigger: "click",
+    interactive: true,
+    theme: "popover-theme",
+    appendTo: () => document.body,
+  });
+  initTippyDelegate(popover, popover, "auto", false);
+  renderIcons(button);
+  return { button, popover, content, tippy: instance };
+}
+
+function renderAllTagsButton(container: HTMLElement, tags: string[]) {
+  const menu = allTagsMenu ?? (allTagsMenu = createAllTagsMenu());
+  const frag = document.createDocumentFragment();
+  for (const tag of [...new Set(tags)]) {
+    const item = document.createElement("span");
+    item.className = "tags-popover-item tag-node";
+    item.setAttribute("data-tippy-content", `#${tag}`);
+    item.dataset["tag"] = tag;
+    item.textContent = `#${tag}`;
+    frag.appendChild(item);
+  }
+  menu.content.replaceChildren(frag);
+  if (menu.button.parentElement !== container) {
+    container.appendChild(menu.button);
+  }
 }
 
 function renderTags(container: HTMLDivElement) {
@@ -145,17 +206,21 @@ function renderTags(container: HTMLDivElement) {
     for (const tag of activeTags) createTagElement(container, tag);
     container.appendChild(createDivider());
   }
-  if (activeTags && activeTags.length === 0 && sortedTags.length === 0) {
+  if ((!activeTags || activeTags.length === 0) && sortedTags.length === 0) {
     const span = document.createElement("span");
     span.textContent =
       "No tags here. Create your first tag by writing #tag + Space";
     span.classList.add("info-span");
     container.appendChild(span);
+    const allTags = noteStore.get("notes").flatMap((n) => n.tags);
+    renderAllTagsButton(container, allTags);
     return;
   }
   for (const [item, count] of sortedTags) {
     createTagElement(container, item, count);
   }
+  const allTags = noteStore.get("notes").flatMap((n) => n.tags);
+  renderAllTagsButton(container, allTags);
 }
 
 function renderLinks(container: HTMLDivElement) {
@@ -395,7 +460,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().setHorizontalRule().run(),
     isActive: (editor) => editor?.isActive("hr"),
     icon: "separator-horizontal",
-    shortcut: "MOD-Shift-- | ---",
+    shortcut: "MOD+Shift+- | ---",
   },
   divider5: { type: "divider" },
   link: {
@@ -408,13 +473,13 @@ const TOOLBAR_ACTIONS: ActionMap = {
     },
     isActive: (editor) => editor?.isActive("link"),
     icon: "link",
-    shortcut: "MOD-K",
+    shortcut: "MOD+K / Open: MOD+Alt+Enter",
   },
   image: {
     run: (editor) => editor && promptImageUpload(editor),
     isActive: (editor) => editor?.isActive("image"),
     icon: "image",
-    shortcut: "MOD-Alt-I",
+    shortcut: "MOD+Alt+I",
   },
   table: {
     run: (editor) =>
@@ -425,7 +490,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
         .run(),
     isActive: (editor) => editor?.isActive("table"),
     icon: "grid-2x2",
-    shortcut: "MOD-Alt-T",
+    shortcut: "MOD+Alt+T",
   },
 };
 

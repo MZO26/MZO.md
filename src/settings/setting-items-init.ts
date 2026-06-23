@@ -214,7 +214,7 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
 
 //--------------------------------------------------------------
 
-function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
+function initExportSettings(settings: AppSettings, container: HTMLDivElement) {
   const exportFormatSelect = findElement<HTMLSelectElement>(
     "#export-format",
     container,
@@ -286,7 +286,7 @@ function initAppSettings(settings: AppSettings, container: HTMLDivElement) {
 function setSelectListeners(settings: AppSettings, container: HTMLDivElement) {
   initAppearanceSettings(settings, container);
   initEditorSettings(settings, container);
-  initAppSettings(settings, container);
+  initExportSettings(settings, container);
 }
 
 export { setSelectListeners };

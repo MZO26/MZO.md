@@ -44,6 +44,9 @@
   justify-content: center;
   align-items: center;
   position: relative;
+  backface-visibility: hidden;
+  will-change: transform;
+  transform: translateY(0);
   transition:
     border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -403,7 +406,8 @@ label {
   .settings-row[data-category="Appearance"],
 .settings-content[data-activetab="Editor"]
   .settings-row[data-category="Editor"],
-.settings-content[data-activetab="App"] .settings-row[data-category="App"] {
+.settings-content[data-activetab="Export"]
+  .settings-row[data-category="Export"] {
   display: flex;
   animation: fadeIn 0.2s ease-out;
 }
@@ -468,39 +472,68 @@ label {
 
 .metadata-container {
   position: absolute;
-  display: flex;
-  justify-self: center;
-  max-width: 50ch;
+  left: 50%;
+  transform: translateX(-50%) scale(1);
+  width: min(80ch, 100% - 24px);
   align-items: center;
-  padding: 10px 10px 0 10px;
-  bottom: 0;
+  display: flex;
+  height: 50px;
+  padding: 5px 10px 0 10px;
+  bottom: 10px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
   background-color: var(--bg-sidebar);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
-  flex-wrap: nowrap;
   flex-direction: row;
-  width: 100%;
   gap: 5px;
-  height: 42px;
   overflow-x: scroll;
   overflow-y: hidden;
   z-index: 5;
   opacity: 1;
-  transform: scale(1);
   transition:
     opacity 0.3s ease,
-    transform 0.3s ease,
-    top 0.3s ease;
+    transform 0.3s ease;
 }
 
 .metadata-container.collapsed {
   opacity: 0;
-  transform: scale(0.97);
+  transform: translateX(-50%) scale(0.97);
   pointer-events: none;
   border-color: transparent;
   box-shadow: none;
+}
+
+.tags-popover {
+  max-width: 170px;
+}
+
+.tags-popover-title {
+  display: flex;
+  padding: 5px 10px;
+  margin-left: 5px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tags-popover-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  max-height: 220px;
+  gap: 5px;
+  padding: 10px;
+}
+
+.tags-popover-item {
+  padding: 5px 7px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .link {
@@ -529,10 +562,6 @@ label {
   transform: translateY(0.03em);
   color: var(--text-muted);
   opacity: 0.8;
-}
-
-.app-container.toolbar-collapsed .metadata-container {
-  top: 2px;
 }
 
 .toolbar-hover-zone {
@@ -726,6 +755,7 @@ label {
   grid-row: 2;
   grid-template-rows: 50px 1fr;
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
   transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -850,12 +880,15 @@ svg.empty-state-icon {
   box-shadow: none !important;
 }
 
-.app-pin-btn.window-pinned svg {
-  stroke: var(--tag-color);
-  fill: var(--tag-bg);
+.pin {
+  color: var(--pin-color);
   transition:
-    stroke 0.3s ease,
-    fill 0.3s ease;
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.pin .lucide {
+  color: inherit;
 }
 
 .toc {

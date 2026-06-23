@@ -5,7 +5,7 @@ import type { SelectOption } from "@shared/types";
 function selectBuilder(
   id: string,
   options: SelectOption[],
-  category: "Appearance" | "Editor" | "App",
+  category: "Appearance" | "Editor" | "Export",
   labelText: string,
 ) {
   const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
@@ -41,7 +41,7 @@ function createSettingsMenu() {
   container.append(
     createSettingsButton("Appearance", "palette"),
     createSettingsButton("Editor", "pen-line"),
-    createSettingsButton("App", "app-window"),
+    createSettingsButton("Export", "database-backup"),
   );
   return container;
 }

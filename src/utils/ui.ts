@@ -54,6 +54,7 @@ function initTippyDelegate(
   container: HTMLElement,
   appendTo?: HTMLElement,
   placement?: Placement,
+  hide: boolean = true,
 ) {
   delegate(container, {
     target: "[data-tippy-content]",
@@ -62,7 +63,7 @@ function initTippyDelegate(
     trigger: "mouseenter",
     appendTo: appendTo || container,
     onShow(instance) {
-      hideAll({ exclude: instance });
+      if (hide) hideAll({ exclude: instance });
       if (instance.reference.hasAttribute("data-tippy-dynamic")) {
         const baseText =
           instance.reference.getAttribute("data-tippy-content") || "";
@@ -80,4 +81,15 @@ function initTippyDelegate(
   });
 }
 
-export { createTooltipContent, initTippyDelegate, useDelayedSpinner };
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 ** 2).toFixed(2)} MB`;
+}
+
+export {
+  createTooltipContent,
+  formatBytes,
+  initTippyDelegate,
+  useDelayedSpinner,
+};

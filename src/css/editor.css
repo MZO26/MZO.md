@@ -729,10 +729,8 @@
     box-shadow 0.2s ease;
 }
 
-.ProseMirror .details-block,
-.wikilink-preview-content details {
-  margin: 1rem 0;
-  border-radius: 5px;
+.ProseMirror details {
+  margin: 1em 0;
 }
 
 .ProseMirror .details-root,
@@ -806,7 +804,8 @@
   padding: 0.3rem 0.65rem 0.3rem 0.2rem;
 }
 
-.ProseMirror .details-root.has-focus {
+.ProseMirror .details-root.has-focus,
+.details-root:hover {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 1px var(--accent-primary);
 }
@@ -827,34 +826,4 @@
   color: var(--text-muted);
   pointer-events: none;
   user-select: none;
-}
-
-.transclusion-wrapper {
-  margin: 0.75rem 0;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background: var(--surface-1);
-  overflow: hidden;
-  max-width: 42rem;
-}
-
-.transclusion-header {
-  display: flex;
-  align-items: center;
-  min-height: 2.25rem;
-  padding: 0 0.75rem;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--surface-2);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.transclusion-body {
-  height: 14rem;
-  overflow: auto;
-  padding: 0.5rem;
-}
-
-.transclusion-preview-card {
-  min-height: 100%;
 }

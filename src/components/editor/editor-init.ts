@@ -84,7 +84,7 @@ function initEditor(settings: Partial<AppSettings>): Editor {
         );
         if (unsupportedFiles) {
           event.preventDefault();
-          return;
+          return false;
         }
         const coordinates = view.posAtCoords({
           left: event.clientX,

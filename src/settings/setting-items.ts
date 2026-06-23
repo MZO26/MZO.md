@@ -100,7 +100,7 @@ function buildSelects() {
         { value: "html", label: "HTML" },
         { value: "pdf", label: "PDF" },
       ],
-      "App",
+      "Export",
       "Manual Export-Format",
     ),
     selectBuilder(
@@ -109,7 +109,7 @@ function buildSelects() {
         { value: "true", label: "Enable" },
         { value: "false", label: "Disable" },
       ],
-      "App",
+      "Export",
       "Auto-Export (.md)",
     ));
 }

@@ -37,6 +37,7 @@ import {
   UpdateNotePayloadSchema,
 } from "@shared/schemas/note-schema";
 import { BrowserWindow, dialog, ipcMain } from "electron";
+import fs from "fs/promises";
 
 function registerNoteIpc(win: BrowserWindow) {
   ipcMain.handle("note:get-all", (e) => {
@@ -236,6 +237,18 @@ function registerNoteIpc(win: BrowserWindow) {
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const filePath = await handleDBBackupDialog(win);
       return (await db.backupDb(filePath)).totalPages;
+    });
+  });
+
+  ipcMain.handle("db-vacuum", (e) => {
+    return result(e, async () => {
+      if (!checkRateLimit("db-vacuum", LIMITS.WRITE_HEAVY))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const dbPath = db.pathDb();
+      const before = (await fs.stat(dbPath)).size;
+      db.vacuum();
+      const after = (await fs.stat(dbPath)).size;
+      return Math.max(0, before - after);
     });
   });
 }

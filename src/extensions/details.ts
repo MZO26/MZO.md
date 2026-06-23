@@ -67,10 +67,6 @@ export const DetailsBlock = Node.create({
       const summary = document.createElement("summary");
       summary.className = "details-summary";
       summary.contentEditable = "false";
-      summary.setAttribute(
-        "aria-label",
-        String(currentNode.attrs["summary"] || "Details"),
-      );
       const content = document.createElement("div");
       content.className = "details-content";
       const updateAttrs = (attrs: Record<string, unknown>) => {
@@ -84,18 +80,21 @@ export const DetailsBlock = Node.create({
         );
         return true;
       };
-
-      summary.addEventListener("click", (event) => {
+      const handleClick = (event: MouseEvent) => {
         event.preventDefault();
         updateAttrs({ open: !currentNode.attrs["open"] });
-      });
+      };
 
-      summary.addEventListener("keydown", (event) => {
+      const handleKeydown = (event: KeyboardEvent) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           updateAttrs({ open: !currentNode.attrs["open"] });
         }
-      });
+      };
+
+      summary.addEventListener("click", handleClick);
+
+      summary.addEventListener("keydown", handleKeydown);
       dom.append(summary, content);
 
       return {
@@ -105,11 +104,11 @@ export const DetailsBlock = Node.create({
           if (updatedNode.type !== currentNode.type) return false;
           currentNode = updatedNode;
           dom.open = !!currentNode.attrs["open"];
-          summary.setAttribute(
-            "aria-label",
-            String(currentNode.attrs["summary"] || "Details"),
-          );
           return true;
+        },
+        destroy() {
+          summary.removeEventListener("click", handleClick);
+          summary.removeEventListener("keydown", handleKeydown);
         },
       };
     };
