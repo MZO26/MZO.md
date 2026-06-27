@@ -8,18 +8,20 @@ import {
 import { exportSelection } from "@/components/sidebar/sidebar-selection";
 import { noteStore } from "@/settings/app-state";
 import { initSettingsDialog } from "@/settings/dialog-init";
-import { createSettingsMenu } from "@/settings/setting-factory";
-import { buildSelects } from "@/settings/setting-items";
-import { setSelectListeners } from "@/settings/setting-items-init";
+import {
+  createSettingsMenu,
+  initQuickActionContainer,
+} from "@/settings/setting-factory";
+import {
+  buildSelects,
+  setSelectListeners,
+} from "@/settings/setting-items-init";
 import { applyAppTheme } from "@/settings/theme";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement, setActiveItem } from "@/utils/dom";
-import { renderIcons } from "@/utils/icons";
-import { getUIItem, registerAppEvents } from "@/utils/registry";
+import { registerAppEvents } from "@/utils/registry";
 import { formatBytes, useDelayedSpinner } from "@/utils/ui";
-import { QUICK_ACTIONS } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import type { SettingsCategory } from "@shared/types";
 
 async function initAppSettings(settings: AppSettings) {
   const { settingsDialog, settingsContainer } = initSettingsDialog();
@@ -45,31 +47,6 @@ async function initAppSettings(settings: AppSettings) {
   registerAppEvents(document, {
     "app:open-settings": () => settingsDialog.showModal(),
   });
-}
-
-function initQuickActionContainer() {
-  const quickActionContainer = getUIItem("quickActionContainer");
-  const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
-  const row = document.createElement("div");
-  row.className = "settings-row";
-  row.dataset["category"] = "Export" as SettingsCategory;
-  const frag = document.createDocumentFragment();
-  for (const action of QUICK_ACTIONS) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `${action.id}-btn`;
-    button.setAttribute("data-action", action.id);
-    button.setAttribute("data-tippy-content", action.label);
-    const icon = document.createElement("i");
-    icon.setAttribute("data-lucide", action.icon);
-    button.appendChild(icon);
-    frag.appendChild(button);
-  }
-  quickActionContainer.appendChild(frag);
-  row.appendChild(quickActionContainer);
-  settingsContainer.appendChild(row);
-  renderIcons(quickActionContainer);
-  return quickActionContainer;
 }
 
 function applyModalListeners(

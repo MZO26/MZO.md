@@ -69,8 +69,9 @@ function setUpTableMenu(win: BrowserWindow) {
   return tableMenu;
 }
 
-function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
+async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
   const { id, pinned } = payload;
+  const hasAutoExportedFile = await isAutoExport(id);
   const noteItemMenu = Menu.buildFromTemplate([
     {
       label: "Copy...",
@@ -88,13 +89,10 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
           enabled:
             activeId !== null &&
             activeId === id &&
-            store.get("auto-export") === true,
+            store.get("auto-export") === true &&
+            hasAutoExportedFile,
           visible: store.get("auto-export") === true,
           click: async () => {
-            const autoExported = (await isAutoExport(id)) ? true : false;
-            if (!autoExported) {
-              console.log("Note has no auto-exported file.");
-            }
             win.webContents.send("note:trigger-copy-path", id);
           },
         },
@@ -140,17 +138,14 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       ],
     },
     {
-      label: "Open File Path",
+      label: "Show in Folder",
       enabled:
         activeId !== null &&
         activeId === id &&
-        store.get("auto-export") === true,
+        store.get("auto-export") === true &&
+        hasAutoExportedFile,
       visible: store.get("auto-export") === true,
       click: async () => {
-        const autoExported = (await isAutoExport(id)) ? true : false;
-        if (!autoExported) {
-          console.log("Note has no auto-exported file.");
-        }
         win.webContents.send("note:trigger-path", id);
       },
     },

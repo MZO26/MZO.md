@@ -5,7 +5,6 @@ import type {
   Theme,
 } from "@shared/schemas/store-schema";
 import type { Content, Editor } from "@tiptap/core";
-import type { Instance } from "tippy.js";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -25,7 +24,7 @@ interface ErrorHandlerOptions {
 
 type ResolvedTheme = "light" | "dark";
 
-type SelectOption = { value: string; label: string };
+type SelectOption<T extends string | boolean> = { value: T; label: string };
 
 type Code =
   | "github-light"
@@ -92,11 +91,6 @@ type FileContent = {
   extension: "md";
 };
 
-type ExportResult = {
-  id: string;
-  filePath: string;
-};
-
 type PDFAssets = { template: string; css: string };
 
 type ContentType = "markdown" | "html" | "json";
@@ -105,7 +99,7 @@ type ZoomAction = "get" | "in" | "out" | "reset";
 
 type DbOptimization = "optimize-db" | "vacuum-db" | "backup-db";
 
-type SettingsCategory = "Appearance" | "Editor" | "Export";
+type SettingsCategory = "Appearance" | "Editor" | "General";
 
 type DBBackupResult = {
   totalPages: number;
@@ -214,17 +208,9 @@ type QuickActionConfig = {
   label: string;
 };
 
-type AllTagsMenu = {
-  button: HTMLButtonElement;
-  popover: HTMLDivElement;
-  content: HTMLDivElement;
-  tippy: Instance;
-};
-
 export type {
   Action,
   ActionMap,
-  AllTagsMenu,
   AppRegistry,
   Code,
   ContentType,
@@ -234,7 +220,6 @@ export type {
   ErrorHandlerOptions,
   ExportedContent,
   ExportFormat,
-  ExportResult,
   Failure,
   FileContent,
   ImageSrc,

@@ -1,6 +1,7 @@
 import { getNoteEditorExtensions } from "@/components/editor/editor-init";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
+import { DEBOUNCE_MS } from "@shared/constants";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import { Editor, generateText } from "@tiptap/core";
 import { EditorState } from "@tiptap/pm/state";
@@ -102,15 +103,16 @@ function inEditorSearch(editor: Editor) {
 
   inputWrapper.addEventListener("click", (event: Event) => {
     const target = event.target as HTMLElement | null;
-    if (target?.closest(".search-prev")) {
+    if (!target) return;
+    if (target.closest(".search-prev")) {
       event.preventDefault();
       goPrev();
       return;
-    } else if (target?.closest(".search-next")) {
+    } else if (target.closest(".search-next")) {
       event.preventDefault();
       goNext();
       return;
-    } else if (target?.closest(".search-close")) {
+    } else if (target.closest(".search-close")) {
       event.preventDefault();
       close();
       return;
@@ -137,7 +139,7 @@ function inEditorSearch(editor: Editor) {
     syncQuery();
     updateButtons();
     goNext();
-  }, 200);
+  }, DEBOUNCE_MS.fast);
 
   input.addEventListener("input", debouncedSearch);
 

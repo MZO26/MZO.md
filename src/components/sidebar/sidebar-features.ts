@@ -1,13 +1,19 @@
 import { updateSnippetHighlight } from "@/components/sidebar/sidebar-note-items";
+import { handleTagSearch } from "@/components/toolbar/toolbar-features";
 import { noteStore, searchEngine, stateStore } from "@/settings/app-state";
 import { debounce } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
+import { renderIcons } from "@/utils/icons";
 import { estimateReadingTime } from "@/utils/note";
 import { getAppItem, getUIItems } from "@/utils/registry";
+import { initTippyDelegate } from "@/utils/ui";
 import { DEBOUNCE_MS, MAX_CHARS, PADDING } from "@shared/constants";
 import type { ResizeOptions, SnippetCacheValue } from "@shared/types";
+import tippy from "tippy.js";
 
 // sidebar
+
+export let allTagsMenu: ReturnType<typeof createAllTagsPopover> | null = null;
 
 // search handled by fuse
 
@@ -101,13 +107,24 @@ function handleSearchInput(searchInput: string) {
     }));
     return;
   }
-  const searchCache = search(searchInput);
+  let searchCache = new Map();
+  if (searchInput.startsWith("#")) {
+    const tagToSearch = searchInput.slice(1);
+    // ^ searches for tags that start with what gets typed
+    const rawResults = searchEngine.search({ tags: `^${tagToSearch}` });
+    for (const { item: note } of rawResults) {
+      searchCache.set(note.id, { snippet: note.snippet, indices: [] });
+    }
+  } else {
+    searchCache = search(searchInput);
+  }
   applySearch(searchCache);
   const noteElements = Array.from(
     sidebar.getElementsByClassName("note-item"),
   ) as HTMLDivElement[];
   showSearchItems(noteElements, searchCache);
 }
+
 //------------------------------------------------------------
 
 // footer-bar
@@ -127,6 +144,55 @@ function updateStats() {
 }
 
 //------------------------------------------------------------
+
+// sidebar-header all tag button
+
+function createAllTagsPopover(button: HTMLButtonElement) {
+  const popover = document.createElement("div");
+  popover.className = "tags-popover";
+  const content = document.createElement("div");
+  content.className = "tags-popover-content";
+  const span = document.createElement("span");
+  span.className = "info-span tags-popover-title";
+  span.textContent = "All Tags";
+  popover.append(span, content);
+  content.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+    const clickedTag = target.closest(".tag-node") as HTMLElement | null;
+    const tagId = clickedTag?.getAttribute("data-tag");
+    if (clickedTag && tagId) {
+      handleTagSearch(tagId);
+      return;
+    }
+  });
+  const instance = tippy(button, {
+    content: popover,
+    trigger: "manual",
+    interactive: true,
+    theme: "preview-theme",
+    appendTo: () => document.body,
+  });
+  initTippyDelegate(popover, popover, "auto", false);
+  renderIcons(button);
+  return { button, popover, content, tippy: instance };
+}
+
+function renderAllTags(button: HTMLButtonElement, tags: string[]) {
+  const menu = allTagsMenu ?? (allTagsMenu = createAllTagsPopover(button));
+  const frag = document.createDocumentFragment();
+  for (const tag of [...new Set(tags)]) {
+    const item = document.createElement("span");
+    item.className = "tags-popover-item tag-node";
+    item.setAttribute("data-tippy-content", `#${tag}`);
+    item.dataset["tag"] = tag;
+    item.textContent = `#${tag}`;
+    frag.appendChild(item);
+  }
+  menu.content.replaceChildren(frag);
+}
+
+//-------------------------------------------------------------
 
 // resizing logic
 
@@ -191,4 +257,10 @@ const debouncedSearch = debounce((e: Event) => {
   handleSearchInput(value ?? "");
 }, DEBOUNCE_MS.fast);
 
-export { debouncedSearch, handleSearchInput, resizeSidebar, updateStats };
+export {
+  debouncedSearch,
+  handleSearchInput,
+  renderAllTags,
+  resizeSidebar,
+  updateStats,
+};

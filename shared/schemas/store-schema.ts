@@ -13,7 +13,7 @@ const StoreSchema = z.object({
   "export-format": z.enum(["md", "json", "html", "txt", "pdf"]).catch("md"),
   "code-theme": z.enum(["focus", "balanced", "colorless"]).catch("balanced"),
   highlight: z.enum(["context", "insight", "action"]).catch("context"),
-  "note-item-display": z.enum(["tags", "snippet", "minimal"]).catch("tags"),
+  "note-item-display": z.enum(["preview", "tags", "minimal"]).catch("preview"),
   "window-bounds": z
     .object({
       width: z.number().min(1100).catch(1100),

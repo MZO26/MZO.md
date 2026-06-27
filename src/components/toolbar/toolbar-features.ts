@@ -8,14 +8,10 @@ import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
-import { initTippyDelegate } from "@/utils/ui";
 import type { Theme } from "@shared/schemas/store-schema";
-import type { ActionMap, AllTagsMenu } from "@shared/types";
-import tippy from "tippy.js";
+import type { ActionMap } from "@shared/types";
 
 // top-toolbar for quick actions
-
-let allTagsMenu: AllTagsMenu | null = null;
 
 function initMetadataToolbar() {
   const metadataContainer = getUIItem("metadataContainer");
@@ -32,10 +28,7 @@ function initMetadataToolbar() {
     const clickedTag = target.closest(".tag-node") as HTMLElement | null;
     const tagId = clickedTag?.getAttribute("data-tag");
     if (clickedTag && tagId) {
-      const searchInput = requireElement<HTMLInputElement>(".search-input");
-      searchInput.value = `#${tagId}`;
-      searchInput.focus();
-      handleSearchInput(tagId);
+      handleTagSearch(tagId);
       return;
     }
   });
@@ -85,8 +78,11 @@ async function setWindowTop(toggleBtn: HTMLButtonElement) {
 function initFocusMode() {
   const appContainer = getAppItem("appContainer");
   const newState = !appContainer.classList.contains("focus");
+  const isToolbarCollapsed =
+    appContainer.classList.contains("toolbar-collapsed");
   requestAnimationFrame(() => {
     appContainer.classList.toggle("focus", newState);
+    if (isToolbarCollapsed) return;
     setTheme(
       document.documentElement.getAttribute("data-theme") as Exclude<
         Theme,
@@ -105,7 +101,23 @@ function initFocusMode() {
 function toggleToolbar() {
   const appContainer = getAppItem("appContainer");
   const newState = !appContainer.classList.contains("toolbar-collapsed");
-  appContainer.classList.toggle("toolbar-collapsed", newState);
+  const isFocus = appContainer.classList.contains("focus");
+  requestAnimationFrame(() => {
+    appContainer.classList.toggle("toolbar-collapsed", newState);
+    if (isFocus) return;
+    setTheme(
+      document.documentElement.getAttribute("data-theme") as Exclude<
+        Theme,
+        "system"
+      >,
+      newState,
+    ).catch((err) => {
+      console.error(
+        "[initFocusMode -> setTheme]: Failed to sync theme with main process.",
+        err,
+      );
+    });
+  });
 }
 
 function openMetadataContainer() {
@@ -131,60 +143,12 @@ function createTagElement(
   container.appendChild(span);
 }
 
-function createAllTagsMenu() {
-  const button = document.createElement("button");
-  button.className = "all-tags-btn";
-  const icon = document.createElement("i");
-  icon.setAttribute("data-lucide", "tag");
-  button.appendChild(icon);
-  const popover = document.createElement("div");
-  popover.className = "tags-popover";
-  const content = document.createElement("div");
-  content.className = "tags-popover-content";
-  const span = document.createElement("span");
-  span.className = "info-span tags-popover-title";
-  span.textContent = "All Tags";
-  popover.append(span, content);
-  content.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
-    const clickedTag = target?.closest(".tag-node") as HTMLElement | null;
-    const tagId = clickedTag?.getAttribute("data-tag");
-    if (clickedTag && tagId) {
-      const searchInput = requireElement<HTMLInputElement>(".search-input");
-      searchInput.value = `#${tagId}`;
-      searchInput.focus();
-      handleSearchInput(tagId);
-      return;
-    }
-  });
-  const instance = tippy(button, {
-    content: popover,
-    trigger: "click",
-    interactive: true,
-    theme: "popover-theme",
-    appendTo: () => document.body,
-  });
-  initTippyDelegate(popover, popover, "auto", false);
-  renderIcons(button);
-  return { button, popover, content, tippy: instance };
-}
-
-function renderAllTagsButton(container: HTMLElement, tags: string[]) {
-  const menu = allTagsMenu ?? (allTagsMenu = createAllTagsMenu());
-  const frag = document.createDocumentFragment();
-  for (const tag of [...new Set(tags)]) {
-    const item = document.createElement("span");
-    item.className = "tags-popover-item tag-node";
-    item.setAttribute("data-tippy-content", `#${tag}`);
-    item.dataset["tag"] = tag;
-    item.textContent = `#${tag}`;
-    frag.appendChild(item);
-  }
-  menu.content.replaceChildren(frag);
-  if (menu.button.parentElement !== container) {
-    container.appendChild(menu.button);
-  }
+function handleTagSearch(tagId: string) {
+  const searchInput = getUIItem("searchInput");
+  const tag = `#${tagId}`;
+  searchInput.value = tag;
+  searchInput.focus();
+  handleSearchInput(tag);
 }
 
 function renderTags(container: HTMLDivElement) {
@@ -213,15 +177,11 @@ function renderTags(container: HTMLDivElement) {
       "No tags here. Create your first tag by writing #tag + Space";
     span.classList.add("info-span");
     container.appendChild(span);
-    const allTags = noteStore.get("notes").flatMap((n) => n.tags);
-    renderAllTagsButton(container, allTags);
     return;
   }
   for (const [item, count] of sortedTags) {
     createTagElement(container, item, count);
   }
-  const allTags = noteStore.get("notes").flatMap((n) => n.tags);
-  renderAllTagsButton(container, allTags);
 }
 
 function renderLinks(container: HTMLDivElement) {
@@ -490,6 +450,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
 };
 
 export {
+  handleTagSearch,
   initMetadataToolbar,
   initTopToolbar,
   renderLinks,

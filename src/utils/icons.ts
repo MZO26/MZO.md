@@ -1,4 +1,5 @@
 import {
+  AppWindow,
   ArchiveRestore,
   ArrowDownFromLine,
   ArrowLeftFromLine,
@@ -111,6 +112,7 @@ function renderIcons(scope: Document | HTMLElement = document): void {
       Highlighter,
       Grid2x2,
       X,
+      AppWindow,
       Image,
       ListCollapse,
       ArrowLeftFromLine,

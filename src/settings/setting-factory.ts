@@ -1,10 +1,13 @@
 import { requireElement } from "@/utils/dom";
+import { renderIcons } from "@/utils/icons";
+import { getUIItem } from "@/utils/registry";
+import { QUICK_ACTIONS } from "@shared/constants";
 import type { SelectOption, SettingsCategory } from "@shared/types";
 
 // blueprint for select items and their options for specified categories
-function selectBuilder(
+function selectBuilder<T extends string | boolean>(
   id: string,
-  options: SelectOption[],
+  options: readonly SelectOption<T>[],
   category: SettingsCategory,
   labelText: string,
 ) {
@@ -14,7 +17,9 @@ function selectBuilder(
   label.textContent = labelText ?? id;
   const select = document.createElement("select");
   select.id = id;
-  const optionNodes = options.map((opt) => new Option(opt.label, opt.value));
+  const optionNodes = options.map(
+    (opt) => new Option(opt.label, String(opt.value)),
+  );
   select.append(...optionNodes);
   const row = document.createElement("div");
   row.className = "settings-row";
@@ -25,7 +30,10 @@ function selectBuilder(
 
 // builds the button palette and wraps it into the button container
 function createSettingsMenu() {
-  const createSettingsButton = (category: string, lucideIcon: string) => {
+  const createSettingsButton = (
+    category: SettingsCategory,
+    lucideIcon: string,
+  ) => {
     const icon = document.createElement("i");
     icon.setAttribute("data-lucide", lucideIcon);
     const btn = document.createElement("button");
@@ -41,9 +49,34 @@ function createSettingsMenu() {
   container.append(
     createSettingsButton("Appearance", "palette"),
     createSettingsButton("Editor", "pen-line"),
-    createSettingsButton("Export", "database-backup"),
+    createSettingsButton("General", "app-window"),
   );
   return container;
 }
 
-export { createSettingsMenu, selectBuilder };
+function initQuickActionContainer() {
+  const quickActionContainer = getUIItem("quickActionContainer");
+  const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
+  const row = document.createElement("div");
+  row.className = "settings-row";
+  row.dataset["category"] = "General" as SettingsCategory;
+  const frag = document.createDocumentFragment();
+  for (const action of QUICK_ACTIONS) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `${action.id}-btn`;
+    button.setAttribute("data-action", action.id);
+    button.setAttribute("data-tippy-content", action.label);
+    const icon = document.createElement("i");
+    icon.setAttribute("data-lucide", action.icon);
+    button.appendChild(icon);
+    frag.appendChild(button);
+  }
+  quickActionContainer.appendChild(frag);
+  row.appendChild(quickActionContainer);
+  settingsContainer.appendChild(row);
+  renderIcons(quickActionContainer);
+  return quickActionContainer;
+}
+
+export { createSettingsMenu, initQuickActionContainer, selectBuilder };

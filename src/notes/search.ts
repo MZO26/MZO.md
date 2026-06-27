@@ -1,6 +1,6 @@
 import { FUSE_OPTIONS } from "@shared/constants";
 import type { NoteListItem, NoteSearchDoc } from "@shared/schemas/note-schema";
-import type { FuseResult, FuseResultMatch } from "fuse.js";
+import type { Expression, FuseResult, FuseResultMatch } from "fuse.js";
 import Fuse from "fuse.js";
 
 export interface SearchMatchResult {
@@ -82,16 +82,20 @@ class NoteSearch {
     this.resetSearchCache();
   }
 
-  public search(query: string): FuseResult<NoteSearchDoc>[] {
-    const trimmed = query.trim();
-    if (!trimmed) {
+  public search(query: string | Expression): FuseResult<NoteSearchDoc>[] {
+    const cacheKey =
+      typeof query === "string" ? query.trim() : JSON.stringify(query);
+    if (!cacheKey) {
       this.resetSearchCache();
       return [];
     }
-    if (trimmed === this.lastQuery) return this.lastResults;
-    this.lastQuery = trimmed;
-    this.lastResults = this.fuse.search(trimmed, { limit: 50 });
-    return this.lastResults;
+    if (cacheKey === this.lastQuery) {
+      return this.lastResults;
+    }
+    const results = this.fuse.search(query, { limit: 50 });
+    this.lastQuery = cacheKey;
+    this.lastResults = results;
+    return results;
   }
 }
 

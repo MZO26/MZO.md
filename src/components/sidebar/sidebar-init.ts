@@ -1,5 +1,7 @@
 import {
+  allTagsMenu,
   debouncedSearch,
+  renderAllTags,
   resizeSidebar,
 } from "@/components/sidebar/sidebar-features";
 import {
@@ -18,7 +20,7 @@ import {
   handleImportNote,
   handleSelectNote,
 } from "@/notes/note-actions";
-import { stateStore } from "@/settings/app-state";
+import { noteStore, stateStore } from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItems, getUIItems, registerAppEvents } from "@/utils/registry";
@@ -68,13 +70,20 @@ function applySidebarListeners(
     "click",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLElement | null;
-      if (target === sidebarHeader) return;
-      const addNoteBtn = target?.closest<HTMLButtonElement>(".add-note-btn");
+      if (target === sidebarHeader || !target) return;
+      const addNoteBtn = target.closest<HTMLButtonElement>(".add-note-btn");
       if (addNoteBtn) {
         await handleCreateNote();
         return;
       }
-      const importBtn = target?.closest<HTMLButtonElement>(".import-btn");
+      const tagBtn = target.closest<HTMLButtonElement>(".all-tags-btn");
+      if (tagBtn) {
+        const tags = noteStore.get("notes").flatMap((n) => n.tags);
+        renderAllTags(tagBtn, tags);
+        allTagsMenu?.tippy.show();
+        return;
+      }
+      const importBtn = target.closest<HTMLButtonElement>(".import-btn");
       if (importBtn) {
         await handleImportNote();
         return;

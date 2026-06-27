@@ -4,7 +4,8 @@ import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-ui";
 import {
-  buildMenu,
+  buildToolbarMenu,
+  buildTopToolbarMenu,
   setupToolbarListeners,
 } from "@/components/toolbar/toolbar-factory";
 import {
@@ -40,20 +41,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   await syncNoteStore();
   handleSidebarEmptyState();
   handleEditorEmptyState();
+  const editorContainer = getAppItem("editorContainer");
   const toolbarContainer = requireElement<HTMLDivElement>(
     "#toolbar",
-    getAppItem("editorContainer"),
+    editorContainer,
   );
-  buildMenu(toolbarContainer, TOOLBAR_ACTIONS);
+  buildToolbarMenu(toolbarContainer, TOOLBAR_ACTIONS);
   setupToolbarListeners(toolbarContainer, TOOLBAR_ACTIONS);
   const topToolbar = requireElement<HTMLDivElement>(".top-toolbar");
-  buildMenu(topToolbar, TOP_TOOLBAR_ACTIONS);
+  buildTopToolbarMenu(topToolbar, TOP_TOOLBAR_ACTIONS);
   setupToolbarListeners(topToolbar, TOP_TOOLBAR_ACTIONS);
   initTopToolbar();
   initMetadataToolbar();
   renderIcons();
   startAppClock();
-  initTippyDelegate(getAppItem("editorContainer"));
+  initTippyDelegate(editorContainer);
   initTippyDelegate(topToolbar, getAppItem("appContainer"));
   requestAnimationFrame(() => {
     window.electronAPI.startupReady();

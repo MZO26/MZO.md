@@ -3,7 +3,6 @@ import {
   inEditorSearch,
   resetEditorHistory,
 } from "@/components/editor/editor-features";
-import { handleSearchInput } from "@/components/sidebar/sidebar-features";
 import { Annotation } from "@/extensions/annotation";
 import { DetailsBlock } from "@/extensions/details";
 import { SearchAndReplace } from "@/extensions/docSearch";
@@ -53,6 +52,7 @@ import {
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import DOMPurify from "dompurify";
+import { handleTagSearch } from "../toolbar/toolbar-features";
 
 let editor: Editor | null = null;
 
@@ -126,7 +126,7 @@ function initEditor(settings: Partial<AppSettings>): Editor {
   });
   editor.on("update", ({ editor, transaction }) => {
     if (!transaction.docChanged) return;
-    const activeId = stateStore.getState().activeId;
+    const activeId = stateStore.get("activeId");
     const activeNote = noteStore.get("activeNote");
     if (!activeId || !activeNote) return;
     const content = editor.getJSON();
@@ -200,10 +200,7 @@ function getNoteEditorExtensions() {
     }),
     NoteTag.configure({
       onClick: (id: string) => {
-        const searchInput = requireElement<HTMLInputElement>(".search-input");
-        searchInput.value = `#${id}`;
-        searchInput.focus();
-        handleSearchInput(id);
+        handleTagSearch(id);
       },
     }),
     Table.configure({
@@ -279,7 +276,8 @@ function getNoteEditorExtensions() {
 function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   editorWrapper.addEventListener("contextmenu", (e: MouseEvent) => {
     const target = e.target as HTMLElement | null;
-    if (target?.closest(".ProseMirror") && target?.closest("table")) {
+    if (!target) return;
+    if (target.closest(".ProseMirror") && target.closest("table")) {
       e.preventDefault();
       window.electronAPI.showContextMenu("table");
     }
@@ -288,7 +286,8 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
     "error",
     (event: ErrorEvent) => {
       const target = event.target as HTMLImageElement | null;
-      if (target && target.tagName === "IMG") {
+      if (!target) return;
+      if (target.tagName === "IMG") {
         const pos = editor.view.posAtDOM(target, 0);
         if (pos !== null) {
           editor

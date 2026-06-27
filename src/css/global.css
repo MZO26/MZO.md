@@ -304,12 +304,6 @@ select:focus-within {
   border: 1px solid var(--border-color);
 }
 
-.tippy-box[data-theme~="popover-theme"] {
-  background-color: var(--bg-sidebar-section);
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-}
-
 .tippy-box[data-theme~="none"] {
   background: transparent;
   border: none;
@@ -352,22 +346,6 @@ select:focus-within {
   border-right-color: var(--border-color);
 }
 
-.tippy-box[data-theme~="popover-theme"][data-placement^="top"]
-  > .tippy-arrow::before {
-  border-top-color: var(--border-color);
-}
-.tippy-box[data-theme~="popover-theme"][data-placement^="bottom"]
-  > .tippy-arrow::before {
-  border-bottom-color: var(--border-color);
-}
-.tippy-box[data-theme~="popover-theme"][data-placement^="left"]
-  > .tippy-arrow::before {
-  border-left-color: var(--border-color);
-}
-.tippy-box[data-theme~="popover-theme"][data-placement^="right"]
-  > .tippy-arrow::before {
-  border-right-color: var(--border-color);
-}
 .tippy-shortcut {
   display: flex;
   flex-direction: row;

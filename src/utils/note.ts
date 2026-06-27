@@ -1,11 +1,12 @@
 import { findElement } from "@/utils/dom";
-import { extractText } from "@shared/generators";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
+import { getUIItem } from "./registry";
 
 function createNoteUpdater() {
   let element: HTMLDivElement | null = null;
   return function updateNoteCount(count: number) {
-    element ??= findElement<HTMLDivElement>(".note-count");
+    const sidebarFooter = getUIItem("sidebarFooter");
+    element ??= findElement<HTMLDivElement>(".note-count", sidebarFooter);
     if (!element) return;
     element.textContent = `${count} ${count === 1 ? "note" : "notes"}`;
   };
@@ -37,7 +38,7 @@ function toNoteListItem(note: Note): NoteListItem {
     id: note.id,
     title: note.title,
     snippet: note.snippet,
-    plainText: extractText(note.content),
+    plainText: note.plainText,
     created_at: note.created_at,
     updated_at: note.updated_at,
     pinned: note.pinned,

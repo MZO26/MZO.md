@@ -10,7 +10,7 @@ function initDeleteDialog() {
 function initSettingsDialog() {
   const settingsDialog = requireElement<HTMLDialogElement>(".settings-modal");
   const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
-  initTippyDelegate(settingsDialog, settingsDialog);
+  initTippyDelegate(settingsDialog, settingsDialog, "top");
   return { settingsDialog, settingsContainer };
 }
 

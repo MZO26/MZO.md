@@ -38,7 +38,7 @@ function registerElectronIpc(win: BrowserWindow) {
         if (menuType === "table") {
           menu = setUpTableMenu(win);
         } else if (menuType === "note") {
-          menu = setUpNoteMenu(win, payload);
+          menu = await setUpNoteMenu(win, payload);
         } else {
           return;
         }
@@ -72,7 +72,8 @@ function registerElectronIpc(win: BrowserWindow) {
         shell.showItemInFolder(filePath);
         return true;
       } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+        const err = error as NodeJS.ErrnoException;
+        if (err.code === "ENOENT") return false;
         else throw new AppBackendError(AppErrorCode.InvalidData);
       }
     });
@@ -93,7 +94,8 @@ function registerElectronIpc(win: BrowserWindow) {
         await fs.access(filePath, fs.constants.R_OK);
         return filePath;
       } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+        const err = error as NodeJS.ErrnoException;
+        if (err.code === "ENOENT") return null;
         else throw new AppBackendError(AppErrorCode.InvalidData);
       }
     });

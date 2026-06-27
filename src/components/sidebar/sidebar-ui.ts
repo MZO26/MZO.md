@@ -79,18 +79,17 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement) {
 
 function renderNoteList(notes: NoteListItem[]) {
   const sidebar = getAppItem("sidebar");
+  const activeId = stateStore.get("activeId");
   const fragment = document.createDocumentFragment();
+  let activeElement: HTMLDivElement | null = null;
   for (const note of [...notes].sort(compareNotes)) {
     const element = createNoteItem(note);
+    if (note.id === activeId) {
+      activeElement = element;
+    }
     fragment.appendChild(element);
   }
   sidebar.replaceChildren(fragment);
-  const { activeId } = stateStore.getState();
-  if (!activeId) return;
-  const activeElement = findElement<HTMLDivElement>(
-    `.note-item[data-id="${activeId}"]`,
-    sidebar,
-  );
   if (activeElement) {
     setActiveItem(activeElement, sidebar);
   }

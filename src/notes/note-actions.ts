@@ -109,10 +109,9 @@ async function handleImportNote() {
     );
     return;
   }
-  const count = imported.data.length;
   await showNotification(
     "Import Successful.",
-    `Successfully imported ${count} file${count === 1 ? "" : "s"}`,
+    `Successfully imported ${imported.data.length} file${imported.data.length === 1 ? "" : "s"}`,
   );
   const notes: NoteListItem[] = [];
   for (const note of result.data) {
@@ -137,7 +136,7 @@ async function handleImportNote() {
 
 async function handleDeleteManyNotes(ids: string[]) {
   const editor = getAppItem("editor");
-  const { activeId } = stateStore.getState();
+  const activeId = stateStore.get("activeId");
   const deletedIds = new Set(ids);
   const isActiveDeleted = activeId !== null && deletedIds.has(activeId);
   if (isActiveDeleted) {
@@ -173,7 +172,7 @@ async function handleDeleteManyNotes(ids: string[]) {
 
 async function handleDeleteNote(id: string) {
   const editor = getAppItem("editor");
-  const { activeId } = stateStore.getState();
+  const activeId = stateStore.get("activeId");
   const isActiveDeletedId = activeId === id;
   if (isActiveDeletedId) {
     debouncedSaveNote.cancel();

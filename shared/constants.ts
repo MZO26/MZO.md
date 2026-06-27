@@ -1,11 +1,23 @@
 import type { NoteSearchDoc } from "@shared/schemas/note-schema";
-import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
+import type {
+  AutoExport,
+  CodeTheme,
+  ExportFormat,
+  FontFamily,
+  FontSize,
+  HighlightTheme,
+  LineHeight,
+  NoteItemDisplay,
+  Spellcheck,
+  Theme,
+} from "@shared/schemas/store-schema";
 import type {
   Code,
   ContentType,
   QuickActionConfig,
   ResolvedTheme,
   SelectionActionConfig,
+  SelectOption,
 } from "@shared/types";
 import type { IFuseOptions } from "fuse.js";
 
@@ -69,7 +81,7 @@ const SELECTION_ACTIONS: SelectionActionConfig[] = [
 
 const QUICK_ACTIONS: QuickActionConfig[] = [
   { id: "open-path", icon: "folder-cog", label: "Open App Path" },
-  { id: "backup-db", icon: "database", label: "Database Backup" },
+  { id: "backup-db", icon: "database-backup", label: "Database Backup" },
   { id: "backup-notes", icon: "download", label: "File Backup" },
   {
     id: "vacuum-db",
@@ -226,27 +238,108 @@ const BLOCK_TYPES = new Set([
   "hardBreak",
 ]);
 
+const THEME_SETTINGS: readonly SelectOption<Theme>[] = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "light-warm", label: "Light · Warm" },
+  { value: "dark", label: "Dark" },
+  { value: "dark-warm", label: "Dark · Warm" },
+];
+
+const CODE_THEME_SETTINGS: readonly SelectOption<CodeTheme>[] = [
+  { value: "focus", label: "Focus" },
+  { value: "balanced", label: "Balanced" },
+  { value: "colorless", label: "Colorless" },
+];
+
+const HIGHLIGHT_THEME_SETTINGS: readonly SelectOption<HighlightTheme>[] = [
+  { value: "context", label: "Context" },
+  { value: "insight", label: "Insight" },
+  { value: "action", label: "Action" },
+];
+
+const NOTE_ITEM_DISPLAY_SETTINGS: readonly SelectOption<NoteItemDisplay>[] = [
+  {
+    value: "preview",
+    label: "Preview",
+  },
+  {
+    value: "tags",
+    label: "Tags",
+  },
+  {
+    value: "minimal",
+    label: "Minimal",
+  },
+];
+
+const FONT_FAMILY_SETTINGS: readonly SelectOption<FontFamily>[] = [
+  { value: "system", label: "System" },
+  { value: "arial", label: "Arial" },
+  { value: "serif", label: "Serif" },
+];
+
+const FONT_SIZE_SETTINGS: readonly SelectOption<FontSize>[] = [
+  { value: "16", label: "Small" },
+  { value: "18", label: "Medium" },
+  { value: "20", label: "Large" },
+];
+
+const LINE_HEIGHT_SETTINGS: readonly SelectOption<LineHeight>[] = [
+  { value: "1.4", label: "Small" },
+  { value: "1.5", label: "Medium" },
+  { value: "1.6", label: "Large" },
+];
+
+const SPELLCHECK_SETTINGS: readonly SelectOption<Spellcheck>[] = [
+  { value: true, label: "Enable" },
+  { value: false, label: "Disable" },
+];
+
+const EXPORT_FORMAT_SETTINGS: readonly SelectOption<ExportFormat>[] = [
+  { value: "json", label: "JSON" },
+  { value: "md", label: "Markdown" },
+  { value: "txt", label: "Plain Text" },
+  { value: "html", label: "HTML" },
+  { value: "pdf", label: "PDF" },
+];
+
+const AUTO_EXPORT_SETTINGS: readonly SelectOption<AutoExport>[] = [
+  { value: true, label: "Enable" },
+  { value: false, label: "Disable" },
+];
+
 export {
   ALLOWED_TYPES,
   APP_START_TIME,
+  AUTO_EXPORT_SETTINGS,
   BATCH_SIZE,
   BLOCK_TYPES,
   CODE_THEME_MAP,
+  CODE_THEME_SETTINGS,
   CONTENT_TYPE_MAP,
   DEBOUNCE_MS,
   DOMPURIFY_CONFIG,
   EMPTY_DOC,
+  EXPORT_FORMAT_SETTINGS,
+  FONT_FAMILY_SETTINGS,
+  FONT_SIZE_SETTINGS,
   FUSE_OPTIONS,
+  HIGHLIGHT_THEME_SETTINGS,
   IPC_TIMERS,
   LIMITS,
+  LINE_HEIGHT_SETTINGS,
   MAX_CHARS,
   MAX_SIZE,
   MIME_TO_EXT,
+  NOTE_ITEM_DISPLAY_SETTINGS,
   PADDING,
   QUICK_ACTIONS,
   SELECTION_ACTIONS,
+  SPELLCHECK_SETTINGS,
   THEME_DATA,
   THEME_MAP,
+  THEME_SETTINGS,
   UNTITLED,
   YIELD_INTERVAL,
   ZOOMS,

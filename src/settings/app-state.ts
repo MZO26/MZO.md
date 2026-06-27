@@ -21,7 +21,7 @@ const DEFAULT_STORE: AppSettings = {
   "auto-export": false,
   "auto-export-path": null,
   "export-format": "md",
-  "note-item-display": "snippet",
+  "note-item-display": "preview",
   "window-bounds": { width: 1100, height: 600 },
 };
 

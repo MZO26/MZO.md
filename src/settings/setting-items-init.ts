@@ -1,5 +1,6 @@
 import { selectAutoExportFolder, updateSettings } from "@/api/api";
-import { syncNoteStore } from "@/settings/app-state";
+import { renderNoteList } from "@/components/sidebar/sidebar-ui";
+import { noteStore } from "@/settings/app-state";
 import { applyAppTheme, resolveTheme, setCodeTheme } from "@/settings/theme";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
@@ -14,6 +15,53 @@ import type {
   Theme,
 } from "@shared/schemas/store-schema";
 import type { ExportFormat } from "@shared/types";
+
+import { selectBuilder } from "@/settings/setting-factory";
+import {
+  AUTO_EXPORT_SETTINGS,
+  CODE_THEME_SETTINGS,
+  EXPORT_FORMAT_SETTINGS,
+  FONT_FAMILY_SETTINGS,
+  FONT_SIZE_SETTINGS,
+  HIGHLIGHT_THEME_SETTINGS,
+  LINE_HEIGHT_SETTINGS,
+  NOTE_ITEM_DISPLAY_SETTINGS,
+  SPELLCHECK_SETTINGS,
+  THEME_SETTINGS,
+} from "@shared/constants";
+
+function buildSelects() {
+  selectBuilder("theme", THEME_SETTINGS, "Appearance", "App-Theme");
+  selectBuilder("code-theme", CODE_THEME_SETTINGS, "Appearance", "Code-Theme");
+  selectBuilder(
+    "highlight-theme",
+    HIGHLIGHT_THEME_SETTINGS,
+    "Appearance",
+    "Highlight-Theme",
+  );
+  selectBuilder(
+    "note-item-display",
+    NOTE_ITEM_DISPLAY_SETTINGS,
+    "Appearance",
+    "Note-Item-Display",
+  );
+  selectBuilder("font-family", FONT_FAMILY_SETTINGS, "Editor", "Font-Family");
+  selectBuilder("font-size", FONT_SIZE_SETTINGS, "Editor", "Font-Size");
+  (selectBuilder("line-height", LINE_HEIGHT_SETTINGS, "Editor", "Line-Height"),
+    selectBuilder("spellcheck", SPELLCHECK_SETTINGS, "Editor", "Spellcheck"),
+    selectBuilder(
+      "export-format",
+      EXPORT_FORMAT_SETTINGS,
+      "General",
+      "Bulk Export-Format",
+    ),
+    selectBuilder(
+      "auto-export",
+      AUTO_EXPORT_SETTINGS,
+      "General",
+      "Auto-Export (.md)",
+    ));
+}
 
 function initAppearanceSettings(
   settings: AppSettings,
@@ -98,7 +146,8 @@ function initAppearanceSettings(
         "note-item-display": target.value as NoteItemDisplay,
       });
       sidebar.setAttribute("data-noteItem", target.value);
-      await syncNoteStore();
+      const notes = noteStore.get("notes");
+      renderNoteList(notes);
     }),
   );
 }
@@ -214,7 +263,7 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
 
 //--------------------------------------------------------------
 
-function initExportSettings(settings: AppSettings, container: HTMLDivElement) {
+function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
   const exportFormatSelect = findElement<HTMLSelectElement>(
     "#export-format",
     container,
@@ -286,7 +335,7 @@ function initExportSettings(settings: AppSettings, container: HTMLDivElement) {
 function setSelectListeners(settings: AppSettings, container: HTMLDivElement) {
   initAppearanceSettings(settings, container);
   initEditorSettings(settings, container);
-  initExportSettings(settings, container);
+  initGeneralSettings(settings, container);
 }
 
-export { setSelectListeners };
+export { buildSelects, setSelectListeners };

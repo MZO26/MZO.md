@@ -5,6 +5,7 @@ import {
   renderNoteList,
   updateNoteInList,
 } from "@/components/sidebar/sidebar-ui";
+import { settingsStore } from "@/settings/app-state";
 import { formatNoteDate } from "@/utils/date";
 import { findElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
@@ -17,9 +18,9 @@ let cachedNoteItem: HTMLDivElement | null = null;
 
 function createNoteItem(note: NoteListItem) {
   cachedNoteItem ??= getTemplateItem("noteItemTemplate").content
-    .firstElementChild as HTMLDivElement; // if left side has a value it doesn't run right side. -> getTemplateItem only runs once
+    .firstElementChild as HTMLDivElement;
   const item = cachedNoteItem.cloneNode(true) as HTMLDivElement;
-  // Deep clone with true
+  const display = settingsStore.get("note-item-display");
   item.setAttribute("data-id", note.id);
   item.setAttribute("data-pinned", String(!!note.pinned));
   item.setAttribute("data-tippy-content", note.title);
@@ -29,16 +30,20 @@ function createNoteItem(note: NoteListItem) {
   const dateEl = findElement<HTMLDivElement>(".note-date", item);
   if (dateEl) dateEl.textContent = formatNoteDate(note.updated_at);
   const contentEl = findElement<HTMLDivElement>(".note-content", item);
-  if (contentEl) contentEl.textContent = note.snippet;
+  if (contentEl) {
+    contentEl.textContent = display === "preview" ? note.snippet : "";
+  }
   const tagsContainer = findElement<HTMLDivElement>(".note-tags", item);
-  if (tagsContainer && note.tags?.length > 0) {
+  if (tagsContainer) {
     tagsContainer.replaceChildren();
-    for (const tag of note.tags) {
-      const span = document.createElement("span");
-      span.classList.add("tag");
-      span.setAttribute("data-tippy-content", `#${tag}`);
-      span.textContent = `#${tag}`;
-      tagsContainer.append(span);
+    if (display === "tags") {
+      for (const tag of note.tags ?? []) {
+        const span = document.createElement("span");
+        span.classList.add("tag");
+        span.setAttribute("data-tippy-content", `#${tag}`);
+        span.textContent = `#${tag}`;
+        tagsContainer.append(span);
+      }
     }
   }
   return item;

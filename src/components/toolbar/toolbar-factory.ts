@@ -59,7 +59,7 @@ function updateActiveStates(
   }
 }
 
-function buildMenu(container: HTMLDivElement, actions: ActionMap) {
+function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
   const editor = getAppItem("editor");
   container.replaceChildren();
   const buttonMap = new Map<string, HTMLButtonElement>();
@@ -74,11 +74,19 @@ function buildMenu(container: HTMLDivElement, actions: ActionMap) {
   });
 }
 
+function buildTopToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
+  container.replaceChildren();
+  const buttonMap = new Map<string, HTMLButtonElement>();
+  const fragment = createToolbarFragment(actions, buttonMap);
+  container.appendChild(fragment);
+}
+
 function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
   const editor = getAppItem("editor");
   container.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
-    const btn = target?.closest<HTMLButtonElement>("[data-action]");
+    if (!target) return;
+    const btn = target.closest<HTMLButtonElement>("[data-action]");
     const key = btn?.getAttribute("data-action") as keyof typeof actions;
     const item = actions[key];
     if (item && "run" in item) {
@@ -87,4 +95,9 @@ function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
   });
 }
 
-export { buildMenu, createDivider, setupToolbarListeners };
+export {
+  buildToolbarMenu,
+  buildTopToolbarMenu,
+  createDivider,
+  setupToolbarListeners,
+};

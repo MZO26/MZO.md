@@ -286,7 +286,7 @@
 }
 
 .settings-quick-actions {
-  margin-top: 20px;
+  margin-top: 8px;
   gap: 10px;
   display: flex;
   flex-direction: row;
@@ -394,9 +394,8 @@ label {
 
 .settings-row {
   display: none;
-  justify-content: flex-start;
   align-items: center;
-  padding: 12px 0;
+  padding: 10px 0;
   border-top: 1px solid var(--border-color);
 }
 
@@ -404,8 +403,8 @@ label {
   .settings-row[data-category="Appearance"],
 .settings-content[data-activetab="Editor"]
   .settings-row[data-category="Editor"],
-.settings-content[data-activetab="Export"]
-  .settings-row[data-category="Export"] {
+.settings-content[data-activetab="General"]
+  .settings-row[data-category="General"] {
   display: flex;
   animation: fadeIn 0.2s ease-out;
 }
@@ -476,7 +475,7 @@ label {
   align-items: center;
   display: flex;
   height: 50px;
-  padding: 5px 10px 0 10px;
+  padding: 10px 10px 0 10px;
   bottom: 10px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
@@ -520,7 +519,7 @@ label {
   display: flex;
   flex-wrap: wrap;
   align-content: start;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   max-height: 220px;
   gap: 5px;
@@ -670,7 +669,8 @@ label {
 }
 
 .app-container.focus .frame-left,
-.app-container.focus .frame-right {
+.app-container.focus .frame-right,
+.app-container.app-container.toolbar-collapsed .frame-right {
   background-color: transparent;
   border: transparent;
   padding: 0;
