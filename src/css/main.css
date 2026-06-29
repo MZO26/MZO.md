@@ -414,7 +414,6 @@ label {
   flex-wrap: nowrap;
   flex-direction: row;
   width: 100%;
-  max-width: 80ch;
   opacity: 1;
   transform: scale(1);
   transition:
@@ -591,19 +590,16 @@ label {
 }
 
 .app-container[data-width="comfortable"] .ProseMirror,
-.app-container[data-width="comfortable"] #toolbar,
 .app-container[data-width="comfortable"].top-toolbar {
   max-width: min(80ch, 100%);
 }
 
 .app-container[data-width="normal"] .ProseMirror,
-.app-container[data-width="normal"] #toolbar,
 .app-container[data-width="normal"] .top-toolbar {
   max-width: min(95ch, 100%);
 }
 
 .app-container[data-width="wide"] .ProseMirror,
-.app-container[data-width="wide"] #toolbar,
 .app-container[data-width="wide"] .top-toolbar {
   max-width: min(110ch, 100%);
 }
