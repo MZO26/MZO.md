@@ -7,16 +7,16 @@ import { store } from "@electron/store";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import {
-  DeleteAutoExportRequestSchema,
-  WriteAutoExportRequestSchema,
-  type DeleteAutoExportRequest,
-  type WriteAutoExportRequest,
-} from "@shared/schemas/export-schema";
-import {
   IdSchema,
   type AutoExportWritePayload,
   type Note,
 } from "@shared/schemas/note-schema";
+import {
+  DeleteAutoExportRequestSchema,
+  WriteAutoExportRequestSchema,
+  type DeleteAutoExportRequest,
+  type WriteAutoExportRequest,
+} from "@shared/schemas/request-schema";
 import console from "console";
 import { app, shell } from "electron";
 import { readFileSync } from "fs";

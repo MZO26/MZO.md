@@ -101,7 +101,6 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>X</kbd>       | `~~text~~`   | Strikethrough            |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>       | `==text==`   | Highlight                |
 | <kbd>Mod</kbd> + <kbd>E</kbd>                          | `` `code` `` | Inline code              |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>       | `^[text]`    | Footnote                 |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>A</kbd>       | `//text//`   | Annotation               |
 | **Headings & Paragraphs**                              |              |                          |
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>1</kbd>         | `# `         | Heading 1                |

@@ -2,17 +2,17 @@ import { findElement, requireElement } from "@/utils/dom";
 import { initTippyDelegate } from "@/utils/ui";
 import type { Editor } from "@tiptap/core";
 
-function getTableOfContents(editor: Editor) {
-  const headings: Array<{ id: string; level: number; text: string }> = [];
-  editor.state.doc.descendants((node) => {
+function getTableOfContents(editor: Editor | null) {
+  const headings: TocItem[] = [];
+  editor?.state.doc.descendants((node) => {
     if (node.type.name === "detailsBlock") return false;
     if (node.type.name === "heading") {
       const text = node.textContent.trim();
-      const id = node.attrs["id"];
+      const { id, level } = node.attrs;
       if (!text || !id) return true;
       headings.push({
-        id: node.attrs["id"],
-        level: node.attrs["level"],
+        id,
+        level,
         text,
       });
     }
@@ -28,17 +28,16 @@ export interface TocItem {
 }
 
 function initTableOfContents() {
-  const container = requireElement(".toc");
+  const container = requireElement<HTMLDivElement>(".toc");
   initTippyDelegate(container, document.documentElement, "left");
   container.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
-    const button = target.closest("button[data-target-id]");
+    const button = target.closest<HTMLButtonElement>("button[data-target-id]");
     if (!button) return;
-    e.preventDefault();
     const targetId = button.getAttribute("data-target-id");
     if (targetId) {
-      const heading = findElement(`[id="${targetId}"]`) as HTMLElement | null;
+      const heading = findElement<HTMLHeadingElement>(`[id="${targetId}"]`);
       if (!heading) return;
       heading.scrollIntoView({
         behavior: "smooth",

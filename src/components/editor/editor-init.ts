@@ -10,7 +10,6 @@ import { SearchAndReplace } from "@/extensions/docSearch";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
 import { PasteHandler } from "@/extensions/editor-handler/pasteHandler";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
-import { Footnote } from "@/extensions/footnote";
 import { Highlight } from "@/extensions/highlight";
 import { lowlight } from "@/extensions/lowlight";
 import { CustomHeading } from "@/extensions/overrides/headings";
@@ -105,7 +104,6 @@ function getNoteEditorExtensions() {
     CustomUnderline,
     DetailsBlock,
     Annotation,
-    Footnote,
     Highlight,
     WikiLinkPreview,
     WikiLink.configure({

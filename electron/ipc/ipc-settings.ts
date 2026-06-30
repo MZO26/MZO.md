@@ -8,7 +8,7 @@ import { store } from "@electron/store";
 import { nextZoom } from "@electron/win";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
-import { StoreSchema, type AppSettings } from "@shared/schemas/store-schema";
+import { StoreSchema } from "@shared/schemas/store-schema";
 import type { ZoomAction } from "@shared/types";
 import { BrowserWindow, ipcMain } from "electron";
 
@@ -45,14 +45,15 @@ function registerSettingsIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("electron-store:set", (e, settings: Partial<AppSettings>) => {
+  ipcMain.handle("electron-store:set", (e, settings: unknown) => {
     return result(e, async () => {
       if (!checkRateLimit("electron-store:set", LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validSettings = validation(StoreSchema.partial(), settings);
       const currentSettings = store.store;
       const mergedSettings = {
         ...currentSettings,
-        ...settings,
+        ...validSettings,
       };
       const validValue = validation(StoreSchema, mergedSettings);
       store.set(validValue);

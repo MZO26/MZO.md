@@ -9,7 +9,6 @@
   max-width: 80ch;
   padding: 0 20px;
   margin: 0 auto;
-  counter-reset: footnote-ctr;
 }
 
 .ProseMirror * {
@@ -205,22 +204,6 @@
 .ProseMirror .annotation.has-focus,
 .ProseMirror .annotation:focus-visible {
   outline: none;
-}
-
-.footnote-anchor {
-  counter-increment: footnote-ctr;
-  cursor: pointer;
-  display: inline-block;
-  margin: 0 1px;
-  padding: 0 2px;
-}
-
-.footnote-anchor::after {
-  content: counter(footnote-ctr);
-  vertical-align: super;
-  font-size: 0.75em;
-  font-weight: 600;
-  color: var(--accent-primary);
 }
 
 .ProseMirror a:hover,

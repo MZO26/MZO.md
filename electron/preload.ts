@@ -1,13 +1,13 @@
-import type {
-  ExportManyRequest,
-  ExportRequest,
-  OpenAutoExportPathRequest,
-} from "@shared/schemas/export-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
+import type {
+  ExportManyRequest,
+  ExportRequest,
+  OpenAutoExportPathRequest,
+} from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { MenuType, NoteMenuPayload, ZoomAction } from "@shared/types";
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";

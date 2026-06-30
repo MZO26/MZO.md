@@ -12,8 +12,11 @@ import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
-import { OpenAutoExportPathSchema } from "@shared/schemas/export-schema";
 import { ImagePayloadsSchema } from "@shared/schemas/image-schema";
+import {
+  NotificationSchema,
+  OpenAutoExportPathSchema,
+} from "@shared/schemas/request-schema";
 import { type Theme } from "@shared/schemas/store-schema";
 import type { MenuType, NoteMenuPayload } from "@shared/types";
 import {
@@ -148,15 +151,13 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("notification:show", (e, title: string, body: string) => {
+  ipcMain.handle("notification:show", (e, title: unknown, body: unknown) => {
     return result(e, async () => {
       if (!checkRateLimit("notification:show", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validNotif = validation(NotificationSchema, { title, body });
       if (Notification.isSupported()) {
-        const notif = new Notification({
-          title,
-          body,
-        });
+        const notif = new Notification(validNotif);
         notif.show();
       }
     });

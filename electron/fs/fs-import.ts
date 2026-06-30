@@ -4,7 +4,7 @@ import { processWithLimit } from "@shared/limiter";
 import {
   ImportRequestSchema,
   type ImportRequest,
-} from "@shared/schemas/export-schema";
+} from "@shared/schemas/request-schema";
 import { app } from "electron";
 import fs from "fs/promises";
 import path from "path";
@@ -18,7 +18,7 @@ async function batchImport(filePaths: string[]): Promise<ImportRequest[]> {
       const extension = path.extname(file).slice(1).toLowerCase();
       const fileName = path.basename(file, path.extname(file));
       const importedFileDir = path.dirname(file);
-      const sanitizedContent = sanitizeImportString(
+      const sanitizedContent = await sanitizeImportString(
         content,
         importedFileDir,
         imagesFolder,
@@ -36,7 +36,7 @@ async function batchImport(filePaths: string[]): Promise<ImportRequest[]> {
       return null;
     }
   });
-  return imported.filter((note): note is ImportRequest => note !== null);
+  return imported.filter((note) => note !== null);
 }
 
 export { batchImport };

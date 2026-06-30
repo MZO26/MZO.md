@@ -409,7 +409,7 @@ label {
   display: flex;
   justify-content: safe center;
   gap: 5px;
-  padding-top: 2px;
+  padding: 2px 8px 0 8px;
   overflow: auto;
   flex-wrap: nowrap;
   flex-direction: row;

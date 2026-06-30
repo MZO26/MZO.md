@@ -26,7 +26,6 @@ export const MasterShortcuts = Extension.create({
       "Mod-Shift-b": () => this.editor.commands.toggleBlockquote(),
       "Mod-Alt-c": () => this.editor.commands.toggleCodeBlock(),
       "Mod-Shift--": () => this.editor.commands.setHorizontalRule(),
-      "Mod-Shift-f": () => this.editor.commands.setFootnote(),
       "Mod-Shift-d": () => this.editor.commands.toggleDetailsBlock(),
       "Mod-Alt-t": () =>
         this.editor.commands.insertTable({

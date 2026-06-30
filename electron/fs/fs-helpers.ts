@@ -2,7 +2,7 @@ import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
-import { FileNameSchema } from "@shared/schemas/export-schema";
+import { FileNameSchema } from "@shared/schemas/request-schema";
 import fs from "fs/promises";
 import path from "path";
 
@@ -61,7 +61,7 @@ async function sanitizeImportString(
       const destImagePath = path.join(internalImgDir, fileName);
       try {
         await fs.copyFile(sourceImagePath, destImagePath);
-      } catch (error: unknown) {
+      } catch (error) {
         const err = error as NodeJS.ErrnoException;
         if (err.code !== "ENOENT")
           console.error(

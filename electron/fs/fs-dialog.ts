@@ -5,7 +5,7 @@ import { AppErrorCode } from "@shared/errors";
 import {
   type ExportRequest,
   FileNameSchema,
-} from "@shared/schemas/export-schema";
+} from "@shared/schemas/request-schema";
 import { app, BrowserWindow, dialog } from "electron";
 import path from "path";
 

@@ -12,8 +12,8 @@ import {
 } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { titleGenerator } from "@shared/generators";
-import type { ExportRequest } from "@shared/schemas/export-schema";
 import type { Note } from "@shared/schemas/note-schema";
+import type { ExportRequest } from "@shared/schemas/request-schema";
 import type { ExportedContent, ExportFormat, Result } from "@shared/types";
 import { Editor } from "@tiptap/core";
 import DOMPurify from "dompurify";

@@ -12,14 +12,15 @@ export const PasteHandler = Extension.create({
     return [
       new Plugin({
         props: {
-          handlePaste(_view, event) {
-            if (!editor || !event.clipboardData) return false;
-            const files = Array.from(event.clipboardData.files ?? []);
+          handlePaste(view, event) {
+            const cb = event.clipboardData;
+            if (!editor || !cb) return false;
+            const files = Array.from(cb.files ?? []);
             const images = files.filter((f) => ALLOWED_TYPES.includes(f.type));
             if (images.length > 0) {
               event.preventDefault();
               const safeImages = images.slice(0, 20);
-              if (images.length > 20) return;
+              if (images.length > 20) return false;
               void processAndInsertImages(safeImages, editor).catch((error) => {
                 console.error(
                   "[PasteHandler]: Failed to process pasted images:",
@@ -28,15 +29,21 @@ export const PasteHandler = Extension.create({
               });
               return true;
             }
-            const text = event.clipboardData.getData("text/plain");
-            if (!text || !editor.markdown) {
+            const text = event.clipboardData?.getData("text/plain");
+            const html = event.clipboardData?.getData("text/html");
+            if (!text || html || !editor.markdown) {
               return false;
             }
             try {
               const normalized = text.replace(/\r\n?/g, "\n");
-              return editor.commands.insertContent(normalized, {
-                contentType: "markdown",
-              });
+              const content = editor.markdown.parse(normalized);
+              view.dispatch(
+                view.state.tr.replaceSelectionWith(
+                  editor.schema.nodeFromJSON(content),
+                  false,
+                ),
+              );
+              return true;
             } catch {
               return false;
             }

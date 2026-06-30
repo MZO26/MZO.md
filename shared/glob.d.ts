@@ -1,9 +1,9 @@
+import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type {
   ExportRequest,
   ImportRequest,
   OpenAutoExportPathRequest,
-} from "@shared/schemas/export-schema";
-import type { Note, NoteListItem } from "@shared/schemas/note-schema";
+} from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import {
   Result,

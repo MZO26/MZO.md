@@ -3,12 +3,12 @@ import z from "zod";
 
 const MAX_CHARS = 500_000;
 
-const jsonNode: z.ZodType<JSONContent> = z.lazy(() =>
+const JSONNode: z.ZodType<JSONContent> = z.lazy(() =>
   z
     .object({
       type: z.string().nullable().optional(),
       attrs: z.record(z.string(), z.unknown()).nullable().optional(),
-      content: z.array(jsonNode).optional(),
+      content: z.array(JSONNode).optional(),
       marks: z.array(z.record(z.string(), z.unknown())).nullable().optional(),
       text: z.string().nullable().optional(),
     })
@@ -19,7 +19,7 @@ const EditorDocSchema = z
   .object({
     type: z.literal("doc"),
     attrs: z.record(z.string(), z.unknown()).optional(),
-    content: z.array(jsonNode).default([{ type: "paragraph" }]),
+    content: z.array(JSONNode).default([{ type: "paragraph" }]),
   })
   .refine((doc) => JSON.stringify(doc).length <= MAX_CHARS, {
     message: `Document exceeds ${MAX_CHARS} characters`,

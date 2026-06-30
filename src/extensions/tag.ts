@@ -17,6 +17,7 @@ interface TagAutocompleteState {
 const tagAutocompleteKey = new PluginKey<TagAutocompleteState>(
   "tagAutocomplete",
 );
+const tagClickHandlerKey = new PluginKey<null>("tagClickHandler");
 
 const NoteTag = Node.create<NoteTagOptions>({
   name: "noteTag",
@@ -32,11 +33,16 @@ const NoteTag = Node.create<NoteTagOptions>({
   addAttributes: () => ({
     id: {
       default: null,
+      parseHTML: (el) => el.getAttribute("data-id"),
+      renderHTML: (attrs) => ({
+        "data-id": attrs["id"],
+      }),
     },
   }),
   parseHTML: () => [{ tag: 'span[data-type="noteTag"]' }],
+
   renderHTML({ node, HTMLAttributes }) {
-    const id = node.attrs?.["id"] || "";
+    const id = node.attrs?.["id"] ?? "";
     return [
       "span",
       mergeAttributes(HTMLAttributes, {
@@ -46,6 +52,7 @@ const NoteTag = Node.create<NoteTagOptions>({
       `#${id}`,
     ];
   },
+
   renderText({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     return id ? `#${id}` : "";
@@ -60,23 +67,19 @@ const NoteTag = Node.create<NoteTagOptions>({
     tokenize(src: string) {
       const match = src.match(/^#([\p{L}\p{N}_-]+)/u);
       const text = match?.[1]?.trim();
-      if (!match || !text) {
-        return undefined;
-      }
-      return {
-        type: "noteTag",
-        raw: match[0],
-        text,
-      };
+      if (!match || !text) return undefined;
+      return { type: "noteTag", raw: match[0], text };
     },
   },
+
   parseMarkdown(token, helpers) {
     const id = String(token.text ?? "").trim();
     if (!id) {
-      return helpers.createTextNode(token.raw || "");
+      return helpers.createTextNode(token.raw ?? "");
     }
     return helpers.createNode("noteTag", { id });
   },
+
   renderMarkdown(node) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     return id ? `#${id}` : "";
@@ -106,7 +109,6 @@ const NoteTag = Node.create<NoteTagOptions>({
       Tab: ({ editor }) => {
         const state = tagAutocompleteKey.getState(editor.state);
         if (!state) return false;
-
         editor
           .chain()
           .focus()
@@ -128,82 +130,81 @@ const NoteTag = Node.create<NoteTagOptions>({
   },
 
   addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        key: new PluginKey("tagClickHandler"),
-        props: {
-          handleClickOn: (_view, _pos, node, _nodePos, event) => {
-            if (node.type.name !== this.name || !node.attrs["id"]) return false;
-            event.preventDefault();
-            event.stopPropagation();
-            void this.options.onClick(node.attrs["id"]);
-            return true;
-          },
+    const clickPlugin = new Plugin({
+      key: tagClickHandlerKey,
+      props: {
+        handleClickOn: (_view, _pos, node, _nodePos, event) => {
+          if (node.type.name !== this.name || !node.attrs["id"]) return false;
+          event.preventDefault();
+          event.stopPropagation();
+          void this.options.onClick(node.attrs["id"]);
+          return true;
         },
-      }),
-      new Plugin({
-        key: tagAutocompleteKey,
-        state: {
-          init: () => null,
-          apply: (
-            _tr,
-            _value,
-            _oldState,
-            newState,
-          ): TagAutocompleteState | null => {
-            const { selection } = newState;
-            if (!selection.empty) return null;
-            const $head = selection.$head;
-            const textBefore = $head.parent.textContent.slice(
-              0,
-              $head.parentOffset,
-            );
-            const match = textBefore.match(/(?:^|\s)#([\p{L}\p{N}_-]+)$/u);
-            if (!match) return null;
-            const rawQuery = match[1];
-            if (!rawQuery) return null;
-            const normalizedQuery = rawQuery.trim().toLowerCase();
-            let bestMatch: string | null = null;
-            let exactMatchFound = false;
-            for (const note of noteStore.get("notes")) {
-              for (const tag of note.tags) {
-                if (tag === normalizedQuery) {
-                  bestMatch = tag;
-                  exactMatchFound = true;
-                  break;
-                }
-                if (
-                  tag.startsWith(normalizedQuery) &&
-                  (bestMatch === null || tag.length < bestMatch.length)
-                ) {
-                  bestMatch = tag;
-                }
+      },
+    });
+    const autoCompletePlugin = new Plugin({
+      key: tagAutocompleteKey,
+      state: {
+        init: () => null,
+        apply: (
+          _tr,
+          _value,
+          _oldState,
+          newState,
+        ): TagAutocompleteState | null => {
+          const { selection } = newState;
+          if (!selection.empty) return null;
+          const $head = selection.$head;
+          const textBefore = $head.parent.textContent.slice(
+            0,
+            $head.parentOffset,
+          );
+          const match = textBefore.match(/(?:^|\s)#([\p{L}\p{N}_-]+)$/u);
+          if (!match) return null;
+          const rawQuery = match[1];
+          if (!rawQuery) return null;
+          const normalizedQuery = rawQuery.trim().toLowerCase();
+          let bestMatch: string | null = null;
+          let exactMatchFound = false;
+          for (const note of noteStore.get("notes")) {
+            for (const tag of note.tags) {
+              if (tag === normalizedQuery) {
+                bestMatch = tag;
+                exactMatchFound = true;
+                break;
               }
-              if (exactMatchFound) break;
+              if (
+                tag.startsWith(normalizedQuery) &&
+                (bestMatch === null || tag.length < bestMatch.length)
+              ) {
+                bestMatch = tag;
+              }
             }
-            if (!bestMatch) return null;
-            return {
-              from: $head.pos - rawQuery.length - 1,
-              to: $head.pos,
-              autocompleteText: bestMatch.slice(rawQuery.length),
-              tagId: bestMatch,
-            };
-          },
+            if (exactMatchFound) break;
+          }
+          if (!bestMatch) return null;
+          return {
+            from: $head.pos - rawQuery.length - 1,
+            to: $head.pos,
+            autocompleteText: bestMatch.slice(rawQuery.length),
+            tagId: bestMatch,
+          };
         },
-        props: {
-          decorations(state) {
-            const pluginState = tagAutocompleteKey.getState(state);
-            if (!pluginState) return DecorationSet.empty;
-            const span = document.createElement("span");
-            span.className = "autocomplete";
-            span.textContent = pluginState.autocompleteText;
-            return DecorationSet.create(state.doc, [
-              Decoration.widget(pluginState.to, span, { side: 1 }),
-            ]);
-          },
+      },
+      props: {
+        decorations(state) {
+          const pluginState = tagAutocompleteKey.getState(state);
+          if (!pluginState) return DecorationSet.empty;
+          const span = document.createElement("span");
+          span.className = "autocomplete";
+          span.textContent = pluginState.autocompleteText;
+          return DecorationSet.create(state.doc, [
+            Decoration.widget(pluginState.to, span, { side: 1 }),
+          ]);
         },
-      }),
-    ];
+      },
+    });
+    return [clickPlugin, autoCompletePlugin];
   },
 });
 

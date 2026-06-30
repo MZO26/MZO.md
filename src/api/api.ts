@@ -2,11 +2,6 @@ import { settingsStore } from "@/settings/app-state";
 import { debounce } from "@/utils/async";
 import { DEBOUNCE_MS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
-import type {
-  ExportRequest,
-  ImportRequest,
-  OpenAutoExportPathRequest,
-} from "@shared/schemas/export-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
@@ -14,6 +9,11 @@ import type {
   NoteListItem,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
+import type {
+  ExportRequest,
+  ImportRequest,
+  OpenAutoExportPathRequest,
+} from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type {
   ExportedContent,

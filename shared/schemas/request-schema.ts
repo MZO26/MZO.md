@@ -113,6 +113,11 @@ const ImportRequestSchema = z.discriminatedUnion("extension", [
   TxtSchema.omit({ created_at: true }),
 ]);
 
+const NotificationSchema = z.object({
+  title: z.string().trim().min(1).max(50),
+  body: z.string().trim().max(100).default(""),
+});
+
 type OpenAutoExportPathRequest = z.infer<typeof OpenAutoExportPathSchema>;
 type AutoExportRequest = z.infer<typeof AutoExportRequestSchema>;
 type WriteAutoExportRequest = z.infer<typeof WriteAutoExportRequestSchema>;
@@ -128,6 +133,7 @@ export {
   ExportRequestSchema,
   FileNameSchema,
   ImportRequestSchema,
+  NotificationSchema,
   OpenAutoExportPathSchema,
   StringContentSchema,
   WriteAutoExportRequestSchema,

@@ -76,9 +76,7 @@ export const Annotation = Mark.create({
     tokenize(src: string) {
       const match = src.match(/^\/\/([^/\n][^/\n]*?)\/\//);
       const text = match?.[1]?.trim();
-      if (!match || !text) {
-        return undefined;
-      }
+      if (!match || !text) return undefined;
       return {
         type: "annotation",
         raw: match[0],
@@ -90,7 +88,7 @@ export const Annotation = Mark.create({
   parseMarkdown(token, helpers) {
     const text = String(token.text ?? "");
     if (!text) {
-      return helpers.createTextNode(token.raw || "");
+      return helpers.createTextNode(token.raw ?? "");
     }
     return helpers.applyMark("annotation", [helpers.createTextNode(text)]);
   },
