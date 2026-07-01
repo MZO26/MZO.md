@@ -203,6 +203,15 @@ type QuickActionConfig = {
   label: string;
 };
 
+type SyncResult =
+  | { status: "MISSING" }
+  | { status: "UNCHANGED" }
+  | {
+      status: "MODIFIED";
+      markdown: string;
+      dbContent: string;
+    };
+
 export type {
   Action,
   ActionMap,
@@ -235,6 +244,7 @@ export type {
   SettingsCategory,
   SidebarChange,
   Success,
+  SyncResult,
   TemplateRegistry,
   ThemeResult,
   TitleBarOverlayOptions,

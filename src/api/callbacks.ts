@@ -9,11 +9,12 @@ import {
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,
+  triggerSyncCheck,
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
 import { debouncedSaveNote, handleSaveNote } from "@/notes/note-actions";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
-import { initDeleteDialog } from "@/settings/dialog-init";
+import { initDeleteDialog, initSyncDialog } from "@/settings/dialog-init";
 import { getAppItem } from "@/utils/registry";
 import type { NoteMenuPayload } from "@shared/types";
 
@@ -22,23 +23,28 @@ import type { NoteMenuPayload } from "@shared/types";
 // helper functions for callbacks
 
 export const { deleteDialog } = initDeleteDialog();
+export const { syncDialog } = initSyncDialog();
 
 async function ensureNoteSaved(id: string) {
   const note = noteStore.get("notes").find((n) => n.id === id);
-  const activeId = stateStore.get("activeId");
-  if (!note || activeId !== note.id) return;
+  if (!note) return;
+  if (stateStore.get("activeId") !== id) return;
   const editor = getAppItem("editor");
-  const autoExportPayload = {
-    created_at: note.created_at,
-    fileName: note.title,
-    extension: "md" as const,
-    updated_at: note.updated_at,
-  };
+  const json = editor.getJSON();
+  const markdown = editor.getMarkdown();
+  const plainText = editor.getText();
   debouncedSaveNote.cancel();
-  await handleSaveNote(note.id, editor.getJSON(), editor.getMarkdown());
-  return autoExportPayload;
+  await handleSaveNote(id, json, plainText, markdown, true);
+  if (stateStore.get("activeId") !== id) return;
+  const savedNote = noteStore.get("notes").find((n) => n.id === id);
+  if (!savedNote) return;
+  return {
+    created_at: savedNote.created_at,
+    fileName: savedNote.title,
+    extension: "md" as const,
+    updated_at: savedNote.updated_at,
+  };
 }
-
 //----------------------------------------------------------
 
 // electron callbacks that only get registered once at startup. Thus no need for assignment of cleanups
@@ -86,14 +92,17 @@ function initListeners() {
   });
 
   window.noteAPI.onTriggerSelect((id: string) => {
-    const selectionMode = stateStore.get("selectionMode");
-    const selectedIds = stateStore.get("selectedIds");
+    const { selectionMode, selectedIds } = stateStore.getState();
     selectedIds.add(id);
     setSelectionMode(!selectionMode);
   });
 
   window.noteAPI.onTriggerDuplicate(async (id: string) => {
     await triggerDuplicate(id);
+  });
+
+  window.noteAPI.onTriggerSync(async (id: string) => {
+    await triggerSyncCheck(id);
   });
 
   window.electronAPI.onThemeChanged(async (resolvedTheme) => {

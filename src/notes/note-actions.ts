@@ -112,7 +112,7 @@ async function handleImportNote() {
   }
   await showNotification(
     "Import Successful.",
-    `Successfully imported ${imported.data.length} file${imported.data.length === 1 ? "" : "s"}`,
+    `Successfully imported ${result.data.length} file${result.data.length === 1 ? "" : "s"}`,
   );
   const notes: NoteListItem[] = [];
   for (const note of result.data) {
@@ -136,7 +136,6 @@ async function handleImportNote() {
 // delete
 
 async function handleDeleteManyNotes(ids: string[]) {
-  const editor = getAppItem("editor");
   const activeId = stateStore.get("activeId");
   const deletedIds = new Set(ids);
   const isActiveDeleted = activeId !== null && deletedIds.has(activeId);
@@ -167,12 +166,10 @@ async function handleDeleteManyNotes(ids: string[]) {
   searchEngine.removeMany([...deletedIds]);
   if (isActiveDeleted) {
     stateStore.setState({ activeId: null });
-    editor.commands.clearContent();
   }
 }
 
 async function handleDeleteNote(id: string) {
-  const editor = getAppItem("editor");
   const activeId = stateStore.get("activeId");
   const isActiveDeletedId = activeId === id;
   if (isActiveDeletedId) {
@@ -197,11 +194,10 @@ async function handleDeleteNote(id: string) {
   searchEngine.removeNote(id);
   if (isActiveDeletedId) {
     stateStore.setState({ activeId: null });
-    editor.commands.clearContent();
   }
 }
 
-//------------------------------------------------------------
+//---------------------------------------------------------
 
 // update
 

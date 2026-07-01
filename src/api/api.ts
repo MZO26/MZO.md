@@ -13,12 +13,14 @@ import type {
   ExportRequest,
   ImportRequest,
   OpenAutoExportPathRequest,
+  SyncRequestPayload,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type {
   ExportedContent,
   ImageSrc,
   Result,
+  SyncResult,
   ZoomAction,
 } from "@shared/types";
 
@@ -100,6 +102,12 @@ async function pin(id: string): Promise<Result<boolean>> {
 
 async function pinMany(ids: string[]): Promise<Result<boolean>> {
   return invoke(window.noteAPI.pinMany(ids));
+}
+
+async function syncRequest(
+  payload: SyncRequestPayload,
+): Promise<Result<SyncResult>> {
+  return invoke(window.noteAPI.syncRequest(payload));
 }
 
 async function databaseBackup(): Promise<Result<number>> {
@@ -246,6 +254,7 @@ export {
   selectAutoExportFolder,
   setTheme,
   showNotification,
+  syncRequest,
   updateNote,
   updateSettings,
 };

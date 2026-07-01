@@ -133,7 +133,8 @@ function getVisibleNotes(state: NoteStore) {
 stateStore.subscribe((state) => {
   if (state.activeId !== prevId) {
     prevId = state.activeId;
-    if (!state.activeId) return;
+    handleEditorEmptyState(state.activeId);
+    if (state.activeId == null) return;
     window.noteAPI.setActiveNote(state.activeId);
     const sidebar = getAppItem("sidebar");
     const noteElement = findElement<HTMLDivElement>(
@@ -141,7 +142,6 @@ stateStore.subscribe((state) => {
       sidebar,
     );
     if (noteElement) setActiveItem(noteElement, sidebar);
-    handleEditorEmptyState();
   }
   if (state.searchQuery !== prevSearchQuery) {
     prevSearchQuery = state.searchQuery;

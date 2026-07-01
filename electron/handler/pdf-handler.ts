@@ -1,14 +1,29 @@
 import type { PDFAssets } from "@shared/types";
 import { app } from "electron";
-import * as fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 
-function loadPDFAssets(): PDFAssets {
+let cachedPDFAssets: Promise<PDFAssets> | null = null;
+
+async function loadPDFAssets() {
   const pdfFolder = path.join(app.getAppPath(), "shared", "pdf");
-  return {
-    template: fs.readFileSync(path.join(pdfFolder, "pdf-export.html"), "utf8"),
-    css: fs.readFileSync(path.join(pdfFolder, "pdf-export.css"), "utf8"),
-  };
+  const [templateFile, cssFile] = [
+    path.join(pdfFolder, "pdf-export.html"),
+    path.join(pdfFolder, "pdf-export.css"),
+  ];
+  const [template, css] = await Promise.all([
+    fs.readFile(templateFile, "utf8"),
+    fs.readFile(cssFile, "utf8"),
+  ]);
+  return { template, css };
+}
+
+function getPDFAssets() {
+  cachedPDFAssets ??= loadPDFAssets().catch((error) => {
+    cachedPDFAssets = null;
+    throw error;
+  });
+  return cachedPDFAssets;
 }
 
 function renderPDFCanvas(safeData: string, assets: PDFAssets) {
@@ -19,4 +34,4 @@ function renderPDFCanvas(safeData: string, assets: PDFAssets) {
       `<div class="ProseMirror" id="content-root">${safeData}</div>`,
     );
 }
-export { loadPDFAssets, renderPDFCanvas };
+export { getPDFAssets, loadPDFAssets, renderPDFCanvas };

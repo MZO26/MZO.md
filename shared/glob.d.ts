@@ -3,6 +3,7 @@ import type {
   ExportRequest,
   ImportRequest,
   OpenAutoExportPathRequest,
+  SyncRequestPayload,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import {
@@ -11,9 +12,12 @@ import {
   type ImagePayload,
   type UpdateNotePayload,
 } from "@shared/shared/types";
-import type { ImageSrc, MenuType, NoteMenuPayload } from "@shared/types";
-
-declare module "*.css";
+import type {
+  ImageSrc,
+  MenuType,
+  NoteMenuPayload,
+  SyncResult,
+} from "@shared/types";
 
 declare global {
   interface Window {
@@ -76,6 +80,8 @@ declare global {
       onTriggerDuplicate: (callback: (id: string) => void) => () => void;
       onTriggerPin: (callback: (id: string) => void) => () => void;
       onTriggerSelect: (callback: (id: string) => void) => () => void;
+      onTriggerSync: (callback: (id: string) => void) => () => void;
+      syncRequest: (payload: SyncRequestPayload) => Promise<Result<SyncResult>>;
       pin: (id: string) => Promise<Result<boolean>>;
       pinMany: (ids: string[]) => Promise<Result<boolean>>;
       databaseBackup: () => Promise<Result<number>>;

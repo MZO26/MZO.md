@@ -7,6 +7,7 @@ import type {
   ExportManyRequest,
   ExportRequest,
   OpenAutoExportPathRequest,
+  SyncRequestPayload,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { MenuType, NoteMenuPayload, ZoomAction } from "@shared/types";
@@ -110,6 +111,11 @@ contextBridge.exposeInMainWorld("noteAPI", {
   onTriggerSelect: (callback: (id: string) => void) => {
     subscribe("note:trigger-select", callback);
   },
+  onTriggerSync: (callback: (id: string) => void) => {
+    subscribe("note:trigger-sync", callback);
+  },
+  syncRequest: (payload: SyncRequestPayload) =>
+    ipcRenderer.invoke("note:sync", payload),
   getById: (id: string) => ipcRenderer.invoke("note:getById", id),
   getManyById: (ids: string[]) => ipcRenderer.invoke("note:getManyById", ids),
   pin: (id: string) => ipcRenderer.invoke("note:pin", id),

@@ -1,9 +1,8 @@
-import { stateStore } from "@/settings/app-state";
 import { findElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getTemplateItem } from "@/utils/registry";
 
-function handleEditorEmptyState() {
+function handleEditorEmptyState(activeId: string | null) {
   const editorContainer = getAppItem("editorContainer");
   const editorView = getTemplateItem("editorView");
   const topToolbar = findElement<HTMLDivElement>(".toolbar-hover-zone");
@@ -11,7 +10,6 @@ function handleEditorEmptyState() {
     ".editor-empty-state",
     editorContainer,
   );
-  const activeId = stateStore.getState().activeId;
   const showEmptyState = !activeId;
   editorView.classList.toggle("hidden", showEmptyState);
   topToolbar?.classList.toggle("hidden", showEmptyState);
@@ -21,10 +19,8 @@ function handleEditorEmptyState() {
       editorContainer.appendChild(newEmptyState);
       renderIcons(newEmptyState);
     }
-  } else {
-    if (existingEmptyState) {
-      existingEmptyState.remove();
-    }
+  } else if (existingEmptyState) {
+    existingEmptyState.remove();
   }
 }
 

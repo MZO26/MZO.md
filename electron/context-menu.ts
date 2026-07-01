@@ -136,6 +136,16 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       ],
     },
     {
+      label: "Reload from File",
+      enabled:
+        activeId !== null &&
+        activeId === id &&
+        store.get("auto-export") === true &&
+        hasAutoExportedFile,
+      visible: store.get("auto-export") === true,
+      click: () => win.webContents.send("note:trigger-sync", id),
+    },
+    {
       label: "Show in Folder",
       enabled:
         activeId !== null &&

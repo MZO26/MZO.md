@@ -1,5 +1,9 @@
 import { UNTITLED } from "@shared/constants";
-import { DateSchema, TitleSchema } from "@shared/schemas/note-schema";
+import {
+  AutoExportWritePayloadSchema,
+  DateSchema,
+  TitleSchema,
+} from "@shared/schemas/note-schema";
 import z from "zod";
 
 const truncateAtBoundary = (input: string, maxLength: number): string => {
@@ -118,6 +122,11 @@ const NotificationSchema = z.object({
   body: z.string().trim().max(100).default(""),
 });
 
+const SyncRequestPayloadSchema = AutoExportWritePayloadSchema.extend({
+  updated_at: DateSchema,
+});
+
+type SyncRequestPayload = z.infer<typeof SyncRequestPayloadSchema>;
 type OpenAutoExportPathRequest = z.infer<typeof OpenAutoExportPathSchema>;
 type AutoExportRequest = z.infer<typeof AutoExportRequestSchema>;
 type WriteAutoExportRequest = z.infer<typeof WriteAutoExportRequestSchema>;
@@ -136,6 +145,7 @@ export {
   NotificationSchema,
   OpenAutoExportPathSchema,
   StringContentSchema,
+  SyncRequestPayloadSchema,
   WriteAutoExportRequestSchema,
   type AutoExportRequest,
   type DeleteAutoExportRequest,
@@ -143,5 +153,6 @@ export {
   type ExportRequest,
   type ImportRequest,
   type OpenAutoExportPathRequest,
+  type SyncRequestPayload,
   type WriteAutoExportRequest,
 };

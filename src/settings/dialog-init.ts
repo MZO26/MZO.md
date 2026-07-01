@@ -14,4 +14,34 @@ function initSettingsDialog() {
   return { settingsDialog, settingsContainer };
 }
 
-export { initDeleteDialog, initSettingsDialog };
+function initSyncDialog() {
+  const syncDialog = requireElement<HTMLDialogElement>("#sync-dialog");
+  initTippyDelegate(syncDialog, syncDialog, "top");
+  return { syncDialog };
+}
+
+function confirmWithDialog(
+  dialog: HTMLDialogElement,
+  titleEl: HTMLElement,
+  title: string,
+): Promise<boolean> {
+  titleEl.textContent = title;
+  dialog.returnValue = "";
+  dialog.showModal();
+
+  return new Promise((resolve) => {
+    const onClose = () => {
+      titleEl.textContent = "";
+      resolve(dialog.returnValue === "confirm");
+    };
+
+    dialog.addEventListener("close", onClose, { once: true });
+  });
+}
+
+export {
+  confirmWithDialog,
+  initDeleteDialog,
+  initSettingsDialog,
+  initSyncDialog,
+};

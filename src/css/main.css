@@ -144,7 +144,8 @@
   }
 }
 
-.delete-dialog {
+.delete-dialog,
+.sync-dialog {
   width: 350px;
   border: none;
   user-select: none;
@@ -165,21 +166,24 @@
     overlay 0.3s allow-discrete;
 }
 
-.delete-dialog[open] {
+.delete-dialog[open],
+.sync-dialog[open] {
   opacity: 1;
   transform: scale(1);
   visibility: visible;
 }
 
 @starting-style {
-  .delete-dialog[open] {
+  .delete-dialog[open],
+  .sync-dialog[open] {
     opacity: 0;
     transform: scale(0.95);
     visibility: hidden;
   }
 }
 
-.delete-dialog::backdrop {
+.delete-dialog::backdrop,
+.sync-dialog::backdrop {
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(6px);
   opacity: 0;
@@ -191,25 +195,29 @@
     overlay 0.3s allow-discrete;
 }
 
-.delete-dialog[open]::backdrop {
+.delete-dialog[open]::backdrop,
+.sync-dialog[open]::backdrop {
   opacity: 1;
   visibility: visible;
 }
 
 @starting-style {
-  .delete-dialog[open]::backdrop {
+  .delete-dialog[open]::backdrop,
+  .sync-dialog[open]::backdrop {
     opacity: 0;
     visibility: hidden;
   }
 }
 
-.delete-dialog-form {
+.delete-dialog-form,
+.sync-dialog-form {
   display: flex;
   flex-direction: column;
   position: relative;
 }
 
-.delete-close-btn {
+.delete-close-btn,
+.sync-close-btn {
   position: absolute;
   top: 8px;
   right: 14px;
@@ -226,12 +234,14 @@
   transition: background-color 0.2s ease;
 }
 
-.delete-close-icon {
+.delete-close-icon,
+.sync-close-icon {
   width: 18px;
   height: 18px;
 }
 
-.delete-dialog-header {
+.delete-dialog-header,
+.sync-dialog-header {
   display: flex;
   width: 100%;
   align-items: center;
@@ -243,11 +253,13 @@
   border-radius: 18px 18px 0 0;
 }
 
-.delete-dialog-title {
+.delete-dialog-title,
+.sync-dialog-title {
   font-weight: 700;
 }
 
-.delete-dialog-content {
+.delete-dialog-content,
+.sync-dialog-content {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -256,14 +268,16 @@
   gap: 16px;
 }
 
-.delete-dialog-description {
+.delete-dialog-description,
+.sync-dialog-description {
   text-align: center;
   margin: 0;
   font-size: 14px;
   color: var(--text-muted);
 }
 
-.delete-confirm-btn {
+.delete-confirm-btn,
+.sync-confirm-btn {
   width: 100%;
   color: var(--text-main);
   border: var(--border-color);
@@ -282,6 +296,13 @@
 .delete-confirm-btn:focus-within {
   color: #ffffff;
   background-color: #ef4444;
+}
+
+.sync-confirm-btn:hover,
+.sync-confirm-btn:active,
+.sync-confirm-btn.is-active,
+.sync-confirm-btn:focus-within {
+  background-color: var(--tag-bg);
 }
 
 .close-setting-modal-btn {

@@ -5,12 +5,14 @@ import {
   openAutoExportFolder,
   pin,
   showNotification,
+  syncRequest,
 } from "@/api/api";
-import { deleteDialog } from "@/api/callbacks";
+import { deleteDialog, syncDialog } from "@/api/callbacks";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote } from "@/notes/note-actions";
 import { handleDuplicateNote } from "@/notes/note-duplicate";
-import { noteStore } from "@/settings/app-state";
+import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
+import { confirmWithDialog } from "@/settings/dialog-init";
 import { findElement, requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
@@ -139,22 +141,17 @@ async function triggerCopyRichText(id: string) {
 }
 
 async function triggerSingleDelete(id: string) {
-  const deleteDialogTitle = requireElement<HTMLSpanElement>(
+  const titleEl = requireElement<HTMLSpanElement>(
     ".delete-dialog-title",
     deleteDialog,
   );
-  deleteDialogTitle.textContent = "Delete this note?";
-  const handleClose = async () => {
-    if (deleteDialog.returnValue !== "confirm") {
-      deleteDialogTitle.textContent = "";
-      return;
-    }
-    await handleDeleteNote(id);
-    deleteDialogTitle.textContent = "";
-  };
-  deleteDialog.addEventListener("close", handleClose, { once: true });
-  deleteDialog.returnValue = "";
-  deleteDialog.showModal();
+  const confirmed = await confirmWithDialog(
+    deleteDialog,
+    titleEl,
+    "Delete this note?",
+  );
+  if (!confirmed) return;
+  await handleDeleteNote(id);
 }
 
 async function triggerCopyWikilink(id: string) {
@@ -208,6 +205,89 @@ async function triggerDuplicate(id: string) {
   );
 }
 
+const syncVersions = new Map<string, number>();
+
+function beginSyncVersion(id: string) {
+  if (stateStore.get("activeId") !== id) return null;
+  const next = (syncVersions.get(id) ?? 0) + 1;
+  syncVersions.set(id, next);
+  return next;
+}
+
+function isSyncVersionCurrent(id: string, version: number) {
+  return stateStore.get("activeId") === id && syncVersions.get(id) === version;
+}
+
+function endSyncVersion(id: string, version: number) {
+  if (syncVersions.get(id) === version) {
+    syncVersions.delete(id);
+  }
+}
+
+async function triggerSyncCheck(id: string) {
+  const version = beginSyncVersion(id);
+  if (version == null) return;
+  try {
+    const result = await getNoteById(id);
+    if (!isSyncVersionCurrent(id, version)) return;
+    if (!result.success) {
+      console.error("[triggerSyncCheck]: Failed to fetch note:", result.error);
+      return;
+    }
+    const targetDir = settingsStore.get("auto-export-path");
+    if (!targetDir) return;
+    const editor = getAppItem("editor");
+    const markdown = editor.getMarkdown();
+    const syncResult = await syncRequest({
+      created_at: result.data.created_at,
+      updated_at: result.data.updated_at,
+      fileName: result.data.title,
+      markdown,
+      targetDir,
+    });
+    if (!isSyncVersionCurrent(id, version)) return;
+    if (!syncResult.success) {
+      console.error(
+        "[triggerSyncCheck]: Failed to perform sync check:",
+        syncResult.error,
+      );
+      return;
+    }
+    switch (syncResult.data.status) {
+      case "UNCHANGED":
+        await showNotification("Sync Check", "Note is in sync.");
+        return;
+      case "MISSING":
+        await showNotification(
+          "Sync Check",
+          "Note not found in target directory.",
+        );
+        return;
+      case "MODIFIED": {
+        await showNotification("Sync Check", "Note is out of sync.");
+        const titleEl = requireElement<HTMLSpanElement>(
+          ".sync-dialog-title",
+          syncDialog,
+        );
+        const confirmed = await confirmWithDialog(
+          syncDialog,
+          titleEl,
+          "Load external changes?",
+        );
+        if (!confirmed) return;
+        if (!isSyncVersionCurrent(id, version)) return;
+        editor.commands.setContent(syncResult.data.markdown, {
+          emitUpdate: true,
+          contentType: "markdown",
+        });
+        return;
+      }
+    }
+  } finally {
+    endSyncVersion(id, version);
+  }
+}
+
 export {
   triggerCopyFilePath,
   triggerCopyRichText,
@@ -218,5 +298,6 @@ export {
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,
+  triggerSyncCheck,
   triggerTableMenu,
 };

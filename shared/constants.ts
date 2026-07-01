@@ -35,6 +35,8 @@ const CONTENT_TYPE_MAP: Record<string, ContentType> = {
   json: "json",
 };
 
+const SYNC_BUFFER = 2000; // 2 seconds to account for DB timestamp differences or OS write delays
+
 const LIMITS = {
   WRITE_HEAVY: 500,
   WRITE_STANDARD: 500,
@@ -324,6 +326,7 @@ export {
   QUICK_ACTIONS,
   SELECTION_ACTIONS,
   SPELLCHECK_SETTINGS,
+  SYNC_BUFFER,
   THEME_DATA,
   THEME_MAP,
   THEME_SETTINGS,

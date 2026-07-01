@@ -14,7 +14,7 @@ import {
   TOOLBAR_ACTIONS,
   TOP_TOOLBAR_ACTIONS,
 } from "@/components/toolbar/toolbar-features";
-import { loadSettings, syncNoteStore } from "@/settings/app-state";
+import { loadSettings, stateStore, syncNoteStore } from "@/settings/app-state";
 import { initAppSettings } from "@/settings/setting-init";
 import { startAppClock } from "@/utils/date";
 import { requireElement } from "@/utils/dom";
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await syncNoteStore();
   initNotesSidebar();
   handleSidebarEmptyState();
-  handleEditorEmptyState();
+  handleEditorEmptyState(stateStore.getState().activeId);
   requestAnimationFrame(() => {
     window.electronAPI.startupReady();
   });

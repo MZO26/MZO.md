@@ -407,7 +407,7 @@ body.is-dragging * {
   width: 100%;
   padding: 7px 10px;
   display: grid;
-  grid-template-rows: 20px 16px 28px;
+  grid-template-rows: 20px 18px 26px;
   background-color: transparent;
   outline: 1px solid transparent;
   content-visibility: auto;
@@ -488,6 +488,7 @@ body.is-dragging * {
 
 .note-date {
   font-size: 0.78rem;
+  padding: 4px 0;
   color: var(--text-muted);
   align-items: center;
   flex-shrink: 0;

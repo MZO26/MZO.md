@@ -17,6 +17,7 @@ import {
   singlePDFExport,
 } from "@electron/fs/fs-export";
 import { batchImport } from "@electron/fs/fs-import";
+import { checkSyncState } from "@electron/fs/fs-sync";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
   checkRateLimit,
@@ -36,6 +37,7 @@ import {
 import {
   ExportManyRequestSchema,
   ExportRequestSchema,
+  SyncRequestPayloadSchema,
 } from "@shared/schemas/request-schema";
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import fs from "fs/promises";
@@ -168,6 +170,19 @@ function registerNoteIpc(win: BrowserWindow) {
         throw new AppBackendError(AppErrorCode.CancelledOperation);
       }
       return result.filePaths[0];
+    });
+  });
+
+  ipcMain.handle("note:sync", (e, payload: unknown) => {
+    return result(e, async () => {
+      if (!checkRateLimit("note:sync", LIMITS.READ_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      if (store.get("auto-export") !== true) return null;
+      const validatedData = validation(SyncRequestPayloadSchema, payload);
+      if (!validatedData.updated_at) return null;
+      const targetDir = store.get("auto-export-path");
+      if (!targetDir) return null;
+      return await checkSyncState(targetDir, validatedData);
     });
   });
 

@@ -13,6 +13,7 @@ import {
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
+import { confirmWithDialog } from "@/settings/dialog-init";
 import { requireElement } from "@/utils/dom";
 
 // sidebar footer selection mode
@@ -162,34 +163,22 @@ async function deleteSelection() {
   const selectedIds = stateStore.get("selectedIds");
   const ids = [...selectedIds];
   if (!Array.isArray(ids) || ids.length === 0) return;
-  const deleteDialogTitle = requireElement<HTMLSpanElement>(
-    ".delete-dialog-title",
+  const confirmed = await confirmWithDialog(
     deleteDialog,
+    requireElement<HTMLSpanElement>(".delete-dialog-title", deleteDialog),
+    ids.length === 1 ? "Delete this note?" : `Delete ${ids.length} notes?`,
   );
-  deleteDialogTitle.textContent =
-    ids.length === 1 ? `Delete this note?` : `Delete ${ids.length} notes?`;
-  const handleClose = async () => {
-    if (deleteDialog.returnValue !== "confirm") {
-      deleteDialogTitle.textContent = "";
-      return;
-    }
-    await handleDeleteManyNotes(ids);
-    const nextSelectedIds = new Set(
-      [...stateStore.get("selectedIds")].filter((id) => !ids.includes(id)),
-    );
-    stateStore.setState({
-      selectedIds: nextSelectedIds,
-    });
-    if (nextSelectedIds.size === 0) {
-      setSelectionMode(false);
-    } else {
-      updateSelectionUI();
-    }
-    deleteDialogTitle.textContent = "";
-  };
-  deleteDialog.addEventListener("close", handleClose, { once: true });
-  deleteDialog.returnValue = "";
-  deleteDialog.showModal();
+  if (!confirmed) return;
+  await handleDeleteManyNotes(ids);
+  const nextSelectedIds = new Set(
+    [...stateStore.get("selectedIds")].filter((id) => !ids.includes(id)),
+  );
+  stateStore.setState({ selectedIds: nextSelectedIds });
+  if (nextSelectedIds.size === 0) {
+    setSelectionMode(false);
+  } else {
+    updateSelectionUI();
+  }
 }
 
 export {

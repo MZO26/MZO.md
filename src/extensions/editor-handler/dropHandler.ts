@@ -5,7 +5,7 @@ import {
   DOMPURIFY_CONFIG,
 } from "@shared/constants";
 import { Extension } from "@tiptap/core";
-import { Plugin } from "@tiptap/pm/state";
+import { Plugin, Selection } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";
 
 function getExtension(name: string) {
@@ -41,7 +41,9 @@ export const DropHandler = Extension.create({
             event.preventDefault();
             void (async () => {
               try {
-                editor.chain().focus().setTextSelection(coords.pos).run();
+                const $pos = view.state.doc.resolve(coords.pos);
+                const safeSelection = Selection.near($pos);
+                view.dispatch(view.state.tr.setSelection(safeSelection));
                 const imageFiles = supportedFiles.filter((file) =>
                   ALLOWED_TYPES.includes(file.type),
                 );
@@ -53,7 +55,7 @@ export const DropHandler = Extension.create({
                 );
                 for (const file of nonImageFiles) {
                   try {
-                    editor.chain().focus().setTextSelection(coords.pos).run();
+                    editor.commands.focus();
                     const ext = getExtension(file.name);
                     const text = await file.text();
                     const contentType =

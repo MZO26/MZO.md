@@ -1,12 +1,12 @@
 import { writeAtomic } from "@electron/fs/fs-atomic-write";
 import { getFilePath } from "@electron/fs/fs-auto-export";
 import { sanitizeExportString } from "@electron/fs/fs-helpers";
-import { loadPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
+import { getPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { createHiddenPdfWindow } from "@electron/win";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
-import type { ExportedContent } from "@shared/types";
+import type { ExportedContent, PDFAssets } from "@shared/types";
 import type { BrowserWindow, PrintToPDFOptions } from "electron";
 import { app } from "electron";
 import fs from "fs/promises";
@@ -61,7 +61,7 @@ async function exportPDFNote(params: {
   win: BrowserWindow;
   filePath: string;
   html: string;
-  assets: ReturnType<typeof loadPDFAssets>;
+  assets: PDFAssets;
 }) {
   const { win, filePath, html, assets } = params;
   const pdfOptions: PrintToPDFOptions = {
@@ -85,9 +85,14 @@ async function exportPDFNote(params: {
 
 async function singlePDFExport(filePath: string, data: string) {
   const hiddenWin = createHiddenPdfWindow();
-  const assets = loadPDFAssets();
+  const assets = await getPDFAssets();
   try {
-    await exportPDFNote({ win: hiddenWin, filePath, html: data, assets });
+    await exportPDFNote({
+      win: hiddenWin,
+      filePath,
+      html: data,
+      assets,
+    });
   } catch (error) {
     console.error("[singlePDFExport]: Error writing PDF file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
@@ -104,7 +109,7 @@ async function batchPDFExport(folder: string, payload: ExportedContent[]) {
     throw new AppBackendError(AppErrorCode.FileWriteError);
   });
   const absoluteTargetFolder = path.resolve(folder);
-  const assets = loadPDFAssets();
+  const assets = await getPDFAssets();
   let hiddenWin = createHiddenPdfWindow();
   try {
     const exported = await processWithLimit(payload, 1, async (item) => {

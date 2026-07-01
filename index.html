@@ -189,6 +189,33 @@
         </div>
       </form>
     </dialog>
+    <dialog id="sync-dialog" class="sync-dialog">
+      <form method="dialog" class="sync-dialog-form">
+        <button
+          class="sync-close-btn"
+          data-tippy-content="Close"
+          data-shortcut="Escape"
+          value="cancel"
+        >
+          <i data-lucide="x" class="sync-close-icon"></i>
+        </button>
+        <div class="sync-dialog-header">
+          <span class="sync-dialog-title"></span>
+        </div>
+        <div class="sync-dialog-content">
+          <p class="sync-dialog-description">
+            Load external changes and overwrite this note?
+          </p>
+          <button
+            value="confirm"
+            class="sync-confirm-btn"
+            id="confirm-sync-btn"
+          >
+            Update Note
+          </button>
+        </div>
+      </form>
+    </dialog>
     <dialog class="settings-modal">
       <form method="dialog" novalidate>
         <div class="settings-quick-actions"></div>
