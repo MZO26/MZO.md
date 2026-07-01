@@ -75,13 +75,20 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement) {
 
 //----------------------------------------------------------
 
-// render note list
+// note list
+
+function truncateTagForUI(tag: string, maxLength: number = 30): string {
+  if (tag.length <= maxLength) {
+    return tag;
+  }
+  return tag.slice(0, maxLength - 3) + "...";
+}
 
 function createActiveTagHeader(tag: string): HTMLDivElement {
   const header = document.createElement("div");
   header.className = "active-tag-header";
   const label = document.createElement("span");
-  label.textContent = `#${tag}`;
+  label.textContent = `#${truncateTagForUI(tag)}`;
   const clearBtn = document.createElement("button");
   clearBtn.className = "active-tag-clear-btn";
   clearBtn.setAttribute("data-action", "clear-active-tag");
