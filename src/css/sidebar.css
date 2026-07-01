@@ -681,6 +681,14 @@ body.is-dragging * {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   user-select: none;
+  min-width: 0;
+}
+
+.active-tag-header span {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .active-tag-header::after {
