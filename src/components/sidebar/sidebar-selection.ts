@@ -71,18 +71,6 @@ async function copyRichTextSelection(selectedIds: string[]) {
   }
 }
 
-async function copyLinkSelection(selectedIds: string[]) {
-  if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-  try {
-    const text = [...selectedIds].join("\n");
-    await navigator.clipboard.writeText(text);
-    await showNotification("Copied to clipboard.", "");
-  } catch (error) {
-    await showNotification("Failed to copy to clipboard.", "");
-    console.error("[copyLinkSelection]: Failed to copy links:", error);
-  }
-}
-
 async function exportSelection(selectedIds: string[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const notes = noteStore.get("notes");
@@ -182,7 +170,6 @@ async function deleteSelection() {
 }
 
 export {
-  copyLinkSelection,
   copyRichTextSelection,
   deleteSelection,
   exportSelection,

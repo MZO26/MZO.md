@@ -79,7 +79,6 @@ declare global {
         payload: FilePathRequest,
       ) => Promise<Result<ImportRequest[]>>;
       onTriggerDelete: (callback: (id: string) => void) => () => void;
-      onTriggerId: (callback: (id: string) => void) => () => void;
       onTriggerDuplicate: (callback: (id: string) => void) => () => void;
       onTriggerPin: (callback: (id: string) => void) => () => void;
       onTriggerSelect: (callback: (id: string) => void) => () => void;

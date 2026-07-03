@@ -107,9 +107,6 @@ contextBridge.exposeInMainWorld("noteAPI", {
   onTriggerDelete: (callback: (id: string) => void) => {
     subscribe("note:trigger-delete", callback);
   },
-  onTriggerId: (callback: (id: string) => void) => {
-    subscribe("note:trigger-id", callback);
-  },
   onTriggerDuplicate: (callback: (id: string) => void) => {
     subscribe("note:trigger-duplicate", callback);
   },

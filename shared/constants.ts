@@ -71,10 +71,6 @@ const SELECTION_ACTIONS: SelectionActionConfig[] = [
   { id: "pin", icon: "pin" },
   { id: "export", icon: "download" },
   {
-    id: "copy-links",
-    icon: "git-compare-arrows",
-  },
-  {
     id: "copy-rich-text",
     icon: "file-symlink",
   },

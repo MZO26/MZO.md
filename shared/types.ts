@@ -183,7 +183,6 @@ type SelectionAction =
   | "cancel"
   | "pin"
   | "export"
-  | "copy-links"
   | "copy-rich-text"
   | "delete";
 

@@ -8,7 +8,6 @@ import {
   setupSidebarFileDrop,
 } from "@/components/sidebar/sidebar-features";
 import {
-  copyLinkSelection,
   copyRichTextSelection,
   deleteSelection,
   exportSelection,
@@ -123,9 +122,6 @@ function applySidebarListeners(
           break;
         case "export":
           await exportSelection([...selectedIds]);
-          break;
-        case "copy-links":
-          await copyLinkSelection([...selectedIds]);
           break;
         case "copy-rich-text":
           await copyRichTextSelection([...selectedIds]);

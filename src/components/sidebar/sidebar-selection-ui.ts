@@ -40,8 +40,6 @@ function getActionLabel(actionId: string, selectedCount: number): string {
       return `Toggle Pin for ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
     case "export":
       return `Export ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
-    case "copy-links":
-      return `Copy ${selectedCount} ${selectedCount === 1 ? "wikilink" : "wikilinks"}`;
     case "copy-rich-text":
       return `Copy rich-text of ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
     case "delete":

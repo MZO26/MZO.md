@@ -1,15 +1,12 @@
 import { noteStore, stateStore } from "@/settings/app-state";
 import type { NoteListItem } from "@shared/schemas/note-schema";
-import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
+import { InputRule, mergeAttributes, Node } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 const UUID_PATTERN = "([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})";
 const INPUT_REGEX = /(?<!!)\[\[([^\]]+)\]\]$/;
-const PASTE_REGEX = new RegExp(
-  `(?:\\[\\[)?\\s*${UUID_PATTERN}\\s*(?:\\]\\])?`,
-  "gi",
-);
+const EXACT_UUID_REGEX = new RegExp(`^${UUID_PATTERN}$`, "i");
 
 export interface WikiLinkOptions {
   onClick: (id: string) => void | Promise<void>;
@@ -48,7 +45,19 @@ const WikiLink = Node.create<WikiLinkOptions>({
     },
   }),
 
-  parseHTML: () => [{ tag: "span[data-wikilink]" }],
+  parseHTML: () => [
+    {
+      tag: "span[data-wikilink]",
+      getAttrs: (el) => {
+        const id =
+          el
+            .getAttribute("data-id")
+            ?.replace(/[\[\]]/g, "")
+            .trim() || "";
+        return EXACT_UUID_REGEX.test(id) ? null : false;
+      },
+    },
+  ],
   renderHTML({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     const title = noteStore.get("noteIndex").get(id)?.title;
@@ -70,7 +79,9 @@ const WikiLink = Node.create<WikiLinkOptions>({
     tokenize(src: string) {
       const match = src.match(/^\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/);
       const id = match?.[1]?.trim();
-      if (!match || !id) return undefined;
+      if (!match || !id || !EXACT_UUID_REGEX.test(id)) {
+        return undefined;
+      }
       return {
         type: "wikilink",
         raw: match[0],
@@ -81,7 +92,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
 
   parseMarkdown(token, helpers) {
     const id = String(token.text ?? "").trim();
-    if (!id) {
+    if (!id || !EXACT_UUID_REGEX.test(id)) {
       return helpers.createTextNode(token.raw || "");
     }
     return helpers.createNode("wikilink", { id });
@@ -120,15 +131,6 @@ const WikiLink = Node.create<WikiLinkOptions>({
           tr.insertText(" ", range.from + node.nodeSize);
           return;
         },
-      }),
-    ];
-  },
-  addPasteRules() {
-    return [
-      nodePasteRule({
-        find: PASTE_REGEX,
-        type: this.type,
-        getAttributes: (match) => ({ id: match[1] }),
       }),
     ];
   },

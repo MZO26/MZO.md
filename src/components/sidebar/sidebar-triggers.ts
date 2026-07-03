@@ -154,16 +154,6 @@ async function triggerSingleDelete(id: string) {
   await handleDeleteNote(id);
 }
 
-async function triggerCopyWikilink(id: string) {
-  try {
-    await navigator.clipboard.writeText(id);
-    await showNotification("Copied to clipboard.", "");
-  } catch (error) {
-    await showNotification("Failed to copy to clipboard.", "");
-    console.error("[onTriggerId]: Failed to copy text: ", error);
-  }
-}
-
 async function triggerPin(id: string) {
   const result = await pin(id);
   if (!result.success) {
@@ -291,7 +281,6 @@ async function triggerSyncCheck(id: string) {
 export {
   triggerCopyFilePath,
   triggerCopyRichText,
-  triggerCopyWikilink,
   triggerDuplicate,
   triggerNoteItemMenu,
   triggerOpenAutoExportFolder,

@@ -77,10 +77,6 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       label: "Copy...",
       submenu: [
         {
-          label: "Note Link",
-          click: () => win.webContents.send("note:trigger-id", id),
-        },
-        {
           label: "Rich Text",
           click: () => win.webContents.send("note:trigger-copy-rich-text", id),
         },

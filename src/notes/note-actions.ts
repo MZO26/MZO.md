@@ -294,7 +294,7 @@ async function handleSelectNote(id: string) {
     return;
   }
   editor.commands.setContent(result.data.content, {
-    emitUpdate: false,
+    emitUpdate: true,
   });
   noteStore.setState({ activeNote: result.data });
   resetEditorHistory(editor);
