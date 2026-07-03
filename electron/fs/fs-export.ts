@@ -28,7 +28,7 @@ async function singleExport(filePath: string, data: string) {
 }
 
 async function batchExport(folder: string, payload: ExportedContent[]) {
-  await fs.mkdir(folder, { recursive: true }).catch((error) => {
+  await fs.mkdir(folder, { recursive: true }).catch((error: unknown) => {
     console.error("[batchExport]: Failed to create directory:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   });
@@ -104,7 +104,7 @@ async function singlePDFExport(filePath: string, data: string) {
 }
 
 async function batchPDFExport(folder: string, payload: ExportedContent[]) {
-  await fs.mkdir(folder, { recursive: true }).catch((error) => {
+  await fs.mkdir(folder, { recursive: true }).catch((error: unknown) => {
     console.error("[batchPDFExport]: Failed to create directory:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   });

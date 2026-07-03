@@ -1,6 +1,7 @@
 import { getNoteEditorExtensions } from "@/components/editor/editor-init";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
+import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS } from "@shared/constants";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import { Editor, generateText } from "@tiptap/core";
@@ -28,17 +29,18 @@ function hasSearchMatch(editor: Editor): boolean {
   return !!searchState.query.findNext(editor.state, 0);
 }
 
-function inEditorSearch(editor: Editor) {
+function initEditorSearch(editor: Editor) {
+  const editorWrapper = getAppItem("editorWrapper");
   const inputWrapper = requireElement<HTMLDivElement>(".input-wrapper-editor");
   const input = requireElement<HTMLInputElement>(".search-input-editor");
+  const replaceInputWrapper = requireElement<HTMLDivElement>(
+    ".input-wrapper-editor-replace",
+  );
   const replaceInput = requireElement<HTMLInputElement>(
     ".replace-input-editor",
   );
   const chevronBtn = requireElement<HTMLButtonElement>(
     ".input-wrapper-chevron",
-  );
-  const replaceInputWrapper = requireElement<HTMLDivElement>(
-    ".input-wrapper-editor-replace",
   );
 
   chevronBtn.addEventListener("click", () => {
@@ -112,10 +114,6 @@ function inEditorSearch(editor: Editor) {
       event.preventDefault();
       goNext();
       return;
-    } else if (target.closest(".search-close")) {
-      event.preventDefault();
-      close();
-      return;
     }
   });
 
@@ -175,7 +173,7 @@ function inEditorSearch(editor: Editor) {
     }
   });
 
-  window.addEventListener("keydown", (event) => {
+  editorWrapper.addEventListener("keydown", (event) => {
     const isFind =
       (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f";
     if (!isFind) return;
@@ -187,4 +185,4 @@ function inEditorSearch(editor: Editor) {
   return { open, close };
 }
 
-export { getPlainTextFromJson, inEditorSearch, resetEditorHistory };
+export { getPlainTextFromJson, initEditorSearch, resetEditorHistory };

@@ -10,7 +10,10 @@ import path from "path";
 async function handleImageWriteMany(validatedData: ImagePayload[]) {
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
-  await fs.mkdir(imagesFolder, { recursive: true });
+  await fs.mkdir(imagesFolder, { recursive: true }).catch((error: unknown) => {
+    console.error("[handleImageWriteMany]: Failed to create directory:", error);
+    throw new AppBackendError(AppErrorCode.FileWriteError);
+  });
   const prepared = validatedData.map((image) => {
     const imageBuffer = Buffer.from(image.imageData);
     const hash = createHash("sha256").update(imageBuffer).digest("hex");

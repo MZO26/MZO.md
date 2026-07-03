@@ -27,23 +27,28 @@ import {
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { initTippyDelegate } from "@/utils/ui";
+import { initEditorSearch } from "./components/editor/editor-features";
+import { initQuickSwitcher } from "./components/quick-switch/quick-switch";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const settings = await loadSettings();
   initializeCoreRegistry(settings);
   initializeTemplateRegistry();
   initializeUIRegistry();
-  setupEditorListeners(getAppItem("editorWrapper"), getAppItem("editor"));
-  await initAppSettings(settings);
-  initListeners();
+  const appContainer = getAppItem("appContainer");
+  const editor = getAppItem("editor");
+  const editorWrapper = getAppItem("editorWrapper");
   const editorContainer = getAppItem("editorContainer");
   const toolbarContainer = requireElement<HTMLDivElement>(
     "#toolbar",
     editorContainer,
   );
+  const topToolbar = requireElement<HTMLDivElement>(".top-toolbar");
+  setupEditorListeners(editorWrapper, editor);
+  await initAppSettings(settings);
+  initListeners();
   buildToolbarMenu(toolbarContainer, TOOLBAR_ACTIONS);
   setupToolbarListeners(toolbarContainer, TOOLBAR_ACTIONS);
-  const topToolbar = requireElement<HTMLDivElement>(".top-toolbar");
   buildTopToolbarMenu(topToolbar, TOP_TOOLBAR_ACTIONS);
   setupToolbarListeners(topToolbar, TOP_TOOLBAR_ACTIONS);
   initTopToolbar();
@@ -52,9 +57,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   startAppClock();
   initGlobalShortcuts();
   initTippyDelegate(editorContainer);
-  initTippyDelegate(topToolbar, getAppItem("appContainer"));
+  initTippyDelegate(topToolbar, appContainer);
   await syncNoteStore();
   initNotesSidebar();
+  initQuickSwitcher();
+  initEditorSearch(editor);
   handleSidebarEmptyState();
   handleEditorEmptyState(stateStore.getState().activeId);
   requestAnimationFrame(() => {

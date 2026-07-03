@@ -57,6 +57,7 @@ interface NoteStore {
   noteIndex: Map<string, NoteListItem>;
   activeNote: Note | null;
   sidebarChange: SidebarChange | null;
+  recentNotes: string[];
 }
 
 const NOTE_STORE: NoteStore = {
@@ -65,6 +66,7 @@ const NOTE_STORE: NoteStore = {
   noteIndex: new Map<string, NoteListItem>(),
   activeNote: null,
   sidebarChange: null,
+  recentNotes: [],
 };
 
 const noteStore = createStore<NoteStore>(NOTE_STORE);
@@ -130,6 +132,30 @@ function getVisibleNotes(state: NoteStore) {
   return notes;
 }
 
+function markNoteAsRecent(noteId: string) {
+  noteStore.setState((state) => {
+    const recentNotes = state.recentNotes.filter(
+      (id) => id !== noteId && state.noteIndex.has(id),
+    );
+
+    return {
+      recentNotes: [noteId, ...recentNotes].slice(0, 5),
+    };
+  });
+}
+
+function removeRecentNote(noteId: string) {
+  noteStore.setState((state) => ({
+    recentNotes: state.recentNotes.filter((id) => id !== noteId),
+  }));
+}
+
+function pruneRecentNotes() {
+  noteStore.setState((state) => ({
+    recentNotes: state.recentNotes.filter((id) => state.noteIndex.has(id)),
+  }));
+}
+
 stateStore.subscribe((state) => {
   if (state.activeId !== prevId) {
     prevId = state.activeId;
@@ -170,7 +196,10 @@ noteStore.subscribe((state) => {
 
 export {
   loadSettings,
+  markNoteAsRecent,
   noteStore,
+  pruneRecentNotes,
+  removeRecentNote,
   searchEngine,
   settingsStore,
   stateStore,

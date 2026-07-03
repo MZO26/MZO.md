@@ -73,7 +73,9 @@ function registerElectronIpc(win: BrowserWindow) {
       const targetDir = store.get("auto-export-path");
       if (!targetDir) return null;
       const autoExportPath = resolveAutoExportPath(targetDir);
-      await fs.mkdir(autoExportPath, { recursive: true });
+      await fs.mkdir(autoExportPath, { recursive: true }).catch(() => {
+        throw new AppBackendError(AppErrorCode.FileWriteError);
+      });
       const filePath = getFilePath(autoExportPath, validatedData);
       try {
         await fs.access(filePath, fs.constants.R_OK);
@@ -98,7 +100,9 @@ function registerElectronIpc(win: BrowserWindow) {
       const targetDir = store.get("auto-export-path");
       if (!targetDir) return null;
       const autoExportPath = resolveAutoExportPath(targetDir);
-      await fs.mkdir(autoExportPath, { recursive: true });
+      await fs.mkdir(autoExportPath, { recursive: true }).catch(() => {
+        throw new AppBackendError(AppErrorCode.FileWriteError);
+      });
       const filePath = getFilePath(autoExportPath, validatedData);
       try {
         await fs.access(filePath, fs.constants.R_OK);

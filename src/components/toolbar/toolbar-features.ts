@@ -18,14 +18,14 @@ function initMetadataToolbar() {
   metadataContainer.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
-    const clickedLink = target.closest(".link") as HTMLElement | null;
+    const clickedLink = target.closest<HTMLSpanElement>(".link");
     const linkId = clickedLink?.getAttribute("data-link");
     if (linkId === stateStore.get("activeId")) return;
     if (clickedLink && linkId) {
       handleSelectNote(linkId);
       return;
     }
-    const clickedTag = target.closest(".tag-node") as HTMLElement | null;
+    const clickedTag = target.closest<HTMLSpanElement>(".tag-node");
     const tagId = clickedTag?.getAttribute("data-tag");
     if (clickedTag && tagId) {
       applyTagView(tagId);

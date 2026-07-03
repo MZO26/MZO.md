@@ -1,6 +1,5 @@
 import {
   getPlainTextFromJson,
-  inEditorSearch,
   resetEditorHistory,
 } from "@/components/editor/editor-features";
 import { applyTagView } from "@/components/sidebar/sidebar-features";
@@ -72,7 +71,6 @@ function initEditor(settings: Partial<AppSettings>): Editor {
     if (!activeId) return;
     debouncedSaveNote(activeId, false);
   });
-  inEditorSearch(editor);
   return editor;
 }
 

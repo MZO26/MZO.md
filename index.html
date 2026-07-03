@@ -162,8 +162,21 @@
         </div>
       </div>
     </div>
+    <dialog class="quick-switch-dialog">
+      <form method="dialog" class="quick-switch-dialog-form" novalidate>
+        <button
+          class="quick-switch-close-btn"
+          data-tippy-content="Close"
+          data-shortcut="Escape"
+          value="cancel"
+        >
+          <i data-lucide="x" class="quick-switch-close-icon"></i>
+        </button>
+        <div class="quick-switch-list"></div>
+      </form>
+    </dialog>
     <dialog id="delete-dialog" class="delete-dialog">
-      <form method="dialog" class="delete-dialog-form">
+      <form method="dialog" class="delete-dialog-form" novalidate>
         <button
           class="delete-close-btn"
           data-tippy-content="Close"
@@ -190,7 +203,7 @@
       </form>
     </dialog>
     <dialog id="sync-dialog" class="sync-dialog">
-      <form method="dialog" class="sync-dialog-form">
+      <form method="dialog" class="sync-dialog-form" novalidate>
         <button
           class="sync-close-btn"
           data-tippy-content="Close"

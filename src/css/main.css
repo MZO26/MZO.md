@@ -79,20 +79,6 @@
     overlay 0.3s allow-discrete;
 }
 
-.settings-modal[open] {
-  opacity: 1;
-  transform: scale(1);
-  visibility: visible;
-}
-
-@starting-style {
-  .settings-modal[open] {
-    opacity: 0;
-    transform: scale(0.95);
-    visibility: hidden;
-  }
-}
-
 .close-setting-modal-btn {
   margin: 0 5px;
   z-index: 2;
@@ -120,30 +106,7 @@
   padding: 10px;
 }
 
-.settings-modal::backdrop {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(6px);
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease,
-    display 0.3s allow-discrete,
-    overlay 0.3s allow-discrete;
-}
-
-.settings-modal[open]::backdrop {
-  opacity: 1;
-  visibility: visible;
-}
-
-@starting-style {
-  .settings-modal[open]::backdrop {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-
+.quick-switch-dialog,
 .delete-dialog,
 .sync-dialog {
   width: 350px;
@@ -166,6 +129,8 @@
     overlay 0.3s allow-discrete;
 }
 
+.quick-switch-dialog[open],
+.settings-modal[open],
 .delete-dialog[open],
 .sync-dialog[open] {
   opacity: 1;
@@ -174,6 +139,8 @@
 }
 
 @starting-style {
+  .quick-switch-dialog[open],
+  .settings-modal[open],
   .delete-dialog[open],
   .sync-dialog[open] {
     opacity: 0;
@@ -182,6 +149,18 @@
   }
 }
 
+@starting-style {
+  .settings-modal[open]::backdrop,
+  .delete-dialog[open]::backdrop,
+  .sync-dialog[open]::backdrop,
+  .quick-switch-dialog[open]::backdrop {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.quick-switch-dialog::backdrop,
+.settings-modal::backdrop,
 .delete-dialog::backdrop,
 .sync-dialog::backdrop {
   background: rgba(0, 0, 0, 0.3);
@@ -195,27 +174,23 @@
     overlay 0.3s allow-discrete;
 }
 
+.settings-modal[open]::backdrop,
 .delete-dialog[open]::backdrop,
-.sync-dialog[open]::backdrop {
+.sync-dialog[open]::backdrop,
+.quick-switch-dialog[open]::backdrop {
   opacity: 1;
   visibility: visible;
 }
 
-@starting-style {
-  .delete-dialog[open]::backdrop,
-  .sync-dialog[open]::backdrop {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-
 .delete-dialog-form,
-.sync-dialog-form {
+.sync-dialog-form,
+.quick-switch-dialog-form {
   display: flex;
   flex-direction: column;
   position: relative;
 }
 
+.quick-switch-close-btn,
 .delete-close-btn,
 .sync-close-btn {
   position: absolute;
@@ -234,6 +209,16 @@
   transition: background-color 0.2s ease;
 }
 
+.quick-switch-close-btn:hover,
+.delete-close-btn:hover,
+.sync-close-btn:hover {
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+  border: none;
+}
+
+.quick-switch-close-icon,
 .delete-close-icon,
 .sync-close-icon {
   width: 18px;
@@ -353,15 +338,6 @@
 
 .settings-content label {
   flex: 0 0 170px;
-}
-
-label {
-  font-size: 14px;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .confirmation-content label {
@@ -842,7 +818,7 @@ svg.empty-state-icon {
 }
 
 .frame-info {
-  padding: 0 10px;
+  padding: 0 8px;
   display: flex;
   margin-right: auto;
   width: fit-content;
@@ -1089,6 +1065,53 @@ svg.empty-state-icon {
 
 .wikilink-preview-content::-webkit-scrollbar-corner {
   background-color: transparent;
+}
+
+.quick-switch-dialog {
+  width: 400px;
+  height: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.95);
+  transition:
+    visibility 0.3s ease,
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    display 0.3s allow-discrete,
+    overlay 0.3s allow-discrete;
+}
+
+.quick-switch-list {
+  padding: 15px 10px;
+}
+
+.quick-switch-dialog-form {
+  overflow: hidden;
+  height: 100%;
+  background-color: var(--bg-sidebar);
+  color: var(--text-main);
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+.quick-switch-item {
+  height: 40px;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.quick-switch-item:hover:not(.is-active) {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow);
+}
+
+.quick-switch-item:hover,
+.quick-switch-item.active {
+  background: var(--accent-hover);
 }
 
 @container (max-width: 450px) {

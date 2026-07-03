@@ -13,7 +13,10 @@ import { updateStats } from "@/components/sidebar/sidebar-features";
 import { getTableOfContents } from "@/extensions/tableOfContents";
 import { setImportedContent } from "@/notes/import-actions";
 import {
+  markNoteAsRecent,
   noteStore,
+  pruneRecentNotes,
+  removeRecentNote,
   searchEngine,
   settingsStore,
   stateStore,
@@ -79,6 +82,7 @@ async function handleCreateNote() {
   const headings = getTableOfContents(editor);
   updateToc(headings);
   updateStats();
+  markNoteAsRecent(result.data.id);
 }
 
 //------------------------------------------------------------
@@ -171,6 +175,7 @@ async function handleDeleteManyNotes(ids: string[]) {
   if (isActiveDeleted) {
     stateStore.setState({ activeId: null });
   }
+  pruneRecentNotes();
 }
 
 async function handleDeleteNote(id: string) {
@@ -199,6 +204,7 @@ async function handleDeleteNote(id: string) {
   if (isActiveDeletedId) {
     stateStore.setState({ activeId: null });
   }
+  removeRecentNote(id);
 }
 
 //---------------------------------------------------------
@@ -298,6 +304,7 @@ async function handleSelectNote(id: string) {
   const headings = getTableOfContents(editor);
   updateToc(headings);
   updateStats();
+  markNoteAsRecent(id);
 }
 
 //------------------------------------------------------------

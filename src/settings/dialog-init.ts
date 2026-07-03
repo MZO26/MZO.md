@@ -20,6 +20,12 @@ function initSyncDialog() {
   return { syncDialog };
 }
 
+function initQuickSwitchDialog() {
+  const dialogEl = requireElement<HTMLDialogElement>(".quick-switch-dialog");
+  const listEl = requireElement<HTMLDivElement>(".quick-switch-list");
+  return { dialogEl, listEl };
+}
+
 function confirmWithDialog(
   dialog: HTMLDialogElement,
   titleEl: HTMLElement,
@@ -42,6 +48,7 @@ function confirmWithDialog(
 export {
   confirmWithDialog,
   initDeleteDialog,
+  initQuickSwitchDialog,
   initSettingsDialog,
   initSyncDialog,
 };

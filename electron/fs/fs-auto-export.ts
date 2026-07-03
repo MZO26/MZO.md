@@ -19,8 +19,8 @@ import {
 } from "@shared/schemas/request-schema";
 import console from "console";
 import { app, shell } from "electron";
-import { readFileSync } from "fs";
-import fs, { access, constants, mkdir, readFile } from "fs/promises";
+import { constants, readFileSync } from "fs";
+import fs from "fs/promises";
 import path from "path";
 
 async function isAutoExport(id: string) {
@@ -119,7 +119,13 @@ async function writeAutoExportFileLogic(
 ) {
   const { created_at, fileName, oldFileName, extension } = payload;
   const exportPath = resolveAutoExportPath(targetDir);
-  await mkdir(exportPath, { recursive: true });
+  await fs.mkdir(exportPath, { recursive: true }).catch((error: unknown) => {
+    console.error(
+      "[writeAutoExportFileLogic]: Failed to create directory:",
+      error,
+    );
+    throw new AppBackendError(AppErrorCode.FileWriteError);
+  });
   const absoluteFilePath = getFilePath(exportPath, {
     fileName,
     created_at,
@@ -140,9 +146,9 @@ async function writeAutoExportFileLogic(
     console.log("New rename.");
     await safeRename(oldAbsoluteFilePath, absoluteFilePath);
   } else console.log("No rename needed.");
-  const localContent = await readFile(absoluteFilePath, "utf8").catch(
-    () => null,
-  );
+  const localContent = await fs
+    .readFile(absoluteFilePath, "utf8")
+    .catch(() => null);
   const normalizedLocal = normalizeText(localContent).trimEnd();
   const normalizedContent = normalizeText(portableContent).trimEnd();
   if (normalizedLocal !== normalizedContent) {
@@ -191,7 +197,7 @@ async function deleteAutoExportFileLogic(
 ) {
   const exportPath = resolveAutoExportPath(targetDir);
   const absoluteFilePath = getFilePath(exportPath, payload);
-  await access(absoluteFilePath, constants.F_OK);
+  await fs.access(absoluteFilePath, constants.F_OK);
   await shell.trashItem(absoluteFilePath);
 }
 

@@ -21,8 +21,6 @@ import type { FilePathRequest } from "@shared/schemas/request-schema";
 import type { ResizeOptions } from "@shared/types";
 import tippy from "tippy.js";
 
-// sidebar
-
 export let allTagsMenu: ReturnType<typeof createAllTagsPopover> | null = null;
 
 function handleSearchInput(searchInput: string) {
@@ -139,7 +137,7 @@ function createAllTagsPopover(button: HTMLButtonElement) {
   content.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
-    const clickedTag = target.closest(".tag-node") as HTMLElement | null;
+    const clickedTag = target.closest<HTMLSpanElement>(".tag-node");
     const tagId = clickedTag?.getAttribute("data-tag");
     if (clickedTag && tagId) {
       applyTagView(tagId);
@@ -185,8 +183,18 @@ function clearActiveTagFilter() {
 
 function renderAllTags(button: HTMLButtonElement, tags: string[]) {
   const menu = (allTagsMenu ??= createAllTagsPopover(button));
+  if (tags.length === 0) {
+    const span = document.createElement("span");
+    span.classList.add("info-span");
+    span.textContent = "No tags here.";
+    menu.content.replaceChildren(span);
+    return;
+  }
   const frag = document.createDocumentFragment();
-  for (const tag of [...new Set(tags)]) {
+  const uniqueSortedTags = [...new Set(tags)].sort((a, b) =>
+    a.localeCompare(b),
+  );
+  for (const tag of uniqueSortedTags) {
     const item = document.createElement("span");
     item.className = "tags-popover-item tag-node";
     item.setAttribute("data-tippy-content", `#${tag}`);
@@ -313,7 +321,6 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
   sidebar.addEventListener("drop", handleDrop);
   sidebar.addEventListener("dragleave", handleDragLeave);
 }
-
 //------------------------------------------------------------
 
 // debounced functions

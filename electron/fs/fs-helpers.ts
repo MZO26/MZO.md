@@ -21,7 +21,13 @@ async function sanitizeExportString(
     return `assets/${fileName}`;
   });
   if (fileNames.size > 0) {
-    await fs.mkdir(assetsDir, { recursive: true });
+    await fs.mkdir(assetsDir, { recursive: true }).catch((error: unknown) => {
+      console.error(
+        "[sanitizeExportString]: Failed to create directory:",
+        error,
+      );
+      throw new AppBackendError(AppErrorCode.FileWriteError);
+    });
     await processWithLimit([...fileNames], 20, async (fileName) => {
       const internalPath = path.join(internalImgDir, fileName);
       const exportPath = path.join(assetsDir, fileName);
@@ -55,7 +61,15 @@ async function sanitizeImportString(
     },
   );
   if (fileNames.size > 0) {
-    await fs.mkdir(internalImgDir, { recursive: true });
+    await fs
+      .mkdir(internalImgDir, { recursive: true })
+      .catch((error: unknown) => {
+        console.error(
+          "[sanitizeImportString]: Failed to create directory:",
+          error,
+        );
+        throw new AppBackendError(AppErrorCode.FileWriteError);
+      });
     await processWithLimit([...fileNames], 20, async (fileName) => {
       const sourceImagePath = path.join(importedFileDir, "assets", fileName);
       const destImagePath = path.join(internalImgDir, fileName);

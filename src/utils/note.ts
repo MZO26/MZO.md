@@ -1,8 +1,8 @@
 import { findElement } from "@/utils/dom";
+import { getUIItem } from "@/utils/registry";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
-import { getUIItem } from "./registry";
 
 function createNoteUpdater() {
   let element: HTMLDivElement | null = null;

@@ -33,6 +33,10 @@ Built with Electron, TypeScript, Better SQLite3, and TipTap.
 - Lucide
 - Tippy.js
 
+## Screenshot
+
+<img src="image/app-screenshot.png" alt="MZO.md app screenshot" width="1100">
+
 ## Install
 
 Requirements:
@@ -82,6 +86,7 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | <kbd>Mod</kbd> + <kbd>-</kbd>                                 | Zoom out           |
 | <kbd>Mod</kbd> + <kbd>0</kbd>                                 | Reset zoom         |
 | <kbd>F11</kbd>                                                | Toggle focus mode  |
+| <kbd>Mod</kbd> + <kbd>P</kbd>                                 | View recent notes  |
 
 </details>
 <br>

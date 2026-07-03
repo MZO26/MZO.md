@@ -167,7 +167,7 @@ function applySidebarListeners(
       if (actionBtn) {
         e.preventDefault();
         e.stopPropagation();
-        const noteElement = target.closest<HTMLElement>(".note-item");
+        const noteElement = target.closest<HTMLDivElement>(".note-item");
         const id = noteElement?.getAttribute("data-id");
         if (!id) return;
         const isPinned = noteElement?.getAttribute("data-pinned") === "true";
@@ -177,7 +177,9 @@ function applySidebarListeners(
         });
         return;
       }
-      const clearBtn = target.closest<HTMLElement>(".active-tag-clear-btn");
+      const clearBtn = target.closest<HTMLButtonElement>(
+        ".active-tag-clear-btn",
+      );
       if (clearBtn) {
         const action = clearBtn.getAttribute("data-action");
         if (action === "clear-active-tag") {

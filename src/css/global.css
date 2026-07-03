@@ -246,6 +246,15 @@ select:focus-within {
   box-shadow: var(--shadow);
 }
 
+label {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .lucide {
   width: 18px;
   height: 18px;
