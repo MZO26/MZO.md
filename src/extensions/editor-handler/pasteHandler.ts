@@ -1,7 +1,8 @@
 import { processAndInsertImages } from "@/extensions/image/image";
-import { ALLOWED_TYPES } from "@shared/constants";
+import { ALLOWED_TYPES, DOMPURIFY_CONFIG } from "@shared/constants";
 import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
+import DOMPurify from "dompurify";
 
 export const PasteHandler = Extension.create({
   name: "pasteHandler",
@@ -51,5 +52,42 @@ export const PasteHandler = Extension.create({
         },
       }),
     ];
+  },
+});
+
+export const GoogleDocsCleanup = Extension.create({
+  name: "googleDocsCleanup",
+  transformPastedHTML(html) {
+    return (
+      html
+        // Remove Google Docs spans with inline styles
+        .replace(/<span[^>]*style="[^"]*"[^>]*>(.*?)<\/span>/gi, "$1")
+        // Remove Google Docs IDs
+        .replace(/\s+id="docs-internal-[^"]*"/gi, "")
+        // Remove empty spans
+        .replace(/<span>(.*?)<\/span>/gi, "$1")
+    );
+  },
+});
+
+export const WordCleanup = Extension.create({
+  name: "wordCleanup",
+  transformPastedHTML(html) {
+    return (
+      html
+        // Remove Word-specific classes
+        .replace(/\s+class="Mso[^"]*"/gi, "")
+        // Remove Word-specific tags
+        .replace(/<o:p>.*?<\/o:p>/gi, "")
+        // Remove conditional comments
+        .replace(/<!--\[if.*?<!\[endif\]-->/gs, "")
+    );
+  },
+});
+
+export const SecurityCleanup = Extension.create({
+  name: "securityCleanup",
+  transformPastedHTML(html) {
+    return DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
   },
 });

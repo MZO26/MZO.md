@@ -40,7 +40,7 @@ function initQuickSwitcher() {
     listEl.replaceChildren();
     if (currentDisplayNotes.length === 0) {
       const empty = document.createElement("div");
-      empty.className = "info-span";
+      empty.className = "quick-switch-empty info-span";
       empty.textContent = "No recent notes";
       listEl.appendChild(empty);
       return;

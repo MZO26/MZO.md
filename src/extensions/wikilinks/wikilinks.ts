@@ -1,4 +1,4 @@
-import { noteStore } from "@/settings/app-state";
+import { noteStore, stateStore } from "@/settings/app-state";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
@@ -51,7 +51,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
   parseHTML: () => [{ tag: "span[data-wikilink]" }],
   renderHTML({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
-    const title = noteStore.get("notes").find((n) => n.id === id)?.title;
+    const title = noteStore.get("noteIndex").get(id)?.title;
     const display = title || id;
     return [
       "span",
@@ -151,16 +151,21 @@ const WikiLink = Node.create<WikiLinkOptions>({
         state: {
           init: () => null,
           apply: (
-            _tr,
-            _value,
-            _oldState,
-            newState,
+            tr,
+            pluginState,
+            _oldEditorState,
+            newEditorState,
           ): AutocompleteState | null => {
-            const { selection } = newState;
+            if (!tr.docChanged && !tr.selectionSet) {
+              return pluginState;
+            }
+            const { selection } = newEditorState;
             if (!selection.empty) return null;
             const $head = selection.$head;
+            // title max 50 chars and 10 chars for typo tolerance
+            const lookbackStart = Math.max(0, $head.parentOffset - 60);
             const textBefore = $head.parent.textContent.slice(
-              0,
+              lookbackStart,
               $head.parentOffset,
             );
             const match = textBefore.match(/\[\[([^\]]*)$/);
@@ -169,8 +174,10 @@ const WikiLink = Node.create<WikiLinkOptions>({
             if (!rawQuery) return null;
             const normalizedQuery = rawQuery.trim().toLowerCase();
             const notes = noteStore.get("notes");
+            const currentId = stateStore.get("activeId");
             let bestMatch: NoteListItem | null = null;
             for (const note of notes) {
+              if (note.id === currentId) continue;
               const normalizedTitle = note.title.toLowerCase();
               if (normalizedTitle === normalizedQuery) {
                 bestMatch = note;

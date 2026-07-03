@@ -4,7 +4,12 @@ import {
   resetEditorHistory,
 } from "@/components/editor/editor-init";
 import { isAutoExportEnabled } from "@/notes/note-actions";
-import { noteStore, searchEngine, stateStore } from "@/settings/app-state";
+import {
+  markNoteAsRecent,
+  noteStore,
+  searchEngine,
+  stateStore,
+} from "@/settings/app-state";
 import { toNoteListItem } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
@@ -73,6 +78,7 @@ async function handleDuplicateNote(note: Note) {
   requestAnimationFrame(() => {
     editor.commands.focus();
   });
+  markNoteAsRecent(result.data.id);
 }
 
 export { handleDuplicateNote };

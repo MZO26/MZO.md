@@ -7,7 +7,12 @@ import { Annotation } from "@/extensions/annotation";
 import { DetailsBlock } from "@/extensions/details";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
-import { PasteHandler } from "@/extensions/editor-handler/pasteHandler";
+import {
+  GoogleDocsCleanup,
+  PasteHandler,
+  SecurityCleanup,
+  WordCleanup,
+} from "@/extensions/editor-handler/pasteHandler";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { Highlight } from "@/extensions/highlight";
 import { lowlight } from "@/extensions/lowlight";
@@ -21,7 +26,6 @@ import { WikiLink } from "@/extensions/wikilinks/wikilinks";
 import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { requireElement } from "@/utils/dom";
-import { DOMPURIFY_CONFIG } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
@@ -41,7 +45,6 @@ import {
 } from "@tiptap/extensions";
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
-import DOMPurify from "dompurify";
 
 let editor: Editor | null = null;
 
@@ -59,9 +62,6 @@ function initEditor(settings: Partial<AppSettings>): Editor {
       attributes: {
         spellcheck: settings.spellcheck ? "true" : "false",
       },
-      transformPastedHTML(html) {
-        return DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
-      },
     },
     autofocus: true,
   });
@@ -78,6 +78,9 @@ function getNoteEditorExtensions() {
   return [
     SearchAndReplace,
     PasteHandler,
+    GoogleDocsCleanup,
+    WordCleanup,
+    SecurityCleanup,
     DropHandler,
     Markdown.configure({ markedOptions: { gfm: true } }),
     MasterShortcuts,
@@ -118,13 +121,10 @@ function getNoteEditorExtensions() {
       includeChildren: false,
     }),
     CharacterCount.configure({
-      textCounter: (text) => {
-        const chars = text.match(/[\p{L}\p{N}]/gu);
-        return chars ? chars.length : 0;
-      },
+      textCounter: (text) => text.length,
       wordCounter: (text) => {
-        const words = text.match(/[\p{L}\d]+(?:['’]\p{L}+)*/gu);
-        return words ? words.length : 0;
+        text = text.trim();
+        return text ? text.split(/\s+/).length : 0;
       },
     }),
     Image.configure({

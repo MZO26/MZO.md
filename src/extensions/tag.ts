@@ -152,16 +152,21 @@ const NoteTag = Node.create<NoteTagOptions>({
       state: {
         init: () => null,
         apply: (
-          _tr,
-          _value,
-          _oldState,
-          newState,
+          tr,
+          pluginState,
+          _oldEditorState,
+          newEditorState,
         ): TagAutocompleteState | null => {
-          const { selection } = newState;
+          if (!tr.docChanged && !tr.selectionSet) {
+            return pluginState;
+          }
+          const { selection } = newEditorState;
           if (!selection.empty) return null;
           const $head = selection.$head;
+          // tag max is 100 / not more because whitespaces create new tag instantly
+          const lookbackStart = Math.max(0, $head.parentOffset - 100);
           const textBefore = $head.parent.textContent.slice(
-            0,
+            lookbackStart,
             $head.parentOffset,
           );
           const match = textBefore.match(/(?:^|\s)#([\p{L}\p{N}_-]+)$/u);

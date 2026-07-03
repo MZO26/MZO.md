@@ -209,6 +209,11 @@
   transition: background-color 0.2s ease;
 }
 
+.quick-switch-close-btn {
+  top: 4px;
+  right: 10px;
+}
+
 .quick-switch-close-btn:hover,
 .delete-close-btn:hover,
 .sync-close-btn:hover {
@@ -1071,8 +1076,9 @@ svg.empty-state-icon {
   width: 400px;
   height: fit-content;
   padding: 0;
-  border: 0;
   background: transparent;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
   opacity: 0;
   visibility: hidden;
   transform: scale(0.95);
@@ -1085,17 +1091,22 @@ svg.empty-state-icon {
 }
 
 .quick-switch-list {
-  padding: 15px 10px;
+  padding: 15px 5px;
+}
+
+.quick-switch-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
 }
 
 .quick-switch-dialog-form {
   overflow: hidden;
   height: 100%;
+  padding: 20px 0 0 0;
   background-color: var(--bg-sidebar);
   color: var(--text-main);
-  padding: 20px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
 }
 
 .quick-switch-item {
