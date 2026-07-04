@@ -412,6 +412,10 @@
   contain-intrinsic-size: 100px;
 }
 
+.wikilink-preview-content pre {
+  content-visibility: visible;
+}
+
 .ProseMirror pre code,
 .wikilink-preview-content pre code {
   display: block;
