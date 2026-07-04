@@ -67,10 +67,10 @@ export const Highlight = Mark.create({
 
   markdownTokenizer: {
     name: "highlight",
-    level: "inline" as const,
-    start: (src: string) => src.indexOf("=="),
+    level: "inline",
+    start: (src) => src.indexOf("=="),
 
-    tokenize(src: string) {
+    tokenize(src, _tokens, lexer) {
       const match = src.match(/^==([^=\n][^=\n]*?)==/);
       const text = match?.[1] ?? "";
       if (!match || !text) return undefined;
@@ -78,18 +78,18 @@ export const Highlight = Mark.create({
         type: "highlight",
         raw: match[0],
         text,
+        tokens: lexer.inlineTokens(text),
       };
     },
   },
 
   parseMarkdown(token, helpers) {
-    const text = String(token.text ?? "");
-    if (!text) return helpers.createTextNode(token.raw ?? "");
-    return helpers.applyMark("highlight", [helpers.createTextNode(text)]);
+    const content = helpers.parseInline(token.tokens || []);
+    return helpers.applyMark("highlight", content);
   },
 
   renderMarkdown(node, helpers) {
-    const content = helpers.renderChildren(node);
+    const content = helpers.renderChildren(node.content || []);
     return content ? `==${content}==` : "";
   },
 });

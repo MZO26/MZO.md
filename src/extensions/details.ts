@@ -111,6 +111,7 @@ export const DetailsBlock = Node.create({
       const content = document.createElement("div");
       content.className = "details-content";
       const updateAttrs = (attrs: Record<string, unknown>) => {
+        if (typeof getPos !== "function") return false;
         const pos = getPos();
         if (typeof pos !== "number") return false;
         editor.view.dispatch(
@@ -159,13 +160,13 @@ export const DetailsBlock = Node.create({
 
   markdownTokenizer: {
     name: "detailsBlock",
-    level: "block" as const,
+    level: "block",
     start(src) {
       return src.indexOf("<details");
     },
     tokenize(src, _tokens, lexer) {
       const rule =
-        /^<details(?: open)?>\s*<summary>(.*?)<\/summary>\s*([\s\S]*?)\s*<\/details>/;
+        /^<details[^>]*>\s*<summary>(.*?)<\/summary>\s*([\s\S]*?)\s*<\/details>/;
       // don't include open attribute so toggles don't trigger file saves
       const match = rule.exec(src);
       if (match) {
@@ -189,7 +190,7 @@ export const DetailsBlock = Node.create({
       attrs: {
         summary: token["summary"] || "Details",
       },
-      content: helpers.parseBlockChildren?.(token.tokens || []) || [],
+      content: helpers.parseChildren(token.tokens || []),
     };
   },
 

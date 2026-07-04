@@ -74,7 +74,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
   },
   markdownTokenizer: {
     name: "wikilink",
-    level: "inline" as const,
+    level: "inline",
     start: "[[",
     tokenize(src: string) {
       const match = src.match(/^\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/);
@@ -100,13 +100,13 @@ const WikiLink = Node.create<WikiLinkOptions>({
   renderText({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     if (!id) return "";
-    const title = noteStore.get("notes").find((n) => n.id === id)?.title;
+    const title = noteStore.get("noteIndex").get(id)?.title;
     return title ? `[[${id}|${title}]]` : `[[${id}]]`;
   },
   renderMarkdown(node) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     if (!id) return "";
-    const title = noteStore.get("notes").find((n) => n.id === id)?.title;
+    const title = noteStore.get("noteIndex").get(id)?.title;
     return title ? `[[${id}|${title}]]` : `[[${id}]]`;
   },
   addInputRules() {

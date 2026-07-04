@@ -71,9 +71,9 @@ export const Annotation = Mark.create({
 
   markdownTokenizer: {
     name: "annotation",
-    level: "inline" as const,
+    level: "inline",
     start: (src: string) => src.indexOf("//"),
-    tokenize(src: string) {
+    tokenize(src: string, _tokens, lexer) {
       const match = src.match(/^\/\/([^/\n][^/\n]*?)\/\//);
       const text = match?.[1]?.trim();
       if (!match || !text) return undefined;
@@ -81,16 +81,14 @@ export const Annotation = Mark.create({
         type: "annotation",
         raw: match[0],
         text,
+        tokens: lexer.inlineTokens(text),
       };
     },
   },
 
   parseMarkdown(token, helpers) {
-    const text = String(token.text ?? "");
-    if (!text) {
-      return helpers.createTextNode(token.raw ?? "");
-    }
-    return helpers.applyMark("annotation", [helpers.createTextNode(text)]);
+    const content = helpers.parseInline(token.tokens || []);
+    return helpers.applyMark("annotation", content);
   },
 
   renderMarkdown(node, helpers) {

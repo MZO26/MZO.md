@@ -407,6 +407,11 @@
   overflow-wrap: break-word;
 }
 
+.ProseMirror pre {
+  content-visibility: auto;
+  contain-intrinsic-size: 100px;
+}
+
 .ProseMirror pre code,
 .wikilink-preview-content pre code {
   display: block;

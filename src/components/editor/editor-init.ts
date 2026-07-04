@@ -201,6 +201,7 @@ function getNoteEditorExtensions() {
     CodeBlockLowlight.configure({
       lowlight,
       enableTabIndentation: true,
+      defaultLanguage: "plaintext",
       HTMLAttributes: {
         spellcheck: "false",
       },

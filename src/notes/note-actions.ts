@@ -76,9 +76,7 @@ async function handleCreateNote() {
     emitUpdate: false,
   });
   resetEditorHistory(editor);
-  requestAnimationFrame(() => {
-    editor.commands.focus();
-  });
+  editor.commands.focus();
   const headings = getTableOfContents(editor);
   updateToc(headings);
   updateStats();
@@ -235,7 +233,7 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     console.error("[handleSaveNote]: Save failed.", result.error);
     return;
   }
-  if (stateStore.get("activeId") !== id) return;
+  const isActiveNote = stateStore.get("activeId") === id;
   const updatedListItem = toNoteListItem(result.data);
   const activeTag = stateStore.get("activeTag");
   noteStore.setState((state) => {
@@ -271,9 +269,11 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     };
   });
   searchEngine.upsertNote(updatedListItem);
-  updateStats();
-  const currentHeadings = getTableOfContents(editor);
-  updateToc(currentHeadings);
+  if (isActiveNote) {
+    updateStats();
+    const currentHeadings = getTableOfContents(editor);
+    updateToc(currentHeadings);
+  }
 }
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
@@ -294,13 +294,11 @@ async function handleSelectNote(id: string) {
     return;
   }
   editor.commands.setContent(result.data.content, {
-    emitUpdate: true,
+    emitUpdate: false,
   });
   noteStore.setState({ activeNote: result.data });
   resetEditorHistory(editor);
-  requestAnimationFrame(() => {
-    editor.commands.focus();
-  });
+  editor.commands.focus();
   const headings = getTableOfContents(editor);
   updateToc(headings);
   updateStats();
