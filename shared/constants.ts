@@ -68,6 +68,8 @@ const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 
 
 const UNTAGGED = "_untagged_";
 
+const SIDEBAR_ALL_NOTES_LIMIT = 50;
+
 const SELECTION_ACTIONS: SelectionActionConfig[] = [
   { id: "cancel", icon: "x" },
   { id: "pin", icon: "pin" },
@@ -326,6 +328,7 @@ export {
   NOTE_ITEM_DISPLAY_SETTINGS,
   QUICK_ACTIONS,
   SELECTION_ACTIONS,
+  SIDEBAR_ALL_NOTES_LIMIT,
   SPELLCHECK_SETTINGS,
   SYNC_BUFFER,
   THEME_DATA,

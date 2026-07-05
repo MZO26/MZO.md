@@ -25,7 +25,6 @@ declare global {
     electronAPI: {
       getPathForFile(file: File): string;
       imageWriteMany: (payload: ImagePayload[]) => Promise<Result<ImageSrc[]>>;
-      startupReady: () => void;
       setTheme: (theme: Theme, focus?: boolean) => Promise<Result<Theme>>;
       windowPin: () => Promise<Result<boolean>>;
       showNotification: (title: string, body: string) => Promise<Result<void>>;

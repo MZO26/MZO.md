@@ -1,12 +1,18 @@
+import { createIconButton } from "@/components/sidebar/sidebar-features";
 import { createNoteItem } from "@/components/sidebar/sidebar-note-items";
 import { noteStore, stateStore } from "@/settings/app-state";
-import { findElement, requireElement, setActiveItem } from "@/utils/dom";
+import {
+  createInfoSpan,
+  findElement,
+  requireElement,
+  setActiveItem,
+} from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem, getTemplateItem } from "@/utils/registry";
-import { UNTAGGED } from "@shared/constants";
+import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
-import { createIconButton } from "./sidebar-features";
+
 // sidebar
 
 // element is appContainer (sidebar is bound to grid layout)
@@ -106,12 +112,25 @@ function renderNoteList(notes: NoteListItem[]) {
     fragment.appendChild(createActiveTagHeader(activeTag));
   }
   const sortedNotes = [...notes].sort(compareNotes);
-  for (const note of sortedNotes) {
+  const isFiltered = Boolean(activeTag);
+  const isLimited = !isFiltered && sortedNotes.length > SIDEBAR_ALL_NOTES_LIMIT;
+  const displayNotes = isFiltered
+    ? sortedNotes
+    : sortedNotes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
+  for (const note of displayNotes) {
     const element = createNoteItem(note);
     if (note.id === activeId) {
       activeElement = element;
     }
     fragment.appendChild(element);
+  }
+  if (isLimited) {
+    fragment.appendChild(
+      createInfoSpan(
+        `Showing ${SIDEBAR_ALL_NOTES_LIMIT} of ${sortedNotes.length} notes.\nUse search or tags to narrow the list.`,
+        "note-list-info",
+      ),
+    );
   }
   sidebar.replaceChildren(fragment);
   if (activeElement) {

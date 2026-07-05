@@ -67,7 +67,6 @@ function createWindow() {
     height: Math.max(500, bounds?.height ?? 500),
     minWidth: 800,
     minHeight: 500,
-    frame: false,
     titleBarStyle: "hidden",
     trafficLightPosition: { x: 15, y: 9 },
     titleBarOverlay: windowTheme.overlayOptions,
@@ -112,7 +111,7 @@ function createWindow() {
       return;
     }
   });
-  ipcMain.once("app:start-ready", () => {
+  win.once("ready-to-show", () => {
     win?.show();
   });
 }

@@ -1,9 +1,6 @@
 import {
-  addNoteToList,
   handleSidebarEmptyState,
-  removeNoteFromList,
   renderNoteList,
-  updateNoteInList,
 } from "@/components/sidebar/sidebar-ui";
 import { settingsStore } from "@/settings/app-state";
 import { formatNoteDate } from "@/utils/date";
@@ -56,26 +53,11 @@ function createNoteItem(note: NoteListItem) {
 function handleSidebarChange(change: SidebarChange, notes: NoteListItem[]) {
   if (!change) return;
   switch (change.type) {
-    case "reload":
-      renderNoteList(notes);
-      break;
-    case "update": {
-      const note = notes.find((n) => n.id === change.noteId);
-      if (note) updateNoteInList(note);
-      break;
-    }
-    case "add": {
-      const needsToBeSorted = notes.some((n) => n.pinned);
-      if (needsToBeSorted) {
-        renderNoteList(notes);
-        break;
-      }
-      const note = notes.find((n) => n.id === change.noteId);
-      if (note) addNoteToList(note);
-      break;
-    }
     case "remove":
-      removeNoteFromList(change.noteId);
+    case "reload":
+    case "update":
+    case "add":
+      renderNoteList(notes);
       break;
   }
   handleSidebarEmptyState();

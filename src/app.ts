@@ -1,6 +1,8 @@
 import { initListeners } from "@/api/callbacks";
+import { initEditorSearch } from "@/components/editor/editor-features";
 import { setupEditorListeners } from "@/components/editor/editor-init";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
+import { initQuickSwitcher } from "@/components/quick-switch/quick-switch";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-ui";
 import {
@@ -27,8 +29,6 @@ import {
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { initTippyDelegate } from "@/utils/ui";
-import { initEditorSearch } from "./components/editor/editor-features";
-import { initQuickSwitcher } from "./components/quick-switch/quick-switch";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const settings = await loadSettings();
@@ -64,7 +64,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   initEditorSearch(editor);
   handleSidebarEmptyState();
   handleEditorEmptyState(stateStore.getState().activeId);
-  requestAnimationFrame(() => {
-    window.electronAPI.startupReady();
-  });
 });

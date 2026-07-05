@@ -42,7 +42,6 @@ contextBridge.exposeInMainWorld(
 );
 contextBridge.exposeInMainWorld("electronAPI", {
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
-  startupReady: () => ipcRenderer.send("app:start-ready"),
   showNotification: (title: string, body: string) =>
     ipcRenderer.invoke("notification:show", title, body),
   setTheme: (theme: Theme, focus?: boolean) =>
