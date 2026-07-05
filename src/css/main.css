@@ -460,11 +460,14 @@
 }
 
 .tags-popover {
+  display: flex;
+  flex-direction: column;
   max-width: 300px;
 }
 
 .tags-popover-title {
   display: flex;
+  align-items: center;
   padding: 5px 10px;
   margin-left: 5px;
   font-weight: 600;
@@ -475,13 +478,17 @@
 
 .tags-popover-title::after {
   content: "";
+  order: 1;
   flex: 1;
   margin: 0 10px;
-  justify-self: center;
-  align-self: center;
   height: 1px;
-  background: var(--border-color);
+  background: var(--text-muted);
   opacity: 0.6;
+}
+
+.tags-popover-title button {
+  order: 2;
+  padding: 5px 10px;
 }
 
 .tags-popover-content {

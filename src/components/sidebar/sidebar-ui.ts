@@ -4,7 +4,9 @@ import { findElement, requireElement, setActiveItem } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem, getTemplateItem } from "@/utils/registry";
+import { UNTAGGED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
+import { createIconButton } from "./sidebar-features";
 // sidebar
 
 // element is appContainer (sidebar is bound to grid layout)
@@ -77,17 +79,19 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement) {
 
 // note list
 
+function getTagDisplayLabel(tag: string): string {
+  if (tag === UNTAGGED) return "Untagged";
+  return `#${tag}`;
+}
+
 function createActiveTagHeader(tag: string): HTMLDivElement {
   const header = document.createElement("div");
   header.className = "active-tag-header";
   const label = document.createElement("span");
-  label.textContent = `#${tag}`;
-  const clearBtn = document.createElement("button");
+  label.textContent = getTagDisplayLabel(tag);
+  const clearBtn = createIconButton("x");
   clearBtn.className = "active-tag-clear-btn";
   clearBtn.setAttribute("data-action", "clear-active-tag");
-  const icon = document.createElement("i");
-  icon.setAttribute("data-lucide", "x");
-  clearBtn.appendChild(icon);
   header.append(label, clearBtn);
   renderIcons(clearBtn);
   return header;
@@ -98,15 +102,16 @@ function renderNoteList(notes: NoteListItem[]) {
   const { activeId, activeTag } = stateStore.getState();
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
-  for (const note of [...notes].sort(compareNotes)) {
+  if (activeTag) {
+    fragment.appendChild(createActiveTagHeader(activeTag));
+  }
+  const sortedNotes = [...notes].sort(compareNotes);
+  for (const note of sortedNotes) {
     const element = createNoteItem(note);
     if (note.id === activeId) {
       activeElement = element;
     }
     fragment.appendChild(element);
-  }
-  if (activeTag) {
-    fragment.prepend(createActiveTagHeader(activeTag));
   }
   sidebar.replaceChildren(fragment);
   if (activeElement) {
@@ -119,9 +124,9 @@ function renderNoteList(notes: NoteListItem[]) {
 function addNoteToList(note: NoteListItem) {
   const sidebar = getAppItem("sidebar");
   const noteElement = createNoteItem(note);
-  const tagHeader = findElement(".active-tag-header", sidebar);
-  if (tagHeader) {
-    tagHeader.after(noteElement);
+  const activeHeader = findElement<HTMLDivElement>(".active-tag-header");
+  if (activeHeader) {
+    activeHeader.after(noteElement);
   } else {
     sidebar.prepend(noteElement);
   }

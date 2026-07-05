@@ -14,6 +14,7 @@ import { getTableOfContents } from "@/extensions/tableOfContents";
 import { setImportedContent } from "@/notes/import-actions";
 import {
   markNoteAsRecent,
+  matchesActiveTag,
   noteStore,
   pruneRecentNotes,
   removeRecentNote,
@@ -239,14 +240,12 @@ async function handleSaveNote(id: string, flush: boolean = false) {
   noteStore.setState((state) => {
     const noteIndex = new Map(state.noteIndex);
     noteIndex.set(updatedListItem.id, updatedListItem);
-    const matchesTag = activeTag
-      ? updatedListItem.tags.includes(activeTag)
-      : true;
+    const matchesTag = matchesActiveTag(updatedListItem, activeTag);
     const alreadyVisible = state.visibleIds.includes(updatedListItem.id);
     let visibleIds = state.visibleIds;
     let needsReload = false;
     if (alreadyVisible && !matchesTag) {
-      visibleIds = state.visibleIds.filter((id) => id !== updatedListItem.id);
+      visibleIds = state.visibleIds.filter((vid) => vid !== updatedListItem.id);
       needsReload = true;
     } else if (!alreadyVisible && matchesTag) {
       visibleIds = [updatedListItem.id, ...state.visibleIds];

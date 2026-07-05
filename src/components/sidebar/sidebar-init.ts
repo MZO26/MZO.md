@@ -1,7 +1,6 @@
 import {
   allTagsMenu,
   applyTagView,
-  clearActiveTagFilter,
   debouncedSearch,
   renderAllTags,
   resizeSidebar,
@@ -22,7 +21,12 @@ import {
   handleImportNote,
   handleSelectNote,
 } from "@/notes/note-actions";
-import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
+import {
+  clearActiveTagView,
+  noteStore,
+  settingsStore,
+  stateStore,
+} from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItems, getUIItems, registerAppEvents } from "@/utils/registry";
@@ -179,7 +183,7 @@ function applySidebarListeners(
       if (clearBtn) {
         const action = clearBtn.getAttribute("data-action");
         if (action === "clear-active-tag") {
-          clearActiveTagFilter();
+          clearActiveTagView();
           return;
         }
       }

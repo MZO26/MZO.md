@@ -1,5 +1,10 @@
+import { createInfoSpan } from "@/components/sidebar/sidebar-features";
 import { handleSelectNote } from "@/notes/note-actions";
-import { noteStore, stateStore } from "@/settings/app-state";
+import {
+  noteStore,
+  restoreSidebarScope,
+  stateStore,
+} from "@/settings/app-state";
 import { initQuickSwitchDialog } from "@/settings/dialog-init";
 import { getAppItem } from "@/utils/registry";
 import { initTippyDelegate } from "@/utils/ui";
@@ -39,10 +44,8 @@ function initQuickSwitcher() {
   function renderTitleList() {
     listEl.replaceChildren();
     if (currentDisplayNotes.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "quick-switch-empty info-span";
-      empty.textContent = "No recent notes";
-      listEl.appendChild(empty);
+      const span = createInfoSpan("No recent notes.", "quick-switch-empty");
+      listEl.appendChild(span);
       return;
     }
     for (const [index, note] of currentDisplayNotes.entries()) {
@@ -52,8 +55,7 @@ function initQuickSwitcher() {
           ? "quick-switch-item active"
           : "quick-switch-item";
       optionEl.dataset["index"] = String(index);
-      const titleEl = document.createElement("span");
-      titleEl.textContent = note.title;
+      const titleEl = createInfoSpan(note.title);
       optionEl.appendChild(titleEl);
       listEl.appendChild(optionEl);
     }
@@ -88,6 +90,7 @@ function initQuickSwitcher() {
       return;
     }
     handleSelectNote(activeNote.id);
+    restoreSidebarScope();
   }
 
   function handleListKeydown(event: KeyboardEvent) {

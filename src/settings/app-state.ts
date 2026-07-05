@@ -1,11 +1,12 @@
-import { getAll, getAllSettings } from "@/api/api";
+import { getAll, getAllSettings, updateSettings } from "@/api/api";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-note-items";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-ui";
-import { NoteSearch } from "@/notes/search";
+import { NoteSearch, type SearchMatchResult } from "@/notes/search";
 import { findElement, setActiveItem } from "@/utils/dom";
 import { compareNotes, updateNoteCount } from "@/utils/note";
-import { getAppItem } from "@/utils/registry";
+import { getAppItem, getUIItem } from "@/utils/registry";
+import { UNTAGGED } from "@shared/constants";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { SidebarChange } from "@shared/types";
@@ -22,8 +23,8 @@ const DEFAULT_STORE: AppSettings = {
   "auto-export-path": null,
   "export-format": "md",
   "note-item-display": "preview",
-  "window-bounds": { width: 800, height: 500 },
   "active-tag": null,
+  "window-bounds": { width: 800, height: 500 },
 };
 
 interface AppState {
@@ -132,12 +133,88 @@ function getVisibleNotes(state: NoteStore) {
   return notes;
 }
 
+//------------------------------------------------------------
+
+// active tag logic
+
+function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
+  if (activeTag === null) return true;
+  if (activeTag === UNTAGGED) return !note.tags || note.tags.length === 0;
+  return note.tags.includes(activeTag);
+}
+
+function applyView(nextTag: string | null) {
+  const { activeTag } = stateStore.getState();
+  if (activeTag === nextTag) return;
+  stateStore.setState({ activeTag: nextTag, searchQuery: "" });
+  getUIItem("searchInput").value = "";
+  updateSettings({ "active-tag": nextTag });
+  noteStore.setState((state) => ({
+    visibleIds: state.notes
+      .filter((note) => matchesActiveTag(note, nextTag))
+      .map((note) => note.id),
+    sidebarChange: { type: "reload" },
+  }));
+}
+
+function applyTagView(tagId: string) {
+  const normalizedTag = tagId.trim().toLowerCase();
+  if (!normalizedTag) return;
+  applyView(normalizedTag);
+}
+
+function applyUntaggedView() {
+  applyView(UNTAGGED);
+}
+
+function clearActiveTagView() {
+  applyView(null);
+}
+
+//------------------------------------------------------------
+
+// search logic
+
+// applies the search to the note state to only show searched items or empty state
+
+function applySearch(searchMatches: SearchMatchResult[]) {
+  const matchedIdSet = new Set(searchMatches.map((match) => match.item.id));
+  const activeTag = stateStore.get("activeTag");
+  const notes = noteStore.get("notes");
+  const visibleIds = notes
+    .filter((note) => {
+      const isSearchMatch = matchedIdSet.has(note.id);
+      const matchesScope = matchesActiveTag(note, activeTag);
+      return isSearchMatch && matchesScope;
+    })
+    .map((note) => note.id);
+  noteStore.setState({
+    visibleIds,
+    sidebarChange: { type: "reload" },
+  });
+}
+
+// removes search scope but stays in activeTag scope if there is one
+
+function restoreSidebarScope() {
+  const activeTag = stateStore.get("activeTag");
+  noteStore.setState((state) => ({
+    visibleIds: state.notes
+      .filter((note) => matchesActiveTag(note, activeTag))
+      .map((note) => note.id),
+    sidebarChange: { type: "reload" },
+  }));
+}
+
+//------------------------------------------------------------
+
+// recent notes logic
+
 function markNoteAsRecent(noteId: string) {
   noteStore.setState((state) => {
     const recentNotes = state.recentNotes.filter(
       (id) => id !== noteId && state.noteIndex.has(id),
     );
-
     return {
       recentNotes: [noteId, ...recentNotes].slice(0, 5),
     };
@@ -155,6 +232,10 @@ function pruneRecentNotes() {
     recentNotes: state.recentNotes.filter((id) => state.noteIndex.has(id)),
   }));
 }
+
+//------------------------------------------------------------
+
+// store subscribers
 
 stateStore.subscribe((state) => {
   if (state.activeId !== prevId) {
@@ -195,11 +276,17 @@ noteStore.subscribe((state) => {
 });
 
 export {
+  applySearch,
+  applyTagView,
+  applyUntaggedView,
+  clearActiveTagView,
   loadSettings,
   markNoteAsRecent,
+  matchesActiveTag,
   noteStore,
   pruneRecentNotes,
   removeRecentNote,
+  restoreSidebarScope,
   searchEngine,
   settingsStore,
   stateStore,

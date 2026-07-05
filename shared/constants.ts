@@ -66,6 +66,8 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 26,214,400B. file.size from JS is always in bytes
 
+const UNTAGGED = "_untagged_";
+
 const SELECTION_ACTIONS: SelectionActionConfig[] = [
   { id: "cancel", icon: "x" },
   { id: "pin", icon: "pin" },
@@ -329,6 +331,7 @@ export {
   THEME_DATA,
   THEME_MAP,
   THEME_SETTINGS,
+  UNTAGGED,
   UNTITLED,
   YIELD_INTERVAL,
   ZOOMS,

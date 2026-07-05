@@ -1,3 +1,4 @@
+import { createIconButton } from "@/components/sidebar/sidebar-features";
 import { requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getUIItem } from "@/utils/registry";
@@ -30,18 +31,10 @@ function selectBuilder<T extends string | boolean>(
 
 // builds the button palette and wraps it into the button container
 function createSettingsMenu() {
-  const createSettingsButton = (
-    category: SettingsCategory,
-    lucideIcon: string,
-  ) => {
-    const icon = document.createElement("i");
-    icon.setAttribute("data-lucide", lucideIcon);
-    const btn = document.createElement("button");
-    btn.type = "button";
+  const createSettingsButton = (category: SettingsCategory, icon: string) => {
+    const btn = createIconButton(icon, category);
     btn.className = "selection-btn";
-    btn.appendChild(icon);
     btn.setAttribute("data-category", category);
-    btn.setAttribute("data-tippy-content", category);
     return btn;
   };
   const container = document.createElement("div");
@@ -62,15 +55,10 @@ function initQuickActionContainer() {
   row.dataset["category"] = "General" as SettingsCategory;
   const frag = document.createDocumentFragment();
   for (const action of QUICK_ACTIONS) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `${action.id}-btn`;
-    button.setAttribute("data-action", action.id);
-    button.setAttribute("data-tippy-content", action.label);
-    const icon = document.createElement("i");
-    icon.setAttribute("data-lucide", action.icon);
-    button.appendChild(icon);
-    frag.appendChild(button);
+    const btn = createIconButton(action.icon, action.label);
+    btn.className = `${action.id}-btn`;
+    btn.setAttribute("data-action", action.id);
+    frag.appendChild(btn);
   }
   quickActionContainer.appendChild(frag);
   row.appendChild(quickActionContainer);

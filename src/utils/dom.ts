@@ -25,4 +25,36 @@ function setActiveItem(element: HTMLElement, parent: HTMLElement) {
   element.classList.add("is-active");
 }
 
-export { findElement, requireElement, setActiveItem };
+function createIconButton(
+  icon: string,
+  tooltip?: string,
+  shortcut?: string,
+): HTMLButtonElement {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  const i = document.createElement("i");
+  i.setAttribute("data-lucide", icon);
+  btn.appendChild(i);
+  btn.type = "button";
+  tooltip && btn.setAttribute("data-tippy-content", tooltip);
+  shortcut && btn.setAttribute("data-shortcut", shortcut);
+  return btn;
+}
+
+function createInfoSpan(
+  textContent: string,
+  className?: string,
+): HTMLSpanElement {
+  const span = document.createElement("span");
+  span.className = `info-span ${className}`;
+  span.textContent = textContent;
+  return span;
+}
+
+export {
+  createIconButton,
+  createInfoSpan,
+  findElement,
+  requireElement,
+  setActiveItem,
+};

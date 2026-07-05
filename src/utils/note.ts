@@ -1,5 +1,6 @@
 import { findElement } from "@/utils/dom";
 import { getUIItem } from "@/utils/registry";
+import { UNTAGGED } from "@shared/constants";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
@@ -33,7 +34,8 @@ function addActiveTagToDoc(
   doc: EditorDoc,
   activeTag: string | null,
 ): EditorDoc {
-  const normalizedTag = activeTag?.trim();
+  if (activeTag === null || activeTag === UNTAGGED) return doc;
+  const normalizedTag = activeTag.trim();
   if (!normalizedTag) return doc;
   const content = Array.isArray(doc.content) ? [...doc.content] : [];
   if (hasNoteTag(doc, normalizedTag)) return doc;
@@ -43,8 +45,8 @@ function addActiveTagToDoc(
       {
         type: "noteTag",
         attrs: {
-          id: activeTag,
-          label: activeTag,
+          id: normalizedTag,
+          label: normalizedTag,
         },
       },
       {

@@ -24,7 +24,11 @@ import { Typography } from "@/extensions/typography";
 import { WikiLinkPreview } from "@/extensions/wikilinks/wikilink-preview";
 import { WikiLink } from "@/extensions/wikilinks/wikilinks";
 import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
-import { noteStore, stateStore } from "@/settings/app-state";
+import {
+  noteStore,
+  restoreSidebarScope,
+  stateStore,
+} from "@/settings/app-state";
 import { requireElement } from "@/utils/dom";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
@@ -101,6 +105,7 @@ function getNoteEditorExtensions() {
           return;
         }
         handleSelectNote(id);
+        restoreSidebarScope();
       },
     }),
     Focus.configure({

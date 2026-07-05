@@ -1,17 +1,12 @@
 import { getAppItem } from "@/utils/registry";
 import type { Action, ActionMap } from "@shared/types";
 import type { Editor } from "@tiptap/core";
+import { createIconButton } from "../sidebar/sidebar-features";
 
 function createButton(key: string, item: Action) {
-  const btn = document.createElement("button");
+  const btn = createIconButton(item.icon, key, item.shortcut);
   btn.classList.add(`${key}-btn`);
-  btn.dataset["action"] = key;
-  const i = document.createElement("i");
-  i.dataset["lucide"] = item.icon;
-  btn.appendChild(i);
-  btn.type = "button";
-  btn.setAttribute("data-tippy-content", key);
-  btn.setAttribute("data-shortcut", item.shortcut);
+  btn.setAttribute("data-action", key);
   return btn;
 }
 

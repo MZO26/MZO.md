@@ -1,3 +1,4 @@
+import { createInfoSpan } from "@/components/sidebar/sidebar-features";
 import { findElement, requireElement } from "@/utils/dom";
 import { initTippyDelegate } from "@/utils/ui";
 import type { Editor } from "@tiptap/core";
@@ -47,9 +48,7 @@ function initTableOfContents() {
   });
   return function updateToc(items: TocItem[]) {
     if (items.length === 0) {
-      const span = document.createElement("span");
-      span.textContent = "No headings here.";
-      span.classList.add("info-span");
+      const span = createInfoSpan("No headings here.");
       container.replaceChildren(span);
       return;
     }

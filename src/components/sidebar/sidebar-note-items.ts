@@ -58,7 +58,6 @@ function handleSidebarChange(change: SidebarChange, notes: NoteListItem[]) {
   switch (change.type) {
     case "reload":
       renderNoteList(notes);
-      handleSidebarEmptyState();
       break;
     case "update": {
       const note = notes.find((n) => n.id === change.noteId);

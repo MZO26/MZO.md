@@ -1,16 +1,24 @@
-import { showNotification, updateSettings } from "@/api/api";
+import { showNotification } from "@/api/api";
 import {
   buildSnippet,
   updateSnippetHighlight,
 } from "@/components/sidebar/sidebar-note-items";
 import { handleImportNote } from "@/notes/note-actions";
 import type { SearchMatchResult } from "@/notes/search";
-import { noteStore, searchEngine, stateStore } from "@/settings/app-state";
+import {
+  applySearch,
+  applyTagView,
+  applyUntaggedView,
+  noteStore,
+  restoreSidebarScope,
+  searchEngine,
+  stateStore,
+} from "@/settings/app-state";
 import { debounce } from "@/utils/async";
-import { requireElement } from "@/utils/dom";
+import { createIconButton, createInfoSpan, requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { estimateReadingTime, getExtension } from "@/utils/note";
-import { getAppItem, getUIItem, getUIItems } from "@/utils/registry";
+import { getAppItem, getUIItems } from "@/utils/registry";
 import { initTippyDelegate } from "@/utils/ui";
 import {
   CONTENT_TYPE_MAP,
@@ -70,39 +78,6 @@ function updateSearchHighlights(
   }
 }
 
-// applies the search to the note state to only show searched items or empty state
-
-function applySearch(searchMatches: SearchMatchResult[]) {
-  const matchedIdSet = new Set(searchMatches.map((match) => match.item.id));
-  const activeTag = stateStore.get("activeTag");
-  const notes = noteStore.get("notes");
-  const visibleIds = notes
-    .filter((note) => {
-      const isSearchMatch = matchedIdSet.has(note.id);
-      const matchesActiveTag = !activeTag || note.tags.includes(activeTag);
-      return isSearchMatch && matchesActiveTag;
-    })
-    .map((note) => note.id);
-  noteStore.setState({
-    visibleIds,
-    sidebarChange: { type: "reload" },
-  });
-}
-
-// removes search scope but stays in activeTag scope if there is one
-
-function restoreSidebarScope() {
-  const activeTag = stateStore.get("activeTag");
-  noteStore.setState((state) => ({
-    visibleIds: activeTag
-      ? state.notes
-          .filter((note) => note.tags.includes(activeTag))
-          .map((note) => note.id)
-      : state.notes.map((note) => note.id),
-    sidebarChange: { type: "reload" },
-  }));
-}
-
 //------------------------------------------------------------
 
 // footer-bar
@@ -130,13 +105,20 @@ function createAllTagsPopover(button: HTMLButtonElement) {
   popover.className = "tags-popover";
   const content = document.createElement("div");
   content.className = "tags-popover-content";
-  const span = document.createElement("span");
-  span.className = "info-span tags-popover-title";
-  span.textContent = "All Tags";
-  popover.append(span, content);
-  content.addEventListener("click", (e) => {
+  const allTagsSpan = createInfoSpan("All Tags", "tags-popover-title");
+  const untaggedButton = createIconButton("tag-x", "Untagged");
+  untaggedButton.className = "untagged-btn";
+  allTagsSpan.appendChild(untaggedButton);
+  popover.append(allTagsSpan, content);
+  renderIcons(popover);
+  popover.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
+    const button = target.closest<HTMLButtonElement>(".untagged-btn");
+    if (button) {
+      applyUntaggedView();
+      return;
+    }
     const clickedTag = target.closest<HTMLSpanElement>(".tag-node");
     const tagId = clickedTag?.getAttribute("data-tag");
     if (clickedTag && tagId) {
@@ -156,37 +138,10 @@ function createAllTagsPopover(button: HTMLButtonElement) {
   return { button, popover, content, tippy: instance };
 }
 
-function applyTagView(tagId: string) {
-  const normalizedTag = tagId.trim().toLowerCase();
-  if (!normalizedTag) return;
-  stateStore.setState({ activeTag: normalizedTag });
-  updateSettings({ "active-tag": normalizedTag });
-  noteStore.setState((state) => ({
-    visibleIds: state.notes
-      .filter((note) => note.tags.includes(normalizedTag))
-      .map((note) => note.id),
-    sidebarChange: { type: "reload" },
-  }));
-}
-
-function clearActiveTagFilter() {
-  stateStore.setState({ activeTag: null, searchQuery: "" });
-  const searchInput = getUIItem("searchInput");
-  searchInput.value = "";
-  updateSettings({ "active-tag": null });
-  noteStore.setState((state) => ({
-    visibleIds: state.notes.map((n) => n.id),
-    sidebarChange: { type: "reload" },
-  }));
-  return;
-}
-
 function renderAllTags(button: HTMLButtonElement, tags: string[]) {
   const menu = (allTagsMenu ??= createAllTagsPopover(button));
   if (tags.length === 0) {
-    const span = document.createElement("span");
-    span.classList.add("info-span");
-    span.textContent = "No tags here.";
+    const span = createInfoSpan("No tags here.");
     menu.content.replaceChildren(span);
     return;
   }
@@ -334,7 +289,8 @@ const debouncedSearch = debounce((e: Event) => {
 
 export {
   applyTagView,
-  clearActiveTagFilter,
+  createIconButton,
+  createInfoSpan,
   debouncedSearch,
   handleSearchInput,
   renderAllTags,

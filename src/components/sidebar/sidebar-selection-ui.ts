@@ -3,6 +3,7 @@ import { findElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
 import { SELECTION_ACTIONS } from "@shared/constants";
+import { createIconButton } from "./sidebar-features";
 
 function selectAllVisibleNotes() {
   const visibleIds = noteStore.get("visibleIds") ?? [];
@@ -18,14 +19,10 @@ function initSelectionFooter() {
   if (selectionFooter.childElementCount > 0) return;
   const frag = document.createDocumentFragment();
   for (const action of SELECTION_ACTIONS) {
-    const button = document.createElement("button");
-    button.type = "button";
+    const button = createIconButton(action.icon);
     button.className = `${action.id}-btn`;
     button.setAttribute("data-action", action.id);
     button.setAttribute("data-tippy-dynamic", "");
-    const icon = document.createElement("i");
-    icon.setAttribute("data-lucide", action.icon);
-    button.appendChild(icon);
     frag.appendChild(button);
   }
   selectionFooter.appendChild(frag);

@@ -1,5 +1,8 @@
 import { pinWindow, setTheme } from "@/api/api";
-import { applyTagView } from "@/components/sidebar/sidebar-features";
+import {
+  applyTagView,
+  createInfoSpan,
+} from "@/components/sidebar/sidebar-features";
 import { createDivider } from "@/components/toolbar/toolbar-factory";
 import { promptImageUpload } from "@/extensions/image/image";
 import { handleSelectNote } from "@/notes/note-actions";
@@ -164,10 +167,9 @@ function renderTags(container: HTMLDivElement) {
     container.appendChild(createDivider());
   }
   if ((!activeTags || activeTags.length === 0) && sortedTags.length === 0) {
-    const span = document.createElement("span");
-    span.textContent =
-      "No tags here. Create your first tag by writing #tag + Space";
-    span.classList.add("info-span");
+    const span = createInfoSpan(
+      "No tags here. Create your first tag by writing #tag + Space",
+    );
     container.appendChild(span);
     return;
   }
