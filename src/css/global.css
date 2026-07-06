@@ -148,11 +148,17 @@ html {
   height: 100%;
   width: 100%;
   font-family: var(--current-font);
+}
+
+html {
   background-color: var(--bg-editor);
+  transition: background-color 0.3s ease;
+}
+
+body {
+  background-color: transparent;
   color: var(--text-main);
-  transition:
-    background-color 0.2s,
-    color 0.2s;
+  transition: color 0.3s ease;
   overflow: hidden;
 }
 
@@ -417,7 +423,6 @@ label {
 }
 
 /* Balanced */
-
 [data-codetheme="atom-one-dark"] {
   --hljs-bg: transparent;
   --hljs-fg: #abb2bf;
