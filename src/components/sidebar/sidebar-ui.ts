@@ -12,6 +12,7 @@ import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem, getTemplateItem } from "@/utils/registry";
 import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { FilterMode } from "@shared/types";
 
 // sidebar
 
@@ -103,13 +104,45 @@ function createActiveTagHeader(tag: string): HTMLDivElement {
   return header;
 }
 
+function createInfoHeader(text: string) {
+  const header = document.createElement("div");
+  header.className = "sidebar-info-header";
+  const label = document.createElement("span");
+  label.textContent = text;
+  header.appendChild(label);
+  return header;
+}
+
+function handleHeaderChange(change: FilterMode, activeTag?: string) {
+  if (!change) return;
+  switch (change) {
+    case "tag":
+      if (!activeTag) {
+        console.warn("[handleHeaderChange]: No active tag found:");
+        return;
+      }
+      return createActiveTagHeader(activeTag);
+    case "recent":
+      return createInfoHeader("Recent");
+    case "search":
+      return createInfoHeader("Search");
+  }
+}
+
 function renderNoteList(notes: NoteListItem[]) {
   const sidebar = getAppItem("sidebar");
-  const { activeId, activeTag } = stateStore.getState();
+  const { activeId, activeTag, searchQuery } = stateStore.getState();
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
-  if (activeTag) {
-    fragment.appendChild(createActiveTagHeader(activeTag));
+  let currentMode: FilterMode = "recent";
+  if (searchQuery) {
+    currentMode = "search";
+  } else if (activeTag) {
+    currentMode = "tag";
+  }
+  const headerElement = handleHeaderChange(currentMode, activeTag ?? undefined);
+  if (headerElement) {
+    fragment.appendChild(headerElement);
   }
   const sortedNotes = [...notes].sort(compareNotes);
   const isFiltered = Boolean(activeTag);
@@ -138,60 +171,9 @@ function renderNoteList(notes: NoteListItem[]) {
   }
 }
 
-// create note
-
-function addNoteToList(note: NoteListItem) {
-  const sidebar = getAppItem("sidebar");
-  const noteElement = createNoteItem(note);
-  const activeHeader = findElement<HTMLDivElement>(".active-tag-header");
-  if (activeHeader) {
-    activeHeader.after(noteElement);
-  } else {
-    sidebar.prepend(noteElement);
-  }
-}
-
-// delete note
-
-function removeNoteFromList(noteId: string) {
-  const sidebar = getAppItem("sidebar");
-  const noteElement = findElement<HTMLDivElement>(
-    `.note-item[data-id="${noteId}"]`,
-    sidebar,
-  );
-  if (!noteElement) {
-    console.error("[removeNoteFromList]: Note Element not found.");
-    return;
-  }
-  noteElement.remove();
-}
-
-// update note
-
-function updateNoteInList(note: NoteListItem) {
-  const sidebar = getAppItem("sidebar");
-  const noteElement = findElement<HTMLDivElement>(
-    `.note-item[data-id="${note.id}"]`,
-    sidebar,
-  );
-  if (!noteElement) {
-    console.error("[updateNoteInList]: Note Element not found.");
-    return;
-  }
-  const wasActive = noteElement.classList.contains("is-active");
-  const newElement = createNoteItem(note);
-  noteElement.replaceWith(newElement);
-  if (wasActive) {
-    setActiveItem(newElement, sidebar);
-  }
-}
-
 export {
-  addNoteToList,
   handleSidebarEmptyState,
-  removeNoteFromList,
   renderNoteList,
   setSidebarState,
   updateNoteCount,
-  updateNoteInList,
 };

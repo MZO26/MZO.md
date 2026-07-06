@@ -286,22 +286,38 @@ async function handleSelectNote(id: string) {
   debouncedSaveNote.flush();
   stateStore.setState({ activeId: id });
   noteStore.setState({ activeNote: null });
+  editor.setEditable(false, false);
   const result = await getNoteById(id);
   if (stateStore.getState().activeId !== id) return;
   if (!result.success) {
     console.error("[handleSelectNote]: Failed to fetch note:", result.error);
     return;
   }
-  editor.commands.setContent(result.data.content, {
-    emitUpdate: false,
-  });
+  try {
+    editor.commands.setContent(result.data.content, {
+      emitUpdate: false,
+    });
+  } catch (error) {
+    console.error("Invalid Editor content:", error);
+    editor.setEditable(false, false);
+    noteStore.setState({ activeNote: result.data });
+    updateToc([]);
+    updateStats();
+    await showNotification(
+      "Invalid content detected.",
+      "Switched to read-only.",
+    );
+    return;
+  }
+  if (stateStore.getState().activeId !== id) return;
   noteStore.setState({ activeNote: result.data });
   resetEditorHistory(editor);
-  editor.commands.focus();
   const headings = getTableOfContents(editor);
   updateToc(headings);
   updateStats();
+  editor.setEditable(true, false);
   markNoteAsRecent(id);
+  editor.commands.focus();
 }
 
 //------------------------------------------------------------

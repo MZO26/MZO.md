@@ -70,6 +70,8 @@ const UNTAGGED = "_untagged_";
 
 const SIDEBAR_ALL_NOTES_LIMIT = 50;
 
+const SIDEBAR_FILTER_MODES = ["recent", "search", "tag"] as const;
+
 const SELECTION_ACTIONS: SelectionActionConfig[] = [
   { id: "cancel", icon: "x" },
   { id: "pin", icon: "pin" },
@@ -329,6 +331,7 @@ export {
   QUICK_ACTIONS,
   SELECTION_ACTIONS,
   SIDEBAR_ALL_NOTES_LIMIT,
+  SIDEBAR_FILTER_MODES,
   SPELLCHECK_SETTINGS,
   SYNC_BUFFER,
   THEME_DATA,

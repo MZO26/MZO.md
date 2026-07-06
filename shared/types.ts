@@ -5,6 +5,7 @@ import type {
   Theme,
 } from "@shared/schemas/store-schema";
 import type { Content, Editor, SetContentOptions } from "@tiptap/core";
+import type { SIDEBAR_FILTER_MODES } from "./constants";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -213,6 +214,8 @@ type SyncResult =
       dbContent: string;
     };
 
+type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
+
 export type {
   Action,
   ActionMap,
@@ -228,6 +231,7 @@ export type {
   ExportFormat,
   Failure,
   FileContent,
+  FilterMode,
   ImageSrc,
   ImportedContent,
   MenuType,

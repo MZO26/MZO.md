@@ -708,6 +708,7 @@ body.is-dragging * {
 }
 
 .active-tag-header,
+.sidebar-info-header,
 .note-list-info {
   display: flex;
   align-items: center;
@@ -729,14 +730,16 @@ body.is-dragging * {
   overflow: hidden;
 }
 
-.active-tag-header span {
+.active-tag-header span,
+.sidebar-info-header span {
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.active-tag-header::after {
+.active-tag-header::after,
+.sidebar-info-header::after {
   content: "";
   flex: 1;
   height: 1px;
@@ -763,7 +766,9 @@ body.is-dragging * {
 }
 
 .active-tag-header:hover,
-.active-tag-header:focus-visible {
+.active-tag-header:focus-visible,
+.sidebar-info-header:hover,
+.sidebar-info-header:focus-visible {
   color: var(--text-muted);
   opacity: 1;
 }
