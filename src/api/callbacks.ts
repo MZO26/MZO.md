@@ -5,6 +5,7 @@ import {
   triggerDuplicate,
   triggerNoteItemMenu,
   triggerOpenAutoExportFolder,
+  triggerOpenInDefaultEditor,
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,
@@ -61,6 +62,12 @@ function initListeners() {
     const autoExportPayload = await ensureNoteSaved(id);
     if (!autoExportPayload) return;
     await triggerOpenAutoExportFolder(autoExportPayload);
+  });
+
+  window.noteAPI.onTriggerDefaultEditor(async (id: string) => {
+    const autoExportPayload = await ensureNoteSaved(id);
+    if (!autoExportPayload) return;
+    await triggerOpenInDefaultEditor(autoExportPayload);
   });
 
   window.noteAPI.onTriggerCopyPath(async (id: string) => {

@@ -187,6 +187,12 @@ async function openAutoExportFolder(
   return invoke(window.electronAPI.openAutoExportFolder(payload));
 }
 
+async function openInDefaultEditor(
+  payload: OpenAutoExportPathRequest,
+): Promise<Result<boolean>> {
+  return invoke(window.electronAPI.openInDefaultEditor(payload));
+}
+
 async function openAppPath(): Promise<Result<boolean>> {
   return invoke(window.electronAPI.openAppPath());
 }
@@ -251,6 +257,7 @@ export {
   openAppPath,
   openAutoExportFolder,
   openExternal,
+  openInDefaultEditor,
   pin,
   pinMany,
   pinWindow,

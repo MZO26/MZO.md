@@ -3,6 +3,7 @@ import {
   getAutoExportPath,
   getNoteById,
   openAutoExportFolder,
+  openInDefaultEditor,
   pin,
   showNotification,
   syncRequest,
@@ -84,6 +85,16 @@ async function triggerOpenAutoExportFolder(
   const result = await openAutoExportFolder(autoExportPayload);
   if (!result.success || result.data === false) {
     await showNotification("Could not open note path.", "");
+    return;
+  }
+}
+
+async function triggerOpenInDefaultEditor(
+  autoExportPayload: OpenAutoExportPathRequest,
+) {
+  const result = await openInDefaultEditor(autoExportPayload);
+  if (!result.success || result.data === false) {
+    await showNotification("Could not open note in default Editor.", "");
     return;
   }
 }
@@ -284,6 +295,7 @@ export {
   triggerDuplicate,
   triggerNoteItemMenu,
   triggerOpenAutoExportFolder,
+  triggerOpenInDefaultEditor,
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,

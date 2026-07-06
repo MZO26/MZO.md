@@ -151,6 +151,16 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       visible: store.get("auto-export") === true,
       click: () => win.webContents.send("note:trigger-path", id),
     },
+    {
+      label: "Open in Editor",
+      enabled:
+        activeId !== null &&
+        activeId === id &&
+        store.get("auto-export") === true &&
+        hasAutoExportedFile,
+      visible: store.get("auto-export") === true,
+      click: () => win.webContents.send("note:trigger-default-editor", id),
+    },
     { type: "separator" },
     {
       label: "Delete Note",

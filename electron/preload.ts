@@ -69,6 +69,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   openExternal: (url: string) => ipcRenderer.invoke("open:external", url),
   openAutoExportFolder: (payload: OpenAutoExportPathRequest) =>
     ipcRenderer.invoke("open:auto-export-folder", payload),
+  openInDefaultEditor: (payload: OpenAutoExportPathRequest) =>
+    ipcRenderer.invoke("open:default-editor", payload),
   getAutoExportPath: (payload: OpenAutoExportPathRequest) =>
     ipcRenderer.invoke("get:auto-export-path", payload),
   openAppPath: () => ipcRenderer.invoke("open:app-path"),
@@ -96,6 +98,9 @@ contextBridge.exposeInMainWorld("noteAPI", {
   },
   onTriggerPath: (callback: (id: string) => void) => {
     subscribe("note:trigger-path", callback);
+  },
+  onTriggerDefaultEditor: (callback: (id: string) => void) => {
+    subscribe("note:trigger-default-editor", callback);
   },
   onTriggerCopyRichText: (callback: (id: string) => void) => {
     subscribe("note:trigger-copy-rich-text", callback);

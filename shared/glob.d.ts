@@ -24,10 +24,10 @@ declare global {
     appInfo: Readonly<{ isMac: boolean }>;
     electronAPI: {
       getPathForFile(file: File): string;
-      imageWriteMany: (payload: ImagePayload[]) => Promise<Result<ImageSrc[]>>;
+      showNotification: (title: string, body: string) => Promise<Result<void>>;
       setTheme: (theme: Theme, focus?: boolean) => Promise<Result<Theme>>;
       windowPin: () => Promise<Result<boolean>>;
-      showNotification: (title: string, body: string) => Promise<Result<void>>;
+      imageWriteMany: (payload: ImagePayload[]) => Promise<Result<ImageSrc[]>>;
       onThemeChanged: (
         callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
       ) => () => void;
@@ -36,13 +36,14 @@ declare global {
       onTriggerNoteAction: (
         callback: (payload: NoteMenuPayload) => void,
       ) => void;
-      onFocus: (callback: () => void) => () => void;
-      onSystemResume: (callback: () => void) => () => void;
       onRequestFlush: (callback: () => void) => () => void;
       confirmFlush: () => void;
       zoom: (action: string) => Promise<Result<number>>;
       openExternal: (url: string) => Promise<Result<void>>;
       openAutoExportFolder: (
+        payload: OpenAutoExportPathRequest,
+      ) => Promise<Result<boolean>>;
+      openInDefaultEditor: (
         payload: OpenAutoExportPathRequest,
       ) => Promise<Result<boolean>>;
       getAutoExportPath: (
@@ -69,6 +70,7 @@ declare global {
         callback: (id: string, extension: string) => void,
       ) => () => void;
       onTriggerPath: (callback: (id: string) => void) => () => void;
+      onTriggerDefaultEditor: (callback: (id: string) => void) => () => void;
       onTriggerCopyRichText: (callback: (id: string) => void) => () => void;
       onTriggerCopyPath: (callback: (id: string) => void) => () => void;
       noteExportMany: (
