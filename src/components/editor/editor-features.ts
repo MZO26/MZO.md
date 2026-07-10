@@ -156,11 +156,9 @@ function initEditorSearch(editor: Editor) {
 
   replaceInput.addEventListener("keydown", (event) => {
     const isMod = event.metaKey || event.ctrlKey;
-
     if (event.key === "Enter") {
       event.preventDefault();
       syncQuery();
-
       if (event.altKey && isMod) {
         editor.commands.replaceAll();
       } else {

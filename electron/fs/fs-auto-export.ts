@@ -77,9 +77,9 @@ async function safeRename(
   absoluteFilePath: string,
 ) {
   if (!oldAbsoluteFilePath || oldAbsoluteFilePath === absoluteFilePath) return;
+  const src = oldAbsoluteFilePath.normalize("NFC");
+  const dest = absoluteFilePath.normalize("NFC");
   try {
-    const src = oldAbsoluteFilePath.normalize("NFC");
-    const dest = absoluteFilePath.normalize("NFC");
     const sameIgnoringCase = src.toLowerCase() === dest.toLowerCase();
     if (sameIgnoringCase) {
       const temp = `${dest}.${crypto.randomUUID()}.rename-tmp`;
@@ -95,7 +95,22 @@ async function safeRename(
     }
   } catch (error: unknown) {
     const err = error as NodeJS.ErrnoException;
-    if (err.code !== "ENOENT") {
+    if (err.code === "ENOENT") {
+      console.error("[writeAutoExportFileLogic -> safeRename]: File not found");
+      return;
+    } else if (err.code === "EXDEV") {
+      // for cross-partition moves
+      try {
+        await fs.copyFile(src, dest);
+        await fs.unlink(src);
+      } catch (error) {
+        console.error(
+          "[writeAutoExportFileLogic -> safeRename]: EXDEV  fallback failed",
+          error,
+        );
+        throw new AppBackendError(AppErrorCode.FileWriteError);
+      }
+    } else {
       console.error(
         "[writeAutoExportFileLogic -> safeRename]: Safe rename failed",
         error,

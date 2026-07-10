@@ -1,7 +1,7 @@
 import { noteStore, stateStore } from "@/settings/app-state";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import { InputRule, mergeAttributes, Node } from "@tiptap/core";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 const UUID_PATTERN = "([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})";
@@ -22,6 +22,19 @@ type AutocompleteState = {
 const autocompleteKey = new PluginKey<AutocompleteState>(
   "wikilinkAutocomplete",
 );
+const wikilinkClickHandlerKey = new PluginKey("wikilinkClickHandler");
+
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    wikilink: {
+      insertWikiLink: (options: {
+        from: number;
+        to: number;
+        id: string;
+      }) => ReturnType;
+    };
+  }
+}
 
 const WikiLink = Node.create<WikiLinkOptions>({
   name: "wikilink",
@@ -29,10 +42,6 @@ const WikiLink = Node.create<WikiLinkOptions>({
   inline: true,
   atom: true,
   selectable: false,
-
-  addOptions: () => ({
-    onClick: () => {},
-  }),
 
   addAttributes: () => ({
     id: {
@@ -58,6 +67,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
       },
     },
   ],
+
   renderHTML({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     const title = noteStore.get("noteIndex").get(id)?.title;
@@ -72,6 +82,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
       display ? `[[${display}]]` : "",
     ];
   },
+
   markdownTokenizer: {
     name: "wikilink",
     level: "inline",
@@ -109,45 +120,63 @@ const WikiLink = Node.create<WikiLinkOptions>({
     const title = noteStore.get("noteIndex").get(id)?.title;
     return title ? `[[${id}|${title}]]` : `[[${id}]]`;
   },
+
+  addCommands() {
+    return {
+      insertWikiLink:
+        ({ from, to, id }) =>
+        ({ tr, dispatch }) => {
+          const node = this.type.create({ id });
+          tr.replaceWith(from, to, node);
+          tr.insertText(" ", from + node.nodeSize);
+          const cursorPos = from + node.nodeSize + 1;
+          tr.setSelection(TextSelection.create(tr.doc, cursorPos));
+          if (dispatch) {
+            dispatch(tr);
+          }
+          return true;
+        },
+    };
+  },
+
   addInputRules() {
     return [
       new InputRule({
         find: INPUT_REGEX,
-        handler: ({ state, range, match }) => {
-          const typedTitle = match[1]?.trim();
-          if (!typedTitle) return null;
+        handler: ({ range, match, commands }) => {
+          const rawTitle = typeof match[1] === "string" ? match[1].trim() : "";
+          if (!rawTitle) return null;
           const targetNote = noteStore
             .get("notes")
-            .find((n) => n.title.toLowerCase() === typedTitle.toLowerCase());
+            .find((n) => n.title.toLowerCase() === rawTitle.toLowerCase());
           if (!targetNote) return null;
-          const nodeType = state.schema.nodes[this.name];
-          if (!nodeType) return null;
-          const node = nodeType.create({
+          if (range.from < 0 || range.to < range.from) return null;
+          commands.insertWikiLink({
+            from: range.from,
+            to: range.to,
             id: targetNote.id,
-            label: targetNote.title,
           });
-          const tr = state.tr;
-          tr.replaceWith(range.from, range.to, node);
-          tr.insertText(" ", range.from + node.nodeSize);
           return;
         },
       }),
     ];
   },
+
   addProseMirrorPlugins() {
     return [
       new Plugin({
-        key: new PluginKey("wikilinkClickHandler"),
+        key: wikilinkClickHandlerKey,
         props: {
           handleClickOn: (_view, _pos, node, _nodePos, event) => {
             if (node.type.name !== this.name || !node.attrs["id"]) return false;
             event.preventDefault();
             event.stopPropagation();
-            void this.options.onClick(node.attrs["id"]);
+            void this.options.onClick?.(node.attrs["id"]);
             return true;
           },
         },
       }),
+
       new Plugin({
         key: autocompleteKey,
         state: {
@@ -164,7 +193,6 @@ const WikiLink = Node.create<WikiLinkOptions>({
             const { selection } = newEditorState;
             if (!selection.empty) return null;
             const $head = selection.$head;
-            // title max 50 chars and 10 chars for typo tolerance
             const lookbackStart = Math.max(0, $head.parentOffset - 60);
             const textBefore = $head.parent.textContent.slice(
               lookbackStart,
@@ -202,6 +230,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
             };
           },
         },
+
         props: {
           decorations(state) {
             const pluginState = autocompleteKey.getState(state);
@@ -217,26 +246,21 @@ const WikiLink = Node.create<WikiLinkOptions>({
       }),
     ];
   },
+
   addKeyboardShortcuts() {
     return {
       Tab: ({ editor }) => {
         const state = autocompleteKey.getState(editor.state);
         if (!state) return false;
-        editor
+        return editor
           .chain()
           .focus()
-          .insertContentAt({ from: state.from, to: state.to }, [
-            {
-              type: this.name,
-              attrs: { id: state.noteId },
-            },
-            {
-              type: "text",
-              text: " ",
-            },
-          ])
+          .insertWikiLink({
+            from: state.from,
+            to: state.to,
+            id: state.noteId,
+          })
           .run();
-        return true;
       },
     };
   },

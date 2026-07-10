@@ -74,14 +74,15 @@ export const Annotation = Mark.create({
     level: "inline",
     start: (src: string) => src.indexOf("//"),
     tokenize(src: string, _tokens, lexer) {
-      const match = src.match(/^\/\/([^/\n][^/\n]*?)\/\//);
-      const text = match?.[1]?.trim();
-      if (!match || !text) return undefined;
+      const match = src.match(/^\/\/([\s\S]*?)\/\//);
+      if (!match) return undefined;
+      const rawText = typeof match[1] === "string" ? match[1].trim() : "";
+      if (!rawText) return undefined;
       return {
         type: "annotation",
         raw: match[0],
-        text,
-        tokens: lexer.inlineTokens(text),
+        rawText,
+        tokens: lexer.inlineTokens(rawText),
       };
     },
   },

@@ -141,7 +141,7 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>Backspace</kbd> |              | Delete table             |
 | **Editor Controls**                                    |              |                          |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>       |              | Paste without formatting |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>       |              | Toggle editor focus mode |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>D</kbd>         |              | Toggle editor focus mode |
 | <kbd>Escape</kbd>                                      |              | Remove focus from editor |
 
 </details>

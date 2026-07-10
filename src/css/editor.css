@@ -227,12 +227,14 @@
   color: var(--text-main);
 }
 
-.ProseMirror blockquote p {
+.ProseMirror blockquote p,
+.wikilink-preview-content blockquote p {
   margin: 0;
   line-height: 1.65;
 }
 
-.ProseMirror blockquote p + p {
+.ProseMirror blockquote p + p,
+.wikilink-preview-content blockquote p + p {
   margin-top: 0.75em;
 }
 
@@ -307,7 +309,8 @@
   box-sizing: border-box;
 }
 
-.ProseMirror table p {
+.ProseMirror table p,
+.wikilink-preview-content table p {
   margin: 0;
 }
 

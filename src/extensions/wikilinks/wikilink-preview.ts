@@ -9,6 +9,12 @@ import DOMPurify from "dompurify";
 import hljs from "highlight.js/lib/core";
 import { delegate, type DelegateInstance, type Instance } from "tippy.js";
 
+function highlightCodeBlocks(root: ParentNode) {
+  root.querySelectorAll("pre code").forEach((el) => {
+    hljs.highlightElement(el as HTMLElement);
+  });
+}
+
 type PreviewInstance = Instance & {
   state: { isDataFetched?: boolean; isFetching?: boolean };
 };
@@ -22,10 +28,7 @@ function buildPreviewCard(content: Note["content"]) {
   const sanitized = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
   if (sanitized) {
     cardContent.innerHTML = sanitized;
-    const blocks = cardContent.querySelectorAll<HTMLElement>("pre code");
-    for (const block of blocks) {
-      hljs.highlightElement(block);
-    }
+    highlightCodeBlocks(cardContent);
   }
   const hasText = (cardContent.textContent || "").trim().length > 0;
   const hasMedia = cardContent.querySelectorAll("img, hr").length > 0;

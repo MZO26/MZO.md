@@ -75,9 +75,7 @@ async function handleDuplicateNote(note: Note) {
     emitUpdate: false,
   });
   resetEditorHistory(editor);
-  requestAnimationFrame(() => {
-    editor.commands.focus();
-  });
+  editor.commands.focus();
   markNoteAsRecent(result.data.id);
 }
 

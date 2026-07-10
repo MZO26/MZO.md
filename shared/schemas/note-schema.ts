@@ -82,6 +82,10 @@ const NoteSchema = NoteTableSchema.extend({
   links: LinksSchema,
 });
 
+const OldNoteSchema = z.array(
+  NoteSchema.pick({ created_at: true, title: true }),
+);
+
 // Full Array of Note Objects
 const NotesSchema = z.array(NoteSchema);
 
@@ -186,6 +190,7 @@ export {
   NoteSchema,
   NotesSchema,
   NoteToDBSchema,
+  OldNoteSchema,
   PlainTextSchema,
   SnippetSchema,
   TagRowsSchema,

@@ -1,6 +1,7 @@
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type {
   ExportRequest,
+  FilePathRequest,
   ImportRequest,
   OpenAutoExportPathRequest,
   SyncRequestPayload,
@@ -13,6 +14,7 @@ import {
   type UpdateNotePayload,
 } from "@shared/shared/types";
 import type {
+  ExportedContent,
   ImageSrc,
   MenuType,
   NoteMenuPayload,
@@ -23,7 +25,7 @@ declare global {
   interface Window {
     appInfo: Readonly<{ isMac: boolean }>;
     electronAPI: {
-      getPathForFile(file: File): string;
+      getPathForFile: (file: File) => string;
       showNotification: (title: string, body: string) => Promise<Result<void>>;
       setTheme: (theme: Theme, focus?: boolean) => Promise<Result<Theme>>;
       windowPin: () => Promise<Result<boolean>>;

@@ -72,13 +72,14 @@ export const Highlight = Mark.create({
 
     tokenize(src, _tokens, lexer) {
       const match = src.match(/^==([^=\n][^=\n]*?)==/);
-      const text = match?.[1] ?? "";
-      if (!match || !text) return undefined;
+      if (!match) return undefined;
+      const rawText = typeof match[1] === "string" ? match[1].trim() : "";
+      if (!rawText) return undefined;
       return {
         type: "highlight",
         raw: match[0],
-        text,
-        tokens: lexer.inlineTokens(text),
+        rawText,
+        tokens: lexer.inlineTokens(rawText),
       };
     },
   },

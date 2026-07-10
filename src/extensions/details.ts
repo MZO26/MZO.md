@@ -169,17 +169,17 @@ export const DetailsBlock = Node.create({
         /^<details[^>]*>\s*<summary>(.*?)<\/summary>\s*([\s\S]*?)\s*<\/details>/;
       // don't include open attribute so toggles don't trigger file saves
       const match = rule.exec(src);
-      if (match) {
-        const raw = match[0];
-        const summary = match[1]?.trim();
-        const innerContent = match[2];
-        return {
-          type: "detailsBlock",
-          raw,
-          summary: summary,
-          tokens: lexer.blockTokens(innerContent ?? ""),
-        };
-      }
+      if (!match) return undefined;
+      const raw = typeof match[0] === "string" ? match[0] : "";
+      const summary = typeof match[1] === "string" ? match[1].trim() : "";
+      const innerContent = typeof match[2] === "string" ? match[2] : "";
+      if (!raw || !summary) return undefined;
+      return {
+        type: "detailsBlock",
+        raw,
+        summary: summary,
+        tokens: lexer.blockTokens(innerContent),
+      };
       return undefined;
     },
   },
@@ -195,9 +195,12 @@ export const DetailsBlock = Node.create({
   },
 
   renderMarkdown(node, helpers) {
-    const summary = String(node.attrs?.["summary"] || "Details");
-    const content = helpers.renderChildren(node.content || []);
-    return content.trim().length > 0
+    const summary = String(node?.attrs?.["summary"] || "Details");
+    const rawContent = helpers.renderChildren(node?.content || []);
+    const content =
+      typeof rawContent === "string" ? rawContent : String(rawContent || "");
+    const trimmedContent = content.trim();
+    return trimmedContent
       ? `<details>\n<summary>${summary}</summary>\n\n${content}\n\n</details>\n`
       : `<details>\n<summary>${summary}</summary>\n</details>\n`;
   },

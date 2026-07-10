@@ -46,7 +46,7 @@ async function checkSyncState(
       return { status: "MISSING" };
     }
     console.error(
-      `[checkSyncState] File access error for ${payload.fileName}:`,
+      `[checkSyncState]: File access error for ${payload.fileName}:`,
       err.message,
     );
     throw new AppBackendError(AppErrorCode.InvalidData);

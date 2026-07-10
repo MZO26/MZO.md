@@ -169,8 +169,8 @@ function applySidebarListeners(
         e.stopPropagation();
         const noteElement = target.closest<HTMLDivElement>(".note-item");
         const id = noteElement?.getAttribute("data-id");
-        if (!id) return;
-        const isPinned = noteElement?.getAttribute("data-pinned") === "true";
+        if (!id || !noteElement) return;
+        const isPinned = noteElement.getAttribute("data-pinned") === "true";
         window.electronAPI.showContextMenu("note", {
           id,
           pinned: isPinned,

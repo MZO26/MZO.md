@@ -1,6 +1,6 @@
 import { noteStore } from "@/settings/app-state";
 import { InputRule, mergeAttributes, Node } from "@tiptap/core";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 export interface NoteTagOptions {
@@ -24,16 +24,24 @@ const normalizeTagId = (value: unknown) =>
     .trim()
     .toLowerCase();
 
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    noteTag: {
+      insertNoteTag: (options: {
+        from: number;
+        to: number;
+        id: string;
+      }) => ReturnType;
+    };
+  }
+}
+
 const NoteTag = Node.create<NoteTagOptions>({
   name: "noteTag",
   group: "inline",
   inline: true,
   atom: true,
-  selectable: true,
-
-  addOptions: () => ({
-    onClick: () => {},
-  }),
+  selectable: false,
 
   addAttributes: () => ({
     id: {
@@ -44,6 +52,7 @@ const NoteTag = Node.create<NoteTagOptions>({
       }),
     },
   }),
+
   parseHTML: () => [{ tag: 'span[data-type="noteTag"]' }],
 
   renderHTML({ node, HTMLAttributes }) {
@@ -57,14 +66,12 @@ const NoteTag = Node.create<NoteTagOptions>({
       `#${id}`,
     ];
   },
-
   renderText({ node }) {
     const id = normalizeTagId(node.attrs?.["id"] ?? "");
     return id ? `#${id}` : "";
   },
 
   markdownTokenName: "noteTag",
-
   markdownTokenizer: {
     name: "noteTag",
     level: "inline",
@@ -76,7 +83,6 @@ const NoteTag = Node.create<NoteTagOptions>({
       return { type: "noteTag", raw: match[0], text };
     },
   },
-
   parseMarkdown(token, helpers) {
     const id = normalizeTagId(token.text ?? "");
     if (!id) {
@@ -84,52 +90,78 @@ const NoteTag = Node.create<NoteTagOptions>({
     }
     return helpers.createNode("noteTag", { id });
   },
-
   renderMarkdown(node) {
     const id = normalizeTagId(node.attrs?.["id"] ?? "");
     return id ? `#${id}` : "";
+  },
+
+  addCommands() {
+    return {
+      insertNoteTag:
+        ({ from, to, id }) =>
+        ({ tr, dispatch }) => {
+          const normalizedId = normalizeTagId(id);
+          if (!normalizedId) return false;
+          const node = this.type.create({ id: normalizedId });
+          const maxPos = tr.doc.content.size;
+          const safeFrom = Math.max(0, Math.min(from, maxPos));
+          const safeTo = Math.max(safeFrom, Math.min(to, maxPos));
+          tr.replaceWith(safeFrom, safeTo, node);
+          tr.insertText(" ", safeFrom + node.nodeSize);
+          const rawCursorPos = safeFrom + node.nodeSize + 1;
+          const safeCursorPos = Math.max(
+            0,
+            Math.min(rawCursorPos, tr.doc.content.size),
+          );
+          tr.setSelection(TextSelection.near(tr.doc.resolve(safeCursorPos)));
+          if (dispatch) {
+            dispatch(tr);
+          }
+          return true;
+        },
+    };
   },
 
   addInputRules() {
     return [
       new InputRule({
         find: /(?:^|\s)#([\p{L}\p{N}_-]+)\s$/u,
-        handler: ({ state, range, match }) => {
-          const { tr } = state;
-          const start = range.from;
-          const end = range.to;
-          // match[0] is the full text
-          // match[1] is the text without the #
-          const matchString = match[0];
-          const tagText = normalizeTagId(match[1]);
-          const prefixSpace = matchString.match(/^\s/) ? 1 : 0;
-          const node = this.type.create({ id: tagText });
-          tr.replaceWith(start + prefixSpace, end, node).insertText(" ");
+        handler: ({ range, match, commands }) => {
+          const matchString = typeof match[0] === "string" ? match[0] : "";
+          const rawTagText = typeof match[1] === "string" ? match[1] : "";
+          const tagText = normalizeTagId(rawTagText);
+          if (!matchString || !tagText) return null;
+          const hashIndex = matchString.lastIndexOf("#");
+          if (hashIndex === -1) return null;
+          const from = range.from + hashIndex;
+          const to = range.to;
+          if (from < 0 || to < from) return null;
+          commands.insertNoteTag({
+            from,
+            to,
+            id: tagText,
+          });
+          return;
         },
       }),
     ];
   },
+
   addKeyboardShortcuts() {
     return {
       Tab: ({ editor }) => {
         const state = tagAutocompleteKey.getState(editor.state);
         if (!state) return false;
-        editor
+
+        return editor
           .chain()
           .focus()
-          .insertContentAt({ from: state.from, to: state.to }, [
-            {
-              type: this.name,
-              attrs: { id: normalizeTagId(state.tagId) },
-            },
-            {
-              type: "text",
-              text: " ",
-            },
-          ])
+          .insertNoteTag({
+            from: state.from,
+            to: state.to,
+            id: state.tagId,
+          })
           .run();
-
-        return true;
       },
     };
   },
@@ -142,11 +174,12 @@ const NoteTag = Node.create<NoteTagOptions>({
           if (node.type.name !== this.name || !node.attrs["id"]) return false;
           event.preventDefault();
           event.stopPropagation();
-          void this.options.onClick(node.attrs["id"]);
+          void this.options.onClick?.(node.attrs["id"]);
           return true;
         },
       },
     });
+
     const autoCompletePlugin = new Plugin({
       key: tagAutocompleteKey,
       state: {
@@ -160,22 +193,27 @@ const NoteTag = Node.create<NoteTagOptions>({
           if (!tr.docChanged && !tr.selectionSet) {
             return pluginState;
           }
+
           const { selection } = newEditorState;
           if (!selection.empty) return null;
+
           const $head = selection.$head;
-          // tag max is 100 / not more because whitespaces create new tag instantly
           const lookbackStart = Math.max(0, $head.parentOffset - 100);
           const textBefore = $head.parent.textContent.slice(
             lookbackStart,
             $head.parentOffset,
           );
+
           const match = textBefore.match(/(?:^|\s)#([\p{L}\p{N}_-]+)$/u);
           if (!match) return null;
+
           const rawQuery = match[1];
           if (!rawQuery) return null;
+
           const normalizedQuery = rawQuery.trim().toLowerCase();
           let bestMatch: string | null = null;
           let exactMatchFound = false;
+
           for (const note of noteStore.get("notes")) {
             for (const tag of note.tags) {
               if (tag === normalizedQuery) {
@@ -183,6 +221,7 @@ const NoteTag = Node.create<NoteTagOptions>({
                 exactMatchFound = true;
                 break;
               }
+
               if (
                 tag.startsWith(normalizedQuery) &&
                 (bestMatch === null || tag.length < bestMatch.length)
@@ -190,9 +229,12 @@ const NoteTag = Node.create<NoteTagOptions>({
                 bestMatch = tag;
               }
             }
+
             if (exactMatchFound) break;
           }
+
           if (!bestMatch) return null;
+
           return {
             from: $head.pos - rawQuery.length - 1,
             to: $head.pos,
@@ -205,15 +247,18 @@ const NoteTag = Node.create<NoteTagOptions>({
         decorations(state) {
           const pluginState = tagAutocompleteKey.getState(state);
           if (!pluginState) return DecorationSet.empty;
+
           const span = document.createElement("span");
           span.className = "autocomplete";
           span.textContent = pluginState.autocompleteText;
+
           return DecorationSet.create(state.doc, [
             Decoration.widget(pluginState.to, span, { side: 1 }),
           ]);
         },
       },
     });
+
     return [clickPlugin, autoCompletePlugin];
   },
 });

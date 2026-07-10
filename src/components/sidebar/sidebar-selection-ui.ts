@@ -77,7 +77,7 @@ function updateSelectionUI() {
   sidebar.classList.toggle("selection-mode", selectionMode);
   const noteItems = sidebar.querySelectorAll<HTMLDivElement>(".note-item");
   for (const item of noteItems) {
-    const id = item.getAttribute("data-id");
+    const id = item?.getAttribute("data-id");
     const isSelected = !!id && selectedIds.has(id);
     item.classList.toggle("selected", isSelected);
     const checkbox = findElement<HTMLInputElement>(".select-checkbox", item);

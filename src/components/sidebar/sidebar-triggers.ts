@@ -135,8 +135,9 @@ async function triggerCopyRichText(id: string) {
   }
   const note = noteStore.get("notes").find((n) => n.id === id);
   if (!note) return;
-  const html = result.data.content.trim();
-  const plain = note?.plainText.trim() || "";
+  const html = (result.data.content || "").trim();
+  const plain = (note?.plainText || "").trim();
+  if (!html || !plain) return;
   try {
     await navigator.clipboard.write([
       new ClipboardItem({

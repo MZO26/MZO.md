@@ -4,7 +4,10 @@ import { validation } from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
 import {
   CreateTransactionSchema,
+  LinksSchema,
   NoteFromDB,
+  OldNoteSchema,
+  TagsSchema,
   ToggleManyPinsSchema,
   TogglePinSchema,
   UpdateTransactionSchema,
@@ -317,14 +320,14 @@ class NoteDB {
   }
 
   public getTagsById(id: string): Tag[] {
-    const rows = this.getTagsByIdStmt.all({ id });
-    const tagArr = rows.map((row) => (row as TagNameRow).tag_name);
-    return tagArr as Tag[];
+    const rows = this.getTagsByIdStmt.all({ id }) as TagNameRow[];
+    const tagArr = rows.map((row) => row.tag_name);
+    return validation(TagsSchema, tagArr);
   }
 
   public getLinksById(id: string): Link[] {
-    const rows = this.getLinksByIdStmt.all({ id });
-    return rows as Link[];
+    const rows = this.getLinksByIdStmt.all({ id }) as LinkRow[];
+    return validation(LinksSchema, rows);
   }
 
   public getOldNotes(ids: string[]): Pick<Note, "created_at" | "title">[] {
@@ -335,7 +338,7 @@ class NoteDB {
     if (rows.length !== ids.length) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
-    return rows;
+    return validation(OldNoteSchema, rows);
   }
 
   public pragma(source: string, options?: PragmaOptions) {

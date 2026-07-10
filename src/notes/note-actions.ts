@@ -305,7 +305,7 @@ async function handleSelectNote(id: string) {
     updateStats();
     await showNotification(
       "Invalid content detected.",
-      "Switched to read-only.",
+      "Couldn't load content.",
     );
     return;
   }

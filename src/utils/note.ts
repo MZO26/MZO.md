@@ -24,7 +24,7 @@ function getNotePriority(note: NoteListItem) {
 
 // this function returns a number by which note items are being displayed in the sidebar. If it returns a negative number, a comes first, then b
 function compareNotes(a: NoteListItem, b: NoteListItem) {
-  const priorityDiff = getNotePriority(a) - getNotePriority(b); // example: pinned note a (1) - regular note b(3) = -2, which means a comes before b
+  const priorityDiff = getNotePriority(a) - getNotePriority(b);
   if (priorityDiff !== 0) return priorityDiff;
   // if priorities are equal, they get sorted by updated_at
   return String(b.updated_at).localeCompare(String(a.updated_at));
@@ -62,6 +62,9 @@ function addActiveTagToDoc(
   const hrBlock = {
     type: "horizontalRule",
   };
+  const spacerParagraph = {
+    type: "paragraph",
+  };
   const firstNode = content[0];
   const hasLeadingHeading = firstNode?.type === "heading";
   const rest = hasLeadingHeading ? content.slice(1) : content;
@@ -73,6 +76,7 @@ function addActiveTagToDoc(
       hasLeadingHeading ? firstNode : headingBlock,
       hrBlock,
       tagParagraph,
+      spacerParagraph,
       ...restWithoutDuplicateHeading,
     ],
   };

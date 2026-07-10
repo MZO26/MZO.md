@@ -555,6 +555,10 @@ body.is-dragging * {
     color 0.2s ease;
 }
 
+.tag-node::after {
+  content: "\200B";
+}
+
 .tag {
   flex: 0 1 auto;
   max-width: 60%;
