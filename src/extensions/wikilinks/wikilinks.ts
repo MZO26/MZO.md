@@ -89,8 +89,9 @@ const WikiLink = Node.create<WikiLinkOptions>({
     start: "[[",
     tokenize(src: string) {
       const match = src.match(/^\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/);
-      const id = match?.[1]?.trim();
-      if (!match || !id || !EXACT_UUID_REGEX.test(id)) {
+      if (!match) return undefined;
+      const id = typeof match[1] === "string" ? match[1].trim() : "";
+      if (!id || !EXACT_UUID_REGEX.test(id)) {
         return undefined;
       }
       return {

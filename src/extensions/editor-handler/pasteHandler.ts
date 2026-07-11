@@ -45,7 +45,11 @@ export const PasteHandler = Extension.create({
                 ),
               );
               return true;
-            } catch {
+            } catch (error) {
+              console.error(
+                "[pasteHandler]: Failed to process clipboard data:",
+                error,
+              );
               return false;
             }
           },

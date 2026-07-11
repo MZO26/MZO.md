@@ -33,8 +33,8 @@ async function isAutoExport(id: string) {
   if (!targetDir) return false;
   const exportPath = resolveAutoExportPath(targetDir);
   const absoluteFilePath = getFilePath(exportPath, {
-    created_at: note[0]?.created_at,
-    fileName: note[0]?.title,
+    created_at: note[0].created_at,
+    fileName: note[0].title,
     extension: "md",
   });
   try {

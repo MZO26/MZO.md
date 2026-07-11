@@ -152,7 +152,6 @@ const NoteTag = Node.create<NoteTagOptions>({
       Tab: ({ editor }) => {
         const state = tagAutocompleteKey.getState(editor.state);
         if (!state) return false;
-
         return editor
           .chain()
           .focus()
@@ -193,27 +192,21 @@ const NoteTag = Node.create<NoteTagOptions>({
           if (!tr.docChanged && !tr.selectionSet) {
             return pluginState;
           }
-
           const { selection } = newEditorState;
           if (!selection.empty) return null;
-
           const $head = selection.$head;
           const lookbackStart = Math.max(0, $head.parentOffset - 100);
           const textBefore = $head.parent.textContent.slice(
             lookbackStart,
             $head.parentOffset,
           );
-
           const match = textBefore.match(/(?:^|\s)#([\p{L}\p{N}_-]+)$/u);
           if (!match) return null;
-
           const rawQuery = match[1];
           if (!rawQuery) return null;
-
           const normalizedQuery = rawQuery.trim().toLowerCase();
           let bestMatch: string | null = null;
           let exactMatchFound = false;
-
           for (const note of noteStore.get("notes")) {
             for (const tag of note.tags) {
               if (tag === normalizedQuery) {
@@ -221,7 +214,6 @@ const NoteTag = Node.create<NoteTagOptions>({
                 exactMatchFound = true;
                 break;
               }
-
               if (
                 tag.startsWith(normalizedQuery) &&
                 (bestMatch === null || tag.length < bestMatch.length)
@@ -229,12 +221,9 @@ const NoteTag = Node.create<NoteTagOptions>({
                 bestMatch = tag;
               }
             }
-
             if (exactMatchFound) break;
           }
-
           if (!bestMatch) return null;
-
           return {
             from: $head.pos - rawQuery.length - 1,
             to: $head.pos,
@@ -247,18 +236,15 @@ const NoteTag = Node.create<NoteTagOptions>({
         decorations(state) {
           const pluginState = tagAutocompleteKey.getState(state);
           if (!pluginState) return DecorationSet.empty;
-
           const span = document.createElement("span");
           span.className = "autocomplete";
           span.textContent = pluginState.autocompleteText;
-
           return DecorationSet.create(state.doc, [
             Decoration.widget(pluginState.to, span, { side: 1 }),
           ]);
         },
       },
     });
-
     return [clickPlugin, autoCompletePlugin];
   },
 });

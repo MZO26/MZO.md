@@ -92,10 +92,10 @@ function initFocusMode() {
         "system"
       >,
       newState,
-    ).catch((err) => {
+    ).catch((error: unknown) => {
       console.error(
         "[initFocusMode -> setTheme]: Failed to sync theme with main process.",
-        err,
+        error,
       );
     });
   });
@@ -114,10 +114,10 @@ function toggleToolbar() {
         "system"
       >,
       newState,
-    ).catch((err) => {
+    ).catch((error: unknown) => {
       console.error(
         "[initFocusMode -> setTheme]: Failed to sync theme with main process.",
-        err,
+        error,
       );
     });
   });

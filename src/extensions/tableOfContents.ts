@@ -8,12 +8,14 @@ function getTableOfContents(editor: Editor | null) {
   editor?.state.doc.descendants((node) => {
     if (node.type.name === "detailsBlock") return false;
     if (node.type.name === "heading") {
-      const text = node.textContent.trim();
-      const { id, level } = node.attrs;
-      if (!text || !id) return true;
+      const text = (
+        typeof node.textContent === "string" ? node.textContent : ""
+      ).trim();
+      const { id, level } = node.attrs || {};
+      if (!text || typeof id !== "string") return true;
       headings.push({
         id,
-        level,
+        level: typeof level === "number" ? level : 1,
         text,
       });
     }
