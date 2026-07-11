@@ -412,7 +412,8 @@
   justify-content: safe center;
   gap: 5px;
   padding: 2px 8px 0 8px;
-  overflow: auto;
+  overflow-y: hidden;
+  overflow-x: scroll;
   flex-wrap: nowrap;
   flex-direction: row;
   width: 100%;

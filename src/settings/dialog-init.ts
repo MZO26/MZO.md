@@ -34,13 +34,11 @@ function confirmWithDialog(
   titleEl.textContent = title;
   dialog.returnValue = "";
   dialog.showModal();
-
   return new Promise((resolve) => {
     const onClose = () => {
       titleEl.textContent = "";
       resolve(dialog.returnValue === "confirm");
     };
-
     dialog.addEventListener("close", onClose, { once: true });
   });
 }

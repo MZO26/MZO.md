@@ -1,6 +1,5 @@
 import { createIconButton } from "@/components/sidebar/sidebar-features";
 import { requireElement } from "@/utils/dom";
-import { renderIcons } from "@/utils/icons";
 import { getUIItem } from "@/utils/registry";
 import { QUICK_ACTIONS } from "@shared/constants";
 import type { SelectOption, SettingsCategory } from "@shared/types";
@@ -63,7 +62,6 @@ function initQuickActionContainer() {
   quickActionContainer.appendChild(frag);
   row.appendChild(quickActionContainer);
   settingsContainer.appendChild(row);
-  renderIcons(quickActionContainer);
   return quickActionContainer;
 }
 

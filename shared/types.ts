@@ -1,3 +1,4 @@
+import type { SIDEBAR_FILTER_MODES } from "@shared/constants";
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
 import type {
   CodeTheme,
@@ -5,7 +6,6 @@ import type {
   Theme,
 } from "@shared/schemas/store-schema";
 import type { Content, Editor, SetContentOptions } from "@tiptap/core";
-import type { SIDEBAR_FILTER_MODES } from "./constants";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -97,8 +97,6 @@ type PDFAssets = { template: string; css: string };
 type ContentType = "markdown" | "html" | "json" | "text";
 
 type ZoomAction = "get" | "in" | "out" | "reset";
-
-type DbOptimization = "optimize-db" | "vacuum-db" | "backup-db";
 
 type EditorContentType = NonNullable<SetContentOptions["contentType"]>;
 
@@ -224,7 +222,6 @@ export type {
   ContentType,
   CoreRegistry,
   DBBackupResult,
-  DbOptimization,
   EditorContentType,
   ErrorHandlerOptions,
   ExportedContent,

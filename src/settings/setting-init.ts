@@ -102,6 +102,7 @@ function applyModalListeners(
           return;
         case "backup-notes":
           const allIds = noteStore.get("notes")?.map((n) => n.id);
+          if (!Array.isArray(allIds) || allIds.length === 0) return;
           await exportSelection(allIds);
           break;
         case "vacuum-db":
