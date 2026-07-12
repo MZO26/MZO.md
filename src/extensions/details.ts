@@ -180,7 +180,6 @@ export const DetailsBlock = Node.create({
         summary: summary,
         tokens: lexer.blockTokens(innerContent),
       };
-      return undefined;
     },
   },
 

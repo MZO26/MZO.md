@@ -37,12 +37,10 @@ import type { FilePathRequest } from "@shared/schemas/request-schema";
 // helpers
 
 function isAutoExportEnabled() {
-  return settingsStore.get("auto-export") ?? false;
+  return settingsStore.get("auto_export") ?? false;
 }
 
 //----------------------------------------------------------
-
-// note crud operations + import
 
 // create
 
@@ -279,7 +277,7 @@ const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 
 //------------------------------------------------------------
 
-// read or getById
+// getById
 
 async function handleSelectNote(id: string) {
   const editor = getAppItem("editor");

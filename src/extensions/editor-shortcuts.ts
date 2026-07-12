@@ -13,19 +13,21 @@ export const MasterShortcuts = Extension.create({
       "Mod-Shift-z": () => this.editor.commands.redo(),
       "Mod-b": () => this.editor.commands.toggleBold(),
       "Mod-i": () => this.editor.commands.toggleItalic(),
-      "Mod-Shift-x": () => this.editor.commands.toggleStrike(),
-      "Mod-Shift-h": () => this.editor.commands.toggleHighlight(),
-      "Mod-Shift-a": () => this.editor.commands.toggleAnnotation(),
+      "Mod-s": () => this.editor.commands.toggleStrike(),
+      "Mod-h": () => this.editor.commands.toggleHighlight(),
       "Mod-e": () => this.editor.commands.toggleCode(),
-      "Mod-Alt-1": () => this.editor.commands.toggleHeading({ level: 1 }),
-      "Mod-Alt-2": () => this.editor.commands.toggleHeading({ level: 2 }),
-      "Mod-Alt-3": () => this.editor.commands.toggleHeading({ level: 3 }),
-      "Mod-Shift-8": () => this.editor.commands.toggleBulletList(),
-      "Mod-Shift-7": () => this.editor.commands.toggleOrderedList(),
-      "Mod-Shift-9": () => this.editor.commands.toggleTaskList(),
+      "Mod-Shift-1": () => this.editor.commands.toggleHeading({ level: 1 }),
+      "Mod-Shift-2": () => this.editor.commands.toggleHeading({ level: 2 }),
+      "Mod-Shift-3": () => this.editor.commands.toggleHeading({ level: 3 }),
+      "Mod-Shift-4": () => this.editor.commands.toggleHeading({ level: 4 }),
+      "Mod-Shift-5": () => this.editor.commands.toggleHeading({ level: 5 }),
+      "Mod-Shift-6": () => this.editor.commands.toggleHeading({ level: 6 }),
+      "Mod-Shift-l": () => this.editor.commands.toggleBulletList(),
+      "Mod-Shift-o": () => this.editor.commands.toggleOrderedList(),
+      "Mod-Shift-t": () => this.editor.commands.toggleTaskList(),
       "Mod-Shift-b": () => this.editor.commands.toggleBlockquote(),
-      "Mod-Alt-c": () => this.editor.commands.toggleCodeBlock(),
-      "Mod-Shift--": () => this.editor.commands.setHorizontalRule(),
+      "Mod-Shift-c": () => this.editor.commands.toggleCodeBlock(),
+      "Mod-Shift-r": () => this.editor.commands.setHorizontalRule(),
       "Mod-Shift-d": () => this.editor.commands.toggleDetailsBlock(),
       "Mod-Alt-t": () =>
         this.editor.commands.insertTable({
@@ -33,7 +35,7 @@ export const MasterShortcuts = Extension.create({
           cols: 3,
           withHeaderRow: true,
         }),
-      "Mod-Alt-i": () => {
+      "Mod-Shift-m": () => {
         promptImageUpload(this.editor);
         return true;
       },
@@ -60,7 +62,7 @@ export const MasterShortcuts = Extension.create({
         }
         return false;
       },
-      "Mod-Alt-d": () => {
+      "Mod-d": () => {
         this.editor.view.dom.classList.toggle("focus-mode-active");
         return true;
       },

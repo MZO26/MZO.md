@@ -1,4 +1,4 @@
-import NoteDB from "@electron/db/database";
+import AppDB from "@electron/db/database";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
@@ -150,7 +150,7 @@ class Transactions {
       this.runCreateLogic.bind(this),
     );
     const result = transactionRunner(noteParams, safeTags, safeLinks);
-    const allLinks = NoteDB.getLinksById(result.id) ?? [];
+    const allLinks = AppDB.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== params.id);
     return validation(NoteFromDB, {
       ...result,
@@ -205,7 +205,7 @@ class Transactions {
       this.runUpdateLogic.bind(this),
     );
     const result = transactionRunner(noteParams, safeTags, safeLinks);
-    const allLinks = NoteDB.getLinksById(result.id) ?? [];
+    const allLinks = AppDB.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== params.id);
     return validation(NoteFromDB, {
       ...result,

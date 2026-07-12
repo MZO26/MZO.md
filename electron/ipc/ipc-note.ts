@@ -18,13 +18,13 @@ import {
 } from "@electron/fs/fs-export";
 import { batchImport } from "@electron/fs/fs-import";
 import { checkSyncState } from "@electron/fs/fs-sync";
+import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
   checkRateLimit,
   result,
   validation,
 } from "@electron/ipc/ipc-validation";
-import { store } from "@electron/store";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import {
@@ -90,8 +90,9 @@ function registerNoteIpc(win: BrowserWindow) {
       }
       const validatedData = validation(UpdateNotePayloadSchema, payload);
       const { markdown, ...noteData } = validatedData;
-      const isAutoExport = store.get("auto-export") === true;
-      const targetDir = isAutoExport ? store.get("auto-export-path") : null;
+      const settings = settingsService.getSettings();
+      const isAutoExport = settings["auto_export"] === true;
+      const targetDir = isAutoExport ? settings["auto_export_path"] : null;
       const oldTitle =
         isAutoExport && targetDir
           ? db.getOldNotes([validatedData.id])
@@ -114,9 +115,10 @@ function registerNoteIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("note:delete", LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const settings = settingsService.getSettings();
       const validatedData = validation(IdSchema, id);
-      const isAutoExport = store.get("auto-export") === true;
-      const targetDir = isAutoExport ? store.get("auto-export-path") : null;
+      const isAutoExport = settings["auto_export"] === true;
+      const targetDir = isAutoExport ? settings["auto_export_path"] : null;
       const oldNote = db.getOldNotes([validatedData]);
       const result = db.delete(validatedData);
       if (!isAutoExport || !targetDir) return result;
@@ -130,8 +132,9 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit("note:delete-many", LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, ids);
-      const isAutoExport = store.get("auto-export") === true;
-      const targetDir = isAutoExport ? store.get("auto-export-path") : null;
+      const settings = settingsService.getSettings();
+      const isAutoExport = settings["auto_export"] === true;
+      const targetDir = isAutoExport ? settings["auto_export_path"] : null;
       const oldNotes = db.getOldNotes(validatedData);
       const result = db.deleteMany(validatedData);
       if (!isAutoExport || !targetDir) return result;
@@ -178,10 +181,11 @@ function registerNoteIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("note:sync", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      if (store.get("auto-export") !== true) return null;
+      const settings = settingsService.getSettings();
+      if (settings["auto_export"] !== true) return null;
       const validatedData = validation(SyncRequestPayloadSchema, payload);
       if (!validatedData.updated_at) return null;
-      const targetDir = store.get("auto-export-path");
+      const targetDir = settings["auto_export_path"];
       if (!targetDir) return null;
       return await checkSyncState(targetDir, validatedData);
     });

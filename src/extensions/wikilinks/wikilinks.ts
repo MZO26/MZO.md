@@ -88,38 +88,46 @@ const WikiLink = Node.create<WikiLinkOptions>({
     level: "inline",
     start: "[[",
     tokenize(src: string) {
-      const match = src.match(/^\[\[([^\]|]+?)(?:\|([^\]]+))?\]\]/);
+      const match = src.match(/^\[\[([^\]]+)\]\]/);
       if (!match) return undefined;
-      const id = typeof match[1] === "string" ? match[1].trim() : "";
-      if (!id || !EXACT_UUID_REGEX.test(id)) {
+      const text = typeof match[1] === "string" ? match[1].trim() : "";
+      if (!text) {
         return undefined;
       }
       return {
         type: "wikilink",
         raw: match[0],
-        text: id,
+        text: text,
       };
     },
   },
 
   parseMarkdown(token, helpers) {
-    const id = String(token.text ?? "").trim();
-    if (!id || !EXACT_UUID_REGEX.test(id)) {
-      return helpers.createTextNode(token.raw || "");
+    const text = String(token.text ?? "").trim();
+    if (!text) return helpers.createTextNode(token.raw || "");
+    if (EXACT_UUID_REGEX.test(text)) {
+      return helpers.createNode("wikilink", { id: text });
     }
-    return helpers.createNode("wikilink", { id });
+    const normalizedText = text.toLowerCase();
+    const foundNote = noteStore
+      .get("notes")
+      .find((n) => n.title.toLowerCase().trim() === normalizedText);
+    if (foundNote) {
+      return helpers.createNode("wikilink", { id: foundNote.id });
+    }
+    return helpers.createTextNode(token.raw || "");
   },
   renderText({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     if (!id) return "";
     const title = noteStore.get("noteIndex").get(id)?.title;
-    return title ? `[[${id}|${title}]]` : `[[${id}]]`;
+    return title ? `[[${title}]]` : `[[${id}]]`;
   },
   renderMarkdown(node) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     if (!id) return "";
     const title = noteStore.get("noteIndex").get(id)?.title;
-    return title ? `[[${id}|${title}]]` : `[[${id}]]`;
+    return title ? `[[${title}]]` : `[[${id}]]`;
   },
 
   addCommands() {

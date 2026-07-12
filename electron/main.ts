@@ -7,14 +7,16 @@ import {
   setupLocalImageProtocol,
 } from "@electron/handler/navigation-handler";
 import { setPermissions } from "@electron/handler/permission-handler";
+import { settingsService } from "@electron/handler/settings-handler";
 import { registerIpc } from "@electron/ipc/ipc-validation";
-import { store } from "@electron/store";
 import {
   getTitleBarOverlay,
   initTheme,
   onOSThemeChange,
 } from "@electron/titlebar";
 import { saveWindowBounds } from "@electron/win";
+import { DEFAULT_SETTINGS } from "@shared/constants";
+import { type AppSettings } from "@shared/schemas/store-schema";
 import {
   app,
   BrowserWindow,
@@ -56,11 +58,26 @@ setupGlobalErrorHandling({
 
 // window logic
 
-function createWindow() {
+async function initSettings(): Promise<AppSettings> {
+  try {
+    db.open();
+    await settingsService.initialize();
+    return settingsService.getSettings();
+  } catch (error) {
+    console.error(
+      "[initSettings]: Couldn't load settings from DB. Using defaults.",
+      error,
+    );
+    return DEFAULT_SETTINGS;
+  }
+}
+
+async function createWindow() {
+  const settings = await initSettings();
   const preloadPath = path.join(__dirname, "../preload/preload.js");
-  const activeTheme = initTheme(store.get("theme"));
+  const activeTheme = initTheme(settings.theme);
   const windowTheme = getTitleBarOverlay(activeTheme);
-  const bounds = store.get("window-bounds");
+  const bounds = settings["window_bounds"];
   const windowConfig: BrowserWindowConstructorOptions = {
     show: false,
     width: Math.max(800, bounds?.width ?? 800),
@@ -124,7 +141,7 @@ app.whenReady().then(async () => {
     isReadyToClose = true;
     win?.close();
   });
-  createWindow();
+  await createWindow();
   setupLocalImageProtocol();
   setPermissions();
   if (win) {
@@ -134,7 +151,8 @@ app.whenReady().then(async () => {
 });
 
 nativeTheme.on("updated", () => {
-  if (win && !win.isDestroyed()) onOSThemeChange(win, store.get("theme"));
+  const settings = settingsService.getSettings();
+  if (win && !win.isDestroyed()) onOSThemeChange(win, settings.theme);
 });
 
 app.on("activate", () => {

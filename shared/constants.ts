@@ -1,4 +1,5 @@
 import type {
+  AppSettings,
   AutoExport,
   CodeTheme,
   ExportFormat,
@@ -99,12 +100,28 @@ const QUICK_ACTIONS: QuickActionConfig[] = [
   },
 ];
 
+const DEFAULT_SETTINGS: AppSettings = {
+  theme: "system",
+  font_family: "system",
+  font_size: "18",
+  line_height: "1.5",
+  spellcheck: false,
+  auto_export: false,
+  auto_export_path: null,
+  export_format: "md",
+  code_theme: "balanced",
+  highlight: "context",
+  note_item_display: "preview",
+  window_bounds: { width: 800, height: 500 },
+  active_tag: null,
+};
+
 const THEME_MAP = {
   system: "system",
   light: "light",
   dark: "dark",
-  "light-warm": "light",
-  "dark-warm": "dark",
+  light_warm: "light",
+  dark_warm: "dark",
 } as const;
 
 const CODE_THEME_MAP: Record<CodeTheme, Record<ResolvedTheme, Code>> = {
@@ -137,14 +154,14 @@ const THEME_DATA: Record<
     isDark: true,
     focus: "#1e1e21",
   },
-  "light-warm": {
+  light_warm: {
     color: "#eceae3",
     symbolColor: "#1c1917",
     background: "#eceae3",
     isDark: false,
     focus: "#f8f7f3",
   },
-  "dark-warm": {
+  dark_warm: {
     color: "#110f0b",
     symbolColor: "#d4cfc5",
     background: "#110f0b",
@@ -237,9 +254,9 @@ const BLOCK_TYPES = new Set([
 const THEME_SETTINGS: readonly SelectOption<Theme>[] = [
   { value: "system", label: "System" },
   { value: "light", label: "Light" },
-  { value: "light-warm", label: "Light · Warm" },
+  { value: "light_warm", label: "Light · Warm" },
   { value: "dark", label: "Dark" },
-  { value: "dark-warm", label: "Dark · Warm" },
+  { value: "dark_warm", label: "Dark · Warm" },
 ];
 
 const CODE_THEME_SETTINGS: readonly SelectOption<CodeTheme>[] = [
@@ -315,6 +332,7 @@ export {
   CODE_THEME_SETTINGS,
   CONTENT_TYPE_MAP,
   DEBOUNCE_MS,
+  DEFAULT_SETTINGS,
   DOMPURIFY_CONFIG,
   EMPTY_DOC,
   EXPORT_FORMAT_SETTINGS,

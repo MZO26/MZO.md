@@ -1,7 +1,46 @@
-import { Extension, textInputRule } from "@tiptap/core";
+import { Extension, InputRule, textInputRule } from "@tiptap/core";
 
-const Typography = Extension.create({
-  name: "Typography",
+const DateInputRules = Extension.create({
+  name: "dateInputRules",
+
+  addInputRules() {
+    return [
+      new InputRule({
+        find: /((?:^|\s))@(today|tomorrow|yesterday)\s$/i,
+        handler: ({ match, range, commands }) => {
+          if (
+            !match ||
+            typeof match[1] !== "string" ||
+            typeof match[2] !== "string"
+          ) {
+            return null;
+          }
+          const prefixWhitespace = match[1];
+          const command = match[2].toLowerCase();
+          const targetDate = new Date();
+          if (command === "tomorrow") {
+            targetDate.setDate(targetDate.getDate() + 1);
+          } else if (command === "yesterday") {
+            targetDate.setDate(targetDate.getDate() - 1);
+          }
+          const formatter = new Intl.DateTimeFormat(undefined, {
+            dateStyle: "medium",
+          });
+          const formattedDate = formatter.format(targetDate);
+          if (range.from < 0 || range.to < range.from) return null;
+          commands.insertContentAt(
+            { from: range.from, to: range.to },
+            `${prefixWhitespace}${formattedDate} `,
+          );
+          return;
+        },
+      }),
+    ];
+  },
+});
+
+const InputRules = Extension.create({
+  name: "inputRules",
 
   addInputRules() {
     return [
@@ -39,4 +78,4 @@ const Typography = Extension.create({
   },
 });
 
-export { Typography };
+export { DateInputRules, InputRules };

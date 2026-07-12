@@ -36,7 +36,7 @@ import type { FilePathRequest } from "@shared/schemas/request-schema";
 // sidebar
 
 function initNotesSidebar() {
-  const activeTag = settingsStore.get("active-tag");
+  const activeTag = settingsStore.get("active_tag");
   const { appContainer, sidebar, sidebarContainer } = getAppItems([
     "appContainer",
     "sidebar",

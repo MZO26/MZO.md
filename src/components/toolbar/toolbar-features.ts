@@ -251,7 +251,7 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
       setEditorWidth(appContainer);
     },
     icon: "ruler-dimension-line",
-    shortcut: "MOD+Shift+W",
+    shortcut: "MOD+W",
   },
   focus: {
     type: "action",
@@ -263,7 +263,7 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
     type: "action",
     run: () => toggleToolbar(),
     icon: "arrow-down-from-line",
-    shortcut: "MOD+Shift+T",
+    shortcut: "MOD+.",
   },
 };
 
@@ -287,7 +287,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().redo().run(),
     isDisabled: (editor) => !editor.can().redo(),
     icon: "redo2",
-    shortcut: "MOD+Shift+Z",
+    shortcut: "MOD+Shift+Z | MOD+Y",
   },
   tags: {
     run: () => {
@@ -322,7 +322,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().toggleStrike().run(),
     isActive: (editor) => editor?.isActive("strike"),
     icon: "strikethrough",
-    shortcut: "MOD+Shift+X | ~~text~~",
+    shortcut: "MOD+S | ~~text~~",
   },
   underline: {
     run: (editor) => editor?.chain().focus().toggleUnderline().run(),
@@ -334,32 +334,26 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().toggleHighlight().run(),
     isActive: (editor) => editor?.isActive("highlight"),
     icon: "highlighter",
-    shortcut: "MOD+Shift+H | ==text==",
-  },
-  annotation: {
-    run: (editor) => editor?.chain().focus().toggleAnnotation().run(),
-    isActive: (editor) => editor?.isActive("annotation"),
-    icon: "sticky-note",
-    shortcut: "MOD+Shift+A | //text//",
+    shortcut: "MOD+H | ==text==",
   },
   divider2: { type: "divider" },
   heading1: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
     isActive: (editor) => editor?.isActive("heading", { level: 1 }),
     icon: "heading-1",
-    shortcut: "MOD+Alt+1 | # + Space",
+    shortcut: "MOD+Shift+1 | # + Space",
   },
   heading2: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
     isActive: (editor) => editor?.isActive("heading", { level: 2 }),
     icon: "heading-2",
-    shortcut: "MOD+Alt+2 | ## + Space",
+    shortcut: "MOD+Shift+2 | ## + Space",
   },
   heading3: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
     isActive: (editor) => editor?.isActive("heading", { level: 3 }),
     icon: "heading-3",
-    shortcut: "MOD+Alt+3 | ### + Space",
+    shortcut: "MOD+Shift+3 | ### + Space",
   },
   divider3: { type: "divider" },
   details: {
@@ -372,19 +366,19 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().toggleBulletList().run(),
     isActive: (editor) => editor?.isActive("bulletList"),
     icon: "list",
-    shortcut: "MOD+Shift+8 | - + Space",
+    shortcut: "MOD+Shift+L | - + Space",
   },
   orderedList: {
     run: (editor) => editor?.chain().focus().toggleOrderedList().run(),
     isActive: (editor) => editor?.isActive("orderedList"),
     icon: "list-ordered",
-    shortcut: "MOD+Shift+7 | 1. + Space",
+    shortcut: "MOD+Shift+O | 1. + Space",
   },
   taskList: {
     run: (editor) => editor?.chain().focus().toggleTaskList().run(),
     isActive: (editor) => editor?.isActive("taskList"),
     icon: "list-todo",
-    shortcut: "MOD+Shift+9 | [] + Space",
+    shortcut: "MOD+Shift+T | [] + Space",
   },
   blockQuote: {
     run: (editor) => editor?.chain().focus().toggleBlockquote().run(),
@@ -403,13 +397,13 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().toggleCodeBlock().run(),
     isActive: (editor) => editor?.isActive("codeBlock"),
     icon: "code-xml",
-    shortcut: "MOD+Alt+C | ``` + Space",
+    shortcut: "MOD+Shift+C | ``` + Space",
   },
   horizontalRule: {
     run: (editor) => editor?.chain().focus().setHorizontalRule().run(),
     isActive: (editor) => editor?.isActive("hr"),
     icon: "separator-horizontal",
-    shortcut: "MOD+Shift+- | ---",
+    shortcut: "MOD+Shift+R | ---",
   },
   divider5: { type: "divider" },
   link: {
@@ -428,7 +422,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor && promptImageUpload(editor),
     isActive: (editor) => editor?.isActive("image"),
     icon: "image",
-    shortcut: "MOD+Alt+I",
+    shortcut: "MOD+Shift+M",
   },
   table: {
     run: (editor) =>

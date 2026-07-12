@@ -1,10 +1,10 @@
+import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
   checkRateLimit,
   result,
   validation,
 } from "@electron/ipc/ipc-validation";
-import { store } from "@electron/store";
 import { nextZoom } from "@electron/win";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
@@ -31,9 +31,8 @@ function registerSettingsIpc(win: BrowserWindow) {
       if (!checkRateLimit("electron-store:get", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const safeKey = validation(StoreSchema.keyof(), key);
-      const value = store.get(safeKey);
-      const keySchema = StoreSchema.shape[safeKey];
-      return validation(keySchema, value);
+      const settings = settingsService.getSettings();
+      return validation(StoreSchema.shape[safeKey], settings[safeKey]);
     });
   });
 
@@ -41,7 +40,8 @@ function registerSettingsIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("electron-store:getAll", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      return validation(StoreSchema, store.store);
+      const result = settingsService.getSettings();
+      return validation(StoreSchema, result);
     });
   });
 
@@ -50,13 +50,13 @@ function registerSettingsIpc(win: BrowserWindow) {
       if (!checkRateLimit("electron-store:set", LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validSettings = validation(StoreSchema.partial(), settings);
-      const currentSettings = store.store;
+      const currentSettings = settingsService.getSettings();
       const mergedSettings = {
         ...currentSettings,
         ...validSettings,
       };
       const validValue = validation(StoreSchema, mergedSettings);
-      store.set(validValue);
+      settingsService.updateSettings(validValue);
       win.webContents.send("settings-changed", validValue);
       return validValue;
     });

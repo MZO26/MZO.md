@@ -236,7 +236,7 @@ async function triggerSyncCheck(id: string) {
       console.error("[triggerSyncCheck]: Failed to fetch note:", result.error);
       return;
     }
-    const targetDir = settingsStore.get("auto-export-path");
+    const targetDir = settingsStore.get("auto_export_path");
     if (!targetDir) return;
     const editor = getAppItem("editor");
     const markdown = editor.getMarkdown();

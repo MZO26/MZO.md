@@ -6,26 +6,10 @@ import { NoteSearch, type SearchMatchResult } from "@/notes/search";
 import { findElement, setActiveItem } from "@/utils/dom";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem, getUIItem } from "@/utils/registry";
-import { UNTAGGED } from "@shared/constants";
+import { DEFAULT_SETTINGS, UNTAGGED } from "@shared/constants";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { SidebarChange } from "@shared/types";
-
-const DEFAULT_STORE: AppSettings = {
-  theme: "system",
-  "font-family": "system",
-  "font-size": "18",
-  "line-height": "1.5",
-  "code-theme": "balanced",
-  highlight: "context",
-  spellcheck: false,
-  "auto-export": false,
-  "auto-export-path": null,
-  "export-format": "md",
-  "note-item-display": "preview",
-  "active-tag": null,
-  "window-bounds": { width: 800, height: 500 },
-};
 
 interface AppState {
   activeId: string | null;
@@ -50,7 +34,7 @@ let prevSidebarChange: SidebarChange | null = null;
 
 const stateStore = createStore<AppState>(STATE_STORE);
 
-const settingsStore = createStore<AppSettings>(DEFAULT_STORE);
+const settingsStore = createStore<AppSettings>(DEFAULT_SETTINGS);
 
 interface NoteStore {
   notes: NoteListItem[];
@@ -148,7 +132,7 @@ function applyView(nextTag: string | null) {
   if (activeTag === nextTag) return;
   stateStore.setState({ activeTag: nextTag, searchQuery: "" });
   getUIItem("searchInput").value = "";
-  updateSettings({ "active-tag": nextTag });
+  updateSettings({ active_tag: nextTag });
   noteStore.setState((state) => ({
     visibleIds: state.notes
       .filter((note) => matchesActiveTag(note, nextTag))

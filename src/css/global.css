@@ -69,7 +69,7 @@
   --pin-bg: rgba(217, 122, 114, 0.18);
 }
 
-[data-theme="light-warm"] {
+[data-theme="light_warm"] {
   --bg-editor: #f8f7f3;
   --bg-sidebar: #eceae3;
   --bg-sidebar-section: #d8d6ce;
@@ -94,7 +94,7 @@
   --pin-bg: rgba(168, 92, 63, 0.14);
 }
 
-[data-theme="dark-warm"] {
+[data-theme="dark_warm"] {
   --bg-editor: #1e1b17;
   --bg-sidebar: #110f0b;
   --bg-sidebar-section: #090807;

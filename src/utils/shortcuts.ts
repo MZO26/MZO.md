@@ -19,7 +19,7 @@ function isEditorFocused(target: EventTarget | null) {
 
 function initGlobalShortcuts() {
   window.addEventListener("keydown", (e) => {
-    const { key, ctrlKey, metaKey, shiftKey } = e;
+    const { key, ctrlKey, metaKey } = e;
     const isMod = ctrlKey || metaKey;
     if (isMod && (key === "+" || key === "=")) {
       e.preventDefault();
@@ -36,7 +36,7 @@ function initGlobalShortcuts() {
       handleZoom("reset");
       return;
     }
-    if (isMod && shiftKey && key === "T") {
+    if (isMod && key === ".") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:toggle-toolbar"));
       return;
@@ -46,7 +46,7 @@ function initGlobalShortcuts() {
       document.dispatchEvent(new CustomEvent("app:toggle-sidebar"));
       return;
     }
-    if (isMod && shiftKey && key === "W") {
+    if (isMod && key === "w") {
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("app:set-editor-width"));
       return;
@@ -71,7 +71,7 @@ function initGlobalShortcuts() {
       document.dispatchEvent(new CustomEvent("app:toggle-focus-mode"));
       return;
     }
-    if (e.shiftKey && e.key.toLowerCase() === "s") {
+    if (e.shiftKey && e.key === "s") {
       if (isEditorFocused(e.target)) return;
       e.preventDefault();
       setSelectionMode(!isSelectionActive());

@@ -1,7 +1,7 @@
 import { isAutoExport } from "@electron/fs/fs-auto-export";
-import { store } from "@electron/store";
 import type { NoteMenuPayload } from "@shared/types";
 import { ipcMain, Menu, type BrowserWindow } from "electron";
+import { settingsService } from "./handler/settings-handler";
 
 let activeId: string | null = null;
 
@@ -71,6 +71,7 @@ function setUpTableMenu(win: BrowserWindow) {
 
 async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
   const { id, pinned } = payload;
+  const settings = settingsService.getSettings();
   const hasAutoExportedFile = await isAutoExport(id);
   const noteItemMenu = Menu.buildFromTemplate([
     {
@@ -85,9 +86,9 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
           enabled:
             activeId !== null &&
             activeId === id &&
-            store.get("auto-export") === true &&
+            settings["auto_export"] === true &&
             hasAutoExportedFile,
-          visible: store.get("auto-export") === true,
+          visible: settings["auto_export"] === true,
           click: () => win.webContents.send("note:trigger-copy-path", id),
         },
       ],
@@ -136,9 +137,9 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       enabled:
         activeId !== null &&
         activeId === id &&
-        store.get("auto-export") === true &&
+        settings["auto_export"] === true &&
         hasAutoExportedFile,
-      visible: store.get("auto-export") === true,
+      visible: settings["auto_export"] === true,
       click: () => win.webContents.send("note:trigger-sync", id),
     },
     {
@@ -146,9 +147,9 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       enabled:
         activeId !== null &&
         activeId === id &&
-        store.get("auto-export") === true &&
+        settings["auto_export"] === true &&
         hasAutoExportedFile,
-      visible: store.get("auto-export") === true,
+      visible: settings["auto_export"] === true,
       click: () => win.webContents.send("note:trigger-path", id),
     },
     {
@@ -156,9 +157,9 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       enabled:
         activeId !== null &&
         activeId === id &&
-        store.get("auto-export") === true &&
+        settings["auto_export"] === true &&
         hasAutoExportedFile,
-      visible: store.get("auto-export") === true,
+      visible: settings["auto_export"] === true,
       click: () => win.webContents.send("note:trigger-default-editor", id),
     },
     { type: "separator" },

@@ -3,7 +3,6 @@ import {
   resetEditorHistory,
 } from "@/components/editor/editor-features";
 import { applyTagView } from "@/components/sidebar/sidebar-features";
-import { Annotation } from "@/extensions/annotation";
 import { DetailsBlock } from "@/extensions/details";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
@@ -15,12 +14,12 @@ import {
 } from "@/extensions/editor-handler/pasteHandler";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { Highlight } from "@/extensions/highlight";
+import { DateInputRules, InputRules } from "@/extensions/input-rules";
 import { lowlight } from "@/extensions/lowlight";
 import { CustomHeading } from "@/extensions/overrides/headings";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { initTableOfContents } from "@/extensions/tableOfContents";
 import { NoteTag } from "@/extensions/tag";
-import { Typography } from "@/extensions/typography";
 import { WikiLinkPreview } from "@/extensions/wikilinks/wikilink-preview";
 import { WikiLink } from "@/extensions/wikilinks/wikilinks";
 import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
@@ -88,13 +87,13 @@ function getNoteEditorExtensions() {
     DropHandler,
     Markdown.configure({ markedOptions: { gfm: true } }),
     MasterShortcuts,
-    Typography,
+    InputRules,
+    DateInputRules,
     ListKit.configure({
       taskItem: { nested: true },
     }),
     CustomUnderline,
     DetailsBlock,
-    Annotation,
     Highlight,
     WikiLinkPreview,
     WikiLink.configure({

@@ -79,8 +79,8 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | <kbd>Mod</kbd> + <kbd>G</kbd>                                 | Open global search |
 | <kbd>Mod</kbd> + <kbd>F</kbd>                                 | Open doc search    |
 | <kbd>Mod</kbd> + <kbd>O</kbd>                                 | Toggle sidebar     |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>              | Toggle toolbar     |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>W</kbd>              | Set editor width   |
+| <kbd>Mod</kbd> + <kbd>.</kbd>                                 | Toggle toolbar     |
+| <kbd>Mod</kbd> + <kbd>W</kbd>                                 | Set editor width   |
 | <kbd>Mod</kbd> + <kbd>,</kbd>                                 | Open settings      |
 | <kbd>Mod</kbd> + <kbd>+</kbd> / <kbd>Mod</kbd> + <kbd>=</kbd> | Zoom in            |
 | <kbd>Mod</kbd> + <kbd>-</kbd>                                 | Zoom out           |
@@ -104,34 +104,33 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | **Inline Formatting**                                  |              |                          |
 | <kbd>Mod</kbd> + <kbd>B</kbd>                          | `**text**`   | Bold                     |
 | <kbd>Mod</kbd> + <kbd>I</kbd>                          | `*text*`     | Italic                   |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>X</kbd>       | `~~text~~`   | Strikethrough            |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>       | `==text==`   | Highlight                |
+| <kbd>Mod</kbd> + <kbd>S</kbd>                          | `~~text~~`   | Strikethrough            |
+| <kbd>Mod</kbd> + <kbd>H</kbd>                          | `==text==`   | Highlight                |
 | <kbd>Mod</kbd> + <kbd>E</kbd>                          | `` `code` `` | Inline code              |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>A</kbd>       | `//text//`   | Annotation               |
 | **Headings & Paragraphs**                              |              |                          |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>1</kbd>         | `# `         | Heading 1                |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>2</kbd>         | `## `        | Heading 2                |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>3</kbd>         | `### `       | Heading 3                |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>4</kbd>         | `#### `      | Heading 4                |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>5</kbd>         | `##### `     | Heading 5                |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>6</kbd>         | `###### `    | Heading 6                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd>       | `# `         | Heading 1                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>2</kbd>       | `## `        | Heading 2                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>3</kbd>       | `### `       | Heading 3                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd>       | `#### `      | Heading 4                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd>       | `##### `     | Heading 5                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>6</kbd>       | `###### `    | Heading 6                |
 | **Lists**                                              |              |                          |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>7</kbd>       | `1. `        | Ordered list             |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>8</kbd>       | `- `         | Bullet list              |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>9</kbd>       | `[] `        | Task list                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd>       | `1. `        | Ordered list             |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>       | `- `         | Bullet list              |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>       | `[] `        | Task list                |
 | <kbd>Tab</kbd>                                         |              | Indent list item         |
 | <kbd>Shift</kbd> + <kbd>Tab</kbd>                      |              | Outdent list item        |
 | <kbd>Enter</kbd>                                       |              | Next list item           |
 | **Blocks & Elements**                                  |              |                          |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>       | `> `         | Blockquote               |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>C</kbd>         | ` ``` `      | Code block               |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>-</kbd>       | `---`        | Horizontal rule          |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>       | ` ``` `      | Code block               |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>       | `---`        | Horizontal rule          |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>       |              | Details                  |
 | <kbd>Shift</kbd> + <kbd>Enter</kbd>                    |              | Hard break (`<br>`)      |
 | **Links & Media**                                      |              |                          |
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>Enter</kbd>     |              | Open Link                |
 | <kbd>Mod</kbd> + <kbd>K</kbd>                          |              | Toggle Link              |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>I</kbd>         |              | Insert image             |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd>       |              | Insert image             |
 | **Tables**                                             |              |                          |
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>         |              | Insert table             |
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>↓</kbd>         |              | Add row after            |
@@ -141,7 +140,7 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>Backspace</kbd> |              | Delete table             |
 | **Editor Controls**                                    |              |                          |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>       |              | Paste without formatting |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>D</kbd>         |              | Toggle editor focus mode |
+| <kbd>Mod</kbd> + <kbd>D</kbd>                          |              | Toggle editor focus mode |
 | <kbd>Escape</kbd>                                      |              | Remove focus from editor |
 
 </details>

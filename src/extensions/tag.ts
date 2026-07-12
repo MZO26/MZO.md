@@ -78,13 +78,16 @@ const NoteTag = Node.create<NoteTagOptions>({
     start: "#",
     tokenize(src: string) {
       const match = src.match(/^#([\p{L}\p{N}_-]+)/u);
-      const text = match?.[1]?.trim();
-      if (!match || !text) return undefined;
+      if (!match) return undefined;
+      const text = typeof match[1] === "string" ? match[1].trim() : "";
+      if (!text) {
+        return undefined;
+      }
       return { type: "noteTag", raw: match[0], text };
     },
   },
   parseMarkdown(token, helpers) {
-    const id = normalizeTagId(token.text ?? "");
+    const id = normalizeTagId(token.text ?? "").trim();
     if (!id) {
       return helpers.createTextNode(token.raw ?? "");
     }

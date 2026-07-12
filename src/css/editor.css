@@ -184,28 +184,6 @@
   cursor: pointer;
 }
 
-.ProseMirror .annotation {
-  color: var(--text-muted);
-  font-style: italic;
-  text-decoration: none;
-  background: transparent;
-  border-radius: 4px;
-  padding: 0 0.1em;
-  opacity: 0.92;
-  transition:
-    color 0.2s ease,
-    opacity 0.2s ease;
-}
-
-.ProseMirror .annotation:hover {
-  opacity: 1;
-}
-
-.ProseMirror .annotation.has-focus,
-.ProseMirror .annotation:focus-visible {
-  outline: none;
-}
-
 .ProseMirror a:hover,
 .wikilink-preview-content a:hover {
   opacity: 0.8;

@@ -1,9 +1,9 @@
 import db from "@electron/db/database";
 import { writeAtomic } from "@electron/fs/fs-atomic-write";
 import { getFilePath, sanitizeExportString } from "@electron/fs/fs-helpers";
+import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import { store } from "@electron/store";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import {
@@ -24,12 +24,13 @@ import fs from "fs/promises";
 import path from "path";
 
 async function isAutoExport(id: string) {
+  const settings = settingsService.getSettings();
   const validatedData = validation(IdSchema, id);
   const note = db.getOldNotes([validatedData]);
   if (!note[0]) return false;
-  const enabled = store.get("auto-export") ?? false;
+  const enabled = settings["auto_export"] ?? false;
   if (!enabled) return false;
-  const targetDir = (enabled && store.get("auto-export-path")) ?? null;
+  const targetDir = (enabled && settings["auto_export_path"]) ?? null;
   if (!targetDir) return false;
   const exportPath = resolveAutoExportPath(targetDir);
   const absoluteFilePath = getFilePath(exportPath, {

@@ -87,7 +87,7 @@ async function exportSelection(selectedIds: string[]) {
     );
     return;
   }
-  const exportFormat = settingsStore.get("export-format") ?? "md";
+  const exportFormat = settingsStore.get("export_format") ?? "md";
   const exportContent = await getBatchExportContent(
     exportResult.data,
     exportFormat,

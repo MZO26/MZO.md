@@ -88,13 +88,13 @@ function initAppearanceSettings(
 
   document.documentElement.setAttribute(
     "data-code-theme",
-    settings["code-theme"],
+    settings["code_theme"],
   );
-  codeThemeSelect.value = settings["code-theme"];
+  codeThemeSelect.value = settings["code_theme"];
   codeThemeSelect.addEventListener("change", () => {
     const baseTheme = resolveTheme(themeSelect.value as Theme);
     const codePref = setCodeTheme(baseTheme);
-    updateSettings({ "code-theme": codePref });
+    updateSettings({ code_theme: codePref });
   });
 
   // theme
@@ -111,7 +111,7 @@ function initAppearanceSettings(
       }
       updateSettings({
         theme: result.data.theme,
-        "code-theme": result.data.codeTheme,
+        code_theme: result.data.codeTheme,
       });
     }),
   );
@@ -134,15 +134,15 @@ function initAppearanceSettings(
 
   // note item display
 
-  sidebar.setAttribute("data-noteItem", settings["note-item-display"]);
-  noteItemSelect.value = settings["note-item-display"];
+  sidebar.setAttribute("data-noteItem", settings["note_item_display"]);
+  noteItemSelect.value = settings["note_item_display"];
   noteItemSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement | null;
       if (!target) return;
       updateSettings({
-        "note-item-display": target.value as NoteItemDisplay,
+        note_item_display: target.value as NoteItemDisplay,
       });
       sidebar.setAttribute("data-noteItem", target.value);
       noteStore.setState({ sidebarChange: { type: "reload" } });
@@ -189,13 +189,13 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
     }
   };
 
-  applyFont(settings["font-family"]);
+  applyFont(settings["font_family"]);
   fontFamilySelect.addEventListener("change", (e) => {
     const target = e.target as HTMLSelectElement | null;
     if (!target) return;
     const newFont = target.value;
     applyFont(newFont);
-    updateSettings({ "font-family": newFont as FontFamily });
+    updateSettings({ font_family: newFont as FontFamily });
   });
 
   // editor font size
@@ -211,13 +211,13 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
     }
   };
 
-  applySize(settings["font-size"]);
+  applySize(settings["font_size"]);
   fontSizeSelect.addEventListener("change", (e) => {
     const target = e.target as HTMLSelectElement | null;
     if (!target) return;
     const newSize = target.value;
     applySize(newSize);
-    updateSettings({ "font-size": String(newSize) as FontSize });
+    updateSettings({ font_size: String(newSize) as FontSize });
   });
 
   // editor line height
@@ -233,13 +233,13 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
     }
   };
 
-  applyLineHeight(settings["line-height"]);
+  applyLineHeight(settings["line_height"]);
   lineHeightSelect.addEventListener("change", (e) => {
     const target = e.target as HTMLSelectElement | null;
     if (!target) return;
     const newHeight = target.value;
     applyLineHeight(newHeight);
-    updateSettings({ "line-height": String(newHeight) as LineHeight });
+    updateSettings({ line_height: String(newHeight) as LineHeight });
   });
 
   // spellcheck
@@ -274,25 +274,25 @@ function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
 
   // file backup
 
-  exportFormatSelect.value = settings["export-format"];
+  exportFormatSelect.value = settings["export_format"];
   exportFormatSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
       const target = e.target as HTMLSelectElement | null;
       if (!target) return;
       const selectedExtension = target.value as ExportFormat;
-      updateSettings({ "export-format": selectedExtension });
+      updateSettings({ export_format: selectedExtension });
     }),
   );
 
   // auto export setting
-  const autoExportPath = settings["auto-export-path"];
+  const autoExportPath = settings["auto_export_path"];
   autoExportSelect.setAttribute("data-tippy-dynamic", "");
   autoExportSelect.setAttribute(
     "data-tippy-content",
     autoExportPath ? `Path: ${autoExportPath}` : "No path selected.",
   );
-  autoExportSelect.value = settings["auto-export"] ? "true" : "false";
+  autoExportSelect.value = settings["auto_export"] ? "true" : "false";
   autoExportSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
@@ -307,15 +307,15 @@ function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
             return;
           }
           updateSettings({
-            "auto-export": true,
-            "auto-export-path": result.data,
+            auto_export: true,
+            auto_export_path: result.data,
           });
           autoExportSelect.setAttribute(
             "data-tippy-content",
             `Path: ${result.data}`,
           );
         } else {
-          updateSettings({ "auto-export": false, "auto-export-path": null });
+          updateSettings({ auto_export: false, auto_export_path: null });
           autoExportSelect.setAttribute(
             "data-tippy-content",
             "No path selected.",

@@ -4,13 +4,13 @@ import {
   resolveAutoExportPath,
 } from "@electron/fs/fs-auto-export";
 import { handleImageWriteMany } from "@electron/fs/fs-image";
+import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
   checkRateLimit,
   result,
   validation,
 } from "@electron/ipc/ipc-validation";
-import { store } from "@electron/store";
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
@@ -68,9 +68,10 @@ function registerElectronIpc(win: BrowserWindow) {
       if (!checkRateLimit("open:default-editor", LIMITS.READ_LIGHT)) {
         throw new AppBackendError(AppErrorCode.RateLimitError);
       }
-      if (store.get("auto-export") !== true) return false;
+      const settings = settingsService.getSettings();
+      if (settings["auto_export"] !== true) return false;
       const validatedData = validation(OpenAutoExportPathSchema, payload);
-      const targetDir = store.get("auto-export-path");
+      const targetDir = settings["auto_export_path"];
       if (!targetDir) return false;
       const filePath = getFilePath(targetDir, validatedData);
       const error = await shell.openPath(filePath);
@@ -83,10 +84,11 @@ function registerElectronIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("open:auto-export-folder", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      if (store.get("auto-export") !== true) return null;
+      const settings = settingsService.getSettings();
+      if (settings["auto_export"] !== true) return null;
       const validatedData = validation(OpenAutoExportPathSchema, payload);
       if (!validatedData.updated_at) return null;
-      const targetDir = store.get("auto-export-path");
+      const targetDir = settings["auto_export_path"];
       if (!targetDir) return null;
       const autoExportPath = resolveAutoExportPath(targetDir);
       await fs.mkdir(autoExportPath, { recursive: true }).catch(() => {
@@ -110,10 +112,11 @@ function registerElectronIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("get:auto-export-path", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      if (store.get("auto-export") !== true) return null;
+      const settings = settingsService.getSettings();
+      if (settings["auto_export"] !== true) return null;
       const validatedData = validation(OpenAutoExportPathSchema, payload);
       if (!validatedData.updated_at) return null;
-      const targetDir = store.get("auto-export-path");
+      const targetDir = settings["auto_export_path"];
       if (!targetDir) return null;
       const autoExportPath = resolveAutoExportPath(targetDir);
       await fs.mkdir(autoExportPath, { recursive: true }).catch(() => {

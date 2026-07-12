@@ -175,6 +175,7 @@ type Note = z.infer<typeof NoteSchema>;
 
 export {
   AutoExportWritePayloadSchema,
+  BooleanSchema,
   CreateNotePayloadSchema,
   CreateNotesPayloadsSchema,
   CreateTransactionSchema,

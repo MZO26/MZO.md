@@ -17,7 +17,7 @@ function createNoteItem(note: NoteListItem) {
   cachedNoteItem ??= getTemplateItem("noteItemTemplate").content
     .firstElementChild as HTMLDivElement;
   const item = cachedNoteItem.cloneNode(true) as HTMLDivElement;
-  const display = settingsStore.get("note-item-display");
+  const display = settingsStore.get("note_item_display");
   item.setAttribute("data-id", note.id);
   item.setAttribute("data-pinned", String(!!note.pinned));
   item.setAttribute("data-tippy-content", note.title);
