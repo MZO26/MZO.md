@@ -13,6 +13,7 @@ import {
 import {
   initMetadataToolbar,
   initTopToolbar,
+  setToolbarCollapsed,
   TOOLBAR_ACTIONS,
   TOP_TOOLBAR_ACTIONS,
 } from "@/components/toolbar/toolbar-features";
@@ -64,4 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initEditorSearch(editor);
   handleSidebarEmptyState();
   handleEditorEmptyState(stateStore.getState().activeId);
+  if (settings["toolbar_collapsed"] === true) {
+    await setToolbarCollapsed(true);
+  }
 });

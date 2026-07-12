@@ -15,6 +15,7 @@ const StoreSchema = z.object({
   code_theme: z.enum(["focus", "balanced", "colorless"]).catch("balanced"),
   highlight: z.enum(["context", "insight", "action"]).catch("context"),
   note_item_display: z.enum(["preview", "tags", "minimal"]).catch("preview"),
+  toolbar_collapsed: z.boolean().catch(false),
   window_bounds: z
     .object({
       width: z.number().min(800).catch(800),
@@ -55,6 +56,7 @@ const StoreRowSchema = z.object({
   code_theme: StoreSchema.shape["code_theme"],
   highlight: StoreSchema.shape.highlight,
   note_item_display: StoreSchema.shape["note_item_display"],
+  toolbar_collapsed: DBBooleanSchema,
   window_bounds: DBWindowBoundsSchema,
   active_tag: StoreSchema.shape["active_tag"],
 });
@@ -73,6 +75,9 @@ const StoreToRowSchema = z.object({
   code_theme: StoreSchema.shape["code_theme"],
   highlight: StoreSchema.shape.highlight,
   note_item_display: StoreSchema.shape["note_item_display"],
+  toolbar_collapsed: StoreSchema.shape["toolbar_collapsed"].transform((val) =>
+    val ? 1 : 0,
+  ),
   window_bounds: StoreSchema.shape["window_bounds"].transform((val) =>
     JSON.stringify(val),
   ),

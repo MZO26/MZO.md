@@ -113,6 +113,7 @@ class AppDB {
       "code_theme" = @code_theme,
       "highlight" = @highlight,
       "note_item_display" = @note_item_display,
+      "toolbar_collapsed" = @toolbar_collapsed,
       "window_bounds" = @window_bounds,
       "active_tag" = @active_tag
       WHERE id = 1
@@ -179,6 +180,7 @@ class AppDB {
       code_theme TEXT NOT NULL DEFAULT 'balanced',
       highlight TEXT NOT NULL DEFAULT 'context',
       note_item_display TEXT NOT NULL DEFAULT 'preview',
+      toolbar_collapsed INTEGER NOT NULL DEFAULT 0,
       window_bounds TEXT NOT NULL DEFAULT '{"width":800,"height":500}',
       active_tag TEXT
     );

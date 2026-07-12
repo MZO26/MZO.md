@@ -102,20 +102,22 @@ const WikiLink = Node.create<WikiLinkOptions>({
     },
   },
 
-  parseMarkdown(token, helpers) {
+  parseMarkdown(token, _helpers) {
     const text = String(token.text ?? "").trim();
-    if (!text) return helpers.createTextNode(token.raw || "");
+    if (!text) {
+      return { type: "text", text: token.raw || "" };
+    }
     if (EXACT_UUID_REGEX.test(text)) {
-      return helpers.createNode("wikilink", { id: text });
+      return { type: "wikilink", attrs: { id: text } };
     }
     const normalizedText = text.toLowerCase();
     const foundNote = noteStore
       .get("notes")
       .find((n) => n.title.toLowerCase().trim() === normalizedText);
     if (foundNote) {
-      return helpers.createNode("wikilink", { id: foundNote.id });
+      return { type: "wikilink", attrs: { id: foundNote.id } };
     }
-    return helpers.createTextNode(token.raw || "");
+    return { type: "text", text: token.raw || "" };
   },
   renderText({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();

@@ -112,6 +112,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   code_theme: "balanced",
   highlight: "context",
   note_item_display: "preview",
+  toolbar_collapsed: false,
   window_bounds: { width: 800, height: 500 },
   active_tag: null,
 };

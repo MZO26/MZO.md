@@ -86,12 +86,12 @@ const NoteTag = Node.create<NoteTagOptions>({
       return { type: "noteTag", raw: match[0], text };
     },
   },
-  parseMarkdown(token, helpers) {
+  parseMarkdown(token, _helpers) {
     const id = normalizeTagId(token.text ?? "").trim();
     if (!id) {
-      return helpers.createTextNode(token.raw ?? "");
+      return { type: "text", text: token.raw ?? "" };
     }
-    return helpers.createNode("noteTag", { id });
+    return { type: "noteTag", attrs: { id } };
   },
   renderMarkdown(node) {
     const id = normalizeTagId(node.attrs?.["id"] ?? "");

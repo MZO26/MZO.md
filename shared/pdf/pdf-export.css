@@ -91,18 +91,6 @@
   font-weight: normal;
 }
 
-.ProseMirror h1,
-.ProseMirror h2,
-.ProseMirror h3,
-.ProseMirror h4,
-.ProseMirror h5,
-.ProseMirror h6 {
-  page-break-inside: avoid;
-  break-inside: avoid;
-  page-break-after: avoid;
-  break-after: avoid;
-}
-
 .ProseMirror p {
   font-size: 11pt;
   line-height: 1.6;
@@ -126,8 +114,6 @@
   border-top: 1px solid #cccccc;
   border-radius: 0;
   margin: 1.25em 0;
-  page-break-after: avoid;
-  break-after: avoid;
 }
 
 .ProseMirror blockquote {
@@ -136,8 +122,6 @@
   border-left: 3px solid #aaaaaa;
   color: #555555;
   font-style: italic;
-  page-break-inside: avoid;
-  break-inside: avoid;
 }
 
 .ProseMirror blockquote p {
@@ -176,8 +160,8 @@
   font-size: 9pt;
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  page-break-inside: avoid;
-  break-inside: avoid;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .ProseMirror pre code {
@@ -198,8 +182,6 @@
   display: block;
   margin: 1em auto;
   border: 1px solid #dddddd;
-  page-break-inside: avoid;
-  break-inside: avoid;
 }
 
 .ProseMirror mark {
@@ -294,16 +276,6 @@
 .ProseMirror .tableWrapper {
   margin: 1.25em 0;
   overflow: visible;
-  page-break-inside: avoid;
-  break-inside: avoid;
-}
-
-.ProseMirror hr.ProseMirror-pagebreak,
-.ProseMirror .page-break {
-  page-break-after: always;
-  break-after: page;
-  border: none;
-  height: 0;
 }
 
 .ProseMirror table {
@@ -338,16 +310,6 @@
 .ProseMirror td p,
 .ProseMirror th p {
   margin-bottom: 0;
-}
-
-.ProseMirror .annotation {
-  color: #71717a;
-  font-style: italic;
-  text-decoration: none;
-  background: transparent;
-  border-radius: 4px;
-  padding: 0 0.1em;
-  opacity: 0.92;
 }
 
 .ProseMirror .tag-node {
@@ -390,12 +352,35 @@
     print-color-adjust: exact;
   }
 
-  .ProseMirror thead {
-    display: table-header-group;
+  .ProseMirror h1,
+  .ProseMirror h2,
+  .ProseMirror h3,
+  .ProseMirror h4,
+  .ProseMirror h5,
+  .ProseMirror h6 {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    page-break-after: avoid;
+    break-after: avoid;
   }
 
+  .ProseMirror hr {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .ProseMirror blockquote,
+  .ProseMirror pre,
+  .ProseMirror img,
+  .ProseMirror li,
+  .ProseMirror details,
+  .ProseMirror .tableWrapper,
   .ProseMirror tr {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  .ProseMirror thead {
+    display: table-header-group;
   }
 }

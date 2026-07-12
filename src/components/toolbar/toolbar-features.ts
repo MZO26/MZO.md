@@ -1,4 +1,4 @@
-import { pinWindow, setTheme } from "@/api/api";
+import { pinWindow, setTheme, updateSettings } from "@/api/api";
 import {
   applyTagView,
   createInfoSpan,
@@ -101,19 +101,18 @@ function initFocusMode() {
   });
 }
 
-function toggleToolbar() {
+async function setToolbarCollapsed(collapsed: boolean) {
   const appContainer = getAppItem("appContainer");
-  const newState = !appContainer.classList.contains("toolbar-collapsed");
   const isFocus = appContainer.classList.contains("focus");
-  requestAnimationFrame(() => {
-    appContainer.classList.toggle("toolbar-collapsed", newState);
+  requestAnimationFrame(async () => {
+    appContainer.classList.toggle("toolbar-collapsed", collapsed);
     if (isFocus) return;
-    setTheme(
+    await setTheme(
       document.documentElement.getAttribute("data-theme") as Exclude<
         Theme,
         "system"
       >,
-      newState,
+      collapsed,
     ).catch((error: unknown) => {
       console.error(
         "[initFocusMode -> setTheme]: Failed to sync theme with main process.",
@@ -121,6 +120,13 @@ function toggleToolbar() {
       );
     });
   });
+}
+
+async function toggleToolbar() {
+  const appContainer = getAppItem("appContainer");
+  const newState = !appContainer.classList.contains("toolbar-collapsed");
+  await setToolbarCollapsed(newState);
+  updateSettings({ toolbar_collapsed: newState });
 }
 
 function openMetadataContainer() {
@@ -442,6 +448,7 @@ export {
   initTopToolbar,
   renderLinks,
   renderTags,
+  setToolbarCollapsed,
   TOOLBAR_ACTIONS,
   TOP_TOOLBAR_ACTIONS,
 };

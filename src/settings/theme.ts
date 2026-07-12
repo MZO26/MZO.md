@@ -1,5 +1,6 @@
 import { setTheme } from "@/api/api";
 import { findElement } from "@/utils/dom";
+import { getAppItem } from "@/utils/registry";
 import { CODE_THEME_MAP, THEME_MAP } from "@shared/constants";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import type { ResolvedTheme, Result, ThemeResult } from "@shared/types";
@@ -15,7 +16,10 @@ function resolveTheme(theme: Theme): ResolvedTheme {
 
 async function applyAppTheme(preference: Theme): Promise<Result<ThemeResult>> {
   const codePreference = setCodeTheme(resolveTheme(preference));
-  const result = await setTheme(preference);
+  const focus = getAppItem("appContainer").matches(
+    ".focus, .toolbar-collapsed",
+  );
+  const result = await setTheme(preference, focus);
   if (!result.success) {
     console.error("[applyAppTheme]: Failed to apply theme:", result.error);
     return { success: false, error: result.error };
