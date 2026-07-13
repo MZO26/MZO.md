@@ -5,6 +5,7 @@ import {
 } from "@/components/sidebar/sidebar-features";
 import { createDivider } from "@/components/toolbar/toolbar-factory";
 import { promptImageUpload } from "@/extensions/image/image";
+import { openMathDialog } from "@/extensions/overrides/mathematics";
 import { handleSelectNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { createAsyncHandler } from "@/utils/async";
@@ -342,6 +343,23 @@ const TOOLBAR_ACTIONS: ActionMap = {
     icon: "highlighter",
     shortcut: "MOD+H | ==text==",
   },
+  mathInline: {
+    run: (editor) => {
+      if (!editor) return;
+      const { from, to, empty } = editor.state.selection;
+      const selectedText = empty
+        ? ""
+        : editor.state.doc.textBetween(from, to, "");
+      openMathDialog(editor, {
+        mode: "insert",
+        type: "inline",
+        initialValue: selectedText,
+      });
+    },
+    isActive: (editor) => editor?.isActive("inlineMath"),
+    icon: "sigma",
+    shortcut: "MOD+Shift+E | $math$",
+  },
   divider2: { type: "divider" },
   heading1: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
@@ -405,6 +423,19 @@ const TOOLBAR_ACTIONS: ActionMap = {
     icon: "code-xml",
     shortcut: "MOD+Shift+C | ``` + Space",
   },
+  mathBlock: {
+    run: (editor) => {
+      if (!editor) return;
+      openMathDialog(editor, {
+        mode: "insert",
+        type: "block",
+        initialValue: "",
+      });
+    },
+    isActive: (editor) => editor?.isActive("blockMath"),
+    icon: "function-square",
+    shortcut: "MOD+Shift+M || $$math$$",
+  },
   horizontalRule: {
     run: (editor) => editor?.chain().focus().setHorizontalRule().run(),
     isActive: (editor) => editor?.isActive("hr"),
@@ -428,7 +459,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor && promptImageUpload(editor),
     isActive: (editor) => editor?.isActive("image"),
     icon: "image",
-    shortcut: "MOD+Shift+M",
+    shortcut: "MOD+Alt+I",
   },
   table: {
     run: (editor) =>

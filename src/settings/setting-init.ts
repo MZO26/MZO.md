@@ -7,7 +7,7 @@ import {
 } from "@/api/api";
 import { exportSelection } from "@/components/sidebar/sidebar-selection";
 import { noteStore } from "@/settings/app-state";
-import { initSettingsDialog } from "@/settings/dialog-init";
+import { settingsContainer, settingsDialog } from "@/settings/dialog-init";
 import {
   createSettingsMenu,
   initQuickActionContainer,
@@ -24,7 +24,6 @@ import { formatBytes } from "@/utils/ui";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 async function initAppSettings(settings: AppSettings) {
-  const { settingsDialog, settingsContainer } = initSettingsDialog();
   const buttonsContainer = createSettingsMenu();
   settingsContainer.appendChild(buttonsContainer);
   buildSelects();

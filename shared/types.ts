@@ -12,6 +12,19 @@ type NativeWindowColors = {
   overlayOptions: TitleBarOverlayOptions;
 };
 
+type MathOptions =
+  | {
+      mode: "insert";
+      type: "inline" | "block";
+      initialValue?: string;
+    }
+  | {
+      mode: "update";
+      type: "inline" | "block";
+      pos: number;
+      initialValue?: string;
+    };
+
 type TitleBarOverlayOptions = {
   color: string;
   symbolColor: string;
@@ -231,6 +244,7 @@ export type {
   FilterMode,
   ImageSrc,
   ImportedContent,
+  MathOptions,
   MenuType,
   Metadata,
   NativeWindowColors,

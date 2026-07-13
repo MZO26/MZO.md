@@ -17,6 +17,7 @@ import { Highlight } from "@/extensions/highlight";
 import { DateInputRules, InputRules } from "@/extensions/input-rules";
 import { lowlight } from "@/extensions/lowlight";
 import { CustomHeading } from "@/extensions/overrides/headings";
+import { handleMathClick } from "@/extensions/overrides/mathematics";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { initTableOfContents } from "@/extensions/tableOfContents";
 import { NoteTag } from "@/extensions/tag";
@@ -34,6 +35,7 @@ import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
+import Mathematics from "@tiptap/extension-mathematics";
 import {
   Table,
   TableCell,
@@ -48,6 +50,7 @@ import {
 } from "@tiptap/extensions";
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
+import "katex/dist/katex.min.css";
 
 let editor: Editor | null = null;
 
@@ -208,6 +211,40 @@ function getNoteEditorExtensions() {
       defaultLanguage: "plaintext",
       HTMLAttributes: {
         spellcheck: "false",
+      },
+    }),
+    Mathematics.configure({
+      inlineOptions: {
+        onClick: handleMathClick,
+      },
+      blockOptions: {
+        onClick: handleMathClick,
+      },
+      katexOptions: {
+        output: "htmlAndMathml",
+        maxExpand: 500,
+        maxSize: 12,
+        trust: false,
+        throwOnError: false,
+        macros: {
+          "\\R": "\\mathbb{R}",
+          "\\N": "\\mathbb{N}",
+          "\\Z": "\\mathbb{Z}",
+          "\\Q": "\\mathbb{Q}",
+          "\\C": "\\mathbb{C}",
+          "\\P": "\\mathbb{P}",
+          "\\E": "\\mathbb{E}",
+          "\\Var": "\\operatorname{Var}",
+          "\\Cov": "\\operatorname{Cov}",
+          "\\Prob": "\\operatorname{P}",
+          "\\dd": "\\,\\mathrm{d}",
+          "\\dx": "\\,\\mathrm{d}x",
+          "\\dy": "\\,\\mathrm{d}y",
+          "\\dz": "\\,\\mathrm{d}z",
+          "\\abs": "\\left|#1\\right|",
+          "\\norm": "\\left\\lVert#1\\right\\rVert",
+          "\\set": "\\left\\{#1\\right\\}",
+        },
       },
     }),
   ];

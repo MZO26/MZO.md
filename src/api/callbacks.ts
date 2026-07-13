@@ -14,15 +14,11 @@ import {
 } from "@/components/sidebar/sidebar-triggers";
 import { debouncedSaveNote, handleSaveNote } from "@/notes/note-actions";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
-import { initDeleteDialog, initSyncDialog } from "@/settings/dialog-init";
 import type { NoteMenuPayload } from "@shared/types";
 
 //-------------------------------------------------------
 
 // helper functions for callbacks
-
-export const { deleteDialog } = initDeleteDialog();
-export const { syncDialog } = initSyncDialog();
 
 async function ensureNoteSaved(id: string) {
   const note = noteStore.get("notes").find((n) => n.id === id);

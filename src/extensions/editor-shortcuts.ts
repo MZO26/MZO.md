@@ -2,6 +2,7 @@ import { openExternal } from "@/api/api";
 import { promptImageUpload } from "@/extensions/image/image";
 import { Extension } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
+import { openMathDialog } from "./overrides/mathematics";
 
 export const MasterShortcuts = Extension.create({
   name: "masterShortcuts",
@@ -16,6 +17,14 @@ export const MasterShortcuts = Extension.create({
       "Mod-s": () => this.editor.commands.toggleStrike(),
       "Mod-h": () => this.editor.commands.toggleHighlight(),
       "Mod-e": () => this.editor.commands.toggleCode(),
+      "Mod-Shift-e": () => {
+        openMathDialog(this.editor, {
+          mode: "insert",
+          type: "inline",
+          initialValue: "",
+        });
+        return true;
+      },
       "Mod-Shift-1": () => this.editor.commands.toggleHeading({ level: 1 }),
       "Mod-Shift-2": () => this.editor.commands.toggleHeading({ level: 2 }),
       "Mod-Shift-3": () => this.editor.commands.toggleHeading({ level: 3 }),
@@ -35,8 +44,16 @@ export const MasterShortcuts = Extension.create({
           cols: 3,
           withHeaderRow: true,
         }),
-      "Mod-Shift-m": () => {
+      "Mod-Alt-i": () => {
         promptImageUpload(this.editor);
+        return true;
+      },
+      "Mod-Shift-m": () => {
+        openMathDialog(this.editor, {
+          mode: "insert",
+          type: "block",
+          initialValue: "",
+        });
         return true;
       },
       "Mod-Alt-ArrowDown": () => this.editor.commands.addRowAfter(),

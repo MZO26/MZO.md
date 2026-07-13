@@ -106,6 +106,7 @@
   padding: 10px;
 }
 
+.math-dialog,
 .quick-switch-dialog,
 .delete-dialog,
 .sync-dialog {
@@ -129,6 +130,7 @@
     overlay 0.3s allow-discrete;
 }
 
+.math-dialog[open],
 .quick-switch-dialog[open],
 .settings-modal[open],
 .delete-dialog[open],
@@ -139,6 +141,7 @@
 }
 
 @starting-style {
+  .math-dialog[open],
   .quick-switch-dialog[open],
   .settings-modal[open],
   .delete-dialog[open],
@@ -150,6 +153,7 @@
 }
 
 @starting-style {
+  .math-dialog[open]::backdrop,
   .settings-modal[open]::backdrop,
   .delete-dialog[open]::backdrop,
   .sync-dialog[open]::backdrop,
@@ -159,6 +163,7 @@
   }
 }
 
+.math-dialog::backdrop,
 .quick-switch-dialog::backdrop,
 .settings-modal::backdrop,
 .delete-dialog::backdrop,
@@ -174,6 +179,7 @@
     overlay 0.3s allow-discrete;
 }
 
+.math-dialog[open]::backdrop,
 .settings-modal[open]::backdrop,
 .delete-dialog[open]::backdrop,
 .sync-dialog[open]::backdrop,
@@ -182,6 +188,7 @@
   visibility: visible;
 }
 
+.math-dialog-form,
 .delete-dialog-form,
 .sync-dialog-form,
 .quick-switch-dialog-form {
@@ -190,6 +197,7 @@
   position: relative;
 }
 
+.math-close-btn,
 .quick-switch-close-btn,
 .delete-close-btn,
 .sync-close-btn {
@@ -214,6 +222,7 @@
   right: 10px;
 }
 
+.math-close-btn:hover,
 .quick-switch-close-btn:hover,
 .delete-close-btn:hover,
 .sync-close-btn:hover {
@@ -223,6 +232,7 @@
   border: none;
 }
 
+.match-close-icon,
 .quick-switch-close-icon,
 .delete-close-icon,
 .sync-close-icon {
@@ -230,6 +240,7 @@
   height: 18px;
 }
 
+.math-dialog-header,
 .delete-dialog-header,
 .sync-dialog-header {
   display: flex;
@@ -248,6 +259,7 @@
   font-weight: 700;
 }
 
+.math-dialog-content,
 .delete-dialog-content,
 .sync-dialog-content {
   display: flex;
@@ -258,6 +270,7 @@
   gap: 16px;
 }
 
+.math-dialog-description,
 .delete-dialog-description,
 .sync-dialog-description {
   text-align: center;
@@ -266,6 +279,7 @@
   color: var(--text-muted);
 }
 
+.math-confirm-btn,
 .delete-confirm-btn,
 .sync-confirm-btn {
   width: 100%;
@@ -278,6 +292,29 @@
   font-weight: 600;
   font-size: 14px;
   transition: background-color 0.2s ease;
+}
+
+#math-input {
+  width: 100%;
+  max-height: 40vh;
+  min-height: 20vh;
+  background-color: var(--bg-sidebar);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: "Fira Code", "JetBrains Mono", "Courier New", monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  resize: vertical;
+  field-sizing: content;
+  overflow-y: auto;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+#math-input:focus {
+  border-color: var(--text-muted);
 }
 
 .delete-confirm-btn:hover,

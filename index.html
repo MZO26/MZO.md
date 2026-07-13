@@ -214,6 +214,37 @@
         </div>
       </form>
     </dialog>
+    <dialog id="math-dialog" class="math-dialog">
+      <form method="dialog" class="math-dialog-form" novalidate>
+        <button
+          class="math-close-btn"
+          data-tippy-content="Close"
+          data-shortcut="Escape"
+          value="cancel"
+        >
+          <i data-lucide="x" class="math-close-icon">X</i>
+        </button>
+        <div class="math-dialog-header">
+          <span class="math-dialog-title">Edit Math</span>
+        </div>
+        <div class="math-dialog-content">
+          <p class="math-dialog-description">Edit Math Content</p>
+          <textarea
+            id="math-input"
+            spellcheck="false"
+            autocorrect="off"
+            autocapitalize="off"
+          ></textarea>
+          <button
+            value="confirm"
+            class="math-confirm-btn"
+            id="confirm-math-btn"
+          >
+            Update Note
+          </button>
+        </div>
+      </form>
+    </dialog>
     <dialog class="settings-modal">
       <form method="dialog" novalidate>
         <div class="settings-quick-actions"></div>

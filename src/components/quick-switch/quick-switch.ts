@@ -5,21 +5,19 @@ import {
   restoreSidebarScope,
   stateStore,
 } from "@/settings/app-state";
-import { initQuickSwitchDialog } from "@/settings/dialog-init";
+import { listEl, switchDialog } from "@/settings/dialog-init";
 import { getAppItem } from "@/utils/registry";
 import { initTippyDelegate } from "@/utils/ui";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 
-const { dialogEl, listEl } = initQuickSwitchDialog();
-
 function initQuickSwitcher() {
-  initTippyDelegate(dialogEl, dialogEl);
+  initTippyDelegate(switchDialog, switchDialog);
   const editor = getAppItem("editor");
   let activeIndex = 0;
   let currentDisplayNotes: Pick<NoteListItem, "id" | "title">[] = [];
   function toggleSwitcher() {
-    if (dialogEl.open) {
-      dialogEl.close();
+    if (switchDialog.open) {
+      switchDialog.close();
       return;
     }
     const { recentNotes, noteIndex } = noteStore.getState();
@@ -37,7 +35,7 @@ function initQuickSwitcher() {
     if (editor.isFocused) {
       editor.commands.blur();
     }
-    dialogEl.showModal();
+    switchDialog.showModal();
     renderTitleList();
   }
 
@@ -85,7 +83,7 @@ function initQuickSwitcher() {
 
   function selectActive() {
     const activeNote = currentDisplayNotes[activeIndex];
-    dialogEl.close();
+    switchDialog.close();
     if (!activeNote || stateStore.get("activeId") === activeNote.id) {
       return;
     }
@@ -94,7 +92,7 @@ function initQuickSwitcher() {
   }
 
   function handleListKeydown(event: KeyboardEvent) {
-    if (!dialogEl.open) return;
+    if (!switchDialog.open) return;
     const isModifierPressed = event.metaKey || event.ctrlKey;
     switch (event.key) {
       case "ArrowDown":

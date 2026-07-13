@@ -8,12 +8,15 @@ import {
   showNotification,
   syncRequest,
 } from "@/api/api";
-import { deleteDialog, syncDialog } from "@/api/callbacks";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote } from "@/notes/note-actions";
 import { handleDuplicateNote } from "@/notes/note-duplicate";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
-import { confirmWithDialog } from "@/settings/dialog-init";
+import {
+  confirmWithDialog,
+  deleteDialog,
+  syncDialog,
+} from "@/settings/dialog-init";
 import { findElement, requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";

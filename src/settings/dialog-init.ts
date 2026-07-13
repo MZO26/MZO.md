@@ -21,9 +21,16 @@ function initSyncDialog() {
 }
 
 function initQuickSwitchDialog() {
-  const dialogEl = requireElement<HTMLDialogElement>(".quick-switch-dialog");
+  const switchDialog = requireElement<HTMLDialogElement>(
+    ".quick-switch-dialog",
+  );
   const listEl = requireElement<HTMLDivElement>(".quick-switch-list");
-  return { dialogEl, listEl };
+  return { switchDialog, listEl };
+}
+
+function initMathDialog() {
+  const mathDialog = requireElement<HTMLDialogElement>(".math-dialog");
+  return { mathDialog };
 }
 
 function confirmWithDialog(
@@ -43,9 +50,16 @@ function confirmWithDialog(
   });
 }
 
+export const { deleteDialog } = initDeleteDialog();
+export const { syncDialog } = initSyncDialog();
+export const { settingsDialog, settingsContainer } = initSettingsDialog();
+export const { switchDialog, listEl } = initQuickSwitchDialog();
+export const { mathDialog } = initMathDialog();
+
 export {
   confirmWithDialog,
   initDeleteDialog,
+  initMathDialog,
   initQuickSwitchDialog,
   initSettingsDialog,
   initSyncDialog,

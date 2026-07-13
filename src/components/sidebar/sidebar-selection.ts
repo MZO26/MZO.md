@@ -5,7 +5,6 @@ import {
   pinMany,
   showNotification,
 } from "@/api/api";
-import { deleteDialog } from "@/api/callbacks";
 import {
   setSelectionMode,
   updateSelectionUI,
@@ -13,7 +12,7 @@ import {
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
-import { confirmWithDialog } from "@/settings/dialog-init";
+import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
 import { requireElement } from "@/utils/dom";
 
 // sidebar footer selection mode

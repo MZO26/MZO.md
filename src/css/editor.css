@@ -417,22 +417,30 @@
   border-radius: 4px;
   display: block;
   margin: 1em 0;
-  object-fit: cover;
+  height: auto;
+}
+
+.ProseMirror-selectednode img {
+  outline: 2px solid var(--tag-color);
+  outline-offset: 2px;
 }
 
 .ProseMirror [data-resize-handle] {
   opacity: 0;
   pointer-events: none;
   position: absolute;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
+  width: 6px;
+  height: 24px;
+  border-radius: 4px;
+  top: 50%;
+  transform: translateY(-50%);
   background-color: var(--bg-sidebar);
   border: 2px solid var(--border-color);
   z-index: 1;
   transition:
     background-color 0.2s ease,
-    opacity 0.2s ease-in-out;
+    opacity 0.2s ease-in-out,
+    transform 0.15s ease;
 }
 
 .ProseMirror *:has(> [data-resize-handle]):hover > [data-resize-handle] {
@@ -441,7 +449,8 @@
 }
 
 .ProseMirror [data-resize-handle]:hover {
-  background-color: var(--accent-hover);
+  background-color: var(--tag-color);
+  border-color: var(--tag-color);
 }
 
 .ProseMirror .is-resizing [data-resize-handle] {
@@ -786,4 +795,40 @@
   color: var(--text-muted);
   pointer-events: none;
   user-select: none;
+}
+
+.ProseMirror .math-inline {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 0 2px;
+  line-height: 1;
+  color: var(--text-main);
+  transition: background-color 0.2s ease;
+}
+
+.ProseMirror .math-block {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: var(--bg-sidebar-section);
+  border-radius: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  color: var(--text-main);
+}
+
+.ProseMirror .math-inline:focus,
+.ProseMirror .math-block:focus,
+.ProseMirror .has-focus .math-inline,
+.ProseMirror .has-focus .math-block {
+  outline: none;
+  background-color: var(--selection-bg);
+  border-radius: 3px;
+}
+
+.katex {
+  font-size: 1.05em;
+  line-height: 1.2;
 }

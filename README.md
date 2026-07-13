@@ -107,6 +107,7 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | <kbd>Mod</kbd> + <kbd>S</kbd>                          | `~~text~~`   | Strikethrough            |
 | <kbd>Mod</kbd> + <kbd>H</kbd>                          | `==text==`   | Highlight                |
 | <kbd>Mod</kbd> + <kbd>E</kbd>                          | `` `code` `` | Inline code              |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>       | `$math$`     | Inline Math              |
 | **Headings & Paragraphs**                              |              |                          |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd>       | `# `         | Heading 1                |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>2</kbd>       | `## `        | Heading 2                |
@@ -124,13 +125,14 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 | **Blocks & Elements**                                  |              |                          |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>       | `> `         | Blockquote               |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>       | ` ``` `      | Code block               |
+| <kbd>Mod<kbd> + <kbd>Shift</kbd>+ <kbd>M</kbd>         | `$$math$$`   | Math block               |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>       | `---`        | Horizontal rule          |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>       |              | Details                  |
 | <kbd>Shift</kbd> + <kbd>Enter</kbd>                    |              | Hard break (`<br>`)      |
 | **Links & Media**                                      |              |                          |
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>Enter</kbd>     |              | Open Link                |
 | <kbd>Mod</kbd> + <kbd>K</kbd>                          |              | Toggle Link              |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd>       |              | Insert image             |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>I</kbd>         |              | Insert image             |
 | **Tables**                                             |              |                          |
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>         |              | Insert table             |
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>↓</kbd>         |              | Add row after            |

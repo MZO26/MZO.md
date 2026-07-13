@@ -113,6 +113,7 @@ async function createWindow() {
   }
   win = new BrowserWindow(windowConfig);
   navigationHandler(win);
+  win.webContents.openDevTools();
   win.setMenuBarVisibility(false);
   if (process.env["ELECTRON_RENDERER_URL"]) {
     win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
