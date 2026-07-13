@@ -83,16 +83,19 @@ function addActiveTagToDoc(
 }
 
 function hasNoteTag(doc: EditorDoc, tagId: string): boolean {
+  if (!doc || !Array.isArray(doc.content) || doc.content.length === 0)
+    return false;
   const normalized = tagId.trim().toLowerCase();
-  if (!normalized || !doc.content) return false;
+  if (!normalized) return false;
   const stack: JSONContent[] = [...doc.content];
   while (stack.length > 0) {
-    const node = stack.pop()!;
+    const node = stack.pop();
+    if (!node || typeof node !== "object") continue;
     if (node.type === "noteTag" && typeof node.attrs?.["id"] === "string") {
       const id = node.attrs["id"].trim().toLowerCase();
       if (id === normalized) return true;
     }
-    if (node.content) {
+    if (Array.isArray(node.content)) {
       for (const child of node.content) {
         stack.push(child);
       }
@@ -103,7 +106,7 @@ function hasNoteTag(doc: EditorDoc, tagId: string): boolean {
 
 function estimateReadingTime(wordCount: number, wpm = 238) {
   const s = Math.round((wordCount / wpm) * 60);
-  const m = Math.floor(s / 60);
+  const m = Math.round(s / 60);
   return s < 30 ? "< 1 min read" : s < 60 ? "1 min read" : `${m} min read`;
 }
 

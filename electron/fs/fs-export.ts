@@ -28,13 +28,18 @@ async function singleExport(filePath: string, data: string) {
 }
 
 async function batchExport(folder: string, payload: ExportedContent[]) {
+  const absoluteTargetFolder = path.resolve(folder);
   await fs.mkdir(folder, { recursive: true }).catch((error: unknown) => {
     console.error("[batchExport]: Failed to create directory:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   });
-  const absoluteTargetFolder = path.resolve(folder);
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
+  const assetsDir = path.join(absoluteTargetFolder, "assets");
+  await fs.mkdir(assetsDir, { recursive: true }).catch((error: unknown) => {
+    console.error("[batchExport]: Failed to create directory:", error);
+    throw new AppBackendError(AppErrorCode.FileWriteError);
+  });
   const exported = await processWithLimit(
     payload,
     20,
@@ -43,14 +48,14 @@ async function batchExport(folder: string, payload: ExportedContent[]) {
         const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
         const portableContent = await sanitizeExportString(
           item.content,
-          absoluteTargetFolder,
+          assetsDir,
           imagesFolder,
         );
         await writeAtomic(absoluteFilePath, portableContent);
         return absoluteFilePath;
       } catch (error) {
         console.error("[batchExport]: Error while exporting:", error);
-        throw new AppBackendError(AppErrorCode.FileWriteError);
+        return null;
       }
     },
   );

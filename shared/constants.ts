@@ -50,10 +50,9 @@ const LIMITS = {
 };
 
 const DEBOUNCE_MS = {
-  very_fast: 150, // window events
-  fast: 300,
-  normal: 1000,
-  slow: 2000,
+  very_fast: 150, // global search
+  fast: 300, // in doc search + set settings
+  slow: 3000, // note save + auto export
 } as const;
 
 const MIME_TO_EXT = {

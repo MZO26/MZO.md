@@ -11,30 +11,23 @@ const IMPORT_REGEX = /(?:\.\/)?assets\/([^"' )>\s]+)/g;
 
 async function sanitizeExportString(
   content: string,
-  exportDir: string,
+  assetsDir: string,
   internalImgDir: string,
 ) {
-  const assetsDir = path.join(exportDir, "assets");
   const fileNames = new Set<string>();
   const portableContent = content.replace(EXPORT_REGEX, (_match, fileName) => {
     fileNames.add(fileName);
     return `assets/${fileName}`;
   });
   if (fileNames.size > 0) {
-    await fs.mkdir(assetsDir, { recursive: true }).catch((error: unknown) => {
-      console.error(
-        "[sanitizeExportString]: Failed to create directory:",
-        error,
-      );
-      throw new AppBackendError(AppErrorCode.FileWriteError);
-    });
-    await processWithLimit([...fileNames], 20, async (fileName) => {
+    await processWithLimit([...fileNames], 5, async (fileName) => {
       const internalPath = path.join(internalImgDir, fileName);
       const exportPath = path.join(assetsDir, fileName);
       try {
-        await fs.copyFile(internalPath, exportPath);
+        await fs.copyFile(internalPath, exportPath, fs.constants.COPYFILE_EXCL);
       } catch (error: unknown) {
         const err = error as NodeJS.ErrnoException;
+        if (err.code === "EEXIST") return;
         if (err.code !== "ENOENT") {
           console.error(
             "[sanitizeExportString]: Failed to copy file",
@@ -61,22 +54,18 @@ async function sanitizeImportString(
     },
   );
   if (fileNames.size > 0) {
-    await fs
-      .mkdir(internalImgDir, { recursive: true })
-      .catch((error: unknown) => {
-        console.error(
-          "[sanitizeImportString]: Failed to create directory:",
-          error,
-        );
-        throw new AppBackendError(AppErrorCode.FileWriteError);
-      });
-    await processWithLimit([...fileNames], 20, async (fileName) => {
+    await processWithLimit([...fileNames], 5, async (fileName) => {
       const sourceImagePath = path.join(importedFileDir, "assets", fileName);
       const destImagePath = path.join(internalImgDir, fileName);
       try {
-        await fs.copyFile(sourceImagePath, destImagePath);
+        await fs.copyFile(
+          sourceImagePath,
+          destImagePath,
+          fs.constants.COPYFILE_EXCL,
+        );
       } catch (error) {
         const err = error as NodeJS.ErrnoException;
+        if (err.code === "EEXIST") return;
         if (err.code !== "ENOENT")
           console.error(
             "[sanitizeImportString]: Failed to copy file:",
@@ -85,7 +74,6 @@ async function sanitizeImportString(
       }
     });
   }
-
   return internalContent;
 }
 

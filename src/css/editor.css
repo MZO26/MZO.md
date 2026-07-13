@@ -379,8 +379,8 @@
 .ProseMirror pre,
 .wikilink-preview-content pre {
   position: relative;
-  border: 1px solid var(--border-color);
   background-color: var(--hljs-bg);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   color: var(--hljs-fg);
   padding: 1rem;

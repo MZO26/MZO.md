@@ -38,22 +38,18 @@ function extractText(node: JSONContent): string {
 
 function textConverter(plainText: string): JSONContent[] | undefined {
   if (!plainText) return undefined;
-  const cleanText = plainText.replace(/\r\n?/g, "\n");
-  const lines = cleanText.split("\n");
-  const content: JSONContent[] = [];
-  for (const line of lines) {
-    if (line.trim() === "") {
-      content.push({
-        type: "paragraph",
-      });
-    } else {
-      content.push({
-        type: "paragraph",
-        content: [{ type: "text", text: line }],
-      });
-    }
-  }
-  return content;
+  const cleanText = plainText
+    .replace(/\r\n?/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return cleanText
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .map((line) => ({
+      type: "paragraph",
+      content: [{ type: "text", text: line }],
+    }));
 }
 
 function titleGenerator(doc: EditorDoc): string {

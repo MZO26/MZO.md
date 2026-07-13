@@ -285,7 +285,7 @@ const debouncedSearch = debounce((e: Event) => {
   if (!target) return;
   const value = (target.value ?? "").trim();
   handleSearchInput(value);
-}, DEBOUNCE_MS.fast);
+}, DEBOUNCE_MS.very_fast);
 
 export {
   applyTagView,

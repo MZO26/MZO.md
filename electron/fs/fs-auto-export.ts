@@ -19,37 +19,40 @@ import {
 } from "@shared/schemas/request-schema";
 import console from "console";
 import { app, shell } from "electron";
-import { constants, readFileSync } from "fs";
+import { constants } from "fs";
 import fs from "fs/promises";
 import path from "path";
 
-async function isAutoExport(id: string) {
-  const settings = settingsService.getSettings();
-  const validatedData = validation(IdSchema, id);
-  const note = db.getOldNotes([validatedData]);
-  if (!note[0]) return false;
-  const enabled = settings["auto_export"] ?? false;
-  if (!enabled) return false;
-  const targetDir = (enabled && settings["auto_export_path"]) ?? null;
-  if (!targetDir) return false;
-  const exportPath = resolveAutoExportPath(targetDir);
-  const absoluteFilePath = getFilePath(exportPath, {
-    created_at: note[0].created_at,
-    fileName: note[0].title,
-    extension: "md",
-  });
+async function isAutoExport(id: string): Promise<boolean> {
   try {
-    if (!!absoluteFilePath && readFileSync(absoluteFilePath)) {
-      console.log("[isAutoExport]: This note is on file system.");
+    const settings = settingsService.getSettings();
+    const enabled = settings["auto_export"] ?? false;
+    const targetDir = settings["auto_export_path"];
+    if (!enabled || !targetDir) return false;
+    const validatedData = validation(IdSchema, id);
+    const notes = db.getOldNotes([validatedData]);
+    if (!Array.isArray(notes) || !notes[0]) return false;
+    const note = notes[0];
+    const exportPath = resolveAutoExportPath(targetDir);
+    const absoluteFilePath = getFilePath(exportPath, {
+      created_at: note.created_at,
+      fileName: note.title,
+      extension: "md",
+    });
+    if (!absoluteFilePath) return false;
+    try {
+      await fs.access(absoluteFilePath, fs.constants.F_OK);
+      console.log("[isAutoExport]: This note is on the file system.");
       return true;
+    } catch (fsError) {
+      const err = fsError as NodeJS.ErrnoException;
+      if (err.code === "ENOENT") {
+        console.log("[isAutoExport]: This note is not on the file system yet.");
+        return false;
+      }
+      throw fsError;
     }
-    console.log("[isAutoExport]: This note is not on file system yet.");
-    return false;
   } catch (error) {
-    const err = error as NodeJS.ErrnoException;
-    if (err.code === "ENOENT") {
-      return false;
-    }
     console.error(
       "[isAutoExport]: Failed to detect if note is on file system:",
       error,
@@ -133,11 +136,19 @@ async function writeAutoExportFileLogic(
   targetDir: string,
   payload: WriteAutoExportRequest,
 ) {
-  const { created_at, fileName, oldFileName, extension } = payload;
+  const { created_at, fileName, oldFileName, extension, content } = payload;
   const exportPath = resolveAutoExportPath(targetDir);
   await fs.mkdir(exportPath, { recursive: true }).catch((error: unknown) => {
     console.error(
       "[writeAutoExportFileLogic]: Failed to create directory:",
+      error,
+    );
+    throw new AppBackendError(AppErrorCode.FileWriteError);
+  });
+  const assetsDir = path.join(exportPath, "assets");
+  await fs.mkdir(assetsDir, { recursive: true }).catch((error: unknown) => {
+    console.error(
+      "[writeAutoExportFileLogic]: Failed to create assets directory:",
       error,
     );
     throw new AppBackendError(AppErrorCode.FileWriteError);
@@ -152,24 +163,24 @@ async function writeAutoExportFileLogic(
     : undefined;
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
-  const portableContent = await sanitizeExportString(
-    payload.content,
-    exportPath,
-    imagesFolder,
-  );
   // check for rename: if oldFileName exists and is different from new file name, attempt to rename the file before writing new content. This is to avoid duplicate files when a note is renamed.
   if (oldAbsoluteFilePath && oldAbsoluteFilePath !== absoluteFilePath) {
     console.log("New rename.");
     await safeRename(oldAbsoluteFilePath, absoluteFilePath);
   } else console.log("No rename needed.");
+  const portableContent = await sanitizeExportString(
+    content,
+    assetsDir,
+    imagesFolder,
+  );
   const localContent = await fs
     .readFile(absoluteFilePath, "utf8")
-    .catch(() => null);
+    .catch(() => "");
   const normalizedLocal = normalizeText(localContent).trimEnd();
   const normalizedContent = normalizeText(portableContent).trimEnd();
   if (normalizedLocal !== normalizedContent) {
     console.log("New write.");
-    await writeAtomic(absoluteFilePath, normalizedContent);
+    await writeAtomic(absoluteFilePath, portableContent);
   } else console.log("No write needed.");
 }
 

@@ -230,8 +230,8 @@ async function triggerSyncCheck(id: string) {
   const version = beginSyncVersion(id);
   if (version == null) return;
   try {
-    const result = await getNoteById(id);
     if (!isSyncVersionCurrent(id, version)) return;
+    const result = await getNoteById(id);
     if (!result.success) {
       console.error("[triggerSyncCheck]: Failed to fetch note:", result.error);
       return;
