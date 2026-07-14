@@ -1,7 +1,7 @@
+import { createIconButton } from "@/components/sidebar/sidebar-features";
 import { getAppItem } from "@/utils/registry";
 import type { Action, ActionMap } from "@shared/types";
 import type { Editor } from "@tiptap/core";
-import { createIconButton } from "../sidebar/sidebar-features";
 
 function createButton(key: string, item: Action) {
   const btn = createIconButton(item.icon, key, item.shortcut);

@@ -2,17 +2,36 @@ import { getNoteById } from "@/api/api";
 import { getNoteEditorExtensions } from "@/components/editor/editor-init";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { getAppItem } from "@/utils/registry";
-import { DOMPURIFY_CONFIG } from "@shared/constants";
+import { DOMPURIFY_CONFIG, KATEX_MACROS } from "@shared/constants";
 import type { Note } from "@shared/schemas/note-schema";
 import { Extension, generateHTML } from "@tiptap/core";
 import DOMPurify from "dompurify";
 import hljs from "highlight.js/lib/core";
+import katex from "katex";
 import { delegate, type DelegateInstance, type Instance } from "tippy.js";
 
 function highlightCodeBlocks(root: ParentNode) {
   root.querySelectorAll("pre code").forEach((el) => {
     hljs.highlightElement(el as HTMLElement);
   });
+}
+
+function renderMathBlocks(root: ParentNode) {
+  root
+    .querySelectorAll('[data-type="inline-math"], [data-type="block-math"]')
+    .forEach((el) => {
+      const latex = el.getAttribute("data-latex");
+      if (!latex) return;
+      try {
+        katex.render(latex, el as HTMLElement, {
+          throwOnError: false,
+          displayMode: el.getAttribute("data-type") === "block-math",
+          macros: { ...KATEX_MACROS },
+        });
+      } catch {
+        el.textContent = latex;
+      }
+    });
 }
 
 type PreviewInstance = Instance & {
@@ -29,9 +48,13 @@ function buildPreviewCard(content: Note["content"]) {
   if (sanitized) {
     cardContent.innerHTML = sanitized;
     highlightCodeBlocks(cardContent);
+    renderMathBlocks(cardContent);
   }
   const hasText = (cardContent.textContent || "").trim().length > 0;
-  const hasMedia = cardContent.querySelectorAll("img, hr").length > 0;
+  const hasMedia =
+    cardContent.querySelectorAll(
+      "img, hr, [data-type='inline-math'], [data-type='block-math']",
+    ).length > 0;
   if (!hasText && !hasMedia) {
     cardContent.replaceChildren();
     cardContent.textContent = "Empty Note";

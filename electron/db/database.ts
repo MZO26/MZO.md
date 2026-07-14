@@ -29,7 +29,7 @@ import {
   type StoreRow,
 } from "@shared/schemas/store-schema";
 import { app } from "electron";
-import { DatabaseSync, StatementSync, backup } from "node:sqlite";
+import { backup, DatabaseSync, type StatementSync } from "node:sqlite";
 import path from "path";
 
 class AppDB {

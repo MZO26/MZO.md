@@ -1,9 +1,9 @@
+import { createIconButton } from "@/components/sidebar/sidebar-features";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { findElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
 import { SELECTION_ACTIONS } from "@shared/constants";
-import { createIconButton } from "./sidebar-features";
 
 function selectAllVisibleNotes() {
   const visibleIds = noteStore.get("visibleIds") ?? [];

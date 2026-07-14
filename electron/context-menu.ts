@@ -1,7 +1,7 @@
 import { isAutoExport } from "@electron/fs/fs-auto-export";
+import { settingsService } from "@electron/handler/settings-handler";
 import type { NoteMenuPayload } from "@shared/types";
 import { ipcMain, Menu, type BrowserWindow } from "electron";
-import { settingsService } from "./handler/settings-handler";
 
 let activeId: string | null = null;
 

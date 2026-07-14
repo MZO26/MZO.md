@@ -680,6 +680,7 @@
   background-color: var(--bg-button);
   border-radius: 4px;
 }
+
 .ProseMirror.focus-mode-active .has-focus:is(blockquote) {
   border-left-color: var(--accent-primary);
   border-radius: 4px;
@@ -698,82 +699,108 @@
     box-shadow 0.2s ease;
 }
 
-.ProseMirror details {
-  margin: 1em 0;
-}
-
-.ProseMirror .details-root,
+.ProseMirror details,
 .wikilink-preview-content details {
+  margin: 1em 0;
   border: 0;
   border-radius: 5px;
   background: transparent;
+  interpolate-size: allow-keywords;
 }
 
-.ProseMirror .details-root:hover,
-.ProseMirror .details-root:focus-within,
+.ProseMirror details:focus-within,
 .wikilink-preview-content details:focus-within {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
-  border-color: transparent;
-  box-shadow: none;
 }
 
-.ProseMirror .details-summary:focus,
-.wikilink-preview-content summary:focus {
-  outline: none !important;
-}
-
-.ProseMirror .details-root.ProseMirror-selectednode,
 .ProseMirror details.ProseMirror-selectednode {
   box-shadow: none !important;
 }
 
-.ProseMirror .details-summary,
+.ProseMirror summary,
 .wikilink-preview-content summary {
   position: relative;
   display: flex;
   align-items: center;
   gap: 0.4rem;
   margin: 0;
-  padding: 0.45rem 0;
+  padding: 0.45rem 0.5rem;
+  border-radius: 4px;
   list-style: none;
   cursor: pointer;
   user-select: none;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
 }
 
-.ProseMirror .details-summary::before,
+.ProseMirror summary::-webkit-details-marker,
+.wikilink-preview-content summary::-webkit-details-marker {
+  display: none;
+}
+
+.ProseMirror summary:hover,
+.wikilink-preview-content summary:hover {
+  background-color: color-mix(in srgb, var(--text-main) 6%, transparent);
+}
+
+.ProseMirror summary:focus,
+.wikilink-preview-content summary:focus {
+  outline: none;
+}
+
+.ProseMirror summary::before,
 .wikilink-preview-content summary::before {
   content: "";
   flex: 0 0 auto;
   width: 0.45rem;
   height: 0.45rem;
+  margin: 0.1rem 0.3rem 0.2rem 0.1rem;
   border-right: 1.5px solid var(--text-muted);
   border-bottom: 1.5px solid var(--text-muted);
   transform: rotate(-45deg);
   opacity: 0.9;
-  margin: 0.1rem 0.8rem 0.2rem 0.5rem;
   transition:
     transform 0.2s ease,
     opacity 0.2s ease;
 }
 
-.ProseMirror .details-root[open] > .details-summary::before,
+.ProseMirror details[open] > summary::before,
 .wikilink-preview-content details[open] > summary::before {
   transform: rotate(45deg);
 }
 
-.ProseMirror .details-summary::after,
+.ProseMirror summary::after,
 .wikilink-preview-content summary::after {
   content: "";
   flex: 1;
   height: 0;
   margin: 0 12px;
   border-top: 1px solid var(--text-main);
+  opacity: 0.15;
 }
 
-.ProseMirror .details-content,
+.ProseMirror details > div,
 .wikilink-preview-content .details-content {
-  padding: 1rem 0.65rem 0.3rem 0.2rem;
+  margin-left: 0.8rem;
+  margin-top: 0.2rem;
+  padding: 0.6rem 0.65rem 0.5rem 0.75rem;
+  border-left: 1.5px solid
+    color-mix(in srgb, var(--text-muted) 18%, transparent);
+}
+
+.ProseMirror details::details-content,
+.wikilink-preview-content details::details-content {
+  height: 0;
+  overflow: hidden;
+  transition:
+    height 0.25s ease,
+    content-visibility 0.25s ease allow-discrete;
+}
+
+.ProseMirror details[open]::details-content,
+.wikilink-preview-content details[open]::details-content {
+  height: auto;
 }
 
 .autocomplete {

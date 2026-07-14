@@ -1,10 +1,10 @@
+import { settingsService } from "@electron/handler/settings-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { win } from "@electron/main";
 import { ZOOMS } from "@shared/constants";
 import { StoreSchema } from "@shared/schemas/store-schema";
 import type { ZoomAction } from "@shared/types";
 import { BrowserWindow } from "electron";
-import { settingsService } from "./handler/settings-handler";
 
 function nextZoom(current: number, action: ZoomAction) {
   if (action === "get") return current;

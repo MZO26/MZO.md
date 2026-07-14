@@ -22,14 +22,17 @@ function extractText(node: JSONContent): string {
     if (n.type === "detailsBlock" && typeof n.attrs?.["summary"] === "string") {
       parts.push(n.attrs["summary"]);
       parts.push(" ");
+    } else if (n.type === "image" && typeof n.attrs?.["alt"] === "string") {
+      parts.push(n.attrs["alt"]);
+      parts.push(" ");
     }
     if (Array.isArray(n.content)) {
       for (const child of n.content) {
         walk(child);
       }
-      if (typeof n.type === "string" && BLOCK_TYPES.has(n.type)) {
-        parts.push(" ");
-      }
+    }
+    if (typeof n.type === "string" && BLOCK_TYPES.has(n.type)) {
+      parts.push(" ");
     }
   }
   walk(node);

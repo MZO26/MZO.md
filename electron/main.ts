@@ -23,6 +23,7 @@ import {
   ipcMain,
   Menu,
   nativeTheme,
+  session,
   type BrowserWindowConstructorOptions,
 } from "electron";
 import path from "node:path";
@@ -46,6 +47,8 @@ if (!gotLock) {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// asset handling (unused right now)
 process.env["DIST"] = path.join(__dirname, "../dist");
 process.env["VITE_PUBLIC"] = app.isPackaged
   ? process.env["DIST"]
@@ -80,8 +83,8 @@ async function createWindow() {
   const bounds = settings["window_bounds"];
   const windowConfig: BrowserWindowConstructorOptions = {
     show: false,
-    width: Math.max(800, bounds?.width ?? 800),
-    height: Math.max(500, bounds?.height ?? 500),
+    width: Math.max(1100, bounds?.width ?? 1100),
+    height: Math.max(800, bounds?.height ?? 800),
     minWidth: 800,
     minHeight: 500,
     titleBarStyle: "hidden",
@@ -113,10 +116,10 @@ async function createWindow() {
   }
   win = new BrowserWindow(windowConfig);
   navigationHandler(win);
-  win.webContents.openDevTools();
   win.setMenuBarVisibility(false);
   if (process.env["ELECTRON_RENDERER_URL"]) {
     win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+    win.webContents.openDevTools();
   } else {
     win.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
@@ -137,6 +140,7 @@ async function createWindow() {
 
 app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
+  session.defaultSession.setSpellCheckerLanguages(["en-US", "de-DE"]);
   ipcMain.on("flush-confirmed", () => {
     isReadyToClose = true;
     win?.close();

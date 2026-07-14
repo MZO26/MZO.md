@@ -214,6 +214,26 @@ const DOMPURIFY_CONFIG = {
     /^(?:(?:https|appimg):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
 };
 
+const KATEX_MACROS = {
+  "\\R": "\\mathbb{R}",
+  "\\N": "\\mathbb{N}",
+  "\\Z": "\\mathbb{Z}",
+  "\\Q": "\\mathbb{Q}",
+  "\\C": "\\mathbb{C}",
+  "\\P": "\\mathbb{P}",
+  "\\E": "\\mathbb{E}",
+  "\\Var": "\\operatorname{Var}",
+  "\\Cov": "\\operatorname{Cov}",
+  "\\Prob": "\\operatorname{P}",
+  "\\dd": "\\,\\mathrm{d}",
+  "\\dx": "\\,\\mathrm{d}x",
+  "\\dy": "\\,\\mathrm{d}y",
+  "\\dz": "\\,\\mathrm{d}z",
+  "\\abs": "\\left|#1\\right|",
+  "\\norm": "\\left\\lVert#1\\right\\rVert",
+  "\\set": "\\left\\{#1\\right\\}",
+};
+
 const UNTITLED = "Untitled";
 
 const EMPTY_DOC = {
@@ -241,9 +261,13 @@ const BLOCK_TYPES = new Set([
   "tableRow",
   "tableHeader",
   "tableCell",
-  "image",
   "detailsBlock",
+  "inlineMath",
+  "blockMath",
   "hardBreak",
+  "image",
+  "noteTag",
+  "wikilink",
 ]);
 
 const THEME_SETTINGS: readonly SelectOption<Theme>[] = [
@@ -335,6 +359,7 @@ export {
   FONT_SIZE_SETTINGS,
   HIGHLIGHT_THEME_SETTINGS,
   IPC_TIMERS,
+  KATEX_MACROS,
   LIMITS,
   LINE_HEIGHT_SETTINGS,
   MAX_FILE_DROPS,

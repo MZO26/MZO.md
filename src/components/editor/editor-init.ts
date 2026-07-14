@@ -30,6 +30,7 @@ import {
   stateStore,
 } from "@/settings/app-state";
 import { requireElement } from "@/utils/dom";
+import { KATEX_MACROS } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
@@ -208,7 +209,6 @@ function getNoteEditorExtensions() {
     CodeBlockLowlight.configure({
       lowlight,
       enableTabIndentation: true,
-      defaultLanguage: "plaintext",
       HTMLAttributes: {
         spellcheck: "false",
       },
@@ -226,25 +226,7 @@ function getNoteEditorExtensions() {
         maxSize: 12,
         trust: false,
         throwOnError: false,
-        macros: {
-          "\\R": "\\mathbb{R}",
-          "\\N": "\\mathbb{N}",
-          "\\Z": "\\mathbb{Z}",
-          "\\Q": "\\mathbb{Q}",
-          "\\C": "\\mathbb{C}",
-          "\\P": "\\mathbb{P}",
-          "\\E": "\\mathbb{E}",
-          "\\Var": "\\operatorname{Var}",
-          "\\Cov": "\\operatorname{Cov}",
-          "\\Prob": "\\operatorname{P}",
-          "\\dd": "\\,\\mathrm{d}",
-          "\\dx": "\\,\\mathrm{d}x",
-          "\\dy": "\\,\\mathrm{d}y",
-          "\\dz": "\\,\\mathrm{d}z",
-          "\\abs": "\\left|#1\\right|",
-          "\\norm": "\\left\\lVert#1\\right\\rVert",
-          "\\set": "\\left\\{#1\\right\\}",
-        },
+        macros: { ...KATEX_MACROS },
       },
     }),
   ];

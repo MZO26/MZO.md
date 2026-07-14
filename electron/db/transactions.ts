@@ -9,7 +9,7 @@ import {
   type NoteRow,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
-import { DatabaseSync, StatementSync } from "node:sqlite";
+import { DatabaseSync, type StatementSync } from "node:sqlite";
 
 class Transactions {
   private db: DatabaseSync;

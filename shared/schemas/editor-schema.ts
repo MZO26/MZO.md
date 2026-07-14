@@ -50,9 +50,7 @@ const DbContentSchema = z
 
 const ExternalUrlSchema = z.url().refine((value) => {
   const url = new URL(value);
-  return ["http:", "https:", "mailto:", "tel:", "appimg:"].includes(
-    url.protocol,
-  );
+  return ["http:", "appimg:"].includes(url.protocol);
 }, "Unsupported link protocol");
 
 type EditorDoc = z.infer<typeof EditorDocSchema>;
