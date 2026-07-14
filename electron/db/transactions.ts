@@ -25,31 +25,31 @@ class Transactions {
     this.db = dbConnection;
 
     this.createNoteStmt = this.db.prepare(
-      `INSERT INTO notes (id, title, content, plainText, snippet, pinned, created_at, updated_at) VALUES (@id, @title, @content, @plainText, @snippet, @pinned, @created_at, @updated_at) RETURNING *`,
+      `INSERT INTO notes (id, title, content, plainText, snippet, pinned, created_at, updated_at) VALUES ($id, $title, $content, $plainText, $snippet, $pinned, $created_at, $updated_at) RETURNING *`,
     );
     this.updateNoteStmt = this.db
-      .prepare(`UPDATE notes SET title = @title, content = @content, plainText = @plainText, snippet = @snippet, updated_at = @updated_at WHERE id = @id RETURNING *
+      .prepare(`UPDATE notes SET title = $title, content = $content, plainText = $plainText, snippet = $snippet, updated_at = $updated_at WHERE id = $id RETURNING *
     `);
-    this.deleteNoteStmt = this.db.prepare("DELETE FROM notes WHERE id = @id");
+    this.deleteNoteStmt = this.db.prepare("DELETE FROM notes WHERE id = $id");
     this.deleteManyNotesStmt = this.db.prepare(`
       DELETE FROM notes 
-      WHERE id IN (SELECT value FROM json_each(@ids))
+      WHERE id IN (SELECT value FROM json_each($ids))
     `);
     this.deleteTagsStmt = this.db.prepare(
-      "DELETE FROM note_tags WHERE note_id = @note_id",
+      "DELETE FROM note_tags WHERE note_id = $note_id",
     );
     this.deleteLinksStmt = this.db.prepare(
-      "DELETE FROM note_links WHERE source_id = @source_id",
+      "DELETE FROM note_links WHERE source_id = $source_id",
     );
     this.insertManyTagsStmt = this.db.prepare(`
       INSERT INTO note_tags (note_id, tag_name)
-      SELECT @note_id, j.value
-      FROM json_each(@tags) j
+      SELECT $note_id, j.value
+      FROM json_each($tags) j
     `);
     this.insertManyLinksStmt = this.db.prepare(`
       INSERT INTO note_links (source_id, target_id)
-      SELECT @source_id, j.value
-      FROM json_each(@links) j
+      SELECT $source_id, j.value
+      FROM json_each($links) j
       WHERE EXISTS (SELECT 1 FROM notes WHERE id = j.value)
     `);
   }
@@ -84,7 +84,7 @@ class Transactions {
   private runDeleteManyLogic(ids: string[]): boolean {
     if (ids.length === 0) return false;
     const result = this.deleteManyNotesStmt.run({
-      ids: JSON.stringify(ids),
+      $ids: JSON.stringify(ids),
     });
     return result.changes > 0;
   }
@@ -110,14 +110,14 @@ class Transactions {
       }
       if (safeLinks.length > 0) {
         this.insertManyLinksStmt.run({
-          source_id: result.id,
-          links: JSON.stringify(safeLinks),
+          $source_id: result.id,
+          $links: JSON.stringify(safeLinks),
         });
       }
       if (safeTags.length > 0) {
         this.insertManyTagsStmt.run({
-          note_id: result.id,
-          tags: JSON.stringify(safeTags),
+          $note_id: result.id,
+          $tags: JSON.stringify(safeTags),
         });
       }
       results.push({ row: result, safeTags, safeLinks });
@@ -136,7 +136,7 @@ class Transactions {
         tags: result.safeTags,
         links: result.safeLinks
           .filter((id) => id !== result.row.id)
-          .map((id) => ({ id, dir: "out" as const })),
+          .map((id) => ({ id, dir: "out" })),
       }),
     );
   }
@@ -152,14 +152,14 @@ class Transactions {
     }
     if (safeLinks.length > 0) {
       this.insertManyLinksStmt.run({
-        source_id: result.id,
-        links: JSON.stringify(safeLinks ?? []),
+        $source_id: result.id,
+        $links: JSON.stringify(safeLinks ?? []),
       });
     }
     if (safeTags.length > 0) {
       this.insertManyTagsStmt.run({
-        note_id: result.id,
-        tags: JSON.stringify(safeTags ?? []),
+        $note_id: result.id,
+        $tags: JSON.stringify(safeTags ?? []),
       });
     }
     return result;
@@ -182,7 +182,7 @@ class Transactions {
   }
 
   private runDeleteLogic(id: string): boolean {
-    const result = this.deleteNoteStmt.run({ id });
+    const result = this.deleteNoteStmt.run({ $id: id });
     return result.changes > 0;
   }
 
@@ -199,18 +199,18 @@ class Transactions {
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
-    this.deleteLinksStmt.run({ source_id: result.id });
-    this.deleteTagsStmt.run({ note_id: result.id });
+    this.deleteLinksStmt.run({ $source_id: result.id });
+    this.deleteTagsStmt.run({ $note_id: result.id });
     if (safeLinks.length > 0) {
       this.insertManyLinksStmt.run({
-        source_id: result.id,
-        links: JSON.stringify(safeLinks ?? []),
+        $source_id: result.id,
+        $links: JSON.stringify(safeLinks ?? []),
       });
     }
     if (safeTags.length > 0) {
       this.insertManyTagsStmt.run({
-        note_id: result.id,
-        tags: JSON.stringify(safeTags ?? []),
+        $note_id: result.id,
+        $tags: JSON.stringify(safeTags ?? []),
       });
     }
     return result;

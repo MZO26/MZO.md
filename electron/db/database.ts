@@ -43,6 +43,8 @@ class AppDB {
   private getAllLinksStmt: StatementSync;
   private getTagsByIdStmt: StatementSync;
   private getLinksByIdStmt: StatementSync;
+  private getManyTagsStmt: StatementSync;
+  private getManyLinksStmt: StatementSync;
   private getOldTitleStmt: StatementSync;
   private togglePinStmt: StatementSync;
   private toggleManyPinStmt: StatementSync;
@@ -60,10 +62,10 @@ class AppDB {
       ORDER BY updated_at DESC`,
       );
       this.getNoteByIdStmt = this.db.prepare(
-        `SELECT * FROM notes WHERE id = @id`,
+        `SELECT * FROM notes WHERE id = $id`,
       );
       this.getManyNotesByIdStmt = this.db.prepare(`
-      SELECT * FROM notes WHERE id IN (SELECT value FROM json_each(@idsList))
+      SELECT * FROM notes WHERE id IN (SELECT value FROM json_each($ids))
     `);
       this.getAllTagsStmt = this.db.prepare(
         `SELECT note_id, tag_name FROM note_tags`,
@@ -72,43 +74,56 @@ class AppDB {
         `SELECT source_id, target_id FROM note_links`,
       );
       this.getTagsByIdStmt = this.db.prepare(
-        `SELECT tag_name FROM note_tags WHERE note_id = @id`,
+        `SELECT tag_name FROM note_tags WHERE note_id = $id`,
       );
       this.getLinksByIdStmt = this.db.prepare(`
-      SELECT target_id AS id, 'out' AS dir FROM note_links WHERE source_id = @id UNION ALL SELECT source_id AS id, 'in' AS dir FROM note_links WHERE target_id = @id
+      SELECT target_id AS id, 'out' AS dir FROM note_links WHERE source_id = $id UNION ALL SELECT source_id AS id, 'in' AS dir FROM note_links WHERE target_id = $id
+      `);
+      this.getManyTagsStmt = this.db.prepare(`
+      SELECT note_id, tag_name FROM note_tags
+      WHERE note_id IN  (SELECT value FROM json_each($ids))
+      `);
+      this.getManyLinksStmt = this.db.prepare(`
+      SELECT source_id, target_id, 'out' AS dir
+      FROM note_links
+      WHERE source_id IN (SELECT value FROM json_each($ids))
+      UNION ALL
+      SELECT source_id, target_id, 'in' AS dir
+      FROM note_links
+      WHERE target_id IN (SELECT value FROM json_each($ids))
       `);
       this.togglePinStmt = this.db.prepare(`
       UPDATE notes 
-      SET pinned = NOT pinned, updated_at = @updated_at
-      WHERE id = @id RETURNING pinned
+      SET pinned = NOT pinned, updated_at = $updated_at
+      WHERE id = $id RETURNING pinned
     `);
       this.toggleManyPinStmt = this.db.prepare(`
       UPDATE notes
-      SET pinned = NOT pinned, updated_at = @updated_at
-      WHERE id IN (SELECT value FROM json_each(@ids))
+      SET pinned = NOT pinned, updated_at = $updated_at
+      WHERE id IN (SELECT value FROM json_each($ids))
       RETURNING id
       `);
       this.getOldTitleStmt = this.db.prepare(`
       SELECT created_at, title 
       FROM notes
-      WHERE id IN (SELECT value FROM json_each(@ids))
+      WHERE id IN (SELECT value FROM json_each($ids))
       `);
       this.updateStoreStmt = this.db.prepare(`
       UPDATE store SET
-      "theme" = @theme,
-      "font_family" = @font_family,
-      "font_size" = @font_size,
-      "line_height" = @line_height,
-      "spellcheck" = @spellcheck,
-      "auto_export" = @auto_export,
-      "auto_export_path" = @auto_export_path,
-      "export_format" = @export_format,
-      "code_theme" = @code_theme,
-      "highlight" = @highlight,
-      "note_item_display" = @note_item_display,
-      "toolbar_collapsed" = @toolbar_collapsed,
-      "window_bounds" = @window_bounds,
-      "active_tag" = @active_tag
+      "theme" = $theme,
+      "font_family" = $font_family,
+      "font_size" = $font_size,
+      "line_height" = $line_height,
+      "spellcheck" = $spellcheck,
+      "auto_export" = $auto_export,
+      "auto_export_path" = $auto_export_path,
+      "export_format" = $export_format,
+      "code_theme" = $code_theme,
+      "highlight" = $highlight,
+      "note_item_display" = $note_item_display,
+      "toolbar_collapsed" = $toolbar_collapsed,
+      "window_bounds" = $window_bounds,
+      "active_tag" = $active_tag
       WHERE id = 1
       `);
       this.getAllSettingsStmt = this.db.prepare(`
@@ -181,7 +196,7 @@ class AppDB {
     `);
   }
 
-  private getTagMap(): Map<string, Tag[]> {
+  private getTagMapAll(): Map<string, Tag[]> {
     const allTags = this.getAllTagsStmt.all() as TagRow[];
     const tagMap = new Map<string, Tag[]>();
     for (const { note_id, tag_name } of allTags) {
@@ -192,7 +207,20 @@ class AppDB {
     return tagMap;
   }
 
-  private getLinkMap(): Map<string, Link[]> {
+  private getTagMapMany(ids: string[]): Map<string, Tag[]> {
+    const manyTags = this.getManyTagsStmt.all({
+      $ids: JSON.stringify(ids),
+    }) as TagRow[];
+    const tagMap = new Map<string, Tag[]>();
+    for (const { note_id, tag_name } of manyTags) {
+      const existingTags = tagMap.get(note_id) ?? [];
+      existingTags.push(tag_name);
+      tagMap.set(note_id, existingTags);
+    }
+    return tagMap;
+  }
+
+  private getLinkMapAll(): Map<string, Link[]> {
     const allLinks = this.getAllLinksStmt.all() as LinkRow[];
     const linkMap = new Map<string, Link[]>();
     for (const { source_id, target_id } of allLinks) {
@@ -202,6 +230,21 @@ class AppDB {
       const targetLinks = linkMap.get(target_id) ?? [];
       targetLinks.push({ id: source_id, dir: "in" });
       linkMap.set(target_id, targetLinks);
+    }
+    return linkMap;
+  }
+
+  private getLinkMapMany(ids: string[]): Map<string, Link[]> {
+    const allLinks = this.getManyLinksStmt.all({
+      $ids: JSON.stringify(ids),
+    }) as (LinkRow & { dir: "in" | "out" })[];
+    const linkMap = new Map<string, Link[]>();
+    for (const { source_id, target_id, dir } of allLinks) {
+      const note_id = dir === "out" ? source_id : target_id;
+      const id = dir === "out" ? target_id : source_id;
+      const links = linkMap.get(note_id) ?? [];
+      links.push({ id, dir });
+      linkMap.set(note_id, links);
     }
     return linkMap;
   }
@@ -296,8 +339,8 @@ class AppDB {
   }
 
   public getAll(): NoteListItem[] {
-    const tagMap = this.getTagMap() ?? new Map();
-    const linkMap = this.getLinkMap() ?? new Map();
+    const tagMap = this.getTagMapAll() ?? new Map();
+    const linkMap = this.getLinkMapAll() ?? new Map();
     const results: NoteListItem[] = [];
     for (const row of this.getAllNotesStmt.iterate() as IterableIterator<NoteRow>) {
       const validatedNote = validation(NoteFromDB, {
@@ -313,8 +356,8 @@ class AppDB {
 
   public getAllBackup(): Note[] {
     const results: Note[] = [];
-    const tagMap = this.getTagMap() ?? new Map();
-    const linkMap = this.getLinkMap() ?? new Map();
+    const tagMap = this.getTagMapAll() ?? new Map();
+    const linkMap = this.getLinkMapAll() ?? new Map();
     for (const row of this.getAllNotesStmt.iterate() as IterableIterator<NoteRow>) {
       const validatedNote = validation(NoteFromDB, {
         ...row,
@@ -327,7 +370,7 @@ class AppDB {
   }
 
   public getById(id: string): Note {
-    const row = this.getNoteByIdStmt.get({ id }) as NoteRow | undefined;
+    const row = this.getNoteByIdStmt.get({ $id: id }) as NoteRow | undefined;
     if (!row) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -340,11 +383,11 @@ class AppDB {
 
   public getManyById(ids: string[]): Note[] {
     if (ids.length === 0) return [];
-    const params = { idsList: JSON.stringify(ids) };
+    const params = { $ids: JSON.stringify(ids) };
     const rows = this.getManyNotesByIdStmt.all(params) as NoteRow[];
     if (!rows) throw new AppBackendError(AppErrorCode.DBError);
-    const tagMap = this.getTagMap() ?? new Map();
-    const linkMap = this.getLinkMap() ?? new Map();
+    const tagMap = this.getTagMapMany(ids) ?? [];
+    const linkMap = this.getLinkMapMany(ids) ?? [];
     return rows.map((row) => {
       return validation(NoteFromDB, {
         ...row,
@@ -356,7 +399,7 @@ class AppDB {
 
   public togglePin(id: string): boolean {
     const now = new Date().toISOString();
-    const result = this.togglePinStmt.get({ updated_at: now, id });
+    const result = this.togglePinStmt.get({ $updated_at: now, $id: id });
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -367,28 +410,28 @@ class AppDB {
     if (ids.length === 0) return false;
     const now = new Date().toISOString();
     const result = this.toggleManyPinStmt.all({
-      updated_at: now,
-      ids: JSON.stringify(ids),
+      $updated_at: now,
+      $ids: JSON.stringify(ids),
     });
     const rows = validation(ToggleManyPinsSchema, result);
     return rows.length > 0;
   }
 
   public getTagsById(id: string): Tag[] {
-    const rows = this.getTagsByIdStmt.all({ id }) as TagNameRow[];
+    const rows = this.getTagsByIdStmt.all({ $id: id }) as TagNameRow[];
     const tagArr = rows.map((row) => row.tag_name);
     return validation(TagsSchema, tagArr);
   }
 
   public getLinksById(id: string): Link[] {
-    const rows = this.getLinksByIdStmt.all({ id }) as LinkRow[];
+    const rows = this.getLinksByIdStmt.all({ $id: id }) as LinkRow[];
     return validation(LinksSchema, rows);
   }
 
   public getOldNotes(ids: string[]): Pick<Note, "created_at" | "title">[] {
     if (ids.length === 0) return [];
     const rows = this.getOldTitleStmt.all({
-      ids: JSON.stringify(ids),
+      $ids: JSON.stringify(ids),
     }) as Pick<Note, "created_at" | "title">[];
     if (rows.length !== ids.length) {
       throw new AppBackendError(AppErrorCode.DBError);
