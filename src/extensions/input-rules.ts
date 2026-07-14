@@ -55,7 +55,6 @@ const InputRules = Extension.create({
       textInputRule({ find: /\(c\)$/i, replace: "©" }),
       textInputRule({ find: /\(r\)$/i, replace: "®" }),
       textInputRule({ find: /\(tm\)$/i, replace: "™" }),
-      textInputRule({ find: /(\d)deg$/, replace: "$1°" }),
       textInputRule({ find: /1\/2$/, replace: "½" }),
       textInputRule({ find: /1\/3$/, replace: "⅓" }),
       textInputRule({ find: /2\/3$/, replace: "⅔" }),

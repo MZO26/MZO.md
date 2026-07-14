@@ -215,31 +215,6 @@
   margin-bottom: 0;
 }
 
-.ProseMirror details {
-  margin: 1.25em 0;
-  padding: 0.5em 1em;
-  background: #fafafa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-}
-
-.ProseMirror summary {
-  font-weight: 600;
-  cursor: pointer;
-  margin: -0.5em -1em;
-  padding: 0.5em 1em;
-  outline: none;
-}
-
-.ProseMirror details[open] summary {
-  border-bottom: 1px solid #e9ecef;
-  margin-bottom: 0.5em;
-}
-
-.ProseMirror details > :last-child {
-  margin-bottom: 0;
-}
-
 .ProseMirror a[data-type="wiki-link"] {
   color: #10b981;
   text-decoration: none;
@@ -373,7 +348,6 @@
   .ProseMirror pre,
   .ProseMirror img,
   .ProseMirror li,
-  .ProseMirror details,
   .ProseMirror .tableWrapper,
   .ProseMirror tr {
     page-break-inside: avoid;

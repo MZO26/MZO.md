@@ -205,6 +205,77 @@
   color: var(--text-main);
 }
 
+.ProseMirror .callout,
+.wikilink-preview-content .callout {
+  margin: 1.5em 0;
+  padding: 0.875em 1em;
+  border-left: 3px solid;
+  border-radius: 0 8px 8px 0;
+  background: var(--bg-sidebar);
+  color: var(--text-main);
+}
+
+.ProseMirror .callout-header,
+.wikilink-preview-content .callout-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.9em;
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  user-select: none;
+}
+
+.ProseMirror .callout-content,
+.wikilink-preview-content .callout-content {
+  margin-left: 0.2em;
+}
+
+.ProseMirror .callout-content > p:first-child,
+.wikilink-preview-content .callout-content > p:first-child {
+  margin-top: 0;
+}
+
+.ProseMirror .callout-content > p:last-child,
+.wikilink-preview-content .callout-content > p:last-child {
+  margin-bottom: 0;
+}
+
+.callout-note {
+  border-left-color: #64748b !important;
+}
+.callout-note .callout-title {
+  color: #64748b;
+}
+
+.callout-tip {
+  border-left-color: #5b8a72 !important;
+}
+.callout-tip .callout-title {
+  color: #5b8a72;
+}
+
+.callout-important {
+  border-left-color: #7c6f9c !important;
+}
+.callout-important .callout-title {
+  color: #7c6f9c;
+}
+
+.callout-warning {
+  border-left-color: #b8825a !important;
+}
+.callout-warning .callout-title {
+  color: #b8825a;
+}
+
+.callout-caution {
+  border-left-color: #b1584f !important;
+}
+.callout-caution .callout-title {
+  color: #b1584f;
+}
+
 .ProseMirror blockquote p,
 .wikilink-preview-content blockquote p {
   margin: 0;
@@ -674,8 +745,7 @@
     td,
     th,
     img,
-    details,
-    summary
+
   ) {
   background-color: var(--bg-button);
   border-radius: 4px;
@@ -697,110 +767,6 @@
   transition:
     background-color 0.2s ease,
     box-shadow 0.2s ease;
-}
-
-.ProseMirror details,
-.wikilink-preview-content details {
-  margin: 1em 0;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  interpolate-size: allow-keywords;
-}
-
-.ProseMirror details:focus-within,
-.wikilink-preview-content details:focus-within {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-}
-
-.ProseMirror details.ProseMirror-selectednode {
-  box-shadow: none !important;
-}
-
-.ProseMirror summary,
-.wikilink-preview-content summary {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin: 0;
-  padding: 0.45rem 0.5rem;
-  border-radius: 4px;
-  list-style: none;
-  cursor: pointer;
-  user-select: none;
-  font-weight: 500;
-  transition: background-color 0.15s ease;
-}
-
-.ProseMirror summary::-webkit-details-marker,
-.wikilink-preview-content summary::-webkit-details-marker {
-  display: none;
-}
-
-.ProseMirror summary:hover,
-.wikilink-preview-content summary:hover {
-  background-color: color-mix(in srgb, var(--text-main) 6%, transparent);
-}
-
-.ProseMirror summary:focus,
-.wikilink-preview-content summary:focus {
-  outline: none;
-}
-
-.ProseMirror summary::before,
-.wikilink-preview-content summary::before {
-  content: "";
-  flex: 0 0 auto;
-  width: 0.45rem;
-  height: 0.45rem;
-  margin: 0.1rem 0.3rem 0.2rem 0.1rem;
-  border-right: 1.5px solid var(--text-muted);
-  border-bottom: 1.5px solid var(--text-muted);
-  transform: rotate(-45deg);
-  opacity: 0.9;
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
-}
-
-.ProseMirror details[open] > summary::before,
-.wikilink-preview-content details[open] > summary::before {
-  transform: rotate(45deg);
-}
-
-.ProseMirror summary::after,
-.wikilink-preview-content summary::after {
-  content: "";
-  flex: 1;
-  height: 0;
-  margin: 0 12px;
-  border-top: 1px solid var(--text-main);
-  opacity: 0.15;
-}
-
-.ProseMirror details > div,
-.wikilink-preview-content .details-content {
-  margin-left: 0.8rem;
-  margin-top: 0.2rem;
-  padding: 0.6rem 0.65rem 0.5rem 0.75rem;
-  border-left: 1.5px solid
-    color-mix(in srgb, var(--text-muted) 18%, transparent);
-}
-
-.ProseMirror details::details-content,
-.wikilink-preview-content details::details-content {
-  height: 0;
-  overflow: hidden;
-  transition:
-    height 0.25s ease,
-    content-visibility 0.25s ease allow-discrete;
-}
-
-.ProseMirror details[open]::details-content,
-.wikilink-preview-content details[open]::details-content {
-  height: auto;
 }
 
 .autocomplete {

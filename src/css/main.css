@@ -277,7 +277,6 @@
   gap: 16px;
 }
 
-.math-dialog-description,
 .delete-dialog-description,
 .sync-dialog-description {
   text-align: center;
@@ -311,7 +310,7 @@
   border-radius: 8px;
   padding: 12px;
   font-family: "Fira Code", "JetBrains Mono", "Courier New", monospace;
-  font-size: 16px;
+  font-size: 1.2rem;
   line-height: 1.6;
   resize: vertical;
   field-sizing: content;

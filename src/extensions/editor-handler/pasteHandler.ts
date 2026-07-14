@@ -22,12 +22,14 @@ export const PasteHandler = Extension.create({
               event.preventDefault();
               const safeImages = images.slice(0, 20);
               if (images.length > 20) return false;
-              void processAndInsertImages(safeImages, editor).catch((error) => {
-                console.error(
-                  "[PasteHandler]: Failed to process pasted images:",
-                  error,
-                );
-              });
+              void processAndInsertImages(safeImages, editor).catch(
+                (error: unknown) => {
+                  console.error(
+                    "[PasteHandler]: Failed to process pasted images:",
+                    error,
+                  );
+                },
+              );
               return true;
             }
             const text = event.clipboardData?.getData("text/plain");

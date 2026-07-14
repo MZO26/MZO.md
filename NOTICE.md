@@ -9,13 +9,11 @@ This application includes third-party software components.
 The following components are provided under the MIT License:
 
 - **Electron** (Copyright (c) Electron contributors)
-- **better-sqlite3** (Copyright (c) Joshua Wise)
 - **minisearch** (Copyright (c) Luca Ongaro)
 - **Tiptap** (Copyright (c) 2026, Tiptap GmbH)
 - **lowlight** (Copyright (c) Titus Wormer)
 - **tippy.js** (Copyright (c) atomiks)
 - **zod** (Copyright (c) Colin McDonnell)
-- **electron-store** (Copyright (c) Sindre Sorhus)
 - **electron-context-menu** (Copyright (c) Sindre Sorhus)
 - **vite** (Copyright (c) Evan You)
 - **electron-vite** (Copyright (c) Alex Wei)

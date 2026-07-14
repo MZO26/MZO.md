@@ -2,11 +2,11 @@
 
 A minimalist, local-first note app for desktop.
 
-Built with Electron, TypeScript, Better SQLite3, and TipTap.
+Built with Electron, TypeScript, Sqlite, and TipTap.
 
 ## Features
 
-- Local-first note storage with SQLite
+- Local-first storage with SQLite
 - Optional auto-export to markdown files
 - Fast note-search with minisearch
 - Markdown-focused editing with TipTap
@@ -15,7 +15,6 @@ Built with Electron, TypeScript, Better SQLite3, and TipTap.
 - Import notes from Markdown, Plain Text, HTML and JSON
 - Focus Mode and adjustable editor width (Ultrawide support)
 - Light and dark theme support
-- Persistent settings with electron-store
 - Sanitized rendering with DOMPurify
 - Runtime validation with Zod
 
@@ -23,7 +22,6 @@ Built with Electron, TypeScript, Better SQLite3, and TipTap.
 
 - Electron
 - TypeScript
-- Better SQLite 3
 - TipTap / ProseMirror
 - minisearch
 - electron-vite
@@ -32,10 +30,6 @@ Built with Electron, TypeScript, Better SQLite3, and TipTap.
 - Zod
 - Lucide
 - Tippy.js
-
-## Screenshot
-
-<img src="image/app-screenshot.png" alt="MZO.md app screenshot" width="1100">
 
 ## Install
 
@@ -52,15 +46,14 @@ npm install
 
 ## Scripts
 
-| Command              | Description                           |
-| -------------------- | ------------------------------------- |
-| `npm run dev`        | Start development mode                |
-| `npm run build`      | Build production app                  |
-| `npm run pack:mac`   | Build macOS app                       |
-| `npm run pack:win`   | Build Windows app                     |
-| `npm run pack:linux` | Build Linux app                       |
-| `npm run typecheck`  | Run TypeScript type check             |
-| `npm run rebuild`    | Rebuild better sqlite 3 native module |
+| Command              | Description               |
+| -------------------- | ------------------------- |
+| `npm run dev`        | Start development mode    |
+| `npm run build`      | Build production app      |
+| `npm run pack:mac`   | Build macOS app           |
+| `npm run pack:win`   | Build Windows app         |
+| `npm run pack:linux` | Build Linux app           |
+| `npm run typecheck`  | Run TypeScript type check |
 
 ## Keyboard Shortcuts
 
@@ -94,56 +87,56 @@ Shortcuts use `$mod` which maps to `Ctrl` on Windows/Linux and `Cmd` on macOS.
 <summary><b>Click to view all Editor Shortcuts</b></summary>
 <br>
 
-| Shortcut                                               | Markdown     | Action                   |
-| :----------------------------------------------------- | :----------- | :----------------------- |
-| **History & Selection**                                |              |                          |
-| <kbd>Mod</kbd> + <kbd>Z</kbd>                          |              | Undo                     |
-| <kbd>Mod</kbd> + <kbd>Y</kbd>                          |              | Redo                     |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd>       |              | Redo                     |
-| <kbd>Mod</kbd> + <kbd>A</kbd>                          |              | Select all               |
-| **Inline Formatting**                                  |              |                          |
-| <kbd>Mod</kbd> + <kbd>B</kbd>                          | `**text**`   | Bold                     |
-| <kbd>Mod</kbd> + <kbd>I</kbd>                          | `*text*`     | Italic                   |
-| <kbd>Mod</kbd> + <kbd>S</kbd>                          | `~~text~~`   | Strikethrough            |
-| <kbd>Mod</kbd> + <kbd>H</kbd>                          | `==text==`   | Highlight                |
-| <kbd>Mod</kbd> + <kbd>E</kbd>                          | `` `code` `` | Inline code              |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>       | `$math$`     | Inline Math              |
-| **Headings & Paragraphs**                              |              |                          |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd>       | `# `         | Heading 1                |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>2</kbd>       | `## `        | Heading 2                |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>3</kbd>       | `### `       | Heading 3                |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd>       | `#### `      | Heading 4                |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd>       | `##### `     | Heading 5                |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>6</kbd>       | `###### `    | Heading 6                |
-| **Lists**                                              |              |                          |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd>       | `1. `        | Ordered list             |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>       | `- `         | Bullet list              |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>       | `[] `        | Task list                |
-| <kbd>Tab</kbd>                                         |              | Indent list item         |
-| <kbd>Shift</kbd> + <kbd>Tab</kbd>                      |              | Outdent list item        |
-| <kbd>Enter</kbd>                                       |              | Next list item           |
-| **Blocks & Elements**                                  |              |                          |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>       | `> `         | Blockquote               |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>       | ` ``` `      | Code block               |
-| <kbd>Mod<kbd> + <kbd>Shift</kbd>+ <kbd>M</kbd>         | `$$math$$`   | Math block               |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>       | `---`        | Horizontal rule          |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>       |              | Details                  |
-| <kbd>Shift</kbd> + <kbd>Enter</kbd>                    |              | Hard break (`<br>`)      |
-| **Links & Media**                                      |              |                          |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>Enter</kbd>     |              | Open Link                |
-| <kbd>Mod</kbd> + <kbd>K</kbd>                          |              | Toggle Link              |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>I</kbd>         |              | Insert image             |
-| **Tables**                                             |              |                          |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>         |              | Insert table             |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>↓</kbd>         |              | Add row after            |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>↑</kbd>         |              | Add row before           |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>→</kbd>         |              | Add column after         |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>←</kbd>         |              | Add column before        |
-| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>Backspace</kbd> |              | Delete table             |
-| **Editor Controls**                                    |              |                          |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>       |              | Paste without formatting |
-| <kbd>Mod</kbd> + <kbd>D</kbd>                          |              | Toggle editor focus mode |
-| <kbd>Escape</kbd>                                      |              | Remove focus from editor |
+| Shortcut                                               | Markdown     | Action                         |
+| :----------------------------------------------------- | :----------- | :----------------------------- |
+| **History & Selection**                                |              |                                |
+| <kbd>Mod</kbd> + <kbd>Z</kbd>                          |              | Undo                           |
+| <kbd>Mod</kbd> + <kbd>Y</kbd>                          |              | Redo                           |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd>       |              | Redo                           |
+| <kbd>Mod</kbd> + <kbd>A</kbd>                          |              | Select all                     |
+| **Inline Formatting**                                  |              |                                |
+| <kbd>Mod</kbd> + <kbd>B</kbd>                          | `**text**`   | Bold                           |
+| <kbd>Mod</kbd> + <kbd>I</kbd>                          | `*text*`     | Italic                         |
+| <kbd>Mod</kbd> + <kbd>S</kbd>                          | `~~text~~`   | Strikethrough                  |
+| <kbd>Mod</kbd> + <kbd>H</kbd>                          | `==text==`   | Highlight                      |
+| <kbd>Mod</kbd> + <kbd>E</kbd>                          | `` `code` `` | Inline code                    |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>       | `$math$`     | Inline Math                    |
+| **Headings & Paragraphs**                              |              |                                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd>       | `# `         | Heading 1                      |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>2</kbd>       | `## `        | Heading 2                      |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>3</kbd>       | `### `       | Heading 3                      |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd>       | `#### `      | Heading 4                      |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd>       | `##### `     | Heading 5                      |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>6</kbd>       | `###### `    | Heading 6                      |
+| **Lists**                                              |              |                                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd>       | `1. `        | Ordered list                   |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>       | `- `         | Bullet list                    |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>       | `[] `        | Task list                      |
+| <kbd>Tab</kbd>                                         |              | Indent list item               |
+| <kbd>Shift</kbd> + <kbd>Tab</kbd>                      |              | Outdent list item              |
+| <kbd>Enter</kbd>                                       |              | Next list item                 |
+| **Blocks & Elements**                                  |              |                                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>       | `> `         | Blockquote                     |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>       | ` ``` `      | Code block                     |
+| <kbd>Mod<> + <kbd>Shift</kbd>+ <kbd>M</kbd>            | `$$math$$`   | Math block                     |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>       | `---`        | Horizontal rule                |
+| <kbd>Shift</kbd> + <kbd>Enter</kbd>                    |              | Hard break (`<br>`)            |
+| **Links & Media**                                      |              |                                |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>Enter</kbd>     |              | Open Link                      |
+| <kbd>Mod</kbd> + <kbd>K</kbd>                          |              | Toggle Link                    |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>I</kbd>         |              | Insert image                   |
+| **Tables**                                             |              |                                |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>         |              | Insert table                   |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>↓</kbd>         |              | Add row after                  |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>↑</kbd>         |              | Add row before                 |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>→</kbd>         |              | Add column after               |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>←</kbd>         |              | Add column before              |
+| <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>Backspace</kbd> |              | Delete table                   |
+| **Editor Controls**                                    |              |                                |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>       |              | Paste without formatting       |
+| <kbd>Mod</kbd> + <kbd>D</kbd>                          |              | Toggle editor focus mode       |
+| <kbd>Escape</kbd>                                      |              | Remove focus from editor       |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd>+<kbd>Enter</kbd>     |              | Insert Space at end of a block |
 
 </details>
 
@@ -174,7 +167,6 @@ flowchart TD
 - Local-first application design
 - SQLite schema design
 - Rich editor integration without a frontend framework
-- Native module handling with `electron-rebuild`
 - Separation between main / renderer / shared
 
 ## Bug reports

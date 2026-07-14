@@ -19,10 +19,7 @@ function extractText(node: JSONContent): string {
       parts.push(n.text);
       return;
     }
-    if (n.type === "detailsBlock" && typeof n.attrs?.["summary"] === "string") {
-      parts.push(n.attrs["summary"]);
-      parts.push(" ");
-    } else if (n.type === "image" && typeof n.attrs?.["alt"] === "string") {
+    if (n.type === "image" && typeof n.attrs?.["alt"] === "string") {
       parts.push(n.attrs["alt"]);
       parts.push(" ");
     }

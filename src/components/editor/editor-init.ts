@@ -3,7 +3,7 @@ import {
   resetEditorHistory,
 } from "@/components/editor/editor-features";
 import { applyTagView } from "@/components/sidebar/sidebar-features";
-import { DetailsBlock } from "@/extensions/details";
+import { Callout } from "@/extensions/callout";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
 import {
@@ -96,8 +96,8 @@ function getNoteEditorExtensions() {
     ListKit.configure({
       taskItem: { nested: true },
     }),
+    Callout,
     CustomUnderline,
-    DetailsBlock,
     Highlight,
     WikiLinkPreview,
     WikiLink.configure({

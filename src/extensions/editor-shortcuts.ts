@@ -37,7 +37,6 @@ export const MasterShortcuts = Extension.create({
       "Mod-Shift-b": () => this.editor.commands.toggleBlockquote(),
       "Mod-Shift-c": () => this.editor.commands.toggleCodeBlock(),
       "Mod-Shift-r": () => this.editor.commands.setHorizontalRule(),
-      "Mod-Shift-d": () => this.editor.commands.toggleDetailsBlock(),
       "Mod-Alt-t": () =>
         this.editor.commands.insertTable({
           rows: 3,
@@ -90,8 +89,18 @@ export const MasterShortcuts = Extension.create({
         void openExternal(href);
         return true;
       },
+      "Mod-Shift-Enter": () => {
+        const { $from } = this.editor.state.selection;
+        // $from.after(1) always points to the position after the root container
+        const endPos = $from.after(1);
+        return this.editor
+          .chain()
+          .focus()
+          .insertContentAt(endPos, { type: "paragraph" })
+          .setTextSelection(endPos + 1)
+          .run();
+      },
       "Mod-k": () => {
-        if (!this.editor) return false;
         if (this.editor.isActive("link")) {
           return this.editor
             .chain()

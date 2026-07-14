@@ -6,7 +6,6 @@ import type { Editor } from "@tiptap/core";
 function getTableOfContents(editor: Editor | null) {
   const headings: TocItem[] = [];
   editor?.state.doc.descendants((node) => {
-    if (node.type.name === "detailsBlock") return false;
     if (node.type.name === "heading") {
       const text = (
         typeof node.textContent === "string" ? node.textContent : ""

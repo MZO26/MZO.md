@@ -358,7 +358,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     },
     isActive: (editor) => editor?.isActive("inlineMath"),
     icon: "sigma",
-    shortcut: "MOD+Shift+E | $math$",
+    shortcut: "MOD+Shift+E | $$math$$",
   },
   divider2: { type: "divider" },
   heading1: {
@@ -380,12 +380,6 @@ const TOOLBAR_ACTIONS: ActionMap = {
     shortcut: "MOD+Shift+3 | ### + Space",
   },
   divider3: { type: "divider" },
-  details: {
-    run: (editor) => editor?.chain().focus().toggleDetailsBlock().run(),
-    isActive: (editor) => editor?.isActive("detailsBlock"),
-    icon: "list-collapse",
-    shortcut: "MOD+Shift+D",
-  },
   bulletList: {
     run: (editor) => editor?.chain().focus().toggleBulletList().run(),
     isActive: (editor) => editor?.isActive("bulletList"),
@@ -434,7 +428,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     },
     isActive: (editor) => editor?.isActive("blockMath"),
     icon: "square-sigma",
-    shortcut: "MOD+Shift+M || $$math$$",
+    shortcut: "MOD+Shift+M || $$$math$$$",
   },
   horizontalRule: {
     run: (editor) => editor?.chain().focus().setHorizontalRule().run(),
