@@ -28,37 +28,30 @@ import {
   type AppSettings,
   type StoreRow,
 } from "@shared/schemas/store-schema";
-import type { DBBackupResult } from "@shared/types";
-import type BetterSqlite from "better-sqlite3";
-import type { PragmaOptions } from "better-sqlite3";
-import Database from "better-sqlite3";
 import { app } from "electron";
-import { createRequire } from "module";
+import { DatabaseSync, StatementSync, backup } from "node:sqlite";
 import path from "path";
-const require = createRequire(import.meta.url);
 
 class AppDB {
-  private db: BetterSqlite.Database;
+  private db: DatabaseSync;
+  private readonly dbPath: string;
   public transactions: Transactions;
-  private getAllNotesStmt: BetterSqlite.Statement;
-  private getNoteByIdStmt: BetterSqlite.Statement;
-  private getManyNotesByIdStmt: BetterSqlite.Statement;
-  private getAllTagsStmt: BetterSqlite.Statement;
-  private getAllLinksStmt: BetterSqlite.Statement;
-  private getTagsByIdStmt: BetterSqlite.Statement;
-  private getLinksByIdStmt: BetterSqlite.Statement;
-  private getOldTitleStmt: BetterSqlite.Statement;
-  private togglePinStmt: BetterSqlite.Statement;
-  private toggleManyPinStmt: BetterSqlite.Statement;
-  private updateStoreStmt: BetterSqlite.Statement;
-  private getAllSettingsStmt: BetterSqlite.Statement;
+  private getAllNotesStmt: StatementSync;
+  private getNoteByIdStmt: StatementSync;
+  private getManyNotesByIdStmt: StatementSync;
+  private getAllTagsStmt: StatementSync;
+  private getAllLinksStmt: StatementSync;
+  private getTagsByIdStmt: StatementSync;
+  private getLinksByIdStmt: StatementSync;
+  private getOldTitleStmt: StatementSync;
+  private togglePinStmt: StatementSync;
+  private toggleManyPinStmt: StatementSync;
+  private updateStoreStmt: StatementSync;
+  private getAllSettingsStmt: StatementSync;
   constructor() {
-    const dbPath = path.join(app.getPath("userData"), "app.db");
+    this.dbPath = path.join(app.getPath("userData"), "app.db");
     try {
-      const BetterSqlite = require("better-sqlite3");
-      this.db = new BetterSqlite(dbPath);
-      this.db.pragma("journal_mode = WAL");
-      this.db.pragma("foreign_keys = ON");
+      this.db = this.open();
       this.createTables();
       this.transactions = new Transactions(this.db);
       // predefined statements to prevent parsing them for every transaction
@@ -121,14 +114,14 @@ class AppDB {
       this.getAllSettingsStmt = this.db.prepare(`
         SELECT * FROM store WHERE id = 1
       `);
-      console.log(`Database initialized at: ${dbPath}`);
+      console.log(`Database initialized at: ${this.dbPath}`);
     } catch (error) {
       console.error("[AppDB]: Failed to initialize database:", error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       const msg =
-        `better-sqlite3 native module failed to load on platform: ${process.platform}. ` +
-        `Try running: npm run rebuild && npm run pack. Original error: ${errorMessage}`;
+        `database to load on platform: ${process.platform}. ` +
+        `Original error: ${errorMessage}`;
       throw new AppBackendError(AppErrorCode.DBError, msg);
     }
   }
@@ -403,46 +396,58 @@ class AppDB {
     return validation(OldNoteSchema, rows);
   }
 
-  public pragma(source: string, options?: PragmaOptions) {
-    return this.db.pragma(source, options);
+  public pragma(source: string, options?: { simple?: boolean }) {
+    const sql = source.trim().toUpperCase().startsWith("PRAGMA ")
+      ? source
+      : `PRAGMA ${source}`;
+    const stmt = this.db.prepare(sql);
+    if (options?.simple) {
+      const row = stmt.get() as Record<string, unknown> | undefined;
+      return row ? Object.values(row)[0] : undefined;
+    }
+    return stmt.all();
   }
 
   public close() {
     this.db.close();
   }
 
-  public open(): BetterSqlite.Database {
+  public open(): DatabaseSync {
     if (this.db) return this.db;
     const dbPath = this.pathDb();
-    const db = new Database(dbPath, {
-      fileMustExist: true,
-      timeout: 5000,
+    const db = new DatabaseSync(dbPath, {
+      open: true,
+      readOnly: false,
     });
     try {
-      db.pragma("journal_mode = WAL");
-      db.pragma("foreign_keys = ON");
-      const integrity = db.pragma("quick_check", { simple: true });
-      if (integrity !== "ok") {
-        throw new AppBackendError(AppErrorCode.InvalidData);
+      db.exec("PRAGMA journal_mode = WAL");
+      db.exec("PRAGMA foreign_keys = ON");
+      db.exec("PRAGMA busy_timeout = 5000");
+      db.exec("PRAGMA synchronous = NORMAL");
+      const integrity = db.prepare("PRAGMA quick_check").get() as
+        | Record<string, unknown>
+        | undefined;
+      if (integrity && Object.values(integrity)[0] !== "ok") {
+        throw new AppBackendError(AppErrorCode.DBError);
       }
       this.db = db;
-      return db;
+      return this.db;
     } catch (error) {
       db.close();
       throw error;
     }
   }
 
-  public vacuum() {
-    this.db.exec("VACUUM");
+  public pathDb(): string {
+    return this.dbPath;
   }
 
-  public pathDb() {
-    return this.db.name;
-  }
-
-  async backupDb(destination: string): Promise<DBBackupResult> {
-    return this.db.backup(destination);
+  public async backupDb(destination: string) {
+    await backup(this.db, destination, {
+      progress: (info) => {
+        console.log(`Backup progress: ${info.remainingPages} pages left.`);
+      },
+    });
   }
 }
 

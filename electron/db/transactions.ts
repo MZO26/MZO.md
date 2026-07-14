@@ -9,20 +9,19 @@ import {
   type NoteRow,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
-import type BetterSqlite from "better-sqlite3";
-import type { Database as DatabaseType } from "better-sqlite3";
+import { DatabaseSync, StatementSync } from "node:sqlite";
 
 class Transactions {
-  private db: DatabaseType;
-  private createNoteStmt: BetterSqlite.Statement;
-  private updateNoteStmt: BetterSqlite.Statement;
-  private deleteNoteStmt: BetterSqlite.Statement;
-  private deleteTagsStmt: BetterSqlite.Statement;
-  private deleteLinksStmt: BetterSqlite.Statement;
-  private insertManyTagsStmt: BetterSqlite.Statement;
-  private insertManyLinksStmt: BetterSqlite.Statement;
-  private deleteManyNotesStmt: BetterSqlite.Statement;
-  constructor(dbConnection: DatabaseType) {
+  private db: DatabaseSync;
+  private createNoteStmt: StatementSync;
+  private updateNoteStmt: StatementSync;
+  private deleteNoteStmt: StatementSync;
+  private deleteTagsStmt: StatementSync;
+  private deleteLinksStmt: StatementSync;
+  private insertManyTagsStmt: StatementSync;
+  private insertManyLinksStmt: StatementSync;
+  private deleteManyNotesStmt: StatementSync;
+  constructor(dbConnection: DatabaseSync) {
     this.db = dbConnection;
 
     this.createNoteStmt = this.db.prepare(
@@ -55,6 +54,33 @@ class Transactions {
     `);
   }
 
+  private savepointCounter = 0;
+
+  private transaction<T>(fn: () => T extends Promise<any> ? never : T): T {
+    if (this.db.isTransaction) {
+      const savepoint = `sp_${++this.savepointCounter}`;
+      this.db.exec(`SAVEPOINT ${savepoint}`);
+      try {
+        const result = fn();
+        this.db.exec(`RELEASE SAVEPOINT ${savepoint}`);
+        return result;
+      } catch (error) {
+        this.db.exec(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+        this.db.exec(`RELEASE SAVEPOINT ${savepoint}`);
+        throw error;
+      }
+    }
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      const result = fn();
+      this.db.exec("COMMIT");
+      return result;
+    } catch (error) {
+      this.db.exec("ROLLBACK");
+      throw error;
+    }
+  }
+
   private runDeleteManyLogic(ids: string[]): boolean {
     if (ids.length === 0) return false;
     const result = this.deleteManyNotesStmt.run({
@@ -64,10 +90,8 @@ class Transactions {
   }
 
   public safeDeleteMany(ids: string[]): boolean {
-    const transactionRunner = this.db.transaction(
-      this.runDeleteManyLogic.bind(this),
-    );
-    return transactionRunner(ids);
+    const result = this.transaction(() => this.runDeleteManyLogic(ids));
+    return result;
   }
 
   private runCreateManyLogic(paramsArr: CreateTransaction[]): {
@@ -103,10 +127,9 @@ class Transactions {
 
   safeCreateMany(paramsArr: CreateTransaction[]): Note[] {
     if (paramsArr.length === 0) return [];
-    const transactionRunner = this.db.transaction(
-      this.runCreateManyLogic.bind(this),
-    );
-    const dbResults = transactionRunner(paramsArr);
+    const dbResults = this.transaction(() => {
+      return this.runCreateManyLogic(paramsArr);
+    });
     return dbResults.map((result) =>
       validation(NoteFromDB, {
         ...result.row,
@@ -146,10 +169,9 @@ class Transactions {
     const { tags, links, ...noteParams } = params;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];
-    const transactionRunner = this.db.transaction(
-      this.runCreateLogic.bind(this),
+    const result = this.transaction(() =>
+      this.runCreateLogic(noteParams, safeTags, safeLinks),
     );
-    const result = transactionRunner(noteParams, safeTags, safeLinks);
     const allLinks = AppDB.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== params.id);
     return validation(NoteFromDB, {
@@ -165,10 +187,7 @@ class Transactions {
   }
 
   public safeDelete(id: string): boolean {
-    const transactionRunner = this.db.transaction(
-      this.runDeleteLogic.bind(this),
-    );
-    return transactionRunner(id);
+    return this.transaction(() => this.runDeleteLogic(id));
   }
 
   private runUpdateLogic(
@@ -201,10 +220,9 @@ class Transactions {
     const { tags, links, ...noteParams } = params;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];
-    const transactionRunner = this.db.transaction(
-      this.runUpdateLogic.bind(this),
+    const result = this.transaction(() =>
+      this.runUpdateLogic(noteParams, safeTags, safeLinks),
     );
-    const result = transactionRunner(noteParams, safeTags, safeLinks);
     const allLinks = AppDB.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== params.id);
     return validation(NoteFromDB, {

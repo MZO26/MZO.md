@@ -90,7 +90,6 @@ declare global {
       pin: (id: string) => Promise<Result<boolean>>;
       pinMany: (ids: string[]) => Promise<Result<boolean>>;
       databaseBackup: () => Promise<Result<number>>;
-      databaseVacuum: () => Promise<Result<number>>;
       databaseBackupRestore: () => Promise<Result<void>>;
       setActiveNote: (id: string | null) => void;
     };

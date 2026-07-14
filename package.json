@@ -86,16 +86,17 @@
     "@tiptap/extension-code-block-lowlight": "^3.26.0",
     "@tiptap/extension-image": "^3.26.0",
     "@tiptap/extension-list": "^3.26.0",
+    "@tiptap/extension-mathematics": "^3.27.4",
     "@tiptap/extension-table": "^3.26.0",
     "@tiptap/extensions": "^3.26.0",
     "@tiptap/markdown": "^3.26.0",
     "@tiptap/starter-kit": "^3.26.0",
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^24.10.0",
+    "@types/node": "^26.1.1",
     "dompurify": "^3.4.8",
-    "electron": "^41.0.3",
+    "electron": "^43.1.0",
     "electron-builder": "^26.8.1",
     "electron-vite": "^5.0.0",
+    "katex": "^0.17.0",
     "lowlight": "^3.3.0",
     "lucide": "^1.17.0",
     "minisearch": "^7.2.0",
@@ -105,10 +106,7 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "@tiptap/extension-mathematics": "^3.27.3",
-    "better-sqlite3": "^12.8.0",
     "electron-context-menu": "^4.1.2",
-    "katex": "^0.17.0",
     "zod": "^4.3.6"
   }
 }

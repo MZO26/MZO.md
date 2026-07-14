@@ -115,11 +115,6 @@ type EditorContentType = NonNullable<SetContentOptions["contentType"]>;
 
 type SettingsCategory = "Appearance" | "Editor" | "General";
 
-type DBBackupResult = {
-  totalPages: number;
-  remainingPages: number;
-};
-
 type MenuType = "table" | "text" | "note";
 
 type NoteMenuPayload = {
@@ -207,8 +202,7 @@ type QuickAction =
   | "open-path"
   | "backup-db"
   | "backup-db-restore"
-  | "backup-notes"
-  | "vacuum-db";
+  | "backup-notes";
 
 type QuickActionConfig = {
   id: QuickAction;
@@ -234,7 +228,6 @@ export type {
   Code,
   ContentType,
   CoreRegistry,
-  DBBackupResult,
   EditorContentType,
   ErrorHandlerOptions,
   ExportedContent,

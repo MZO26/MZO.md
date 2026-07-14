@@ -88,11 +88,6 @@ const QUICK_ACTIONS: QuickActionConfig[] = [
   { id: "backup-db", icon: "database-backup", label: "Database Backup" },
   { id: "backup-notes", icon: "download", label: "File Backup" },
   {
-    id: "vacuum-db",
-    icon: "hard-drive",
-    label: "Compact Database",
-  },
-  {
     id: "backup-db-restore",
     icon: "archive-restore",
     label: "Restore Database from Backup",

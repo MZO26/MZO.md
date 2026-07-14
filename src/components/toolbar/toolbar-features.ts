@@ -433,7 +433,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
       });
     },
     isActive: (editor) => editor?.isActive("blockMath"),
-    icon: "function-square",
+    icon: "square-sigma",
     shortcut: "MOD+Shift+M || $$math$$",
   },
   horizontalRule: {

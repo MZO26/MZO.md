@@ -421,7 +421,7 @@
 }
 
 .ProseMirror-selectednode img {
-  outline: 2px solid var(--tag-color);
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
 
@@ -706,8 +706,26 @@
 .wikilink-preview-content details {
   border: 0;
   border-radius: 5px;
-  box-shadow: none;
   background: transparent;
+}
+
+.ProseMirror .details-root:hover,
+.ProseMirror .details-root:focus-within,
+.wikilink-preview-content details:focus-within {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.ProseMirror .details-summary:focus,
+.wikilink-preview-content summary:focus {
+  outline: none !important;
+}
+
+.ProseMirror .details-root.ProseMirror-selectednode,
+.ProseMirror details.ProseMirror-selectednode {
+  box-shadow: none !important;
 }
 
 .ProseMirror .details-summary,
@@ -721,16 +739,6 @@
   list-style: none;
   cursor: pointer;
   user-select: none;
-}
-
-.ProseMirror .details-summary::-webkit-details-marker,
-.wikilink-preview-content summary::-webkit-details-marker {
-  display: none;
-}
-
-.ProseMirror .details-summary::marker,
-.wikilink-preview-content summary::marker {
-  content: none;
 }
 
 .ProseMirror .details-summary::before,
@@ -754,12 +762,6 @@
   transform: rotate(45deg);
 }
 
-.ProseMirror .details-summary:hover,
-.wikilink-preview-content details:hover {
-  background-color: color-mix(in srgb, var(--text-main) 4%, transparent);
-  border-radius: 5px;
-}
-
 .ProseMirror .details-summary::after,
 .wikilink-preview-content summary::after {
   content: "";
@@ -769,26 +771,9 @@
   border-top: 1px solid var(--text-main);
 }
 
-.ProseMirror .details-content {
+.ProseMirror .details-content,
+.wikilink-preview-content .details-content {
   padding: 1rem 0.65rem 0.3rem 0.2rem;
-}
-
-.ProseMirror .details-root.has-focus,
-.details-root:hover {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 1px var(--accent-primary);
-}
-
-.ProseMirror .details-root:focus-within > .details-summary {
-  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
-}
-
-.ProseMirror .details-root.has-focus > .details-summary {
-  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
-}
-
-.wikilink-preview-content summary::before {
-  margin-top: 0.18rem;
 }
 
 .autocomplete {
@@ -797,7 +782,13 @@
   user-select: none;
 }
 
-.ProseMirror .math-inline {
+.wikilink-preview-content .tiptap-mathematics-render,
+.ProseMirror .tiptap-mathematics-render {
+  cursor: pointer;
+}
+
+.wikilink-preview-content .tiptap-mathematics-render[data-type="inline-math"],
+.ProseMirror .tiptap-mathematics-render[data-type="inline-math"] {
   display: inline-block;
   vertical-align: middle;
   padding: 0 2px;
@@ -806,29 +797,26 @@
   transition: background-color 0.2s ease;
 }
 
-.ProseMirror .math-block {
+.wikilink-preview-content .tiptap-mathematics-render[data-type="block-math"],
+.ProseMirror .tiptap-mathematics-render[data-type="block-math"] {
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 1.5rem 0;
   padding: 1rem;
-  background-color: var(--bg-sidebar-section);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   overflow-x: auto;
   overflow-y: hidden;
   color: var(--text-main);
 }
 
-.ProseMirror .math-inline:focus,
-.ProseMirror .math-block:focus,
-.ProseMirror .has-focus .math-inline,
-.ProseMirror .has-focus .math-block {
-  outline: none;
-  background-color: var(--selection-bg);
-  border-radius: 3px;
+.ProseMirror .tiptap-mathematics-render.ProseMirror-selectednode {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
 }
 
-.katex {
-  font-size: 1.05em;
-  line-height: 1.2;
+.ProseMirror .tiptap-mathematics-render:focus {
+  outline: none;
+  background-color: var(--selection-bg);
 }

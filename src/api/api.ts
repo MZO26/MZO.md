@@ -117,10 +117,6 @@ async function databaseBackup(): Promise<Result<number>> {
   return invoke(window.noteAPI.databaseBackup());
 }
 
-async function databaseVacuum(): Promise<Result<number>> {
-  return invoke(window.noteAPI.databaseVacuum());
-}
-
 async function databaseBackupRestore(): Promise<Result<void>> {
   return invoke(window.noteAPI.databaseBackupRestore());
 }
@@ -239,7 +235,6 @@ export {
   createNote,
   databaseBackup,
   databaseBackupRestore,
-  databaseVacuum,
   deleteManyNotes,
   deleteNote,
   exportManyNotes,

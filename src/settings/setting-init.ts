@@ -1,7 +1,6 @@
 import {
   databaseBackup,
   databaseBackupRestore,
-  databaseVacuum,
   openAppPath,
   showNotification,
 } from "@/api/api";
@@ -20,7 +19,6 @@ import { applyAppTheme } from "@/settings/theme";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
-import { formatBytes } from "@/utils/ui";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 async function initAppSettings(settings: AppSettings) {
@@ -103,25 +101,6 @@ function applyModalListeners(
           const allIds = noteStore.get("notes")?.map((n) => n.id);
           if (!Array.isArray(allIds) || allIds.length === 0) return;
           await exportSelection(allIds);
-          break;
-        case "vacuum-db":
-          try {
-            const savedBytes = await databaseVacuum();
-            if (savedBytes.success) {
-              await showNotification(
-                "Optimized Database.",
-                savedBytes.data === 0
-                  ? "Database already compact"
-                  : `Reclaimed ${formatBytes(savedBytes.data)} of space`,
-              );
-            }
-          } catch (error) {
-            console.error(
-              "[quickActions -> vacuum-db]: Failed to vacuum db:",
-              error,
-            );
-            showNotification("Failed to optimize database.", "");
-          }
           break;
       }
     }),

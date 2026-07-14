@@ -265,7 +265,7 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit("db-backup", LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const filePath = await handleDBBackupDialog(win);
-      return (await db.backupDb(filePath)).totalPages;
+      return await db.backupDb(filePath);
     });
   });
 
@@ -295,18 +295,6 @@ function registerNoteIpc(win: BrowserWindow) {
         db.open();
         throw new AppBackendError(AppErrorCode.FileWriteError);
       }
-    });
-  });
-
-  ipcMain.handle("db-vacuum", (e) => {
-    return result(e, async () => {
-      if (!checkRateLimit("db-vacuum", LIMITS.WRITE_HEAVY))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      const dbPath = db.pathDb();
-      const before = (await fs.stat(dbPath)).size;
-      db.vacuum();
-      const after = (await fs.stat(dbPath)).size;
-      return Math.max(0, before - after);
     });
   });
 }

@@ -3,7 +3,6 @@ import { initTippyDelegate } from "@/utils/ui";
 
 function initDeleteDialog() {
   const deleteDialog = requireElement<HTMLDialogElement>("#delete-dialog");
-  initTippyDelegate(deleteDialog, deleteDialog);
   return { deleteDialog };
 }
 
@@ -16,7 +15,6 @@ function initSettingsDialog() {
 
 function initSyncDialog() {
   const syncDialog = requireElement<HTMLDialogElement>("#sync-dialog");
-  initTippyDelegate(syncDialog, syncDialog, "top");
   return { syncDialog };
 }
 
