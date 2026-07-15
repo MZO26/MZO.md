@@ -48,12 +48,6 @@ if (!gotLock) {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// asset handling (unused right now)
-process.env["DIST"] = path.join(__dirname, "../dist");
-process.env["VITE_PUBLIC"] = app.isPackaged
-  ? process.env["DIST"]
-  : path.join(process.env["DIST"], "../public");
-
 registerCustomProtocol();
 setupGlobalErrorHandling({
   ignore: ["DownloadItem", "net::ERR_ABORTED", "net::ERR_CONNECTION_REFUSED"],
