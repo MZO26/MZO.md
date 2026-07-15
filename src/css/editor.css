@@ -744,8 +744,7 @@
     tr,
     td,
     th,
-    img,
-
+    img
   ) {
   background-color: var(--bg-button);
   border-radius: 4px;

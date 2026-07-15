@@ -309,7 +309,6 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 12px;
-  font-family: "Fira Code", "JetBrains Mono", "Courier New", monospace;
   font-size: 1.2rem;
   line-height: 1.6;
   resize: vertical;
@@ -317,6 +316,19 @@
   overflow-y: auto;
   outline: none;
   transition: border-color 0.2s ease;
+}
+
+#math-input::-webkit-resizer {
+  background-color: transparent;
+  background-image: linear-gradient(
+    135deg,
+    transparent 65%,
+    var(--border-color) 65%
+  );
+}
+
+#math-input::selection {
+  background-color: var(--editor-highlight);
 }
 
 #math-input:focus {

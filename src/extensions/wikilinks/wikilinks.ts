@@ -1,11 +1,12 @@
 import { noteStore, stateStore } from "@/settings/app-state";
 import type { NoteListItem } from "@shared/schemas/note-schema";
-import { InputRule, mergeAttributes, Node } from "@tiptap/core";
+import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 const UUID_PATTERN = "([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})";
 const INPUT_REGEX = /(?<!!)\[\[([^\]]+)\]\]$/;
+const PASTE_REGEX = /\[\[([^\]]+)\]\]/g;
 const EXACT_UUID_REGEX = new RegExp(`^${UUID_PATTERN}$`, "i");
 
 export interface WikiLinkOptions {
@@ -173,6 +174,26 @@ const WikiLink = Node.create<WikiLinkOptions>({
     ];
   },
 
+  addPasteRules() {
+    return [
+      nodePasteRule({
+        find: PASTE_REGEX,
+        type: this.type,
+        getAttributes: (match) => {
+          const rawTitle = typeof match[1] === "string" ? match[1].trim() : "";
+          if (!rawTitle) return false;
+          const targetNote = noteStore
+            .get("notes")
+            .find((n) => n.title.toLowerCase() === rawTitle.toLowerCase());
+          if (!targetNote) return false;
+          return {
+            id: targetNote.id,
+          };
+        },
+      }),
+    ];
+  },
+
   addProseMirrorPlugins() {
     return [
       new Plugin({
@@ -213,7 +234,9 @@ const WikiLink = Node.create<WikiLinkOptions>({
             if (!match) return null;
             const rawQuery = match[1];
             if (!rawQuery) return null;
-            const normalizedQuery = rawQuery.trim().toLowerCase();
+            const normalizedQuery =
+              typeof rawQuery === "string" ? rawQuery.trim().toLowerCase() : "";
+            if (!normalizedQuery) return null;
             const notes = noteStore.get("notes");
             const currentId = stateStore.get("activeId");
             let bestMatch: NoteListItem | null = null;
@@ -241,7 +264,6 @@ const WikiLink = Node.create<WikiLinkOptions>({
             };
           },
         },
-
         props: {
           decorations(state) {
             const pluginState = autocompleteKey.getState(state);

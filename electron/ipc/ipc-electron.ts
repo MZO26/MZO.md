@@ -57,8 +57,8 @@ function registerElectronIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("open:external", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      const validatedUrl = validation(ExternalUrlSchema, url);
-      return shell.openExternal(validatedUrl);
+      const validatedData = validation(ExternalUrlSchema, url);
+      return shell.openExternal(validatedData);
     });
   });
 

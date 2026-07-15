@@ -62,13 +62,16 @@ const NoteTag = Node.create<NoteTagOptions>({
       mergeAttributes(HTMLAttributes, {
         "data-type": "noteTag",
         class: "tag-node",
+        contenteditable: false,
       }),
       `#${id}`,
     ];
   },
+
   renderText({ node }) {
     const id = normalizeTagId(node.attrs?.["id"] ?? "");
-    return id ? `#${id}` : "";
+    // zero width character to not trigger heading regex
+    return id ? `\u200B#${id}` : "";
   },
 
   markdownTokenName: "noteTag",
@@ -207,7 +210,9 @@ const NoteTag = Node.create<NoteTagOptions>({
           if (!match) return null;
           const rawQuery = match[1];
           if (!rawQuery) return null;
-          const normalizedQuery = rawQuery.trim().toLowerCase();
+          const normalizedQuery =
+            typeof rawQuery === "string" ? rawQuery.trim().toLowerCase() : "";
+          if (!normalizedQuery) return null;
           let bestMatch: string | null = null;
           let exactMatchFound = false;
           for (const note of noteStore.get("notes")) {

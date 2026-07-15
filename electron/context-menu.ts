@@ -1,7 +1,9 @@
 import { isAutoExport } from "@electron/fs/fs-auto-export";
 import { settingsService } from "@electron/handler/settings-handler";
+import { validation } from "@electron/ipc/ipc-validation";
+import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
 import type { NoteMenuPayload } from "@shared/types";
-import { ipcMain, Menu, type BrowserWindow } from "electron";
+import { clipboard, ipcMain, Menu, shell, type BrowserWindow } from "electron";
 
 let activeId: string | null = null;
 
@@ -9,28 +11,113 @@ ipcMain.on("note:set-active", (_e, id: string | null) => {
   activeId = id;
 });
 
-async function setUpEditorMenu(win: BrowserWindow) {
-  const { default: contextMenu } = await import("electron-context-menu");
-  contextMenu({
-    window: win,
-    shouldShowMenu: (_event, params) =>
-      params.isEditable || params.mediaType === "image" || !!params.linkURL,
-    menu: (defaultActions) => [
-      defaultActions.cut({}),
-      defaultActions.copy({}),
-      defaultActions.paste({}),
-      defaultActions.separator(),
-      defaultActions.searchWithGoogle({}),
-      defaultActions.lookUpSelection({}),
-      defaultActions.separator(),
-      defaultActions.selectAll({}),
-      defaultActions.separator(),
-      defaultActions.copyImage({}),
-      defaultActions.copyImageAddress({}),
-      defaultActions.copyLink({}),
-    ],
+function pushOptionalSeparator(items: Electron.MenuItemConstructorOptions[]) {
+  const last = items[items.length - 1];
+  if (items.length > 0 && last?.type !== "separator") {
+    items.push({ type: "separator" });
+  }
+}
+
+function setUpEditorMenu(win: BrowserWindow) {
+  win.webContents.on("context-menu", (_event, params) => {
+    const items: Electron.MenuItemConstructorOptions[] = [];
+    const hasSelection = params.selectionText?.trim().length > 0;
+    const isImage = params.mediaType === "image";
+    const hasLink = Boolean(params.linkURL);
+    const canEdit =
+      params.isEditable ||
+      params.editFlags.canCut ||
+      params.editFlags.canCopy ||
+      params.editFlags.canPaste;
+    if (!canEdit && !hasSelection && !isImage && !hasLink) return;
+    if (params.isEditable) {
+      if (params.editFlags.canCut) items.push({ role: "cut" });
+      if (params.editFlags.canCopy) items.push({ role: "copy" });
+      if (params.editFlags.canPaste) items.push({ role: "paste" });
+      if (items.length > 0 && params.editFlags.canSelectAll) {
+        pushOptionalSeparator(items);
+        items.push({ role: "selectAll" });
+      }
+    } else if (hasSelection && params.editFlags.canCopy) {
+      items.push({ role: "copy" });
+    }
+    if (hasSelection) {
+      pushOptionalSeparator(items);
+      const safeSearchText = params.selectionText?.trim().slice(0, 200);
+      items.push({
+        label: "Search with Google",
+        click: async () => {
+          try {
+            const query = encodeURIComponent(safeSearchText);
+            await shell.openExternal(
+              `https://www.google.com/search?q=${query}`,
+            );
+          } catch (error) {
+            console.error(
+              "[setUpEditorMenu]: Failed to open search browser:",
+              error,
+            );
+          }
+        },
+      });
+      if (process.platform === "darwin") {
+        items.push({
+          label: "Look Up",
+          click: () => {
+            try {
+              win.webContents.showDefinitionForSelection();
+            } catch (error) {
+              console.error(
+                "[setUpEditorMenu]: Failed to lookup selection:",
+                error,
+              );
+            }
+          },
+        });
+      }
+    }
+    if (isImage || hasLink) {
+      pushOptionalSeparator(items);
+      if (isImage) {
+        items.push({
+          label: "Copy Image",
+          click: () => {
+            try {
+              win.webContents.copyImageAt(params.x, params.y);
+            } catch (error) {
+              console.error("[setUpEditorMenu]: Failed to copy image:", error);
+            }
+          },
+        });
+        if (validation(ExternalUrlSchema, params.srcURL)) {
+          items.push({
+            label: "Copy Image Address",
+            click: () => clipboard.writeText(params.srcURL),
+          });
+        }
+      }
+      if (hasLink && validation(ExternalUrlSchema, params.linkURL)) {
+        items.push({
+          label: "Copy Link",
+          click: () => clipboard.writeText(params.linkURL),
+        });
+      }
+    }
+    if (items[items.length - 1]?.type === "separator") {
+      items.pop();
+    }
+    if (items.length === 0) return;
+    const menu = Menu.buildFromTemplate(items);
+    menu.popup({
+      window: win,
+      // for apple specific context menu features to work, frame has to be passed as an explicit reference
+      ...(process.platform === "darwin" && params.frame != null
+        ? { frame: params.frame }
+        : {}),
+    });
   });
 }
+
 function setUpTableMenu(win: BrowserWindow) {
   const tableMenu = Menu.buildFromTemplate([
     {

@@ -1,7 +1,7 @@
 import type { JSONContent } from "@tiptap/core";
 import z from "zod";
 
-const MAX_CHARS = 500_000;
+const MAX_CHARS = 1_000_000;
 
 const JSONNode: z.ZodType<JSONContent> = z.lazy(() =>
   z
@@ -21,10 +21,25 @@ const EditorDocSchema = z
     attrs: z.record(z.string(), z.unknown()).optional(),
     content: z.array(JSONNode).default([{ type: "paragraph" }]),
   })
-  .refine((doc) => JSON.stringify(doc).length <= MAX_CHARS, {
-    message: `Document exceeds ${MAX_CHARS} characters`,
-    path: ["content"],
-  })
+  .refine(
+    (doc) => {
+      const jsonString = JSON.stringify(doc);
+      return !jsonString.includes('"data:image/');
+    },
+    {
+      message: "Inline Base64 images are not allowed.",
+      path: ["content"],
+    },
+  )
+  .refine(
+    (doc) => {
+      return JSON.stringify(doc).length <= MAX_CHARS;
+    },
+    {
+      message: `Document exceeds ${MAX_CHARS} characters.`,
+      path: ["content"],
+    },
+  )
   .default({
     type: "doc",
     content: [{ type: "paragraph" }],
@@ -48,10 +63,14 @@ const DbContentSchema = z
 
 //input gets validated -> processed into parsed object -> piped to validate output against EditorDocSchema
 
-const ExternalUrlSchema = z.url().refine((value) => {
-  const url = new URL(value);
-  return ["http:", "appimg:"].includes(url.protocol);
-}, "Unsupported link protocol");
+const ExternalUrlSchema = z.string().refine((value) => {
+  try {
+    const url = new URL(value);
+    return ["https:", "appimg:"].includes(url.protocol);
+  } catch {
+    return false;
+  }
+}, "Invalid URL or unsupported protocol");
 
 type EditorDoc = z.infer<typeof EditorDocSchema>;
 

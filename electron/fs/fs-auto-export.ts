@@ -42,15 +42,18 @@ async function isAutoExport(id: string): Promise<boolean> {
     if (!absoluteFilePath) return false;
     try {
       await fs.access(absoluteFilePath, fs.constants.F_OK);
-      console.log("[isAutoExport]: This note is on the file system.");
+      console.log("[isAutoExport]: This note is on the file system.", id);
       return true;
-    } catch (fsError) {
-      const err = fsError as NodeJS.ErrnoException;
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
       if (err.code === "ENOENT") {
-        console.log("[isAutoExport]: This note is not on the file system yet.");
+        console.log(
+          "[isAutoExport]: This note is not on the file system yet.",
+          id,
+        );
         return false;
       }
-      throw fsError;
+      throw error;
     }
   } catch (error) {
     console.error(

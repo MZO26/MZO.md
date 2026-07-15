@@ -106,7 +106,6 @@
     "vite": "^7.3.6"
   },
   "dependencies": {
-    "electron-context-menu": "^4.1.2",
     "zod": "^4.3.6"
   }
 }

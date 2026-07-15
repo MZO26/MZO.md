@@ -65,7 +65,7 @@ export const Callout = Node.create<CalloutOptions>({
       [
         "div",
         { contenteditable: "false", class: "callout-header" },
-        ["span", { class: "callout-icon" }, icons[type] || "📘"],
+        ["span", { class: "callout-icon" }, icons[type] || "📝"],
         ["span", { class: "callout-title" }, type.toUpperCase()],
       ],
       ["div", { class: "callout-content" }, 0],

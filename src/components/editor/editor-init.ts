@@ -192,12 +192,14 @@ function getNoteEditorExtensions() {
           if (!ctx.defaultValidate(url)) {
             return false;
           }
-          const protocolMatch = url.match(/^([a-zA-Z0-9+.-]+):/);
-          if (!protocolMatch) {
-            return true;
+          try {
+            // google as base path for relative path parsing
+            const parsed = new URL(url, "https://google.com");
+            return ["https:", "appimg:"].includes(parsed.protocol);
+          } catch (error: unknown) {
+            console.error("[link.configure]: Invalid URL");
+            return false;
           }
-          const protocol = protocolMatch[1]?.toLowerCase();
-          return protocol === "https" || protocol === "appimg";
         },
       },
       dropcursor: {
