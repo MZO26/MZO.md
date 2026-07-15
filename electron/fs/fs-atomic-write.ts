@@ -13,9 +13,9 @@ async function writeAtomic(
     // open the temp file for writing
     fileHandle = await open(tempPath, "wx");
     // writes all new data into the temp file. If an error comes up, it jumps to finally and closes the temp file
-    await fileHandle.writeFile(content);
+    await fileHandle?.writeFile(content);
     // flush saves file contents from memory to the fs
-    await fileHandle.datasync();
+    await fileHandle?.datasync();
     writeSucceeded = true;
   } finally {
     await fileHandle?.close();

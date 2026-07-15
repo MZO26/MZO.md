@@ -1,4 +1,3 @@
-// import { setUpEditorMenu } from "@electron/context-menu";
 import { setUpEditorMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
 import { setupGlobalErrorHandling } from "@electron/handler/global-error-handler";

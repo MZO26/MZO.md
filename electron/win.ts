@@ -53,7 +53,7 @@ const createHiddenPdfWindow = () => {
     skipTaskbar: true,
     focusable: false,
     width: 1100,
-    height: 600,
+    height: 800,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
