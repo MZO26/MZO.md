@@ -21,25 +21,23 @@ const EditorDocSchema = z
     attrs: z.record(z.string(), z.unknown()).optional(),
     content: z.array(JSONNode).default([{ type: "paragraph" }]),
   })
-  .refine(
-    (doc) => {
-      const jsonString = JSON.stringify(doc);
-      return !jsonString.includes('"data:image/');
-    },
-    {
-      message: "Inline Base64 images are not allowed.",
-      path: ["content"],
-    },
-  )
-  .refine(
-    (doc) => {
-      return JSON.stringify(doc).length <= MAX_CHARS;
-    },
-    {
-      message: `Document exceeds ${MAX_CHARS} characters.`,
-      path: ["content"],
-    },
-  )
+  .superRefine((doc, ctx) => {
+    const jsonString = JSON.stringify(doc);
+    if (jsonString.includes('"data:image/')) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Inline Base64 images are not allowed.",
+        path: ["content"],
+      });
+    }
+    if (jsonString.length > MAX_CHARS) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Document exceeds ${MAX_CHARS} characters.`,
+        path: ["content"],
+      });
+    }
+  })
   .default({
     type: "doc",
     content: [{ type: "paragraph" }],
