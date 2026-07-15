@@ -140,12 +140,17 @@ const NoteRowSchema = z.object({
   updated_at: DateSchema,
 });
 
-const NoteSearchDoc = NoteSchema.omit({
+const NoteSearchDocSchema = NoteSchema.omit({
   content: true,
   pinned: true,
   links: true,
   created_at: true,
   updated_at: true,
+});
+
+const NoteMenuPayloadSchema = z.object({
+  id: IdSchema,
+  pinned: z.boolean().optional(),
 });
 
 const AutoExportWritePayloadSchema = z.object({
@@ -156,10 +161,11 @@ const AutoExportWritePayloadSchema = z.object({
   oldFileName: z.string().optional(),
 });
 
+type NoteMenuPayload = z.infer<typeof NoteMenuPayloadSchema>;
 type TagNameRow = z.infer<typeof TagNameRowSchema>;
 type NoteListItem = z.infer<typeof NoteListItemFromDB>;
 type AutoExportWritePayload = z.infer<typeof AutoExportWritePayloadSchema>;
-type NoteSearchDoc = z.infer<typeof NoteSearchDoc>;
+type NoteSearchDoc = z.infer<typeof NoteSearchDocSchema>;
 type NoteRow = z.infer<typeof NoteRowSchema>;
 type TagRow = z.infer<typeof TagRowSchema>;
 type LinkRow = z.infer<typeof LinkRowSchema>;
@@ -187,6 +193,7 @@ export {
   LinksSchema,
   NoteFromDB,
   NoteListItemFromDB,
+  NoteMenuPayloadSchema,
   NoteRowSchema,
   NoteSchema,
   NotesSchema,
@@ -210,6 +217,7 @@ export {
   type LinkRow,
   type Note,
   type NoteListItem,
+  type NoteMenuPayload,
   type NoteRow,
   type NoteSearchDoc,
   type Tag,

@@ -2,7 +2,7 @@ import { isAutoExport } from "@electron/fs/fs-auto-export";
 import { settingsService } from "@electron/handler/settings-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
-import type { NoteMenuPayload } from "@shared/types";
+import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 import { clipboard, ipcMain, Menu, shell, type BrowserWindow } from "electron";
 
 let activeId: string | null = null;

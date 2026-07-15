@@ -3,7 +3,6 @@ import {
   resetEditorHistory,
 } from "@/components/editor/editor-features";
 import { applyTagView } from "@/components/sidebar/sidebar-features";
-import { Callout } from "@/extensions/callout";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
 import {
@@ -96,7 +95,6 @@ function getNoteEditorExtensions() {
     ListKit.configure({
       taskItem: { nested: true },
     }),
-    Callout,
     CustomUnderline,
     Highlight,
     WikiLinkPreview,
@@ -238,7 +236,8 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   editorWrapper.addEventListener("contextmenu", (e: MouseEvent) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
-    if (target.closest(".ProseMirror") && target.closest("table")) {
+    const cell = target.closest(".ProseMirror table .selectedCell");
+    if (cell) {
       e.preventDefault();
       window.electronAPI.showContextMenu("table");
     }

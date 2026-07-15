@@ -20,6 +20,7 @@ import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type {
   ExportedContent,
   ImageSrc,
+  ImportStats,
   Result,
   SyncResult,
   ZoomAction,
@@ -95,7 +96,7 @@ async function exportManyNotes(
 
 async function importNote(
   payload: FilePathRequest,
-): Promise<Result<ImportRequest[]>> {
+): Promise<Result<{ data: ImportRequest[]; stats: ImportStats }>> {
   return invoke(window.noteAPI.noteImport(payload));
 }
 

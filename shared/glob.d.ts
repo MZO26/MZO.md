@@ -16,6 +16,7 @@ import {
 import type {
   ExportedContent,
   ImageSrc,
+  ImportStats,
   MenuType,
   NoteMenuPayload,
   SyncResult,
@@ -80,7 +81,7 @@ declare global {
       ) => Promise<Result<ExportedContent[]>>;
       noteImport: (
         payload: FilePathRequest,
-      ) => Promise<Result<ImportRequest[]>>;
+      ) => Promise<Result<{ data: ImportRequest[]; stats: ImportStats }>>;
       onTriggerDelete: (callback: (id: string) => void) => () => void;
       onTriggerDuplicate: (callback: (id: string) => void) => () => void;
       onTriggerPin: (callback: (id: string) => void) => () => void;

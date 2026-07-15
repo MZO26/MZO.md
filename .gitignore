@@ -18,16 +18,11 @@ dist-electron/
 # Electron Packaging Outputs
 
 release/
-out/
-make/
 *.exe
 *.dmg
 *.AppImage
 *.zip
 
 # Editor & OS Files
-
-Thumbs.db              
-.vscode/*              
-!.vscode/extensions.json 
-!.vscode/settings.json   
+      
+.vscode/*

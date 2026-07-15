@@ -1,6 +1,7 @@
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
+  NoteMenuPayload,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type {
@@ -11,7 +12,7 @@ import type {
   SyncRequestPayload,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import type { MenuType, NoteMenuPayload, ZoomAction } from "@shared/types";
+import type { MenuType, ZoomAction } from "@shared/types";
 import {
   contextBridge,
   ipcRenderer,

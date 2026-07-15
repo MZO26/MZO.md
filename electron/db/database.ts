@@ -1,4 +1,5 @@
 import { Transactions } from "@electron/db/transactions";
+import { parseFilenameToDate } from "@electron/fs/fs-helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
@@ -50,6 +51,7 @@ class AppDB {
   private toggleManyPinStmt: StatementSync;
   private updateStoreStmt: StatementSync;
   private getAllSettingsStmt: StatementSync;
+  private checkNoteStmt: StatementSync;
   constructor() {
     this.dbPath = path.join(app.getPath("userData"), "app.db");
     try {
@@ -128,6 +130,9 @@ class AppDB {
       `);
       this.getAllSettingsStmt = this.db.prepare(`
         SELECT * FROM store WHERE id = 1
+      `);
+      this.checkNoteStmt = this.db.prepare(`
+      SELECT 1 FROM notes WHERE created_at >= $start AND created_at < $end
       `);
       console.log(`Database initialized at: ${this.dbPath}`);
     } catch (error) {
@@ -426,6 +431,26 @@ class AppDB {
   public getLinksById(id: string): Link[] {
     const rows = this.getLinksByIdStmt.all({ $id: id }) as LinkRow[];
     return validation(LinksSchema, rows);
+  }
+
+  public checkExistence(fileName: string): boolean {
+    const date = parseFilenameToDate(fileName);
+    if (!date) {
+      console.warn(`[Debug] Could not parse filename: ${fileName}`);
+      return false;
+    }
+    // gets milliseconds for the parsed date
+    const start = new Date(date.getTime());
+    // appends one second as buffer for creation date
+    const end = new Date(date.getTime() + 1000);
+    console.log(`[Debug] Checking existence for: ${fileName}`);
+    console.log(
+      `[Debug] Range: ${start.toISOString()} to ${end.toISOString()}`,
+    );
+    return !!this.checkNoteStmt.get({
+      $start: start.toISOString(),
+      $end: end.toISOString(),
+    });
   }
 
   public getOldNotes(ids: string[]): Pick<Note, "created_at" | "title">[] {

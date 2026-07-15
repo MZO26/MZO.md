@@ -1,6 +1,5 @@
-import { writeAtomic } from "@electron/fs/fs-atomic-write";
 import { getFilePath } from "@electron/fs/fs-auto-export";
-import { sanitizeExportString } from "@electron/fs/fs-helpers";
+import { sanitizeExportString, writeAtomic } from "@electron/fs/fs-helpers";
 import { getPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { createHiddenPdfWindow } from "@electron/win";

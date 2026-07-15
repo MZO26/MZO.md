@@ -14,7 +14,7 @@ import {
 } from "@/components/sidebar/sidebar-triggers";
 import { debouncedSaveNote, handleSaveNote } from "@/notes/note-actions";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
-import type { NoteMenuPayload } from "@shared/types";
+import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 
 //-------------------------------------------------------
 

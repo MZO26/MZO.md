@@ -98,7 +98,7 @@ function applyModalListeners(
           await showNotification("Backup restored.", "");
           return;
         case "backup-notes":
-          const allIds = noteStore.get("notes")?.map((n) => n.id);
+          const allIds = noteStore.get("notes").map((n) => n.id);
           if (!Array.isArray(allIds) || allIds.length === 0) return;
           await exportSelection(allIds);
           break;

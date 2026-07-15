@@ -250,7 +250,6 @@ const BLOCK_TYPES = new Set([
   "paragraph",
   "heading",
   "blockquote",
-  "callout",
   "codeBlock",
   "horizontalRule",
   "bulletList",

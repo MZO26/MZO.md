@@ -1,6 +1,9 @@
 import db from "@electron/db/database";
-import { writeAtomic } from "@electron/fs/fs-atomic-write";
-import { getFilePath, sanitizeExportString } from "@electron/fs/fs-helpers";
+import {
+  getFilePath,
+  sanitizeExportString,
+  writeAtomic,
+} from "@electron/fs/fs-helpers";
 import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";

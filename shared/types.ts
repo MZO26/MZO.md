@@ -95,6 +95,12 @@ type ImportedContent = {
   extension: "md" | "html" | "json" | "txt";
 };
 
+type ImportStats = {
+  total: number;
+  duplicates: number;
+  errors: number;
+};
+
 type ExportedContent = {
   created_at: string;
   fileName: string;
@@ -121,11 +127,6 @@ type EditorContentType = NonNullable<SetContentOptions["contentType"]>;
 type SettingsCategory = "Appearance" | "Editor" | "General";
 
 type MenuType = "table" | "text" | "note";
-
-type NoteMenuPayload = {
-  id: string;
-  pinned?: boolean;
-};
 
 interface AppRegistry {
   ui: Partial<UIRegistry>;
@@ -242,12 +243,12 @@ export type {
   FilterMode,
   ImageSrc,
   ImportedContent,
+  ImportStats,
   LinkAttributes,
   MathOptions,
   MenuType,
   Metadata,
   NativeWindowColors,
-  NoteMenuPayload,
   PDFAssets,
   QuickActionConfig,
   ResizeOptions,

@@ -4,10 +4,42 @@ import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import { FileNameSchema } from "@shared/schemas/request-schema";
 import fs from "fs/promises";
+import { open, rename, unlink, type FileHandle } from "node:fs/promises";
 import path from "path";
 
 const EXPORT_REGEX = /appimg:\/\/\/([^"' )>\s]+)/g;
 const IMPORT_REGEX = /(?:\.\/)?assets\/([^"' )>\s]+)/g;
+
+async function writeAtomic(
+  targetPath: string,
+  content: string | Buffer | Uint8Array,
+) {
+  const tempPath = `${targetPath}.${crypto.randomUUID()}.tmp`;
+  let fileHandle: FileHandle | undefined;
+  let writeSucceeded = false;
+  try {
+    // open the temp file for writing
+    fileHandle = await open(tempPath, "wx");
+    // writes all new data into the temp file. If an error comes up, it jumps to finally and closes the temp file
+    await fileHandle?.writeFile(content);
+    // flush saves file contents from memory to the fs
+    await fileHandle?.datasync();
+    writeSucceeded = true;
+  } finally {
+    await fileHandle?.close();
+    if (!writeSucceeded) {
+      await unlink(tempPath).catch(() => {});
+    }
+  }
+  // temp file is fully written and closed and gets renamed to targetPath from tempPath
+  try {
+    await rename(tempPath, targetPath);
+  } catch (error) {
+    // ignore errors while deleting temp file to throw more important error if save failed
+    await unlink(tempPath).catch(() => {});
+    throw new AppBackendError(AppErrorCode.FileWriteError);
+  }
+}
 
 async function sanitizeExportString(
   content: string,
@@ -79,13 +111,36 @@ async function sanitizeImportString(
 
 function getSafeLocalDateString(date: Date) {
   const pad = (n: number) => n.toString().padStart(2, "0");
-  const YYYY = date.getFullYear();
-  const MM = pad(date.getMonth() + 1);
-  const DD = pad(date.getDate());
-  const HH = pad(date.getHours());
-  const mm = pad(date.getMinutes());
-  const ss = pad(date.getSeconds());
+  const YYYY = date.getUTCFullYear();
+  const MM = pad(date.getUTCMonth() + 1);
+  const DD = pad(date.getUTCDate());
+  const HH = pad(date.getUTCHours());
+  const mm = pad(date.getUTCMinutes());
+  const ss = pad(date.getUTCSeconds());
   return `${YYYY}-${MM}-${DD}_${HH}-${mm}-${ss}`;
+}
+
+function parseFilenameToDate(filename: string): Date | null {
+  const match = filename.match(
+    /^(.+)_(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$/,
+  );
+  if (!match) return null;
+  // first match is the full string
+  // second match is title
+  const [, , year, month, day, hour, minute, second] = match;
+  if (!year || !month || !day || !hour || !minute || !second) {
+    return null;
+  }
+  return new Date(
+    Date.UTC(
+      Number(year),
+      Number(month) - 1, // month is 0 indexed
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second),
+    ),
+  );
 }
 
 function getFilePath(
@@ -115,6 +170,8 @@ export {
   ensureInsideDirectory,
   getFilePath,
   getSafeLocalDateString,
+  parseFilenameToDate,
   sanitizeExportString,
   sanitizeImportString,
+  writeAtomic,
 };

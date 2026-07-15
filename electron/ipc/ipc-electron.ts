@@ -16,12 +16,13 @@ import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
 import { ImagePayloadsSchema } from "@shared/schemas/image-schema";
+import { NoteMenuPayloadSchema } from "@shared/schemas/note-schema";
 import {
   NotificationSchema,
   OpenAutoExportPathSchema,
 } from "@shared/schemas/request-schema";
 import { type Theme } from "@shared/schemas/store-schema";
-import type { MenuType, NoteMenuPayload } from "@shared/types";
+import type { MenuType } from "@shared/types";
 import {
   app,
   BrowserWindow,
@@ -33,25 +34,23 @@ import {
 import fs from "fs/promises";
 
 function registerElectronIpc(win: BrowserWindow) {
-  ipcMain.on(
-    "context-menu:show",
-    (e, menuType: MenuType, payload: NoteMenuPayload) => {
-      return result(e, async () => {
-        if (!checkRateLimit("context-menu:show", LIMITS.READ_LIGHT))
-          throw new AppBackendError(AppErrorCode.RateLimitError);
-        if (!win) return;
-        let menu: Menu;
-        if (menuType === "table") {
-          menu = setUpTableMenu(win);
-        } else if (menuType === "note") {
-          menu = await setUpNoteMenu(win, payload);
-        } else {
-          return;
-        }
-        menu.popup({ window: win });
-      });
-    },
-  );
+  ipcMain.on("context-menu:show", (e, menuType: MenuType, payload: unknown) => {
+    return result(e, async () => {
+      if (!checkRateLimit("context-menu:show", LIMITS.READ_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      if (!win) return;
+      let menu: Menu;
+      if (menuType === "table") {
+        menu = setUpTableMenu(win);
+      } else if (menuType === "note") {
+        const validatedData = validation(NoteMenuPayloadSchema, payload);
+        menu = await setUpNoteMenu(win, validatedData);
+      } else {
+        return;
+      }
+      menu.popup({ window: win });
+    });
+  });
 
   ipcMain.handle("open:external", (e, url: unknown) => {
     return result(e, async () => {

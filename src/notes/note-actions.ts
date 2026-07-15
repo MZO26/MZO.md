@@ -99,7 +99,7 @@ async function handleImportNote(request: FilePathRequest) {
     );
     return;
   }
-  const processedPayloads = await setImportedContent(imported.data);
+  const processedPayloads = await setImportedContent(imported.data.data);
   if (!processedPayloads.success) {
     console.error(
       "[handleImportNote -> setImportedContent]: Failed to process import payload:",
@@ -115,9 +115,13 @@ async function handleImportNote(request: FilePathRequest) {
     );
     return;
   }
+  const { duplicates, errors } = imported.data.stats;
+  const successCount = result.data.length;
   await showNotification(
-    "Import Successful.",
-    `Successfully imported ${result.data.length} file${result.data.length === 1 ? "" : "s"}`,
+    "Import Complete",
+    `Successfully imported ${successCount} files.\n` +
+      `Duplicates skipped: ${duplicates}\n` +
+      `Errors: ${errors}`,
   );
   const notes: NoteListItem[] = [];
   for (const note of result.data) {

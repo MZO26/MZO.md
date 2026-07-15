@@ -20,8 +20,8 @@ import {
 import { findElement, requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
+import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { OpenAutoExportPathRequest } from "@shared/schemas/request-schema";
-import type { NoteMenuPayload } from "@shared/types";
 
 function triggerTableMenu(action: string) {
   const editor = getAppItem("editor");

@@ -1,4 +1,5 @@
 import { delegate, hideAll, type Placement } from "tippy.js";
+import "tippy.js/animations/scale-subtle.css";
 import "tippy.js/dist/tippy.css";
 
 function createTooltipContent(baseText: string, shortcut?: string) {
@@ -44,6 +45,8 @@ function initTippyDelegate(
     placement: placement ?? "auto",
     trigger: "mouseenter",
     appendTo: appendTo || container,
+    animation: "scale-subtle",
+    duration: [120, 90],
     onShow(instance) {
       if (hide) hideAll({ exclude: instance });
       if (instance.reference.hasAttribute("data-tippy-dynamic")) {
