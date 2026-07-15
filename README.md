@@ -114,7 +114,7 @@ npm install
 | **Blocks & Elements**                                  |              |                                |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>       | `> `         | Blockquote                     |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>       | ` ``` `      | Code block                     |
-| <kbd>Mod<> + <kbd>Shift</kbd>+ <kbd>M</kbd>            | `$$$math$$$` | Math block                     |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd>+ <kbd>M</kbd>        | `$$$math$$$` | Math block                     |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>       | `---`        | Horizontal rule                |
 | <kbd>Shift</kbd> + <kbd>Enter</kbd>                    |              | Hard break (`<br>`)            |
 | **Links & Media**                                      |              |                                |

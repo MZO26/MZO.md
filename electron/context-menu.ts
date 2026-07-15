@@ -96,12 +96,6 @@ function setUpEditorMenu(win: BrowserWindow) {
           });
         }
       }
-      if (hasLink && validation(ExternalUrlSchema, params.linkURL)) {
-        items.push({
-          label: "Copy Link",
-          click: () => clipboard.writeText(params.linkURL),
-        });
-      }
     }
     if (items[items.length - 1]?.type === "separator") {
       items.pop();

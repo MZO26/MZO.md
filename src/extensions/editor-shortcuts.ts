@@ -1,6 +1,7 @@
 import { openExternal } from "@/api/api";
 import { promptImageUpload } from "@/extensions/image/image";
 import { openMathDialog } from "@/extensions/overrides/mathematics";
+import type { LinkAttributes } from "@shared/types";
 import { Extension } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
 
@@ -84,10 +85,34 @@ export const MasterShortcuts = Extension.create({
       },
       "Mod-Alt-Enter": () => {
         if (!this.editor.isActive("link")) return false;
-        const href = this.editor.getAttributes("link")["href"];
-        if (!href) return false;
-        void openExternal(href);
-        return true;
+        const { selection } = this.editor.state;
+        const $from = selection.$from;
+        let extractedUrl: string | undefined;
+        const nodeAttrs = this.editor.getAttributes("link") as LinkAttributes;
+        extractedUrl = nodeAttrs.href || nodeAttrs.url;
+        if (!extractedUrl) {
+          const linkMark = $from.marks().find((m) => m.type.name === "link");
+          if (linkMark?.attrs) {
+            const attrs = linkMark.attrs as LinkAttributes;
+            extractedUrl = attrs.href || attrs.url;
+          }
+        }
+        if (!extractedUrl) {
+          const textContent = $from.parent.textContent?.trim();
+          if (textContent) {
+            extractedUrl = /^https?:\/\//i.test(textContent)
+              ? textContent
+              : `https://${textContent}`;
+          }
+        }
+        if (extractedUrl) {
+          void openExternal(extractedUrl);
+          return true;
+        }
+        console.error(
+          "[addKeyboardShortcuts -> link-open]: Could not extract a valid URL from the selection.",
+        );
+        return false;
       },
       "Mod-Shift-Enter": () => {
         const { $from } = this.editor.state.selection;

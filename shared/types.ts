@@ -12,6 +12,11 @@ type NativeWindowColors = {
   overlayOptions: TitleBarOverlayOptions;
 };
 
+type LinkAttributes = {
+  href?: string;
+  url?: string;
+};
+
 type MathOptions =
   | {
       mode: "insert";
@@ -237,6 +242,7 @@ export type {
   FilterMode,
   ImageSrc,
   ImportedContent,
+  LinkAttributes,
   MathOptions,
   MenuType,
   Metadata,
