@@ -37,8 +37,8 @@ Requirements:
 - npm 10+
 
 ```bash
-git clone https://github.com/MZO26/MDEditor.git
-cd MDEditor
+git clone https://github.com/MZO26/MZO.md.git
+cd MZO.md
 npm install
 ```
 
@@ -146,7 +146,7 @@ npm install
 .
 ├── electron/       # Main process
 ├── shared/         # Shared types, constants, schemas
-└── src/            # UI, editor, styles, state
+└── src/            # UI, components, settings, styles, state
 ```
 
 ### Data Flow
