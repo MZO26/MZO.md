@@ -337,19 +337,19 @@ label {
 
 .tippy-box[data-theme~="app-theme"][data-placement^="top"]
   > .tippy-arrow::before {
-  border-top-color: var(--tooltip-bg);
+  border-top-color: var(--border-color);
 }
 .tippy-box[data-theme~="app-theme"][data-placement^="bottom"]
   > .tippy-arrow::before {
-  border-bottom-color: var(--tooltip-bg);
+  border-bottom-color: var(--border-color);
 }
 .tippy-box[data-theme~="app-theme"][data-placement^="left"]
   > .tippy-arrow::before {
-  border-left-color: var(--tooltip-bg);
+  border-left-color: var(--border-color);
 }
 .tippy-box[data-theme~="app-theme"][data-placement^="right"]
   > .tippy-arrow::before {
-  border-right-color: var(--tooltip-bg);
+  border-right-color: var(--border-color);
 }
 
 .tippy-box[data-theme~="preview-theme"][data-placement^="top"]

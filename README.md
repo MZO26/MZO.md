@@ -67,7 +67,7 @@ npm install
 | <kbd>Mod</kbd> + <kbd>N</kbd>                                 | Create new note    |
 | <kbd>Mod</kbd> + <kbd>G</kbd>                                 | Open global search |
 | <kbd>Mod</kbd> + <kbd>F</kbd>                                 | Open doc search    |
-| <kbd>Mod</kbd> + <kbd>S</kbd>                                 | Toggle Selection   |
+| <kbd>Mod</kbd> + <kbd>S</kbd>                                 | Toggle selection   |
 | <kbd>Mod</kbd> + <kbd>O</kbd>                                 | Toggle sidebar     |
 | <kbd>Mod</kbd> + <kbd>.</kbd>                                 | Toggle toolbar     |
 | <kbd>Mod</kbd> + <kbd>W</kbd>                                 | Set editor width   |

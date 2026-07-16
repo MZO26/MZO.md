@@ -638,6 +638,10 @@ body.is-dragging * {
   display: none;
 }
 
+.notes-container[data-noteItem="minimal"] .select-checkbox {
+  margin-bottom: 8px;
+}
+
 .selection-mode .note-item .menu-btn {
   display: none;
 }
@@ -666,6 +670,10 @@ body.is-dragging * {
     transform 0.1s ease;
 }
 
+.note-item .select-checkbox {
+  margin-bottom: 13px;
+}
+
 .note-item .menu-btn {
   opacity: 0;
   background: transparent !important;
@@ -692,7 +700,7 @@ body.is-dragging * {
 
 .note-item .select-checkbox:checked {
   background-color: var(--tag-color);
-  border-color: var(--tag-color);
+  border-color: var(--tag-border);
 }
 
 .note-item .select-checkbox:checked::after {
