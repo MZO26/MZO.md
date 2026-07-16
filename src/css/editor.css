@@ -706,6 +706,7 @@
 .wikilink-preview-content .tiptap-mathematics-render,
 .ProseMirror .tiptap-mathematics-render {
   cursor: pointer;
+  line-height: inherit;
 }
 
 .wikilink-preview-content .tiptap-mathematics-render[data-type="inline-math"],

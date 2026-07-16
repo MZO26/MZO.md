@@ -35,7 +35,7 @@ import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
-import Mathematics from "@tiptap/extension-mathematics";
+import { Mathematics } from "@tiptap/extension-mathematics";
 import {
   Table,
   TableCell,
@@ -221,10 +221,8 @@ function getNoteEditorExtensions() {
         onClick: handleMathClick,
       },
       katexOptions: {
-        output: "htmlAndMathml",
         maxExpand: 500,
         maxSize: 12,
-        trust: false,
         throwOnError: false,
         macros: { ...KATEX_MACROS },
       },

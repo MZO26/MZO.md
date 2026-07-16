@@ -34,7 +34,7 @@ import { backup, DatabaseSync, type StatementSync } from "node:sqlite";
 import path from "path";
 
 class AppDB {
-  private db: DatabaseSync;
+  private db: DatabaseSync | undefined;
   private readonly dbPath: string;
   public transactions: Transactions;
   private getAllNotesStmt: StatementSync;
@@ -56,7 +56,6 @@ class AppDB {
     this.dbPath = path.join(app.getPath("userData"), "app.db");
     try {
       this.db = this.open();
-      this.createTables();
       this.transactions = new Transactions(this.db);
       // predefined statements to prevent parsing them for every transaction
       this.getAllNotesStmt = this.db.prepare(
@@ -146,8 +145,8 @@ class AppDB {
     }
   }
 
-  private createTables() {
-    this.db.exec(`
+  private createTables(db: DatabaseSync) {
+    db.exec(`
       CREATE TABLE IF NOT EXISTS notes (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL CHECK(length(title) > 0),
@@ -160,7 +159,7 @@ class AppDB {
       );
     `);
 
-    this.db.exec(`
+    db.exec(`
       CREATE TABLE IF NOT EXISTS note_tags (
         note_id TEXT NOT NULL,
         tag_name TEXT NOT NULL,
@@ -169,7 +168,7 @@ class AppDB {
       );
     `);
 
-    this.db.exec(`
+    db.exec(`
       CREATE TABLE IF NOT EXISTS note_links (
         source_id TEXT NOT NULL,
         target_id TEXT NOT NULL,
@@ -179,7 +178,7 @@ class AppDB {
       )
       `);
 
-    this.db.exec(`
+    db.exec(`
     CREATE TABLE IF NOT EXISTS store (
       id INTEGER PRIMARY KEY CHECK (id = 1),
       theme TEXT NOT NULL DEFAULT 'system',
@@ -350,8 +349,8 @@ class AppDB {
     for (const row of this.getAllNotesStmt.iterate() as IterableIterator<NoteRow>) {
       const validatedNote = validation(NoteFromDB, {
         ...row,
-        tags: tagMap.get(row.id),
-        links: linkMap.get(row.id),
+        tags: tagMap.get(row.id) ?? [],
+        links: linkMap.get(row.id) ?? [],
       });
       const { content, ...lightweightNote } = validatedNote;
       results.push(lightweightNote);
@@ -366,8 +365,8 @@ class AppDB {
     for (const row of this.getAllNotesStmt.iterate() as IterableIterator<NoteRow>) {
       const validatedNote = validation(NoteFromDB, {
         ...row,
-        tags: tagMap.get(row.id),
-        links: linkMap.get(row.id),
+        tags: tagMap.get(row.id) ?? [],
+        links: linkMap.get(row.id) ?? [],
       });
       results.push(validatedNote);
     }
@@ -435,18 +434,11 @@ class AppDB {
 
   public checkExistence(fileName: string): boolean {
     const date = parseFilenameToDate(fileName);
-    if (!date) {
-      console.warn(`[Debug] Could not parse filename: ${fileName}`);
-      return false;
-    }
+    if (!date) return false;
     // gets milliseconds for the parsed date
     const start = new Date(date.getTime());
     // appends one second as buffer for creation date
     const end = new Date(date.getTime() + 1000);
-    console.log(`[Debug] Checking existence for: ${fileName}`);
-    console.log(
-      `[Debug] Range: ${start.toISOString()} to ${end.toISOString()}`,
-    );
     return !!this.checkNoteStmt.get({
       $start: start.toISOString(),
       $end: end.toISOString(),
@@ -464,20 +456,42 @@ class AppDB {
     return validation(OldNoteSchema, rows);
   }
 
-  public pragma(source: string, options?: { simple?: boolean }) {
-    const sql = source.trim().toUpperCase().startsWith("PRAGMA ")
-      ? source
-      : `PRAGMA ${source}`;
-    const stmt = this.db.prepare(sql);
-    if (options?.simple) {
-      const row = stmt.get() as Record<string, unknown> | undefined;
-      return row ? Object.values(row)[0] : undefined;
+  public execPragma(name: string): void {
+    if (!this.db) {
+      throw new Error(
+        `[Database Error]: Attempted to call execPragma("${name}") before the database was initialized.`,
+      );
     }
-    return stmt.all();
+    const sql = name.trim().toUpperCase().startsWith("PRAGMA ")
+      ? name
+      : `PRAGMA ${name}`;
+    this.db.prepare(sql).run();
+  }
+
+  public queryPragma<T extends Record<string, unknown>>(
+    sql: string,
+    db: DatabaseSync,
+  ): T | undefined {
+    const command = sql.trim().toUpperCase().startsWith("PRAGMA ")
+      ? sql
+      : `PRAGMA ${sql}`;
+    return db.prepare(command).get() as T | undefined;
   }
 
   public close() {
-    this.db.close();
+    if (!this.db) {
+      return;
+    }
+    try {
+      this.db.close();
+    } catch (error) {
+      console.error(
+        "[Database Error]: Failed to close database connection:",
+        error,
+      );
+    } finally {
+      this.db = undefined;
+    }
   }
 
   public open(): DatabaseSync {
@@ -487,21 +501,25 @@ class AppDB {
       open: true,
       readOnly: false,
     });
+    this.db = db;
     try {
-      db.exec("PRAGMA journal_mode = WAL");
-      db.exec("PRAGMA foreign_keys = ON");
-      db.exec("PRAGMA busy_timeout = 5000");
-      db.exec("PRAGMA synchronous = NORMAL");
-      const integrity = db.prepare("PRAGMA quick_check").get() as
-        | Record<string, unknown>
-        | undefined;
-      if (integrity && Object.values(integrity)[0] !== "ok") {
+      this.execPragma("journal_mode = WAL");
+      this.execPragma("foreign_keys = ON");
+      this.execPragma("busy_timeout = 5000");
+      this.execPragma("synchronous = NORMAL");
+      this.createTables(db);
+      const integrity = this.queryPragma<{ quick_check: string }>(
+        "quick_check",
+        db,
+      );
+      if (integrity?.quick_check !== "ok") {
         throw new AppBackendError(AppErrorCode.DBError);
       }
-      this.db = db;
       return this.db;
     } catch (error) {
+      console.error("[Database Error]: Failed to open db", error);
       db.close();
+      this.db = undefined;
       throw error;
     }
   }
@@ -510,12 +528,24 @@ class AppDB {
     return this.dbPath;
   }
 
-  public async backupDb(destination: string) {
-    await backup(this.db, destination, {
-      progress: (info) => {
-        console.log(`Backup progress: ${info.remainingPages} pages left.`);
-      },
-    });
+  public async backupDb(destination: string, db?: DatabaseSync) {
+    const targetDb = db ?? this.db;
+    if (!targetDb) {
+      throw new AppBackendError(AppErrorCode.DBError);
+    }
+    try {
+      await backup(targetDb, destination, {
+        progress: (info) => {
+          console.log(`Backup progress: ${info.remainingPages} pages left.`);
+        },
+      });
+    } catch (error) {
+      console.error(
+        `[Database Error]: Failed to backup to ${destination}`,
+        error,
+      );
+      throw new AppBackendError(AppErrorCode.DBError);
+    }
   }
 }
 

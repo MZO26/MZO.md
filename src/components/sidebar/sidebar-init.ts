@@ -30,6 +30,7 @@ import {
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItems, getUIItems, registerAppEvents } from "@/utils/registry";
+import { isSelectionActive } from "@/utils/shortcuts";
 import { initTippyDelegate } from "@/utils/ui";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 
@@ -68,6 +69,7 @@ function initNotesSidebar() {
     },
     "app:create-new-note": () => handleCreateNote(),
     "app:open-global-search": () => searchInput.focus(),
+    "app:set-selection-mode": () => setSelectionMode(!isSelectionActive()),
     "app:exit-selection-mode": () => setSelectionMode(false),
     "app:delete-selected": () => deleteSelection(),
     "app:select-all-visible": () => selectAllVisibleNotes(),

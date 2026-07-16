@@ -144,52 +144,62 @@ async function writeAutoExportFileLogic(
 ) {
   const { created_at, fileName, oldFileName, extension, content } = payload;
   const exportPath = resolveAutoExportPath(targetDir);
-  await fs.mkdir(exportPath, { recursive: true }).catch((error: unknown) => {
-    console.error(
-      "[writeAutoExportFileLogic]: Failed to create directory:",
-      error,
-    );
-    throw new AppBackendError(AppErrorCode.FileWriteError);
-  });
   const assetsDir = path.join(exportPath, "assets");
-  await fs.mkdir(assetsDir, { recursive: true }).catch((error: unknown) => {
-    console.error(
-      "[writeAutoExportFileLogic]: Failed to create assets directory:",
-      error,
-    );
-    throw new AppBackendError(AppErrorCode.FileWriteError);
-  });
-  const absoluteFilePath = getFilePath(exportPath, {
-    fileName,
-    created_at,
-    extension,
-  });
-  const oldAbsoluteFilePath = oldFileName
-    ? getFilePath(exportPath, { fileName: oldFileName, created_at, extension })
-    : undefined;
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
-  // check for rename: if oldFileName exists and is different from new file name, attempt to rename the file before writing new content. This is to avoid duplicate files when a note is renamed.
-  if (oldAbsoluteFilePath && oldAbsoluteFilePath !== absoluteFilePath) {
-    console.log("New rename.");
-    await safeRename(oldAbsoluteFilePath, absoluteFilePath);
-  } else console.log("No rename needed.");
-  const portableContent = await sanitizeExportString(
-    content,
-    assetsDir,
-    imagesFolder,
-  );
-  const localContent = await fs
-    .readFile(absoluteFilePath, "utf8")
-    .catch(() => "");
-  const normalizedLocal = normalizeText(localContent).trimEnd();
-  const normalizedContent = normalizeText(portableContent).trimEnd();
-  if (normalizedLocal !== normalizedContent) {
-    console.log("New write.");
-    await writeAtomic(absoluteFilePath, portableContent);
-  } else console.log("No write needed.");
+  try {
+    await fs.mkdir(exportPath, { recursive: true });
+    await fs.mkdir(assetsDir, { recursive: true });
+    const absoluteFilePath = getFilePath(exportPath, {
+      fileName,
+      created_at,
+      extension,
+    });
+    const oldAbsoluteFilePath = oldFileName
+      ? getFilePath(exportPath, {
+          fileName: oldFileName,
+          created_at,
+          extension,
+        })
+      : undefined;
+    if (oldAbsoluteFilePath && oldAbsoluteFilePath !== absoluteFilePath) {
+      console.log(
+        `[writeAutoExportFileLogic] Renaming ${oldAbsoluteFilePath} to ${absoluteFilePath}`,
+      );
+      await safeRename(oldAbsoluteFilePath, absoluteFilePath);
+    }
+    const portableContent = await sanitizeExportString(
+      content,
+      assetsDir,
+      imagesFolder,
+    );
+    let normalizedLocal = "";
+    try {
+      const localContent = await fs.readFile(absoluteFilePath, "utf8");
+      normalizedLocal = normalizeText(localContent).trimEnd();
+    } catch (error: unknown) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== "ENOENT") {
+        // enoent gets treated as empty file
+        throw err;
+      }
+    }
+    const normalizedContent = normalizeText(portableContent).trimEnd();
+    if (normalizedLocal !== normalizedContent) {
+      console.log(
+        `[writeAutoExportFileLogic] Writing new content to ${absoluteFilePath}`,
+      );
+      await writeAtomic(absoluteFilePath, portableContent);
+    } else {
+      console.log(
+        "[writeAutoExportFileLogic] No changes detected. Skipping write.",
+      );
+    }
+  } catch (error: unknown) {
+    console.error(`[writeAutoExportFileLogic]: Failed to write file:`, error);
+    throw new AppBackendError(AppErrorCode.FileWriteError);
+  }
 }
-
 async function writeAutoExportFile({
   created_at,
   fileName,

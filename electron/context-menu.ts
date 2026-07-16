@@ -2,13 +2,19 @@ import { isAutoExport } from "@electron/fs/fs-auto-export";
 import { settingsService } from "@electron/handler/settings-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
-import type { NoteMenuPayload } from "@shared/schemas/note-schema";
+import { IdSchema, type NoteMenuPayload } from "@shared/schemas/note-schema";
 import { clipboard, ipcMain, Menu, shell, type BrowserWindow } from "electron";
 
 let activeId: string | null = null;
 
-ipcMain.on("note:set-active", (_e, id: string | null) => {
-  activeId = id;
+ipcMain.on("note:set-active", (_e, id: unknown) => {
+  try {
+    const validatedId = validation(IdSchema, id);
+    activeId = validatedId;
+  } catch (error: unknown) {
+    console.error(`[IPC Bridge Error]: ${id} is not a valid UUID`, error);
+    activeId = null;
+  }
 });
 
 function pushOptionalSeparator(items: Electron.MenuItemConstructorOptions[]) {
@@ -30,16 +36,23 @@ function setUpEditorMenu(win: BrowserWindow) {
       params.editFlags.canCopy ||
       params.editFlags.canPaste;
     if (!canEdit && !hasSelection && !isImage && !hasLink) return;
+    const addAction = (
+      flag: boolean,
+      label: string,
+      action: "cut" | "copy" | "paste" | "selectAll",
+    ) => {
+      if (flag) items.push({ label, click: () => win.webContents[action]() });
+    };
     if (params.isEditable) {
-      if (params.editFlags.canCut) items.push({ role: "cut" });
-      if (params.editFlags.canCopy) items.push({ role: "copy" });
-      if (params.editFlags.canPaste) items.push({ role: "paste" });
+      addAction(params.editFlags.canCut, "Cut", "cut");
+      addAction(params.editFlags.canCopy, "Copy", "copy");
+      addAction(params.editFlags.canPaste, "Paste", "paste");
       if (items.length > 0 && params.editFlags.canSelectAll) {
         pushOptionalSeparator(items);
-        items.push({ role: "selectAll" });
+        addAction(true, "Select All", "selectAll");
       }
     } else if (hasSelection && params.editFlags.canCopy) {
-      items.push({ role: "copy" });
+      addAction(true, "Copy", "copy");
     }
     if (hasSelection) {
       pushOptionalSeparator(items);

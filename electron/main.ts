@@ -160,7 +160,7 @@ app.on("activate", () => {
 });
 
 app.on("will-quit", () => {
-  db.pragma("optimize");
+  db.execPragma("optimize");
   db.close();
 });
 

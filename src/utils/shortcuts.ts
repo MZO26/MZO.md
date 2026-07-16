@@ -1,5 +1,4 @@
 import { handleZoom } from "@/api/api";
-import { setSelectionMode } from "@/components/sidebar/sidebar-selection";
 import { stateStore } from "@/settings/app-state";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
@@ -71,10 +70,10 @@ function initGlobalShortcuts() {
       document.dispatchEvent(new CustomEvent("app:toggle-focus-mode"));
       return;
     }
-    if (e.shiftKey && e.key === "s") {
+    if (isMod && e.key === "s") {
       if (isEditorFocused(e.target)) return;
       e.preventDefault();
-      setSelectionMode(!isSelectionActive());
+      document.dispatchEvent(new CustomEvent("app:set-selection-mode"));
       return;
     }
     if (isSelectionActive() && key === "Backspace") {
@@ -108,4 +107,4 @@ function initGlobalShortcuts() {
   });
 }
 
-export { initGlobalShortcuts };
+export { initGlobalShortcuts, isSelectionActive };

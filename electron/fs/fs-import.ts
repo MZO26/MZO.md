@@ -52,7 +52,7 @@ async function batchImport(filePaths: string[]) {
           `[batchImport]: Failed to read/validate file: ${file}:`,
           error,
         );
-        errorCount++;
+        ++errorCount;
         return null;
       }
     },

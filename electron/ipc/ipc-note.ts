@@ -282,17 +282,24 @@ function registerNoteIpc(win: BrowserWindow) {
       }
       const dbPath = db.pathDb();
       const tmpPath = `${dbPath}.${crypto.randomUUID()}.restore-tmp`;
-      db.close();
       try {
+        db.close();
         await fs.copyFile(backupPath, tmpPath);
         await fs.rename(tmpPath, dbPath);
-        await fs.rm(`${dbPath}-wal`, { force: true }).catch(() => {});
-        await fs.rm(`${dbPath}-shm`, { force: true }).catch(() => {});
-        app.relaunch();
-        app.exit(0);
+        const fileHandle = await fs.open(dbPath, "r+");
+        await fileHandle.sync();
+        await fileHandle.close();
+        await fs.rm(`${dbPath}-wal`, { force: true });
+        await fs.rm(`${dbPath}-shm`, { force: true });
+        // doesn't work in dev mode since vite connection gets lost, has to be packaged
+        setImmediate(() => {
+          app.relaunch();
+          app.exit(0);
+        });
       } catch (error) {
         await fs.rm(tmpPath, { force: true }).catch(() => {});
         db.open();
+        console.error("[DB-Restore] Error during restore:", error);
         throw new AppBackendError(AppErrorCode.FileWriteError);
       }
     });

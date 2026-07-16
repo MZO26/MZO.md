@@ -5,7 +5,7 @@ import { Plugin } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";
 
 export const PasteHandler = Extension.create({
-  name: "pasteHandler",
+  name: "PasteHandler",
 
   addProseMirrorPlugins() {
     const editor = this.editor;
@@ -13,47 +13,25 @@ export const PasteHandler = Extension.create({
     return [
       new Plugin({
         props: {
-          handlePaste(view, event) {
-            const cb = event.clipboardData;
-            if (!editor || !cb) return false;
-            const files = Array.from(cb.files ?? []);
+          handlePaste(_view, event) {
+            const clipboardData = event.clipboardData;
+            if (!clipboardData || !editor) return false;
+            const files = Array.from(clipboardData.files ?? []);
             const images = files.filter((f) => ALLOWED_TYPES.includes(f.type));
             if (images.length > 0) {
               event.preventDefault();
               const safeImages = images.slice(0, 20);
-              if (images.length > 20) return false;
               void processAndInsertImages(safeImages, editor).catch(
                 (error: unknown) => {
                   console.error(
-                    "[PasteHandler]: Failed to process pasted images:",
+                    "[PasteHandler]: Image processing failed:",
                     error,
                   );
                 },
               );
               return true;
             }
-            const text = event.clipboardData?.getData("text/plain");
-            const html = event.clipboardData?.getData("text/html");
-            if (!text || html || !editor.markdown) {
-              return false;
-            }
-            try {
-              const normalized = text.replace(/\r\n?/g, "\n");
-              const content = editor.markdown.parse(normalized);
-              view.dispatch(
-                view.state.tr.replaceSelectionWith(
-                  editor.schema.nodeFromJSON(content),
-                  false,
-                ),
-              );
-              return true;
-            } catch (error) {
-              console.error(
-                "[pasteHandler]: Failed to process clipboard data:",
-                error,
-              );
-              return false;
-            }
+            return false;
           },
         },
       }),
