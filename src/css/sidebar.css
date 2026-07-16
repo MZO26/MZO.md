@@ -142,7 +142,7 @@
 
 .resizer-sidebar:hover,
 .resizer-sidebar.is-resizing {
-  background-color: var(--tag-color) !important;
+  background-color: var(--ui-resizer) !important;
   pointer-events: auto !important;
 }
 
@@ -546,6 +546,7 @@ body.is-dragging * {
   background-color: var(--tag-bg);
   color: var(--tag-color);
   box-shadow: var(--shadow);
+  border: 1px solid var(--tag-border);
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
@@ -570,7 +571,8 @@ body.is-dragging * {
   font-size: 0.65rem;
   background: var(--tag-bg);
   color: var(--tag-color);
-  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--tag-border);
   box-shadow: none;
   white-space: nowrap;
   cursor: pointer;

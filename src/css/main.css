@@ -314,7 +314,7 @@
   outline: none;
   font-size: 1.2em;
   line-height: inherit;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: inherit;
   line-height: 1.6;
   resize: none;
   scrollbar-gutter: stable both-edges;

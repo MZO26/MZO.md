@@ -143,25 +143,25 @@ const THEME_DATA: Record<
     focus: "#fcfcfc", // --bg-editor
   },
   dark: {
-    color: "#111115",
+    color: "#16161a", // --bg-sidebar
     symbolColor: "#a1a1aa", // --text-muted
-    background: "#111115",
+    background: "#16161a", // --bg-sidebar
     isDark: true,
-    focus: "#1e1e21",
+    focus: "#1d1d20", // --bg-editor
   },
   light_warm: {
-    color: "#eceae3",
-    symbolColor: "#1c1917",
+    color: "#eceae3", // --bg-sidebar
+    symbolColor: "#5e5b56", // --text-muted
     background: "#eceae3",
     isDark: false,
-    focus: "#f8f7f3",
+    focus: "#f8f7f3", // --bg-editor
   },
   dark_warm: {
-    color: "#110f0b",
-    symbolColor: "#d4cfc5",
-    background: "#110f0b",
+    color: "#110f0b", // --bg-sidebar
+    symbolColor: "#9e9890", // --text-muted
+    background: "#110f0b", // --bg-sidebar
     isDark: true,
-    focus: "#1e1b17",
+    focus: "#1e1b17", // --bg-editor
   },
 } as const;
 
