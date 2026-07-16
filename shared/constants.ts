@@ -234,6 +234,13 @@ const KATEX_MACROS = {
   "\\set": "\\left\\{#1\\right\\}",
 };
 
+const SHARED_KATEX_OPTIONS = {
+  maxExpand: 500,
+  maxSize: 12,
+  throwOnError: false,
+  macros: { ...KATEX_MACROS },
+};
+
 const UNTITLED = "Untitled";
 
 const EMPTY_DOC = {
@@ -367,6 +374,7 @@ export {
   NOTE_ITEM_DISPLAY_SETTINGS,
   QUICK_ACTIONS,
   SELECTION_ACTIONS,
+  SHARED_KATEX_OPTIONS,
   SIDEBAR_ALL_NOTES_LIMIT,
   SIDEBAR_FILTER_MODES,
   SPELLCHECK_SETTINGS,

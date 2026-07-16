@@ -16,7 +16,11 @@ import { Highlight } from "@/extensions/highlight";
 import { DateInputRules, InputRules } from "@/extensions/input-rules";
 import { lowlight } from "@/extensions/lowlight";
 import { CustomHeading } from "@/extensions/overrides/headings";
-import { handleMathClick } from "@/extensions/overrides/mathematics";
+import {
+  CustomBlockMath,
+  CustomInlineMath,
+  handleMathClick,
+} from "@/extensions/overrides/mathematics";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { initTableOfContents } from "@/extensions/tableOfContents";
 import { NoteTag } from "@/extensions/tag";
@@ -29,13 +33,12 @@ import {
   stateStore,
 } from "@/settings/app-state";
 import { requireElement } from "@/utils/dom";
-import { KATEX_MACROS } from "@shared/constants";
+import { SHARED_KATEX_OPTIONS } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
-import { Mathematics } from "@tiptap/extension-mathematics";
 import {
   Table,
   TableCell,
@@ -213,19 +216,13 @@ function getNoteEditorExtensions() {
         spellcheck: "false",
       },
     }),
-    Mathematics.configure({
-      inlineOptions: {
-        onClick: handleMathClick,
-      },
-      blockOptions: {
-        onClick: handleMathClick,
-      },
-      katexOptions: {
-        maxExpand: 500,
-        maxSize: 12,
-        throwOnError: false,
-        macros: { ...KATEX_MACROS },
-      },
+    CustomInlineMath.configure({
+      onClick: handleMathClick,
+      katexOptions: SHARED_KATEX_OPTIONS,
+    }),
+    CustomBlockMath.configure({
+      onClick: handleMathClick,
+      katexOptions: SHARED_KATEX_OPTIONS,
     }),
   ];
 }

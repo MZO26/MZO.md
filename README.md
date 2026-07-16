@@ -97,7 +97,7 @@ npm install
 | <kbd>Mod</kbd> + <kbd>S</kbd>                          | `~~text~~`   | Strikethrough                  |
 | <kbd>Mod</kbd> + <kbd>H</kbd>                          | `==text==`   | Highlight                      |
 | <kbd>Mod</kbd> + <kbd>E</kbd>                          | `` `code` `` | Inline code                    |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>       | `$$math$$`   | Inline Math                    |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>       | `$math$`     | Inline Math                    |
 | **Headings & Paragraphs**                              |              |                                |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd>       | `# `         | Heading 1                      |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>2</kbd>       | `## `        | Heading 2                      |
@@ -115,7 +115,7 @@ npm install
 | **Blocks & Elements**                                  |              |                                |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>       | `> `         | Blockquote                     |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>       | ` ``` `      | Code block                     |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd>+ <kbd>M</kbd>        | `$$$math$$$` | Math block                     |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd>+ <kbd>M</kbd>        | `$$math$$`   | Math block                     |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>       | `---`        | Horizontal rule                |
 | <kbd>Shift</kbd> + <kbd>Enter</kbd>                    |              | Hard break (`<br>`)            |
 | **Links & Media**                                      |              |                                |
