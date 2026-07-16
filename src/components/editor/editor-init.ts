@@ -13,7 +13,7 @@ import {
 } from "@/extensions/editor-handler/pasteHandler";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { Highlight } from "@/extensions/highlight";
-import { DateInputRules, InputRules } from "@/extensions/input-rules";
+import { InputRules } from "@/extensions/input-rules";
 import { lowlight } from "@/extensions/lowlight";
 import { CustomHeading } from "@/extensions/overrides/headings";
 import {
@@ -94,7 +94,6 @@ function getNoteEditorExtensions() {
     Markdown.configure({ markedOptions: { gfm: true } }),
     MasterShortcuts,
     InputRules,
-    DateInputRules,
     ListKit.configure({
       taskItem: { nested: true },
     }),

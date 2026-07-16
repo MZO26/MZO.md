@@ -56,7 +56,7 @@ const CustomInlineMath = InlineMath.extend({
       new InputRule({
         find: /(?<!\$)\$([^$\n]+)\$$/,
         handler: ({ range, match, commands }) => {
-          const latex = match[1];
+          const latex = typeof match[1] === "string" ? match[1].trim() : "";
           if (!latex) return null;
           commands.insertContentAt(range, {
             type: this.type.name,
@@ -73,7 +73,7 @@ const CustomInlineMath = InlineMath.extend({
       new PasteRule({
         find: /(?<!\$)\$([^$\n]+)\$(?!\$)/g,
         handler: ({ range, match, commands }) => {
-          const latex = match[1];
+          const latex = typeof match[1] === "string" ? match[1].trim() : "";
           if (!latex) return null;
           commands.insertContentAt(range, {
             type: this.type.name,
@@ -92,7 +92,7 @@ const CustomBlockMath = BlockMath.extend({
       new InputRule({
         find: /(?<!\$)\$\$([\s\S]+?)\$\$$/,
         handler: ({ range, match, commands }) => {
-          const latex = match[1]?.trim();
+          const latex = typeof match[1] === "string" ? match[1].trim() : "";
           if (!latex) return null;
           commands.insertContentAt(range, {
             type: this.type.name,
@@ -117,7 +117,9 @@ const CustomBlockMath = BlockMath.extend({
             if (!clipboardData) return false;
             const text = event.clipboardData.getData("text/plain");
             if (!text || !text.includes("$$")) return false;
-            const parts = text.split(/(\$\$[\s\S]+?\$\$)/g).filter(Boolean);
+            const parts = text
+              .split(/(\$\$[\s\S]+?\$\$)/g)
+              .filter((part) => part.length > 0);
             const content: unknown[] = [];
             for (const part of parts) {
               const mathMatch = part.match(/^\$\$([\s\S]+?)\$\$$/);

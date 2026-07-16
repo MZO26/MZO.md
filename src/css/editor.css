@@ -626,7 +626,6 @@
 }
 
 .ProseMirror-search-match {
-  forced-color-adjust: none;
   background-color: var(--search-match-bg);
   color: var(--text-main);
   border-radius: 3px;
