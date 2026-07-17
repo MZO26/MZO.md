@@ -146,7 +146,12 @@ function parseFilenameToDate(
   if (isNaN(date.getTime())) {
     return null;
   }
-  return { title, date };
+  const safeTitle =
+    typeof title === "string" && title.length > 50
+      ? title.trim().slice(0, 50)
+      : null;
+  if (!safeTitle) return null;
+  return { title: safeTitle, date };
 }
 
 function getFilePath(

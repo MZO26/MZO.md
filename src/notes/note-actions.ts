@@ -119,7 +119,7 @@ async function handleImportNote(request: FilePathRequest) {
   const successCount = result.data.length;
   await showNotification(
     "Import Complete",
-    `Successfully imported ${successCount} files.\n` +
+    `Imported ${successCount} file${successCount === 1 ? "" : "s"}.\n` +
       `Duplicates skipped: ${duplicates}\n` +
       `Errors: ${errors}`,
   );
@@ -305,10 +305,7 @@ async function handleSelectNote(id: string) {
     noteStore.setState({ activeNote: result.data });
     updateToc([]);
     updateStats();
-    await showNotification(
-      "Invalid content detected.",
-      "Couldn't load content.",
-    );
+    await showNotification("Invalid content detected", "Couldn't load content");
     return;
   }
   if (stateStore.getState().activeId !== id) return;

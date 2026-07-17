@@ -82,9 +82,10 @@ function applyModalListeners(
               "[quickActions -> backup-db]: Failed to backup db:",
               dbBackup.error,
             );
+            await showNotification("Failed to save Backup", "");
             return;
           }
-          await showNotification("Backup saved.", "");
+          await showNotification("Backup saved", "");
           return;
         case "backup-db-restore":
           const restore = await databaseBackupRestore();
@@ -93,9 +94,10 @@ function applyModalListeners(
               "[quickActions -> backup-db-restore]: Failed to restore db:",
               restore.error,
             );
+            await showNotification("Failed to restore Backup", "");
             return;
           }
-          await showNotification("Backup restored.", "");
+          await showNotification("Backup restored", "");
           return;
         case "backup-notes":
           const allIds = noteStore.get("notes").map((n) => n.id);

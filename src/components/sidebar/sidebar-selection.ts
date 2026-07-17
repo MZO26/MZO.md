@@ -43,7 +43,7 @@ async function copyRichTextSelection(selectedIds: string[]) {
       "[copyMarkdownSelection -> getBatchExportContent]: Failed to get markdown:",
       content.error,
     );
-    await showNotification("Failed to get Markdown.", "");
+    await showNotification("Failed to get Markdown", "");
     return;
   }
   try {
@@ -63,9 +63,9 @@ async function copyRichTextSelection(selectedIds: string[]) {
         "text/plain": new Blob([plain], { type: "text/plain" }),
       }),
     ]);
-    await showNotification("Copied to clipboard.", "");
+    await showNotification("Copied to clipboard", "");
   } catch (error) {
-    await showNotification("Failed to copy to clipboard.", "");
+    await showNotification("Failed to copy to clipboard", "");
     console.error("[copyMarkdownSelection]: Failed to copy markdown:", error);
   }
 }
@@ -107,8 +107,8 @@ async function exportSelection(selectedIds: string[]) {
     return;
   }
   await showNotification(
-    "Export Successful.",
-    `${result.data.length} files exported to .${exportFormat}`,
+    "Export Complete",
+    `Exported ${result.data.length} files to .${exportFormat}`,
   );
 }
 

@@ -66,19 +66,19 @@ async function triggerSingleExport(id: string, extension: string) {
   const result = await getExportContent(id, extension);
   if (!result.success) {
     console.error("[exportTrigger]: Failed to fetch note data:", result.error);
-    await showNotification("Export Failed.", ERROR_MESSAGES.EXPORT_ERROR);
+    await showNotification("Export Failed", ERROR_MESSAGES.EXPORT_ERROR);
     return;
   }
   const exported = await exportNote(result.data);
   if (!exported.success) {
     console.error("[exportTrigger]: Failed to write file:", exported.error);
     if (exported.error === "CANCELLED_OPERATION") return;
-    await showNotification("Export Failed.", "");
+    await showNotification("Export Failed", "");
     return;
   }
   await showNotification(
-    "Export Successful.",
-    `Successfully exported as .${extension.toUpperCase()}`,
+    "Export Complete",
+    `Exported files as .${extension.toUpperCase()}`,
   );
 }
 
@@ -87,7 +87,7 @@ async function triggerOpenAutoExportFolder(
 ) {
   const result = await openAutoExportFolder(autoExportPayload);
   if (!result.success || result.data === false) {
-    await showNotification("Could not open note path.", "");
+    await showNotification("Could not open note path", "");
     return;
   }
 }
@@ -97,7 +97,7 @@ async function triggerOpenInDefaultEditor(
 ) {
   const result = await openInDefaultEditor(autoExportPayload);
   if (!result.success || result.data === false) {
-    await showNotification("Could not open note in default Editor.", "");
+    await showNotification("Could not open note in default Editor", "");
     return;
   }
 }
@@ -109,19 +109,19 @@ async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
       "[onTriggerCopyPath]: Failed to retrieve file path:",
       result.error,
     );
-    await showNotification("Failed to retrieve file path.", "");
+    await showNotification("Failed to retrieve file path", "");
     return;
   }
   if (!result.data) {
     console.warn("[onTriggerCopyPath]: File path was empty.");
-    await showNotification("No file path to copy.", "");
+    await showNotification("No file path to copy", "");
     return;
   }
   try {
     await navigator.clipboard.writeText(result.data);
-    await showNotification("Copied to clipboard.", "");
+    await showNotification("Copied to clipboard", "");
   } catch (error) {
-    await showNotification("Failed to copy to clipboard.", "");
+    await showNotification("Failed to copy to clipboard", "");
     console.error("[onTriggerCopyPath]: Failed to copy file path:", error);
   }
 }
@@ -133,7 +133,7 @@ async function triggerCopyRichText(id: string) {
       "[onTriggerCopyRichText]: Failed to fetch note data:",
       result.error,
     );
-    await showNotification("Failed to get html.", "");
+    await showNotification("Failed to get html", "");
     return;
   }
   const note = noteStore.get("notes").find((n) => n.id === id);
@@ -148,9 +148,9 @@ async function triggerCopyRichText(id: string) {
         "text/plain": new Blob([plain], { type: "text/plain" }),
       }),
     ]);
-    await showNotification("Copied to clipboard.", "");
+    await showNotification("Copied to clipboard", "");
   } catch (error) {
-    await showNotification("Failed to copy to clipboard.", "");
+    await showNotification("Failed to copy to clipboard", "");
     console.error("[onTriggerCopyMarkdown]: Failed to copy markdown:", error);
   }
 }
@@ -260,16 +260,16 @@ async function triggerSyncCheck(id: string) {
     }
     switch (syncResult.data.status) {
       case "UNCHANGED":
-        await showNotification("Sync Check", "Note is in sync.");
+        await showNotification("Sync Check", "Note is in sync");
         return;
       case "MISSING":
         await showNotification(
           "Sync Check",
-          "Note not found in target directory.",
+          "Note not found in target directory",
         );
         return;
       case "MODIFIED": {
-        await showNotification("Sync Check", "Note is out of sync.");
+        await showNotification("Sync Check", "Note is out of sync");
         const titleEl = requireElement<HTMLSpanElement>(
           ".sync-dialog-title",
           syncDialog,
