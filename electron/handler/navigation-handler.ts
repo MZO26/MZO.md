@@ -45,7 +45,10 @@ async function setupLocalImageProtocol() {
       const intendedPath = path.resolve(realImagesDir, fileName);
       const realFilePath = await fs.promises.realpath(intendedPath);
       const relative = path.relative(realImagesDir, realFilePath);
-      const isOutside = relative.startsWith("..") || path.isAbsolute(relative);
+      const isOutside =
+        relative === ".." ||
+        relative.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relative);
       if (isOutside) {
         return new Response("Forbidden", { status: 403 });
       }
@@ -64,75 +67,102 @@ async function setupLocalImageProtocol() {
   });
 }
 
-function processUrl(url: string, preventDefault?: () => void) {
-  // preventDefault if electron is trying to load url inside of the app. This will stop it and allow for the definition of a custom action
+type UrlDecision = "allow" | "block" | "external";
+
+function processUrl(url: string): UrlDecision {
   try {
     const parsedUrl = new URL(url);
     const isLocalhost =
-      parsedUrl.hostname === "localhost" || parsedUrl.hostname === "127.0.0.1"; // allow local host. Together with vite port it creates: http://127.0.0.1:5173
+      parsedUrl.hostname === "localhost" || parsedUrl.hostname === "127.0.0.1";
     const isWebProtocol =
       parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:";
     const isCustomAppProtocol = parsedUrl.protocol === "appimg:";
-
     let isSafeLocalFile = false;
-
     if (parsedUrl.protocol === "file:") {
-      // creates file path out of URL
       const requestedPath = path.resolve(fileURLToPath(url));
-      // creates absolute path of the apps directory
-      const appDir = app.getAppPath();
-      const safeAppDir = appDir.endsWith(path.sep) ? appDir : appDir + path.sep;
-      // if requested path doesn't align with app directory, local file gets marked as unsafe and doesn't pass check
-      isSafeLocalFile = requestedPath.startsWith(safeAppDir);
+      const appDir = path.resolve(app.getAppPath());
+      const relative = path.relative(appDir, requestedPath);
+      const isOutside =
+        relative === ".." ||
+        relative.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relative);
+      isSafeLocalFile = !isOutside;
     }
     if (isWebProtocol && !isLocalhost) {
-      if (preventDefault) preventDefault();
-      shell.openExternal(url);
-      return;
-      // this means protocol is valid but electron shouldn't open it in its window. Instead it hands off the URL to the os to open it with users default browser
+      return "external";
     }
     if (
       (isWebProtocol && isLocalhost) ||
       isSafeLocalFile ||
       isCustomAppProtocol
     ) {
-      return;
+      return "allow";
     }
-    if (preventDefault) preventDefault();
     console.warn(
       `[processUrl]: Blocked dangerous protocol: ${parsedUrl.protocol}`,
     );
-  } catch (error) {
-    if (preventDefault) preventDefault();
+    return "block";
+  } catch {
     console.error(`[processUrl]: Blocked invalid URL: ${url}`);
+    return "block";
   }
 }
 
 function navigationHandler(win: BrowserWindow) {
   win.webContents.setWindowOpenHandler(({ url }) => {
-    processUrl(url);
+    const decision = processUrl(url);
+    if (decision === "external") {
+      void shell.openExternal(url);
+    }
     return { action: "deny" };
   });
 
   win.webContents.on("will-navigate", (e, url) => {
-    processUrl(url, () => e.preventDefault());
+    const decision = processUrl(url);
+    if (decision === "external") {
+      e.preventDefault();
+      void shell.openExternal(url);
+      return;
+    }
+    if (decision === "block") {
+      e.preventDefault();
+    }
   });
 
   win.webContents.on("will-redirect", (e, url) => {
-    processUrl(url, () => e.preventDefault());
-  });
-  win.webContents.on("will-frame-navigate", (e) => {
-    if (!e.isMainFrame) {
-      processUrl(e.url, () => e.preventDefault());
+    const decision = processUrl(url);
+    if (decision === "external") {
+      e.preventDefault();
+      void shell.openExternal(url);
+      return;
+    }
+    if (decision === "block") {
+      e.preventDefault();
     }
   });
+
+  win.webContents.on("will-frame-navigate", (e) => {
+    if (!e.isMainFrame) {
+      const decision = processUrl(e.url);
+      if (decision === "external") {
+        e.preventDefault();
+        void shell.openExternal(e.url);
+        return;
+      }
+
+      if (decision === "block") {
+        e.preventDefault();
+      }
+    }
+  });
+
   win.webContents.session.on("will-download", (e, item) => {
     e.preventDefault();
     console.log(`Blocked attempt to download: ${item.getURL()}`);
   });
+
   win.webContents.on("will-attach-webview", (e) => {
     e.preventDefault();
   });
 }
-
 export { navigationHandler, registerCustomProtocol, setupLocalImageProtocol };

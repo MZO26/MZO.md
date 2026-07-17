@@ -1,14 +1,19 @@
 import { isAutoExport } from "@electron/fs/fs-auto-export";
 import { settingsService } from "@electron/handler/settings-handler";
-import { validation } from "@electron/ipc/ipc-validation";
+import { checkRateLimit, validation } from "@electron/ipc/ipc-validation";
+import { LIMITS } from "@shared/constants";
+import { AppErrorCode } from "@shared/errors";
 import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
 import { IdSchema, type NoteMenuPayload } from "@shared/schemas/note-schema";
 import { clipboard, ipcMain, Menu, shell, type BrowserWindow } from "electron";
+import { AppBackendError } from "./ipc/ipc-error-handler";
 
 let activeId: string | null = null;
 
 ipcMain.on("note:set-active", (_e, id: unknown) => {
   try {
+    if (!checkRateLimit("note:set-active", LIMITS.READ_LIGHT))
+      throw new AppBackendError(AppErrorCode.RateLimitError);
     const validatedId = validation(IdSchema, id);
     activeId = validatedId;
   } catch (error: unknown) {

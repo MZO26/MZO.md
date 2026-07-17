@@ -120,18 +120,20 @@ function getSafeLocalDateString(date: Date) {
   return `${YYYY}-${MM}-${DD}_${HH}-${mm}-${ss}`;
 }
 
-function parseFilenameToDate(filename: string): Date | null {
+function parseFilenameToDate(
+  filename: string,
+): { title: string; date: Date } | null {
   const match = filename.match(
     /^(.+)_(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$/,
   );
   if (!match) return null;
   // first match is the full string
   // second match is title
-  const [, , year, month, day, hour, minute, second] = match;
-  if (!year || !month || !day || !hour || !minute || !second) {
+  const [, title, year, month, day, hour, minute, second] = match;
+  if (!title || !year || !month || !day || !hour || !minute || !second) {
     return null;
   }
-  return new Date(
+  const date = new Date(
     Date.UTC(
       Number(year),
       Number(month) - 1, // month is 0 indexed
@@ -141,6 +143,10 @@ function parseFilenameToDate(filename: string): Date | null {
       Number(second),
     ),
   );
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+  return { title, date };
 }
 
 function getFilePath(
@@ -160,7 +166,10 @@ function getFilePath(
 
 function ensureInsideDirectory(baseDir: string, absoluteFilePath: string) {
   const relative = path.relative(baseDir, absoluteFilePath);
-  const isOutside = relative.startsWith("..") || path.isAbsolute(relative);
+  const isOutside =
+    relative === ".." ||
+    relative.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relative);
   if (isOutside) {
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }

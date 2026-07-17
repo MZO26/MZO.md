@@ -27,15 +27,6 @@ const STATE_STORE: AppState = {
   activeTag: null,
 };
 
-let prevId: string | null = null;
-let prevSearchQuery: string = "";
-let prevVisibleIds: string[] | null = null;
-let prevSidebarChange: SidebarChange | null = null;
-
-const stateStore = createStore<AppState>(STATE_STORE);
-
-const settingsStore = createStore<AppSettings>(DEFAULT_SETTINGS);
-
 interface NoteStore {
   notes: NoteListItem[];
   visibleIds: string[];
@@ -54,28 +45,34 @@ const NOTE_STORE: NoteStore = {
   recentNotes: [],
 };
 
+let prevId: string | null = null;
+let prevSearchQuery: string = "";
+let prevVisibleIds: string[] | null = null;
+let prevSidebarChange: SidebarChange | null = null;
+
+const stateStore = createStore<AppState>(STATE_STORE);
+
+const settingsStore = createStore<AppSettings>(DEFAULT_SETTINGS);
+
 const noteStore = createStore<NoteStore>(NOTE_STORE);
+
+const searchEngine = new NoteSearch();
 
 function createStore<T>(initialState: T) {
   let state = initialState;
   const listeners = new Set<(state: T) => void>();
-
   const getState = () => state;
-
   const get = <K extends keyof T>(key: K): T[K] => {
     return state[key];
   };
-
   const setState = (newState: Partial<T> | ((state: T) => Partial<T>)) => {
     const nextState =
       typeof newState === "function"
         ? (newState as (state: T) => Partial<T>)(state)
         : newState;
-
     state = { ...state, ...nextState };
     listeners.forEach((listener) => listener(state));
   };
-
   const subscribe = (listener: (state: T) => void) => {
     listeners.add(listener);
     return () => listeners.delete(listener);
@@ -241,8 +238,6 @@ stateStore.subscribe((state) => {
     });
   }
 });
-
-const searchEngine = new NoteSearch(noteStore.getState().notes);
 
 noteStore.subscribe((state) => {
   if (state.visibleIds !== prevVisibleIds) {

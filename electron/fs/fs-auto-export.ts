@@ -218,11 +218,6 @@ async function writeAutoExportFile({
     WriteAutoExportRequestSchema,
     writePayload,
   );
-  console.log("[writeAutoExportFile]: Looking at file:", {
-    created_at: validatedFileData.created_at,
-    fileName: validatedFileData.fileName,
-    oldFileName,
-  });
   try {
     await writeAutoExportFileLogic(targetDir, {
       ...validatedFileData,

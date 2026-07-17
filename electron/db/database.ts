@@ -131,7 +131,12 @@ class AppDB {
         SELECT * FROM store WHERE id = 1
       `);
       this.checkNoteStmt = this.db.prepare(`
-      SELECT 1 FROM notes WHERE created_at >= $start AND created_at < $end
+      SELECT 1 
+      FROM notes 
+      WHERE title = $title 
+      AND created_at >= $start 
+      AND created_at < $end 
+      LIMIT 1;
       `);
       console.log(`Database initialized at: ${this.dbPath}`);
     } catch (error) {
@@ -433,15 +438,18 @@ class AppDB {
   }
 
   public checkExistence(fileName: string): boolean {
-    const date = parseFilenameToDate(fileName);
-    if (!date) return false;
+    const parsedData = parseFilenameToDate(fileName);
+    if (!parsedData) return false;
+    const { title, date } = parsedData;
     // gets milliseconds for the parsed date
-    const start = new Date(date.getTime());
-    // appends one second as buffer for creation date
-    const end = new Date(date.getTime() + 1000);
+    const start = date.toISOString();
+    // appends one second as buffer for creation date since ms are not in filenames
+    const endDate = new Date(date.getTime() + 1000);
+    const end = endDate.toISOString();
     return !!this.checkNoteStmt.get({
-      $start: start.toISOString(),
-      $end: end.toISOString(),
+      $title: title,
+      $start: start,
+      $end: end,
     });
   }
 

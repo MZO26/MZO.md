@@ -302,49 +302,52 @@
   transition: background-color 0.2s ease;
 }
 
+.math-confirm-btn:hover {
+  box-shadow: var(--shadow);
+  background-color: var(--tag-bg);
+}
+
 #math-input {
   width: 100%;
   flex: 1 1 auto;
-  min-height: 250px;
-  height: auto;
-  background-color: var(--bg-sidebar);
+  height: 250px;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  background-color: var(--bg-editor);
   color: var(--text-main);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   outline: none;
-  font-size: 1.2em;
-  line-height: inherit;
-  font-family: inherit;
-  line-height: 1.6;
   resize: none;
-  scrollbar-gutter: stable both-edges;
   field-sizing: content;
-  white-space: pre-wrap;
   overflow-y: auto;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  scrollbar-gutter: stable;
+  caret-color: var(--text-main);
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-#math-input:hover {
-  border-color: inset 0 -2px 0 0 var(--tag-color);
+#math-input:focus {
+  box-shadow: var(--shadow);
 }
 
 #math-input::-webkit-resizer {
   display: none;
 }
 
+#math-input::selection {
+  background-color: var(--selection-bg);
+}
+
 #math-input::-webkit-scrollbar-corner {
   background: transparent;
-}
-
-#math-input::selection {
-  background-color: var(--editor-highlight);
-}
-
-#math-input:focus {
-  box-shadow: var(--shadow);
-  border-color: var(--text-muted);
 }
 
 .delete-confirm-btn:hover,
@@ -359,6 +362,7 @@
 .sync-confirm-btn:active,
 .sync-confirm-btn.is-active,
 .sync-confirm-btn:focus-within {
+  box-shadow: var(--shadow);
   background-color: var(--tag-bg);
 }
 
@@ -1208,8 +1212,13 @@ svg.empty-state-icon {
   }
 
   .math-dialog {
-    width: 500px;
-    height: 400px;
+    width: 450px;
+    height: 300px;
+  }
+
+  #math-input {
+    min-height: 100px;
+    max-height: 150px;
   }
 
   .input-wrapper-editor,
