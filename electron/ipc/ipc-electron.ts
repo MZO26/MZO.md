@@ -4,6 +4,7 @@ import {
   resolveAutoExportPath,
 } from "@electron/fs/fs-auto-export";
 import { handleImageWriteMany } from "@electron/fs/fs-image";
+import { processUrl } from "@electron/handler/navigation-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
@@ -57,7 +58,16 @@ function registerElectronIpc(win: BrowserWindow) {
       if (!checkRateLimit("open:external", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ExternalUrlSchema, url);
-      return shell.openExternal(validatedData);
+      const decision = processUrl(validatedData);
+      switch (decision) {
+        case "allow":
+          return shell.openPath(validatedData);
+        case "external":
+          return shell.openExternal(validatedData);
+        case "block":
+        default:
+          return "block";
+      }
     });
   });
 

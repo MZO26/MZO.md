@@ -165,4 +165,9 @@ function navigationHandler(win: BrowserWindow) {
     e.preventDefault();
   });
 }
-export { navigationHandler, registerCustomProtocol, setupLocalImageProtocol };
+export {
+  navigationHandler,
+  processUrl,
+  registerCustomProtocol,
+  setupLocalImageProtocol,
+};

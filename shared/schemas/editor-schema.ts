@@ -62,10 +62,9 @@ const DbContentSchema = z
 //input gets validated -> processed into parsed object -> piped to validate output against EditorDocSchema
 
 const ExternalUrlSchema = z.string().refine((value) => {
-  if (value.startsWith("appimg:")) return true;
   try {
-    const url = new URL(value);
-    return url.protocol === "https:";
+    new URL(value);
+    return true;
   } catch {
     return false;
   }

@@ -33,7 +33,7 @@ import {
   stateStore,
 } from "@/settings/app-state";
 import { requireElement } from "@/utils/dom";
-import { SHARED_KATEX_OPTIONS } from "@shared/constants";
+import { ALLOWED_PROTOCOLS, SHARED_KATEX_OPTIONS } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
@@ -189,13 +189,11 @@ function getNoteEditorExtensions() {
           rel: "noopener noreferrer",
         },
         isAllowedUri: (url, ctx) => {
-          if (!ctx.defaultValidate(url)) {
-            return false;
-          }
+          if (!ctx.defaultValidate(url)) return false;
           try {
             // google as base path for relative path parsing
             const parsed = new URL(url, "https://google.com");
-            return ["https:", "appimg:"].includes(parsed.protocol);
+            return ALLOWED_PROTOCOLS.includes(parsed.protocol);
           } catch (error: unknown) {
             console.error("[link.configure]: Invalid URL");
             return false;
@@ -203,7 +201,6 @@ function getNoteEditorExtensions() {
         },
       },
       dropcursor: {
-        color: "var(--accent-primary)",
         width: 2,
         class: "editor-dropcursor",
       },

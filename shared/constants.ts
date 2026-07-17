@@ -72,6 +72,8 @@ const SIDEBAR_ALL_NOTES_LIMIT = 50;
 
 const SIDEBAR_FILTER_MODES = ["recent", "search", "tag"] as const;
 
+const ALLOWED_PROTOCOLS = ["https:", "http:", "appimg:", "file:"];
+
 const SELECTION_ACTIONS: SelectionActionConfig[] = [
   { id: "cancel", icon: "x" },
   { id: "pin", icon: "pin" },
@@ -348,6 +350,7 @@ const AUTO_EXPORT_SETTINGS: readonly SelectOption<AutoExport>[] = [
 ];
 
 export {
+  ALLOWED_PROTOCOLS,
   ALLOWED_TYPES,
   APP_START_TIME,
   AUTO_EXPORT_SETTINGS,
