@@ -167,9 +167,9 @@ const THEME_DATA: Record<
   },
 } as const;
 
-const MAX_BYTES_FILE = 5_000_000;
+const MAX_BYTES_FILE = 5242880;
 
-const MAX_TEXT_LENGTH = 1_000_000;
+const MAX_TEXT_LENGTH = 5_000_000;
 
 const DOMPURIFY_CONFIG = {
   FORBID_TAGS: [
