@@ -1,7 +1,7 @@
 import type { JSONContent } from "@tiptap/core";
 import z from "zod";
 
-const MAX_CHARS = 1_000_000;
+const MAX_CHARS = 10_000_000;
 
 const JSONNode: z.ZodType<JSONContent> = z.lazy(() =>
   z
@@ -72,4 +72,10 @@ const ExternalUrlSchema = z.string().refine((value) => {
 
 type EditorDoc = z.infer<typeof EditorDocSchema>;
 
-export { DbContentSchema, EditorDocSchema, ExternalUrlSchema, type EditorDoc };
+export {
+  DbContentSchema,
+  EditorDocSchema,
+  ExternalUrlSchema,
+  MAX_CHARS,
+  type EditorDoc,
+};

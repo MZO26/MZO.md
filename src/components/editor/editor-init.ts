@@ -5,6 +5,7 @@ import {
 import { applyTagView } from "@/components/sidebar/sidebar-features";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
+import { MaxContentGuard } from "@/extensions/editor-handler/guard";
 import {
   GoogleDocsCleanup,
   PasteHandler,
@@ -86,6 +87,7 @@ function initEditor(settings: Partial<AppSettings>): Editor {
 function getNoteEditorExtensions() {
   return [
     SearchAndReplace,
+    MaxContentGuard,
     PasteHandler,
     GoogleDocsCleanup,
     WordCleanup,

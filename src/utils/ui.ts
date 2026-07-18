@@ -1,3 +1,4 @@
+import { requireElement } from "@/utils/dom";
 import { delegate, hideAll, type Placement } from "tippy.js";
 import "tippy.js/animations/scale-subtle.css";
 import "tippy.js/dist/tippy.css";
@@ -66,4 +67,18 @@ function initTippyDelegate(
   });
 }
 
-export { createTooltipContent, initTippyDelegate };
+function createGlobalSpinner() {
+  const spinner = requireElement<HTMLDivElement>(".app-loading");
+  return {
+    async wrap<T>(task: Promise<T> | (() => Promise<T>)): Promise<T> {
+      spinner.hidden = false;
+      try {
+        return typeof task === "function" ? await task() : await task;
+      } finally {
+        spinner.hidden = true;
+      }
+    },
+  };
+}
+
+export { createGlobalSpinner, createTooltipContent, initTippyDelegate };

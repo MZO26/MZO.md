@@ -1,18 +1,11 @@
-import type { ErrorHandlerOptions } from "@shared/types";
-
-function setupGlobalErrorHandling({ ignore = [] }: ErrorHandlerOptions = {}) {
+function setupGlobalErrorHandling({ ignore = [] }: { ignore?: string[] } = {}) {
   process.on("unhandledRejection", (reason) => {
     const errorMsg = reason instanceof Error ? reason.message : String(reason);
-    const shouldIgnore =
-      ignore.length > 0 && ignore.some((pattern) => errorMsg.includes(pattern));
-    if (shouldIgnore) {
-      return;
-    }
-    console.error("[Unhandled Promise Rejection]: ", reason);
+    if (ignore.some((pattern) => errorMsg.includes(pattern))) return;
+    console.error("[Unhandled Promise Rejection]:", reason);
   });
   process.on("uncaughtException", (error) => {
     console.error("[Uncaught Exception]:", error);
   });
 }
-
 export { setupGlobalErrorHandling };

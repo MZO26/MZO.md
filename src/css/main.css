@@ -1198,6 +1198,35 @@ svg.empty-state-icon {
   background: var(--accent-hover);
 }
 
+.app-loading[hidden] {
+  display: none !important;
+}
+
+.app-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bg-editor) 78%, transparent);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  border: 1.5px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @container (max-width: 450px) {
   .top-toolbar,
   .top-toolbar-dots {

@@ -1,9 +1,12 @@
+import { showNotification } from "@/api/api";
 import { processAndInsertImages } from "@/extensions/image/image";
 import { getExtension } from "@/utils/note";
 import {
   ALLOWED_TYPES,
   CONTENT_TYPE_MAP,
   DOMPURIFY_CONFIG,
+  MAX_BYTES_FILE,
+  MAX_TEXT_LENGTH,
 } from "@shared/constants";
 import { Extension } from "@tiptap/core";
 import { Plugin, Selection } from "@tiptap/pm/state";
@@ -31,6 +34,10 @@ export const DropHandler = Extension.create({
             const supportedFiles = safeFiles.filter((file) => {
               if (ALLOWED_TYPES.includes(file.type)) return true;
               const ext = getExtension(file.name);
+              if (file.size >= MAX_BYTES_FILE) {
+                void showNotification(`${file.name} is too large.`, "");
+                return;
+              }
               return ext === "txt" || ext in CONTENT_TYPE_MAP;
             });
             if (supportedFiles.length === 0) return false;
@@ -54,6 +61,7 @@ export const DropHandler = Extension.create({
                     editor.commands.focus();
                     const ext = getExtension(file.name);
                     const text = await file.text();
+                    if (text.length > MAX_TEXT_LENGTH) return;
                     const contentType =
                       ext === "txt" ? "txt" : CONTENT_TYPE_MAP[ext];
                     if (contentType === "txt") {

@@ -37,9 +37,7 @@ type TitleBarOverlayOptions = {
   focus?: boolean;
 };
 
-interface ErrorHandlerOptions {
-  ignore?: string[];
-}
+type UrlDecision = "allow" | "block" | "external";
 
 type ResolvedTheme = "light" | "dark";
 
@@ -94,6 +92,11 @@ type ImportedContent = {
   content: Content;
   extension: "md" | "html" | "json" | "txt";
 };
+
+type ErrorReasons = {
+  file: string;
+  reason: "not-file" | "file-too-large" | "content-too-large" | "read-failed";
+}[];
 
 type ImportStats = {
   total: number;
@@ -235,7 +238,7 @@ export type {
   ContentType,
   CoreRegistry,
   EditorContentType,
-  ErrorHandlerOptions,
+  ErrorReasons,
   ExportedContent,
   ExportFormat,
   Failure,
@@ -266,6 +269,7 @@ export type {
   ThemeResult,
   TitleBarOverlayOptions,
   UIRegistry,
+  UrlDecision,
   WorkerResult,
   ZoomAction,
 };

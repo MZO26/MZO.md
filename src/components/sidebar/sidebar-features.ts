@@ -19,7 +19,7 @@ import { createIconButton, createInfoSpan, requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { estimateReadingTime, getExtension } from "@/utils/note";
 import { getAppItem, getUIItems } from "@/utils/registry";
-import { initTippyDelegate } from "@/utils/ui";
+import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
 import {
   CONTENT_TYPE_MAP,
   DEBOUNCE_MS,
@@ -269,7 +269,10 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
       source: "external",
       filePaths: validFilePaths,
     };
-    await handleImportNote(request);
+    const loading = createGlobalSpinner();
+    await loading.wrap(async () => {
+      await handleImportNote(request);
+    });
   };
 
   sidebar.addEventListener("dragover", handleDragOver);

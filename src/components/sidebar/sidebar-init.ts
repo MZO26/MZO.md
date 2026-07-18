@@ -31,7 +31,7 @@ import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItems, getUIItems, registerAppEvents } from "@/utils/registry";
 import { isSelectionActive } from "@/utils/shortcuts";
-import { initTippyDelegate } from "@/utils/ui";
+import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 
 // sidebar
@@ -103,7 +103,10 @@ function applySidebarListeners(
       const importBtn = target.closest<HTMLButtonElement>(".import-btn");
       if (importBtn) {
         const request: FilePathRequest = { source: "dialog" };
-        await handleImportNote(request);
+        const loading = createGlobalSpinner();
+        await loading.wrap(async () => {
+          await handleImportNote(request);
+        });
         return;
       }
     }),

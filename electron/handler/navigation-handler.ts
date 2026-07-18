@@ -1,5 +1,6 @@
+import type { UrlDecision } from "@shared/types";
 import { app, net, protocol, shell, type BrowserWindow } from "electron";
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 
@@ -19,10 +20,10 @@ function registerCustomProtocol() {
 
 async function setupLocalImageProtocol() {
   const imagesDir = path.join(app.getPath("userData"), "editor-images");
-  let realImagesDir = "";
+  let realImagesDir: string;
   try {
-    fs.mkdirSync(imagesDir, { recursive: true });
-    realImagesDir = fs.realpathSync(imagesDir);
+    await fs.mkdir(imagesDir, { recursive: true });
+    realImagesDir = await fs.realpath(imagesDir);
   } catch (setupError) {
     console.warn(
       "Failed to initialize image directory. Images will not load.",
@@ -32,6 +33,7 @@ async function setupLocalImageProtocol() {
     protocol.handle("appimg", () => {
       return new Response("Image system disabled due to startup error", {
         status: 500,
+        headers: { "Content-Type": "text/plain" },
       });
     });
     return;
@@ -39,25 +41,24 @@ async function setupLocalImageProtocol() {
   // Standard protocol handler for appimg: URLs
   protocol.handle("appimg", async (request) => {
     try {
-      let pathPart = request.url.replace(/^appimg:\/+/i, "");
-      pathPart = pathPart.replace(/\/+$/, "");
-      const fileName = decodeURIComponent(pathPart);
+      const rawPath = request.url
+        .replace(/^appimg:\/+/i, "")
+        .replace(/\/+$/, "");
+      const fileName = decodeURIComponent(rawPath);
       const intendedPath = path.resolve(realImagesDir, fileName);
-      const realFilePath = await fs.promises.realpath(intendedPath);
+      const realFilePath = await fs.realpath(intendedPath);
       const relative = path.relative(realImagesDir, realFilePath);
       const isOutside =
         relative === ".." ||
         relative.startsWith(`..${path.sep}`) ||
         path.isAbsolute(relative);
       if (isOutside) {
-        return new Response("Forbidden", { status: 403 });
+        return new Response("Forbidden", {
+          status: 403,
+          headers: { "Content-Type": "text/plain" },
+        });
       }
-      const fileUrl = pathToFileURL(realFilePath).toString();
-      const result = await net.fetch(fileUrl);
-      if (!result.ok) {
-        return new Response("Image not fetchable", { status: 404 });
-      }
-      return result;
+      return net.fetch(pathToFileURL(realFilePath).toString());
     } catch (error) {
       return new Response("Image not found", {
         status: 404,
@@ -66,8 +67,6 @@ async function setupLocalImageProtocol() {
     }
   });
 }
-
-type UrlDecision = "allow" | "block" | "external";
 
 function processUrl(url: string): UrlDecision {
   try {

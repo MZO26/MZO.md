@@ -19,6 +19,7 @@ import { applyAppTheme } from "@/settings/theme";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
+import { createGlobalSpinner } from "@/utils/ui";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 async function initAppSettings(settings: AppSettings) {
@@ -102,7 +103,10 @@ function applyModalListeners(
         case "backup-notes":
           const allIds = noteStore.get("notes").map((n) => n.id);
           if (!Array.isArray(allIds) || allIds.length === 0) return;
-          await exportSelection(allIds);
+          const loading = createGlobalSpinner();
+          await loading.wrap(async () => {
+            await exportSelection(allIds);
+          });
           break;
       }
     }),

@@ -1,4 +1,5 @@
 import { UNTITLED } from "@shared/constants";
+import { MAX_CHARS } from "@shared/schemas/editor-schema";
 import {
   AutoExportWritePayloadSchema,
   DateSchema,
@@ -42,7 +43,7 @@ const FileNameSchema = z
 // for md, txt, html and pdf (because html is used for pdf)
 const StringContentSchema = z
   .string()
-  .max(10_000_000, "Content exceeds maximum size")
+  .max(MAX_CHARS, "Content exceeds maximum size")
   .optional()
   .transform((val) => {
     if (!val || val.trim() === "") {
