@@ -130,7 +130,10 @@ function applySidebarListeners(
           await pinSelection([...selectedIds]);
           break;
         case "export":
-          await exportSelection([...selectedIds]);
+          const loading = createGlobalSpinner();
+          await loading.wrap(async () => {
+            await exportSelection([...selectedIds]);
+          });
           break;
         case "copy-rich-text":
           await copyRichTextSelection([...selectedIds]);
