@@ -24,10 +24,6 @@ const APP_START_TIME = Date.now();
 
 const IPC_TIMERS = new Map<string, number>();
 
-const YIELD_INTERVAL = 0;
-
-const BATCH_SIZE = 5;
-
 const MAX_FILE_DROPS = 50;
 
 const ZOOMS = [1, 1.1, 1.25] as const;
@@ -51,7 +47,8 @@ const LIMITS = {
 
 const DEBOUNCE_MS = {
   very_fast: 150, // global search
-  fast: 300, // in doc search + set settings
+  fast: 300, // set settings
+  normal: 500, // in doc search
   slow: 3000, // note save + auto export
 } as const;
 
@@ -65,6 +62,15 @@ const MIME_TO_EXT = {
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 26,214,400B. file.size from JS is always in bytes
+
+const CHAR_BASELINE = 15_000;
+
+const YIELD_MS = 50;
+
+const MAX_BYTES_FILE = 3 * 1024 * 1024;
+// 3 (MB) * 1024 (KB) * 1024 (B) = 3,145,728 B
+
+const MAX_TEXT_LENGTH = 5_000_000;
 
 const UNTAGGED = "_untagged_";
 
@@ -167,10 +173,6 @@ const THEME_DATA: Record<
   },
 } as const;
 
-const MAX_BYTES_FILE = 5242880;
-
-const MAX_TEXT_LENGTH = 5_000_000;
-
 const DOMPURIFY_CONFIG = {
   FORBID_TAGS: [
     "script",
@@ -241,6 +243,7 @@ const KATEX_MACROS = {
 };
 
 const SHARED_KATEX_OPTIONS = {
+  strict: "ignore" as const,
   maxExpand: 500,
   maxSize: 12,
   throwOnError: false,
@@ -358,8 +361,8 @@ export {
   ALLOWED_TYPES,
   APP_START_TIME,
   AUTO_EXPORT_SETTINGS,
-  BATCH_SIZE,
   BLOCK_TYPES,
+  CHAR_BASELINE,
   CODE_THEME_MAP,
   CODE_THEME_SETTINGS,
   CONTENT_TYPE_MAP,
@@ -393,6 +396,6 @@ export {
   THEME_SETTINGS,
   UNTAGGED,
   UNTITLED,
-  YIELD_INTERVAL,
+  YIELD_MS,
   ZOOMS,
 };

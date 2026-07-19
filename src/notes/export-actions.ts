@@ -1,15 +1,8 @@
 import { getNoteById } from "@/api/api";
-import {
-  getNoteEditorExtensions,
-  getPlainTextFromJson,
-} from "@/components/editor/editor-init";
+import { getCachedEditorExtensions } from "@/components/editor/editor-features";
+import { getPlainTextFromJson } from "@/components/editor/editor-init";
 import { noteStore } from "@/settings/app-state";
-import { sleep } from "@/utils/async";
-import {
-  BATCH_SIZE,
-  DOMPURIFY_CONFIG,
-  YIELD_INTERVAL,
-} from "@shared/constants";
+import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { titleGenerator } from "@shared/generators";
 import type { Note } from "@shared/schemas/note-schema";
@@ -48,16 +41,13 @@ async function getBatchExportContent(
     }
   }
   const headlessEditor = new Editor({
-    extensions: getNoteEditorExtensions(),
+    extensions: getCachedEditorExtensions(),
   });
 
   const markdown = extension === "md";
   try {
     let i = 0;
     for (const note of notes) {
-      if (i > 0 && i % BATCH_SIZE === 0) {
-        await sleep(YIELD_INTERVAL); // prevent ui stuttering
-      }
       headlessEditor.commands.setContent(note.content);
       processedPayloads.push({
         created_at: note.created_at,
@@ -102,7 +92,7 @@ async function getExportContent(
   }
   if (!note) return { success: false, error: AppErrorCode.InvalidData };
   const headlessEditor = new Editor({
-    extensions: getNoteEditorExtensions(),
+    extensions: getCachedEditorExtensions(),
     content: note.content,
   });
   try {

@@ -7,7 +7,7 @@ import {
 } from "@/settings/app-state";
 import { listEl, switchDialog } from "@/settings/dialog-init";
 import { getAppItem } from "@/utils/registry";
-import { initTippyDelegate } from "@/utils/ui";
+import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 
 function initQuickSwitcher() {
@@ -81,17 +81,20 @@ function initQuickSwitcher() {
     updateSelection();
   }
 
-  function selectActive() {
+  async function selectActive() {
     const activeNote = currentDisplayNotes[activeIndex];
     switchDialog.close();
     if (!activeNote || stateStore.get("activeId") === activeNote.id) {
       return;
     }
-    handleSelectNote(activeNote.id);
+    const loading = createGlobalSpinner();
+    await loading.wrap(async () => {
+      await handleSelectNote(activeNote.id);
+    });
     restoreSidebarScope();
   }
 
-  function handleListKeydown(event: KeyboardEvent) {
+  async function handleListKeydown(event: KeyboardEvent) {
     if (!switchDialog.open) return;
     const isModifierPressed = event.metaKey || event.ctrlKey;
     switch (event.key) {
@@ -115,7 +118,7 @@ function initQuickSwitcher() {
         break;
       case "Enter":
         event.preventDefault();
-        selectActive();
+        await selectActive();
         break;
     }
   }

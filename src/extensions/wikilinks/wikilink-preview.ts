@@ -1,20 +1,13 @@
 import { getNoteById } from "@/api/api";
-import { getNoteEditorExtensions } from "@/components/editor/editor-init";
+import { getCachedEditorExtensions } from "@/components/editor/editor-features";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { getAppItem } from "@/utils/registry";
 import { DOMPURIFY_CONFIG, KATEX_MACROS } from "@shared/constants";
 import type { Note } from "@shared/schemas/note-schema";
 import { Extension, generateHTML } from "@tiptap/core";
 import DOMPurify from "dompurify";
-import hljs from "highlight.js/lib/core";
 import katex from "katex";
 import { delegate, type DelegateInstance, type Instance } from "tippy.js";
-
-function highlightCodeBlocks(root: ParentNode) {
-  root.querySelectorAll("pre code").forEach((el) => {
-    hljs.highlightElement(el as HTMLElement);
-  });
-}
 
 function renderMathBlocks(root: ParentNode) {
   root
@@ -43,11 +36,10 @@ function buildPreviewCard(content: Note["content"]) {
   card.className = "wikilink-preview";
   const cardContent = document.createElement("div");
   cardContent.className = "wikilink-preview-content";
-  const html = generateHTML(content, getNoteEditorExtensions());
+  const html = generateHTML(content, getCachedEditorExtensions());
   const sanitized = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
   if (sanitized) {
     cardContent.innerHTML = sanitized;
-    highlightCodeBlocks(cardContent);
     renderMathBlocks(cardContent);
   }
   const hasText = (cardContent.textContent || "").trim().length > 0;

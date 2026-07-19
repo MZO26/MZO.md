@@ -1,73 +1,74 @@
-import { getNoteEditorExtensions } from "@/components/editor/editor-init";
-import { stateStore } from "@/settings/app-state";
-import { sleep } from "@/utils/async";
-import { addActiveTagToDoc } from "@/utils/note";
 import {
-  BATCH_SIZE,
-  CONTENT_TYPE_MAP,
-  DOMPURIFY_CONFIG,
-  YIELD_INTERVAL,
-} from "@shared/constants";
+  getCachedEditorExtensions,
+  getMarkdownManager,
+} from "@/components/editor/editor-features";
+import { getPlainTextFromJson } from "@/components/editor/editor-init";
+import { stateStore } from "@/settings/app-state";
+import { addActiveTagToDoc } from "@/utils/note";
+import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
-import { getMetadata, textConverter, titleGenerator } from "@shared/generators";
+import {
+  getMetadata,
+  jsonConverter,
+  textConverter,
+  titleGenerator,
+  wrapAsDoc,
+} from "@shared/generators";
+import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { ImportedContent, Result } from "@shared/types";
-import { Editor, type Content } from "@tiptap/core";
+import { generateJSON } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
 // function to either sanitize content or format it to make import cleaner
 
-function normalizeFileContent(file: ImportedContent): Content | string | null {
+function normalizeFileContent(file: ImportedContent): EditorDoc | undefined {
   const { content, extension } = file;
-  if (!content) return null;
+  if (!content) return undefined;
   if (typeof content === "string") {
     if (extension === "json") {
-      try {
-        return JSON.parse(content);
-      } catch (error) {
-        console.error("[normalizeFileContent]: Failed to parse JSON:", error);
-        return null;
-      }
+      const doc = wrapAsDoc(jsonConverter(content));
+      return isEditorDoc(doc) ? doc : undefined;
     }
     if (extension === "html") {
-      return DOMPurify.sanitize(content, DOMPURIFY_CONFIG);
+      const safe = DOMPurify.sanitize(content, DOMPURIFY_CONFIG);
+      const doc = generateJSON(safe, getCachedEditorExtensions());
+      return isEditorDoc(doc) ? doc : undefined;
     }
     if (extension === "md") {
-      return content;
+      const doc = getMarkdownManager().parse(content);
+      return isEditorDoc(doc) ? doc : undefined;
     }
-    if (extension === "txt") return textConverter(content) ?? content;
+    if (extension === "txt") {
+      const doc = wrapAsDoc(textConverter(content));
+      return isEditorDoc(doc) ? doc : undefined;
+    }
   }
   //already object
-  if (extension === "json") {
+  if (extension === "json" && isEditorDoc(content)) {
     return content;
   }
-  return null;
+  return undefined;
 }
 
-// processes all files within limits and creates payloads that match the create note schema
+function isEditorDoc(value: unknown): value is EditorDoc {
+  if (typeof value !== "object" || value === null) return false;
+  if (!("type" in value) || value.type !== "doc") return false;
+  if (!("content" in value) || !Array.isArray(value.content)) return false;
+  return true;
+}
 
 async function setImportedContent(
   files: ImportedContent[],
 ): Promise<Result<CreateNotePayload[]>> {
-  const headlessEditor = new Editor({
-    extensions: getNoteEditorExtensions(),
-  });
   try {
     let i = 0;
     const processedPayloads: CreateNotePayload[] = [];
     for (const file of files) {
-      if (i > 0 && i % BATCH_SIZE === 0) {
-        await sleep(YIELD_INTERVAL);
-      }
-      const contentType = CONTENT_TYPE_MAP[file.extension];
-      const content = normalizeFileContent(file);
-      if (content) {
-        const options = contentType ? { contentType } : undefined;
-        headlessEditor.commands.setContent(content, options);
-      }
-      const json = headlessEditor.getJSON();
+      const json = normalizeFileContent(file);
+      if (!json) return { success: false, error: AppErrorCode.InvalidData };
       const updatedJson = addActiveTagToDoc(json, stateStore.get("activeTag"));
-      const text = headlessEditor.getText();
+      const text = getPlainTextFromJson(json);
       const metadata = getMetadata(updatedJson);
       const payload: CreateNotePayload = {
         title: titleGenerator(updatedJson),
@@ -86,8 +87,6 @@ async function setImportedContent(
       error,
     );
     return { success: false, error: AppErrorCode.InvalidData };
-  } finally {
-    headlessEditor.destroy();
   }
 }
 

@@ -1,7 +1,6 @@
+import { MAX_TEXT_LENGTH } from "@shared/constants";
 import type { JSONContent } from "@tiptap/core";
 import z from "zod";
-
-const MAX_CHARS = 10_000_000;
 
 const JSONNode: z.ZodType<JSONContent> = z.lazy(() =>
   z
@@ -30,10 +29,10 @@ const EditorDocSchema = z
         path: ["content"],
       });
     }
-    if (jsonString.length > MAX_CHARS) {
+    if (jsonString.length > MAX_TEXT_LENGTH) {
       ctx.addIssue({
         code: "custom",
-        message: `Document exceeds ${MAX_CHARS} characters.`,
+        message: `Document exceeds ${MAX_TEXT_LENGTH} characters.`,
         path: ["content"],
       });
     }
@@ -72,10 +71,4 @@ const ExternalUrlSchema = z.string().refine((value) => {
 
 type EditorDoc = z.infer<typeof EditorDocSchema>;
 
-export {
-  DbContentSchema,
-  EditorDocSchema,
-  ExternalUrlSchema,
-  MAX_CHARS,
-  type EditorDoc,
-};
+export { DbContentSchema, EditorDocSchema, ExternalUrlSchema, type EditorDoc };

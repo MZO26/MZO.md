@@ -52,6 +52,31 @@ function textConverter(plainText: string): JSONContent[] | undefined {
     }));
 }
 
+function jsonConverter(rawJson: string): JSONContent[] | undefined {
+  if (!rawJson?.trim()) return undefined;
+  try {
+    const parsed = JSON.parse(rawJson);
+    const stringified = JSON.stringify(parsed, null, 2);
+    return [
+      {
+        type: "codeBlock",
+        attrs: { language: "json" },
+        content: [{ type: "text", text: stringified }],
+      },
+    ];
+  } catch {
+    return undefined;
+  }
+}
+
+function wrapAsDoc(content: JSONContent[] | undefined): EditorDoc | undefined {
+  if (!content?.length) return undefined;
+  return {
+    type: "doc",
+    content,
+  };
+}
+
 function titleGenerator(doc: EditorDoc): string {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0) {
     return UNTITLED;
@@ -151,7 +176,9 @@ function getTags(doc: EditorDoc) {
 export {
   extractText,
   getMetadata,
+  jsonConverter,
   snippetGenerator,
   textConverter,
   titleGenerator,
+  wrapAsDoc,
 };

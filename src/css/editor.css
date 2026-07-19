@@ -34,7 +34,12 @@
   outline: 1px solid transparent;
 }
 
-.ProseMirror > *:first-child.is-empty::before {
+.ProseMirror h1.is-empty::before,
+.ProseMirror h2.is-empty::before,
+.ProseMirror h3.is-empty::before,
+.ProseMirror h4.is-empty::before,
+.ProseMirror h5.is-empty::before,
+.ProseMirror h6.is-empty::before {
   content: attr(data-placeholder);
   float: left;
   height: 0;

@@ -12,6 +12,7 @@ import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
+import { createGlobalSpinner } from "@/utils/ui";
 import type { Theme } from "@shared/schemas/store-schema";
 import type { ActionMap } from "@shared/types";
 
@@ -19,23 +20,29 @@ import type { ActionMap } from "@shared/types";
 
 function initMetadataToolbar() {
   const metadataContainer = getUIItem("metadataContainer");
-  metadataContainer.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
-    const clickedLink = target.closest<HTMLSpanElement>(".link");
-    const linkId = clickedLink?.getAttribute("data-link");
-    if (linkId === stateStore.get("activeId")) return;
-    if (clickedLink && linkId) {
-      handleSelectNote(linkId);
-      return;
-    }
-    const clickedTag = target.closest<HTMLSpanElement>(".tag-node");
-    const tagId = clickedTag?.getAttribute("data-tag");
-    if (clickedTag && tagId) {
-      applyTagView(tagId);
-      return;
-    }
-  });
+  metadataContainer.addEventListener(
+    "click",
+    createAsyncHandler(async (e) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const clickedLink = target.closest<HTMLSpanElement>(".link");
+      const linkId = clickedLink?.getAttribute("data-link");
+      if (linkId === stateStore.get("activeId")) return;
+      if (clickedLink && linkId) {
+        const loading = createGlobalSpinner();
+        await loading.wrap(async () => {
+          await handleSelectNote(linkId);
+        });
+        return;
+      }
+      const clickedTag = target.closest<HTMLSpanElement>(".tag-node");
+      const tagId = clickedTag?.getAttribute("data-tag");
+      if (clickedTag && tagId) {
+        applyTagView(tagId);
+        return;
+      }
+    }),
+  );
   const editorWrapper = getAppItem("editorWrapper");
   editorWrapper.addEventListener("focusin", () => {
     metadataContainer.classList.add("collapsed");

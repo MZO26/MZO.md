@@ -5,8 +5,13 @@ import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS } from "@shared/constants";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import { Editor, generateText } from "@tiptap/core";
+import { MarkdownManager } from "@tiptap/markdown";
 import { EditorState } from "@tiptap/pm/state";
 import { getSearchState } from "prosemirror-search";
+
+let editorExtensions: ReturnType<typeof getNoteEditorExtensions> | undefined;
+
+let markdownManager: MarkdownManager | undefined;
 
 function resetEditorHistory(editor: Editor) {
   const newState = EditorState.create({
@@ -21,6 +26,16 @@ function getPlainTextFromJson(json: EditorDoc): string {
   return generateText(json, getNoteEditorExtensions(), {
     blockSeparator: "\n",
   });
+}
+
+function getCachedEditorExtensions() {
+  return (editorExtensions ??= getNoteEditorExtensions());
+}
+
+function getMarkdownManager() {
+  return (markdownManager ??= new MarkdownManager({
+    extensions: getCachedEditorExtensions(),
+  }));
 }
 
 function hasSearchMatch(editor: Editor): boolean {
@@ -137,7 +152,7 @@ function initEditorSearch(editor: Editor) {
     syncQuery();
     updateButtons();
     goNext();
-  }, DEBOUNCE_MS.fast);
+  }, DEBOUNCE_MS.normal);
 
   input.addEventListener("input", debouncedSearch);
 
@@ -183,4 +198,10 @@ function initEditorSearch(editor: Editor) {
   return { open, close };
 }
 
-export { getPlainTextFromJson, initEditorSearch, resetEditorHistory };
+export {
+  getCachedEditorExtensions,
+  getMarkdownManager,
+  getPlainTextFromJson,
+  initEditorSearch,
+  resetEditorHistory,
+};

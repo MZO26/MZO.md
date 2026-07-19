@@ -269,7 +269,7 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
       source: "external",
       filePaths: validFilePaths,
     };
-    const loading = createGlobalSpinner();
+    const loading = createGlobalSpinner(0);
     await loading.wrap(async () => {
       await handleImportNote(request);
     });

@@ -22,10 +22,16 @@ import {
   settingsStore,
   stateStore,
 } from "@/settings/app-state";
-import { debounce } from "@/utils/async";
+import { debounce, sleep } from "@/utils/async";
 import { addActiveTagToDoc, toNoteListItem } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
-import { DEBOUNCE_MS, EMPTY_DOC, UNTITLED } from "@shared/constants";
+import {
+  CHAR_BASELINE,
+  DEBOUNCE_MS,
+  EMPTY_DOC,
+  UNTITLED,
+  YIELD_MS,
+} from "@shared/constants";
 import { getMetadata, titleGenerator } from "@shared/generators";
 import {
   type CreateNotePayload,
@@ -296,6 +302,9 @@ async function handleSelectNote(id: string) {
     return;
   }
   try {
+    if (result.data.plainText.length > CHAR_BASELINE) {
+      await sleep(YIELD_MS);
+    }
     editor.commands.setContent(result.data.content, {
       emitUpdate: false,
     });

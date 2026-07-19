@@ -1,8 +1,6 @@
 import { createNote } from "@/api/api";
-import {
-  getNoteEditorExtensions,
-  resetEditorHistory,
-} from "@/components/editor/editor-init";
+import { getCachedEditorExtensions } from "@/components/editor/editor-features";
+import { resetEditorHistory } from "@/components/editor/editor-init";
 import { isAutoExportEnabled } from "@/notes/note-actions";
 import {
   markNoteAsRecent,
@@ -32,7 +30,7 @@ async function handleDuplicateNote(note: Note) {
   let markdown: string | undefined;
   if (isAutoExportEnabled()) {
     const headlessEditor = new Editor({
-      extensions: getNoteEditorExtensions(),
+      extensions: getCachedEditorExtensions(),
       content: note.content,
     });
     try {

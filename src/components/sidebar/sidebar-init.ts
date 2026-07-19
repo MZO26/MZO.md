@@ -103,7 +103,7 @@ function applySidebarListeners(
       const importBtn = target.closest<HTMLButtonElement>(".import-btn");
       if (importBtn) {
         const request: FilePathRequest = { source: "dialog" };
-        const loading = createGlobalSpinner();
+        const loading = createGlobalSpinner(0);
         await loading.wrap(async () => {
           await handleImportNote(request);
         });
@@ -208,7 +208,10 @@ function applySidebarListeners(
         updateSelectionUI();
         return;
       }
-      await handleSelectNote(id);
+      const loading = createGlobalSpinner();
+      await loading.wrap(async () => {
+        await handleSelectNote(id);
+      });
     }),
   );
 }

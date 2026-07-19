@@ -1,4 +1,3 @@
-import { sleep } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { delegate, hideAll, type Placement } from "tippy.js";
 import "tippy.js/animations/scale-subtle.css";
@@ -68,18 +67,20 @@ function initTippyDelegate(
   });
 }
 
-function createGlobalSpinner(defaultDelay = 200) {
+function createGlobalSpinner(showDelay = 200) {
   const spinner = requireElement<HTMLDivElement>(".app-loading");
   return {
     async wrap<T>(
       task: Promise<T> | (() => Promise<T>),
-      hideDelay = defaultDelay,
+      delay = showDelay,
     ): Promise<T> {
-      spinner.hidden = false;
+      const showTimer = setTimeout(() => {
+        spinner.hidden = false;
+      }, delay);
       try {
         return typeof task === "function" ? await task() : await task;
       } finally {
-        await sleep(hideDelay);
+        clearTimeout(showTimer);
         spinner.hidden = true;
       }
     },

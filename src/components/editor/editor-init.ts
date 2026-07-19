@@ -34,6 +34,7 @@ import {
   stateStore,
 } from "@/settings/app-state";
 import { requireElement } from "@/utils/dom";
+import { createGlobalSpinner } from "@/utils/ui";
 import { ALLOWED_PROTOCOLS, SHARED_KATEX_OPTIONS } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
@@ -93,7 +94,7 @@ function getNoteEditorExtensions() {
     WordCleanup,
     SecurityCleanup,
     DropHandler,
-    Markdown.configure({ markedOptions: { gfm: true } }),
+    Markdown.configure({ markedOptions: { gfm: true, pedantic: false } }),
     MasterShortcuts,
     InputRules,
     ListKit.configure({
@@ -109,7 +110,10 @@ function getNoteEditorExtensions() {
           console.error("[Wikilink configure]: Note not found.");
           return;
         }
-        handleSelectNote(id);
+        const loading = createGlobalSpinner();
+        await loading.wrap(async () => {
+          await handleSelectNote(id);
+        });
         restoreSidebarScope();
       },
     }),
@@ -122,9 +126,8 @@ function getNoteEditorExtensions() {
         if (node.type.name === "heading") {
           return "Untitled";
         }
-        return "Start writing...";
+        return "";
       },
-      emptyEditorClass: "is-editor-empty",
       emptyNodeClass: "is-empty",
       showOnlyWhenEditable: true,
       showOnlyCurrent: false,
@@ -146,6 +149,7 @@ function getNoteEditorExtensions() {
         minHeight: 50,
         alwaysPreserveAspectRatio: true,
       },
+      HTMLAttributes: { loading: "lazy" },
     }),
     NoteTag.configure({
       onClick: (id: string) => {
@@ -210,6 +214,7 @@ function getNoteEditorExtensions() {
     CodeBlockLowlight.configure({
       lowlight,
       enableTabIndentation: true,
+      defaultLanguage: "plaintext",
       HTMLAttributes: {
         spellcheck: "false",
       },
