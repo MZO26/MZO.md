@@ -1,7 +1,4 @@
-import {
-  getCachedEditorExtensions,
-  getMarkdownManager,
-} from "@/components/editor/editor-features";
+import { getCachedEditorExtensions } from "@/components/editor/editor-features";
 import { getPlainTextFromJson } from "@/components/editor/editor-init";
 import { stateStore } from "@/settings/app-state";
 import { addActiveTagToDoc } from "@/utils/note";
@@ -19,6 +16,7 @@ import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { ImportedContent, Result } from "@shared/types";
 import { generateJSON } from "@tiptap/core";
 import DOMPurify from "dompurify";
+import { marked } from "marked";
 
 // function to either sanitize content or format it to make import cleaner
 
@@ -36,7 +34,9 @@ function normalizeFileContent(file: ImportedContent): EditorDoc | undefined {
       return isEditorDoc(doc) ? doc : undefined;
     }
     if (extension === "md") {
-      const doc = getMarkdownManager().parse(content);
+      const html = marked.parse(content) as string;
+      const safe = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
+      const doc = generateJSON(safe, getCachedEditorExtensions());
       return isEditorDoc(doc) ? doc : undefined;
     }
     if (extension === "txt") {
@@ -62,7 +62,6 @@ async function setImportedContent(
   files: ImportedContent[],
 ): Promise<Result<CreateNotePayload[]>> {
   try {
-    let i = 0;
     const processedPayloads: CreateNotePayload[] = [];
     for (const file of files) {
       const json = normalizeFileContent(file);
@@ -78,7 +77,6 @@ async function setImportedContent(
         pinned: false,
       };
       processedPayloads.push(payload);
-      i++;
     }
     return { success: true, data: processedPayloads };
   } catch (error) {

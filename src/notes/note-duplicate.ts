@@ -1,5 +1,5 @@
 import { createNote } from "@/api/api";
-import { getCachedEditorExtensions } from "@/components/editor/editor-features";
+import { getMarkdownManager } from "@/components/editor/editor-features";
 import { resetEditorHistory } from "@/components/editor/editor-init";
 import { isAutoExportEnabled } from "@/notes/note-actions";
 import {
@@ -11,7 +11,6 @@ import {
 import { toNoteListItem } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
-import { Editor } from "@tiptap/core";
 
 async function handleDuplicateNote(note: Note) {
   const editor = getAppItem("editor");
@@ -26,23 +25,9 @@ async function handleDuplicateNote(note: Note) {
   const outgoingLinkIds = originalLinks
     .filter((link) => link.dir === "out")
     .map((link) => link.id);
-
   let markdown: string | undefined;
   if (isAutoExportEnabled()) {
-    const headlessEditor = new Editor({
-      extensions: getCachedEditorExtensions(),
-      content: note.content,
-    });
-    try {
-      markdown = headlessEditor.getMarkdown();
-    } catch (error) {
-      console.error(
-        "[handleDuplicateNote]: Markdown conversion failed:",
-        error,
-      );
-    } finally {
-      if (headlessEditor) headlessEditor.destroy();
-    }
+    markdown = getMarkdownManager().serialize(note.content);
   }
   const data: CreateNotePayload = {
     ...rest,

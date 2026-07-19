@@ -8,16 +8,18 @@ This application includes third-party software components.
 
 The following components are provided under the MIT License:
 
-- **Electron** (Copyright (c) Electron contributors)
-- **minisearch** (Copyright (c) Luca Ongaro)
-- **Tiptap** (Copyright (c) 2026, Tiptap GmbH)
-- **lowlight** (Copyright (c) Titus Wormer)
-- **tippy.js** (Copyright (c) atomiks)
-- **zod** (Copyright (c) Colin McDonnell)
-- **electron-context-menu** (Copyright (c) Sindre Sorhus)
-- **vite** (Copyright (c) Evan You)
-- **electron-vite** (Copyright (c) Alex Wei)
-- **electron-builder** (Copyright (c) 2015, loopline-systems)
+- Electron (Copyright (c) Electron contributors)
+- minisearch (Copyright (c) Luca Ongaro)
+- Tiptap (Copyright (c) 2026, Tiptap GmbH)
+- lowlight (Copyright (c) Titus Wormer)
+- tippy.js (Copyright (c) atomiks)
+- zod (Copyright (c) Colin McDonnell)
+- vite (Copyright (c) Evan You)
+- electron-vite (Copyright (c) Alex Wei)
+- electron-builder (Copyright (c) 2015, loopline-systems)
+- marked (Copyright (c) Christopher Jeffrey, MarkedJS)
+- ProseMirror (Copyright (c) Marijn Haverbeke)
+- KaTeX (Copyright (c) Khan Academy)
 
 **MIT License Text:**
 
@@ -29,11 +31,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---
 
-## DOMPurify
-
 **Licensed under the Apache License, Version 2.0:**
 
-Copyright 2015 Mario Heiderich
+- DOMPurify (Copyright (c) 2015 Mario Heiderich)
+- TypeScript (Copyright (c) Microsoft Corporation)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -49,11 +50,9 @@ limitations under the License.
 
 ---
 
-## Lucide
-
 **Licensed under the ISC License:**
 
-Copyright (c) Lucide Contributors
+- Lucide Copyright (c) Lucide Contributors
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 

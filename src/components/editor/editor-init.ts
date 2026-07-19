@@ -230,6 +230,57 @@ function getNoteEditorExtensions() {
   ];
 }
 
+function getRequestExtensions() {
+  return [
+    ListKit.configure({
+      taskItem: { nested: true },
+    }),
+    CustomUnderline,
+    Highlight,
+    WikiLink,
+    Image.configure({
+      allowBase64: true,
+      HTMLAttributes: { loading: "lazy" },
+    }),
+    NoteTag,
+    Table.configure({
+      HTMLAttributes: { class: "table" },
+    }),
+    TableRow,
+    TableHeader.configure({
+      HTMLAttributes: { class: "th" },
+    }),
+    TableCell.configure({
+      HTMLAttributes: { class: "td" },
+    }),
+    CustomHeading.configure({
+      levels: [1, 2, 3, 4, 5, 6],
+    }),
+    TrailingNode.configure({
+      node: "paragraph",
+      notAfter: ["paragraph"],
+    }),
+    StarterKit.configure({
+      heading: false,
+      codeBlock: false,
+      listItem: false,
+      listKeymap: false,
+      orderedList: false,
+      bulletList: false,
+      underline: false,
+      trailingNode: false,
+    }),
+    CodeBlockLowlight.configure({
+      lowlight,
+      enableTabIndentation: true,
+      defaultLanguage: "plaintext",
+      HTMLAttributes: {
+        spellcheck: "false",
+      },
+    }),
+  ];
+}
+
 function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   editorWrapper.addEventListener("contextmenu", (e: MouseEvent) => {
     const target = e.target as HTMLElement | null;
@@ -264,6 +315,7 @@ export {
   editor,
   getNoteEditorExtensions,
   getPlainTextFromJson,
+  getRequestExtensions,
   initEditor,
   resetEditorHistory,
   setupEditorListeners,

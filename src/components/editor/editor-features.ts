@@ -1,4 +1,4 @@
-import { getNoteEditorExtensions } from "@/components/editor/editor-init";
+import { getRequestExtensions } from "@/components/editor/editor-init";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
@@ -9,7 +9,7 @@ import { MarkdownManager } from "@tiptap/markdown";
 import { EditorState } from "@tiptap/pm/state";
 import { getSearchState } from "prosemirror-search";
 
-let editorExtensions: ReturnType<typeof getNoteEditorExtensions> | undefined;
+let editorExtensions: ReturnType<typeof getRequestExtensions> | undefined;
 
 let markdownManager: MarkdownManager | undefined;
 
@@ -23,13 +23,13 @@ function resetEditorHistory(editor: Editor) {
 }
 
 function getPlainTextFromJson(json: EditorDoc): string {
-  return generateText(json, getNoteEditorExtensions(), {
+  return generateText(json, getCachedEditorExtensions(), {
     blockSeparator: "\n",
   });
 }
 
 function getCachedEditorExtensions() {
-  return (editorExtensions ??= getNoteEditorExtensions());
+  return (editorExtensions ??= getRequestExtensions());
 }
 
 function getMarkdownManager() {

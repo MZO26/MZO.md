@@ -19,6 +19,7 @@ import type {
   SelectionActionConfig,
   SelectOption,
 } from "@shared/types";
+import { marked } from "marked";
 
 const APP_START_TIME = Date.now();
 
@@ -172,6 +173,8 @@ const THEME_DATA: Record<
     focus: "#1e1b17", // --bg-editor
   },
 } as const;
+
+marked.use({ gfm: true, breaks: true, async: false });
 
 const DOMPURIFY_CONFIG = {
   FORBID_TAGS: [

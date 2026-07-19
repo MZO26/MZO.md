@@ -1,5 +1,8 @@
 import { getNoteById } from "@/api/api";
-import { getCachedEditorExtensions } from "@/components/editor/editor-features";
+import {
+  getCachedEditorExtensions,
+  getMarkdownManager,
+} from "@/components/editor/editor-features";
 import { getPlainTextFromJson } from "@/components/editor/editor-init";
 import { noteStore } from "@/settings/app-state";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
@@ -8,10 +11,8 @@ import { titleGenerator } from "@shared/generators";
 import type { Note } from "@shared/schemas/note-schema";
 import type { ExportRequest } from "@shared/schemas/request-schema";
 import type { ExportedContent, ExportFormat, Result } from "@shared/types";
-import { Editor } from "@tiptap/core";
+import { generateHTML, generateText } from "@tiptap/core";
 import DOMPurify from "dompurify";
-
-// gets called in frontend because headless editor is needed to convert content to markdown or html
 
 async function getBatchExportContent(
   notes: Note[],
@@ -40,24 +41,24 @@ async function getBatchExportContent(
       return { success: false, error: AppErrorCode.InvalidData };
     }
   }
-  const headlessEditor = new Editor({
-    extensions: getCachedEditorExtensions(),
-  });
-
   const markdown = extension === "md";
   try {
-    let i = 0;
+    const extensions = getCachedEditorExtensions();
+    const manager = markdown ? getMarkdownManager() : null;
     for (const note of notes) {
-      headlessEditor.commands.setContent(note.content);
+      if (!note?.content) continue;
+      let outputContent: string;
+      if (markdown) {
+        outputContent = manager!.serialize(note.content);
+      } else {
+        outputContent = generateHTML(note.content, extensions);
+      }
       processedPayloads.push({
         created_at: note.created_at,
         fileName: note.title,
-        content: markdown
-          ? headlessEditor.getMarkdown()
-          : DOMPurify.sanitize(headlessEditor.getHTML(), DOMPURIFY_CONFIG),
+        content: outputContent,
         extension,
       });
-      i++;
     }
     return { success: true, data: processedPayloads };
   } catch (error) {
@@ -66,8 +67,6 @@ async function getBatchExportContent(
       error,
     );
     return { success: false, error: AppErrorCode.InvalidData };
-  } finally {
-    headlessEditor.destroy();
   }
 }
 
@@ -91,55 +90,39 @@ async function getExportContent(
     note = result.data;
   }
   if (!note) return { success: false, error: AppErrorCode.InvalidData };
-  const headlessEditor = new Editor({
-    extensions: getCachedEditorExtensions(),
-    content: note.content,
-  });
-  try {
-    let content: string;
-    switch (extension) {
-      case "json":
-        content = JSON.stringify(headlessEditor.getJSON());
-        break;
-      case "html":
-      case "pdf":
-        content = DOMPurify.sanitize(
-          headlessEditor.getHTML(),
-          DOMPURIFY_CONFIG,
-        );
-        break;
-      case "md":
-        content = headlessEditor.getMarkdown();
-        break;
-      case "txt":
-        content = headlessEditor.getText();
-        break;
-      default:
-        console.error(
-          "[getExportContent]: Unsupported export format:",
-          extension,
-        );
-        return {
-          success: false,
-          error: AppErrorCode.InvalidData,
-        };
-    }
-    const payload: ExportRequest = {
-      created_at: note.created_at,
-      extension,
-      fileName: titleGenerator(headlessEditor.getJSON()),
-      content,
-    };
-    return { success: true, data: payload };
-  } catch (error) {
-    console.error(
-      "[getExportContent]: Headless Editor failed converting data for single export:",
-      error,
-    );
-    return { success: false, error: AppErrorCode.InvalidData };
-  } finally {
-    if (headlessEditor) headlessEditor.destroy();
+  let content: string;
+  switch (extension) {
+    case "json":
+      content = JSON.stringify(note.content);
+      break;
+    case "html":
+    case "pdf":
+      const html = generateHTML(note.content, getCachedEditorExtensions());
+      content = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
+      break;
+    case "md":
+      content = getMarkdownManager().serialize(note.content);
+      break;
+    case "txt":
+      content = generateText(note.content, getCachedEditorExtensions());
+      break;
+    default:
+      console.error(
+        "[getExportContent]: Unsupported export format:",
+        extension,
+      );
+      return {
+        success: false,
+        error: AppErrorCode.InvalidData,
+      };
   }
+  const payload: ExportRequest = {
+    created_at: note.created_at,
+    extension,
+    fileName: titleGenerator(note.content),
+    content,
+  };
+  return { success: true, data: payload };
 }
 
 export { getBatchExportContent, getExportContent };
