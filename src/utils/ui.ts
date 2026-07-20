@@ -44,10 +44,11 @@ function initTippyDelegate(
     target: "[data-tippy-content]",
     theme: "app-theme",
     placement: placement ?? "auto",
-    trigger: "mouseenter",
+    trigger: "mouseenter focus",
     appendTo: appendTo || container,
     animation: "scale-subtle",
     duration: [120, 90],
+    offset: [0, 8],
     onShow(instance) {
       if (hide) hideAll({ exclude: instance });
       if (instance.reference.hasAttribute("data-tippy-dynamic")) {

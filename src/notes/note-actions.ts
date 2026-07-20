@@ -71,6 +71,7 @@ async function handleCreateNote() {
   stateStore.setState({ activeId: result.data.id });
   editor.commands.setContent(result.data.content, {
     emitUpdate: false,
+    contentType: "json",
   });
   resetEditorHistory(editor);
   editor.commands.focus();
