@@ -3,8 +3,7 @@ import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS } from "@shared/constants";
-import type { EditorDoc } from "@shared/schemas/editor-schema";
-import { Editor, generateText } from "@tiptap/core";
+import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import { EditorState } from "@tiptap/pm/state";
 import { getSearchState } from "prosemirror-search";
@@ -20,12 +19,6 @@ function resetEditorHistory(editor: Editor) {
     schema: editor.state.schema,
   });
   editor.view.updateState(newState);
-}
-
-function getPlainTextFromJson(json: EditorDoc): string {
-  return generateText(json, getCachedEditorExtensions(), {
-    blockSeparator: "\n",
-  });
 }
 
 function getCachedEditorExtensions() {
@@ -74,14 +67,17 @@ function initEditorSearch(editor: Editor) {
   }
 
   function scrollToSelection(editor: Editor) {
-    const { node } = editor.view.domAtPos(editor.state.selection.anchor);
-    if (node instanceof Element) {
-      node.scrollIntoView({
-        block: "center",
-        inline: "center",
-        behavior: "smooth",
-      });
-    }
+    const pos = editor.state.selection.anchor;
+    const coords = editor.view.coordsAtPos(pos);
+    const containerRect = editorWrapper.getBoundingClientRect();
+    const targetTop =
+      editorWrapper.scrollTop +
+      (coords.top - containerRect.top) -
+      editorWrapper.clientHeight / 2;
+    editorWrapper.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: "smooth",
+    });
   }
 
   function syncQuery() {
@@ -201,7 +197,6 @@ function initEditorSearch(editor: Editor) {
 export {
   getCachedEditorExtensions,
   getMarkdownManager,
-  getPlainTextFromJson,
   initEditorSearch,
   resetEditorHistory,
 };

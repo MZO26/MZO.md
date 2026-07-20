@@ -1,6 +1,6 @@
 import { getAll, getAllSettings, updateSettings } from "@/api/api";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
-import { handleSidebarChange } from "@/components/sidebar/sidebar-note-items";
+import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-ui";
 import { NoteSearch, type SearchMatchResult } from "@/notes/search";
 import { findElement, setActiveItem } from "@/utils/dom";
@@ -9,7 +9,6 @@ import { getAppItem, getUIItem } from "@/utils/registry";
 import { DEFAULT_SETTINGS, UNTAGGED } from "@shared/constants";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import type { SidebarChange } from "@shared/types";
 
 interface AppState {
   activeId: string | null;
@@ -32,7 +31,6 @@ interface NoteStore {
   visibleIds: string[];
   noteIndex: Map<string, NoteListItem>;
   activeNote: Note | null;
-  sidebarChange: SidebarChange | null;
   recentNotes: string[];
 }
 
@@ -41,14 +39,12 @@ const NOTE_STORE: NoteStore = {
   visibleIds: [],
   noteIndex: new Map<string, NoteListItem>(),
   activeNote: null,
-  sidebarChange: null,
   recentNotes: [],
 };
 
 let prevId: string | null = null;
 let prevSearchQuery: string = "";
 let prevVisibleIds: string[] | null = null;
-let prevSidebarChange: SidebarChange | null = null;
 
 const stateStore = createStore<AppState>(STATE_STORE);
 
@@ -101,7 +97,6 @@ async function syncNoteStore() {
       notes: sortedNotes,
       visibleIds: sortedNotes.map((n) => n.id),
       noteIndex: new Map(sortedNotes.map((n) => [n.id, n] as const)),
-      sidebarChange: { type: "reload" },
     });
     searchEngine.bulkLoad(sortedNotes);
   }
@@ -134,7 +129,6 @@ function applyView(nextTag: string | null) {
     visibleIds: state.notes
       .filter((note) => matchesActiveTag(note, nextTag))
       .map((note) => note.id),
-    sidebarChange: { type: "reload" },
   }));
 }
 
@@ -171,7 +165,6 @@ function applySearch(searchMatches: SearchMatchResult[]) {
     .map((note) => note.id);
   noteStore.setState({
     visibleIds,
-    sidebarChange: { type: "reload" },
   });
 }
 
@@ -183,7 +176,6 @@ function restoreSidebarScope() {
     visibleIds: state.notes
       .filter((note) => matchesActiveTag(note, activeTag))
       .map((note) => note.id),
-    sidebarChange: { type: "reload" },
   }));
 }
 
@@ -243,14 +235,7 @@ noteStore.subscribe((state) => {
   if (state.visibleIds !== prevVisibleIds) {
     prevVisibleIds = state.visibleIds;
     updateNoteCount(state.visibleIds.length);
-  }
-  if (state.sidebarChange !== prevSidebarChange) {
-    const change = state.sidebarChange;
-    prevSidebarChange = change;
-    if (change) {
-      handleSidebarChange(change, getVisibleNotes(state));
-      noteStore.setState({ sidebarChange: null });
-    }
+    refreshSidebar(getVisibleNotes(state));
   }
 });
 

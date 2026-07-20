@@ -393,15 +393,6 @@
   overflow-wrap: break-word;
 }
 
-.ProseMirror pre {
-  content-visibility: auto;
-  contain-intrinsic-size: 100px;
-}
-
-.wikilink-preview-content pre {
-  content-visibility: visible;
-}
-
 .ProseMirror pre code,
 .wikilink-preview-content pre code {
   display: block;
@@ -442,6 +433,7 @@
   background-color: var(--bg-sidebar);
   border: 2px solid var(--border-color);
   z-index: 1;
+  touch-action: none;
   transition:
     background-color 0.2s ease,
     opacity 0.2s ease-in-out,

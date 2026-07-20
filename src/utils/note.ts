@@ -1,9 +1,10 @@
 import { findElement } from "@/utils/dom";
 import { getUIItem } from "@/utils/registry";
-import { UNTAGGED } from "@shared/constants";
+import { NODE_BASELINE, UNTAGGED, YIELD_MS } from "@shared/constants";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
+import { sleep } from "./async";
 
 function createNoteUpdater() {
   let element: HTMLDivElement | null = null;
@@ -120,7 +121,6 @@ function toNoteListItem(note: Note): NoteListItem {
     id: note.id,
     title: note.title,
     snippet: note.snippet,
-    plainText: note.plainText,
     created_at: note.created_at,
     updated_at: note.updated_at,
     pinned: note.pinned,
@@ -129,8 +129,16 @@ function toNoteListItem(note: Note): NoteListItem {
   };
 }
 
+async function checkNoteSize(doc: EditorDoc) {
+  console.log(doc.content.length);
+  if (doc.content.length > NODE_BASELINE) {
+    await sleep(YIELD_MS);
+  }
+}
+
 export {
   addActiveTagToDoc,
+  checkNoteSize,
   compareNotes,
   estimateReadingTime,
   getExtension,

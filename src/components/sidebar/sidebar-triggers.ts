@@ -22,6 +22,8 @@ import { getAppItem } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { OpenAutoExportPathRequest } from "@shared/schemas/request-schema";
+import { generateHTML, generateText } from "@tiptap/core";
+import { getCachedEditorExtensions } from "../editor/editor-features";
 
 function triggerTableMenu(action: string) {
   const editor = getAppItem("editor");
@@ -127,7 +129,7 @@ async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
 }
 
 async function triggerCopyRichText(id: string) {
-  const result = await getExportContent(id, "html");
+  const result = await getNoteById(id);
   if (!result.success) {
     console.error(
       "[onTriggerCopyRichText]: Failed to fetch note data:",
@@ -138,8 +140,10 @@ async function triggerCopyRichText(id: string) {
   }
   const note = noteStore.get("notes").find((n) => n.id === id);
   if (!note) return;
-  const html = (result.data.content || "").trim();
-  const plain = (note?.plainText || "").trim();
+  const html = generateHTML(result.data.content, getCachedEditorExtensions());
+  const plain = generateText(result.data.content, getCachedEditorExtensions(), {
+    blockSeparator: "\n",
+  });
   if (!html || !plain) return;
   try {
     await navigator.clipboard.write([
@@ -188,7 +192,6 @@ async function triggerPin(id: string) {
         state.activeNote?.id === id
           ? { ...state.activeNote, pinned: result.data }
           : state.activeNote,
-      sidebarChange: { type: "reload" },
     };
   });
 }

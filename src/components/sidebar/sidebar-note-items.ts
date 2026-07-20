@@ -9,7 +9,6 @@ import { renderIcons } from "@/utils/icons";
 import { getTemplateItem } from "@/utils/registry";
 import { UNTITLED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
-import type { SidebarChange } from "@shared/types";
 
 let cachedNoteItem: HTMLDivElement | null = null;
 
@@ -46,23 +45,16 @@ function createNoteItem(note: NoteListItem) {
   return item;
 }
 
-//-------------------------------------------------------------
+//-----------------------------------------------------------
 
 // sidebar change handler for note items
 
-function handleSidebarChange(change: SidebarChange, notes: NoteListItem[]) {
-  if (!change) return;
-  switch (change.type) {
-    case "remove":
-    case "reload":
-    case "update":
-    case "add":
-      renderNoteList(notes);
-      break;
-  }
+function refreshSidebar(notes: NoteListItem[]) {
+  renderNoteList(notes);
   handleSidebarEmptyState();
 }
-//-------------------------------------------------------------
+
+//----------------------------------------------------------
 
 // snippet highlighter for note items
 
@@ -71,44 +63,22 @@ function escapeRegExp(str: string) {
 }
 
 function buildSnippet(
-  plainText: string,
-  fallbackSnippet: string,
+  snippet: string,
   queryTerms: readonly string[],
-  maxChars = 50,
 ): { snippet: string; indices: [number, number][] } {
   const terms = [
     ...new Set(
       queryTerms.map((term) => term.trim()).filter((term) => term.length >= 2),
     ),
   ];
-  const fallback =
-    fallbackSnippet.length > maxChars
-      ? fallbackSnippet.slice(0, maxChars - 3) + "..."
-      : fallbackSnippet;
-  if (!plainText || terms.length === 0) {
-    return { snippet: fallback, indices: [] };
+  if (terms.length === 0) {
+    return { snippet, indices: [] };
   }
-  const lowerText = plainText.toLowerCase();
-  const matchIndex = terms
-    .map((term) => lowerText.indexOf(term.toLowerCase()))
-    .find((index) => index >= 0);
-  if (matchIndex == null || matchIndex < 0) {
-    return { snippet: fallback, indices: [] };
-  }
-  const isTruncated = plainText.length > maxChars;
-  const contentLength = isTruncated ? maxChars - 3 : maxChars;
-  let start = Math.max(0, matchIndex - Math.floor(contentLength / 2));
-  let end = Math.min(plainText.length, start + contentLength);
-  start = Math.max(0, end - contentLength);
-  let snippet = plainText.slice(start, end);
-  const indices: [number, number][] = [];
   const regex = new RegExp(terms.map(escapeRegExp).join("|"), "gi");
+  const indices: [number, number][] = [];
   for (const match of snippet.matchAll(regex)) {
-    const i = match.index ?? 0;
-    indices.push([i, i + match[0].length - 1]);
-  }
-  if (end < plainText.length) {
-    snippet += "...";
+    const start = match.index ?? 0;
+    indices.push([start, start + match[0].length - 1]);
   }
   return { snippet, indices };
 }
@@ -118,7 +88,7 @@ function updateSnippetHighlight(
   snippet: string,
   indices: [number, number][],
 ) {
-  const contentEl = findElement(".note-content", noteElement);
+  const contentEl = findElement<HTMLDivElement>(".note-content", noteElement);
   if (!contentEl) return;
   if (indices.length === 0) {
     contentEl.textContent = snippet;
@@ -141,9 +111,4 @@ function updateSnippetHighlight(
   contentEl.replaceChildren(...nodes);
 }
 
-export {
-  buildSnippet,
-  createNoteItem,
-  handleSidebarChange,
-  updateSnippetHighlight,
-};
+export { buildSnippet, createNoteItem, refreshSidebar, updateSnippetHighlight };

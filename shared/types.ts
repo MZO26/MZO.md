@@ -93,11 +93,6 @@ type ImportedContent = {
   extension: "md" | "html" | "json" | "txt";
 };
 
-type ErrorReasons = {
-  file: string;
-  reason: "not-file" | "file-too-large" | "content-too-large" | "read-failed";
-}[];
-
 type ImportStats = {
   total: number;
   duplicates: number;
@@ -174,12 +169,6 @@ type ImageSrc = {
 
 type ThemeResult = { theme: Theme; codeTheme: CodeTheme };
 
-type SidebarChange =
-  | { type: "reload" }
-  | { type: "update"; noteId: string }
-  | { type: "add"; noteId: string }
-  | { type: "remove"; noteId: string };
-
 type ResizeOptions = {
   minWidth?: number;
   maxWidth?: number;
@@ -238,7 +227,6 @@ export type {
   ContentType,
   CoreRegistry,
   EditorContentType,
-  ErrorReasons,
   ExportedContent,
   ExportFormat,
   Failure,
@@ -262,7 +250,6 @@ export type {
   SelectionActionConfig,
   SelectOption,
   SettingsCategory,
-  SidebarChange,
   Success,
   SyncResult,
   TemplateRegistry,

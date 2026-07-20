@@ -11,7 +11,7 @@ const IdsSchema = z.array(IdSchema);
 
 const TitleSchema = z.string().min(1).max(50).default(UNTITLED);
 
-const SnippetSchema = z.string().max(50).default("");
+const SnippetSchema = z.string().max(100).default("");
 
 // DB -> App
 const DBBooleanSchema = z
@@ -70,7 +70,6 @@ const NoteTableSchema = z.object({
   title: TitleSchema,
   snippet: SnippetSchema,
   content: EditorDocSchema,
-  plainText: PlainTextSchema,
   pinned: z.boolean(),
   created_at: DateSchema,
   updated_at: DateSchema,
@@ -133,7 +132,6 @@ const NoteRowSchema = z.object({
   id: IdSchema,
   title: TitleSchema,
   content: z.string(),
-  plainText: PlainTextSchema,
   snippet: SnippetSchema,
   pinned: z.union([z.literal(0), z.literal(1)]).default(0),
   created_at: DateSchema,

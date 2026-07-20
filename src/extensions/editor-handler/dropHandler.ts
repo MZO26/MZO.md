@@ -5,8 +5,8 @@ import {
   ALLOWED_TYPES,
   CONTENT_TYPE_MAP,
   DOMPURIFY_CONFIG,
+  DROP_OR_PASTE_MAX_LENGTH,
   MAX_BYTES_FILE,
-  MAX_TEXT_LENGTH,
 } from "@shared/constants";
 import { Extension } from "@tiptap/core";
 import { Plugin, Selection } from "@tiptap/pm/state";
@@ -61,7 +61,7 @@ export const DropHandler = Extension.create({
                     editor.commands.focus();
                     const ext = getExtension(file.name);
                     const text = await file.text();
-                    if (text.length > MAX_TEXT_LENGTH) return;
+                    if (text.length > DROP_OR_PASTE_MAX_LENGTH) return;
                     const contentType =
                       ext === "txt" ? "txt" : CONTENT_TYPE_MAP[ext];
                     if (contentType === "txt") {
@@ -74,9 +74,12 @@ export const DropHandler = Extension.create({
                       const safe = DOMPurify.sanitize(text, DOMPURIFY_CONFIG);
                       editor.commands.insertContent(safe, {
                         parseOptions: { preserveWhitespace: "full" },
+                        contentType: "html",
                       });
                     } else if (contentType === "json") {
-                      editor.commands.insertContent(JSON.parse(text));
+                      editor.commands.insertContent(JSON.parse(text), {
+                        contentType: "json",
+                      });
                     }
                   } catch (error) {
                     console.error(

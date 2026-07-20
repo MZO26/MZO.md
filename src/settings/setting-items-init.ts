@@ -15,6 +15,7 @@ import type {
 } from "@shared/schemas/store-schema";
 import type { ExportFormat } from "@shared/types";
 
+import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
 import { selectBuilder } from "@/settings/setting-factory";
 import {
   AUTO_EXPORT_SETTINGS,
@@ -145,7 +146,7 @@ function initAppearanceSettings(
         note_item_display: target.value as NoteItemDisplay,
       });
       sidebar.setAttribute("data-noteItem", target.value);
-      noteStore.setState({ sidebarChange: { type: "reload" } });
+      refreshSidebar(noteStore.get("notes"));
     }),
   );
 }

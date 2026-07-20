@@ -3,7 +3,7 @@ import type { NoteListItem, NoteSearchDoc } from "@shared/schemas/note-schema";
 import MiniSearch, { type Options } from "minisearch";
 
 const MINI_SEARCH_OPTIONS: Options<NoteSearchDoc> = {
-  fields: ["title", "plainText", "snippet", "tags"],
+  fields: ["title", "snippet", "tags"],
   storeFields: ["id"],
   autoVacuum: true,
   extractField: (document, fieldName) => {
@@ -12,7 +12,7 @@ const MINI_SEARCH_OPTIONS: Options<NoteSearchDoc> = {
     return String(value ?? "");
   },
   searchOptions: {
-    boost: { title: 4, tags: 2, snippet: 1.5, plainText: 1 },
+    boost: { title: 4, tags: 2, snippet: 1.5 },
     prefix: true,
     fuzzy: 0.2,
     combineWith: "AND",
@@ -41,7 +41,6 @@ export class NoteSearch {
       id: String(note.id),
       title: note.title ?? "",
       snippet: note.snippet ?? "",
-      plainText: note.plainText ?? "",
       tags: Array.isArray(note.tags) ? note.tags : [],
     };
   }

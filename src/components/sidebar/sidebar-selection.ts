@@ -140,7 +140,6 @@ async function pinSelection(selectedIds: string[]) {
       notes: notes,
       noteIndex: noteIndex,
       activeNote,
-      sidebarChange: { type: "reload" },
     };
   });
   updateSelectionUI();

@@ -3,7 +3,6 @@ import {
   getCachedEditorExtensions,
   getMarkdownManager,
 } from "@/components/editor/editor-features";
-import { getPlainTextFromJson } from "@/components/editor/editor-init";
 import { noteStore } from "@/settings/app-state";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
@@ -28,7 +27,9 @@ async function getBatchExportContent(
           fileName: note.title,
           content: isJson
             ? JSON.stringify(note.content, null, 2)
-            : getPlainTextFromJson(note.content),
+            : generateText(note.content, getCachedEditorExtensions(), {
+                blockSeparator: "\n",
+              }),
           extension,
         });
       }
@@ -93,7 +94,7 @@ async function getExportContent(
   let content: string;
   switch (extension) {
     case "json":
-      content = JSON.stringify(note.content);
+      content = JSON.stringify(note.content, null, 2);
       break;
     case "html":
     case "pdf":
@@ -104,7 +105,9 @@ async function getExportContent(
       content = getMarkdownManager().serialize(note.content);
       break;
     case "txt":
-      content = generateText(note.content, getCachedEditorExtensions());
+      content = generateText(note.content, getCachedEditorExtensions(), {
+        blockSeparator: "\n",
+      });
       break;
     default:
       console.error(

@@ -1,5 +1,4 @@
 import { getCachedEditorExtensions } from "@/components/editor/editor-features";
-import { getPlainTextFromJson } from "@/components/editor/editor-init";
 import { stateStore } from "@/settings/app-state";
 import { addActiveTagToDoc } from "@/utils/note";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
@@ -67,12 +66,10 @@ async function setImportedContent(
       const json = normalizeFileContent(file);
       if (!json) return { success: false, error: AppErrorCode.InvalidData };
       const updatedJson = addActiveTagToDoc(json, stateStore.get("activeTag"));
-      const text = getPlainTextFromJson(json);
       const metadata = getMetadata(updatedJson);
       const payload: CreateNotePayload = {
         title: titleGenerator(updatedJson),
         content: updatedJson,
-        plainText: text,
         ...metadata,
         pinned: false,
       };

@@ -1,7 +1,4 @@
-import {
-  getPlainTextFromJson,
-  resetEditorHistory,
-} from "@/components/editor/editor-features";
+import { resetEditorHistory } from "@/components/editor/editor-features";
 import { applyTagView } from "@/components/sidebar/sidebar-features";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
@@ -186,6 +183,9 @@ function getNoteEditorExtensions() {
       bulletList: false,
       underline: false,
       trailingNode: false,
+      undoRedo: {
+        depth: 20,
+      },
       link: {
         openOnClick: false,
         autolink: true,
@@ -314,7 +314,6 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
 export {
   editor,
   getNoteEditorExtensions,
-  getPlainTextFromJson,
   getRequestExtensions,
   initEditor,
   resetEditorHistory,

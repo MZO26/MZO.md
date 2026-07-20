@@ -65,7 +65,6 @@ function updateSearchHighlights(
     const result = resultsById.get(noteId);
     if (result) {
       const { snippet, indices } = buildSnippet(
-        result.item.plainText ?? "",
         result.item.snippet,
         result.queryTerms,
       );
@@ -128,7 +127,7 @@ function createAllTagsPopover(button: HTMLButtonElement) {
   });
   const instance = tippy(button, {
     content: popover,
-    trigger: "manual",
+    trigger: "click",
     interactive: true,
     theme: "preview-theme",
     appendTo: () => document.body,

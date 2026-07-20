@@ -156,7 +156,6 @@ class AppDB {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL CHECK(length(title) > 0),
         content TEXT NOT NULL,
-        plainText TEXT NOT NULL DEFAULT '',
         pinned INTEGER NOT NULL DEFAULT 0,
         snippet TEXT DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

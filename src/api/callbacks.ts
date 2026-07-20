@@ -14,6 +14,7 @@ import {
 } from "@/components/sidebar/sidebar-triggers";
 import { debouncedSaveNote, handleSaveNote } from "@/notes/note-actions";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
+import { createGlobalSpinner } from "@/utils/ui";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 
 //-------------------------------------------------------
@@ -73,7 +74,10 @@ function initListeners() {
   });
 
   window.noteAPI.onTriggerCopyRichText(async (id: string) => {
-    await triggerCopyRichText(id);
+    const loading = createGlobalSpinner();
+    await loading.wrap(async () => {
+      await triggerCopyRichText(id);
+    });
   });
 
   window.noteAPI.onTriggerDelete(async (id: string) => {

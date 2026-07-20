@@ -1,19 +1,11 @@
 import { createNote } from "@/api/api";
 import { getMarkdownManager } from "@/components/editor/editor-features";
-import { resetEditorHistory } from "@/components/editor/editor-init";
 import { isAutoExportEnabled } from "@/notes/note-actions";
-import {
-  markNoteAsRecent,
-  noteStore,
-  searchEngine,
-  stateStore,
-} from "@/settings/app-state";
+import { noteStore, searchEngine } from "@/settings/app-state";
 import { toNoteListItem } from "@/utils/note";
-import { getAppItem } from "@/utils/registry";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
 
 async function handleDuplicateNote(note: Note) {
-  const editor = getAppItem("editor");
   const {
     id: originalId,
     links: originalLinks,
@@ -46,20 +38,11 @@ async function handleDuplicateNote(note: Note) {
   }
   const noteListItem = toNoteListItem(result.data);
   noteStore.setState((state) => ({
-    activeNote: result.data,
     notes: [noteListItem, ...state.notes],
     visibleIds: [noteListItem.id, ...state.visibleIds],
     noteIndex: new Map(state.noteIndex).set(noteListItem.id, noteListItem),
-    sidebarChange: { type: "add", noteId: result.data.id },
   }));
   searchEngine.upsertNote(noteListItem);
-  stateStore.setState({ activeId: result.data.id });
-  editor.commands.setContent(result.data.content, {
-    emitUpdate: false,
-  });
-  resetEditorHistory(editor);
-  editor.commands.focus();
-  markNoteAsRecent(result.data.id);
 }
 
 export { handleDuplicateNote };

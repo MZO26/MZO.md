@@ -123,10 +123,10 @@ function snippetGenerator(doc: EditorDoc | undefined): string {
       continue;
     }
     snippet += (snippet.length > 0 ? " " : "") + text;
-    if (snippet.length >= 50) break;
+    if (snippet.length >= 100) break;
   }
   const cleaned = snippet.replace(/\s+/g, " ").trim();
-  return cleaned.length > 50 ? cleaned.slice(0, 47) + "..." : cleaned;
+  return cleaned.length > 100 ? cleaned.slice(0, 97) + "..." : cleaned;
 }
 
 function getLinks(doc: EditorDoc) {

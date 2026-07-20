@@ -22,16 +22,10 @@ import {
   settingsStore,
   stateStore,
 } from "@/settings/app-state";
-import { debounce, sleep } from "@/utils/async";
-import { addActiveTagToDoc, toNoteListItem } from "@/utils/note";
+import { debounce } from "@/utils/async";
+import { addActiveTagToDoc, checkNoteSize, toNoteListItem } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
-import {
-  CHAR_BASELINE,
-  DEBOUNCE_MS,
-  EMPTY_DOC,
-  UNTITLED,
-  YIELD_MS,
-} from "@shared/constants";
+import { DEBOUNCE_MS, EMPTY_DOC, UNTITLED } from "@shared/constants";
 import { getMetadata, titleGenerator } from "@shared/generators";
 import {
   type CreateNotePayload,
@@ -57,7 +51,6 @@ async function handleCreateNote() {
   const metadata = getMetadata(editorContent);
   const payload: CreateNotePayload = {
     content: editorContent,
-    plainText: "",
     ...metadata,
     title: UNTITLED,
     pinned: false,
@@ -73,7 +66,6 @@ async function handleCreateNote() {
     notes: [noteListItem, ...state.notes],
     visibleIds: [noteListItem.id, ...state.visibleIds],
     noteIndex: new Map(state.noteIndex).set(noteListItem.id, noteListItem),
-    sidebarChange: { type: "add", noteId: result.data.id },
   }));
   searchEngine.upsertNote(noteListItem);
   stateStore.setState({ activeId: result.data.id });
@@ -141,7 +133,6 @@ async function handleImportNote(request: FilePathRequest) {
       ...state.noteIndex,
       ...notes.map((n) => [n.id, n] as const),
     ]),
-    sidebarChange: { type: "reload" },
   }));
   searchEngine.addMany(notes);
 }
@@ -175,7 +166,6 @@ async function handleDeleteManyNotes(ids: string[]) {
       notes: state.notes.filter((note) => !deletedIds.has(note.id)),
       visibleIds: state.visibleIds.filter((noteId) => !deletedIds.has(noteId)),
       noteIndex,
-      sidebarChange: { type: "reload" },
     };
   });
   searchEngine.removeMany([...deletedIds]);
@@ -204,7 +194,6 @@ async function handleDeleteNote(id: string) {
       notes: state.notes.filter((note) => note.id !== id),
       visibleIds: state.visibleIds.filter((noteId) => noteId !== id),
       noteIndex,
-      sidebarChange: { type: "remove", noteId: id },
     };
   });
   searchEngine.removeNote(id);
@@ -224,7 +213,6 @@ async function handleSaveNote(id: string, flush: boolean = false) {
   if (!activeNote) return;
   const editor = getAppItem("editor");
   const content = editor.getJSON();
-  const plainText = editor.getText();
   const markdown = isAutoExportEnabled() ? editor.getMarkdown() : undefined;
   const metaData = getMetadata(content);
   const newTitle = titleGenerator(content);
@@ -233,7 +221,6 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     id,
     title: newTitle,
     content,
-    plainText,
     ...metaData,
     ...(autoExportEnabled && markdown !== undefined ? { markdown } : {}),
   };
@@ -251,13 +238,10 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     const matchesTag = matchesActiveTag(updatedListItem, activeTag);
     const alreadyVisible = state.visibleIds.includes(updatedListItem.id);
     let visibleIds = state.visibleIds;
-    let needsReload = false;
     if (alreadyVisible && !matchesTag) {
       visibleIds = state.visibleIds.filter((vid) => vid !== updatedListItem.id);
-      needsReload = true;
     } else if (!alreadyVisible && matchesTag) {
       visibleIds = [updatedListItem.id, ...state.visibleIds];
-      needsReload = true;
     }
     return {
       activeNote:
@@ -269,10 +253,6 @@ async function handleSaveNote(id: string, flush: boolean = false) {
       ),
       visibleIds,
       noteIndex,
-      sidebarChange: {
-        type: needsReload ? "reload" : "update",
-        noteId: result.data.id,
-      },
     };
   });
   searchEngine.upsertNote(updatedListItem);
@@ -302,11 +282,10 @@ async function handleSelectNote(id: string) {
     return;
   }
   try {
-    if (result.data.plainText.length > CHAR_BASELINE) {
-      await sleep(YIELD_MS);
-    }
+    await checkNoteSize(result.data.content);
     editor.commands.setContent(result.data.content, {
       emitUpdate: false,
+      contentType: "json",
     });
   } catch (error) {
     console.error("Invalid Editor content:", error);

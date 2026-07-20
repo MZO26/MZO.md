@@ -25,10 +25,10 @@ class Transactions {
     this.db = dbConnection;
 
     this.createNoteStmt = this.db.prepare(
-      `INSERT INTO notes (id, title, content, plainText, snippet, pinned, created_at, updated_at) VALUES ($id, $title, $content, $plainText, $snippet, $pinned, $created_at, $updated_at) RETURNING *`,
+      `INSERT INTO notes (id, title, content, snippet, pinned, created_at, updated_at) VALUES ($id, $title, $content, $snippet, $pinned, $created_at, $updated_at) RETURNING *`,
     );
     this.updateNoteStmt = this.db
-      .prepare(`UPDATE notes SET title = $title, content = $content, plainText = $plainText, snippet = $snippet, updated_at = $updated_at WHERE id = $id RETURNING *
+      .prepare(`UPDATE notes SET title = $title, content = $content, snippet = $snippet, updated_at = $updated_at WHERE id = $id RETURNING *
     `);
     this.deleteNoteStmt = this.db.prepare("DELETE FROM notes WHERE id = $id");
     this.deleteManyNotesStmt = this.db.prepare(`
@@ -125,7 +125,7 @@ class Transactions {
     return results;
   }
 
-  safeCreateMany(paramsArr: CreateTransaction[]): Note[] {
+  public safeCreateMany(paramsArr: CreateTransaction[]): Note[] {
     if (paramsArr.length === 0) return [];
     const dbResults = this.transaction(() => {
       return this.runCreateManyLogic(paramsArr);
@@ -165,7 +165,7 @@ class Transactions {
     return result;
   }
 
-  safeCreate(params: CreateTransaction): Note {
+  public safeCreate(params: CreateTransaction): Note {
     const { tags, links, ...noteParams } = params;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];
@@ -216,7 +216,7 @@ class Transactions {
     return result;
   }
 
-  safeUpdate(params: UpdateTransaction): Note {
+  public safeUpdate(params: UpdateTransaction): Note {
     const { tags, links, ...noteParams } = params;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];

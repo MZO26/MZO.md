@@ -1,5 +1,5 @@
 import { showNotification } from "@/api/api";
-import { MAX_TEXT_LENGTH } from "@shared/constants";
+import { DROP_OR_PASTE_MAX_LENGTH } from "@shared/constants";
 import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 
@@ -8,7 +8,7 @@ export const MaxContentGuard = Extension.create({
 
   addOptions() {
     return {
-      maxChars: MAX_TEXT_LENGTH,
+      maxChars: DROP_OR_PASTE_MAX_LENGTH,
     };
   },
 
