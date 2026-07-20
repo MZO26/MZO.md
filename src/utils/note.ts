@@ -1,9 +1,15 @@
 import { sleep } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getUIItem } from "@/utils/registry";
-import { NODE_BASELINE, UNTAGGED, YIELD_MS } from "@shared/constants";
+import {
+  ALLOWED_IMPORT_EXTENSIONS,
+  NODE_BASELINE,
+  UNTAGGED,
+  YIELD_MS,
+} from "@shared/constants";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
+import type { ImportExtension } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
 
 function createNoteUpdater() {
@@ -116,6 +122,10 @@ function getExtension(name: string) {
   return index > 0 ? name.slice(index + 1).toLowerCase() : "";
 }
 
+function isValidExtension(extension: string): extension is ImportExtension {
+  return ALLOWED_IMPORT_EXTENSIONS.some((e) => e === extension);
+}
+
 function toNoteListItem(note: Note): NoteListItem {
   return {
     id: note.id,
@@ -143,6 +153,7 @@ export {
   estimateReadingTime,
   getExtension,
   hasNoteTag,
+  isValidExtension,
   toNoteListItem,
   updateNoteCount,
 };

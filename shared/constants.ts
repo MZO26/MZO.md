@@ -62,6 +62,8 @@ const MIME_TO_EXT = {
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
+const ALLOWED_IMPORT_EXTENSIONS = ["md", "html", "json", "txt"] as const;
+
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 26,214,400B. file.size from JS is always in bytes
 
 const YIELD_MS = 100;
@@ -72,6 +74,8 @@ const MAX_BYTES_FILE = 3 * 1024 * 1024;
 const MAX_TEXT_LENGTH = 5_000_000;
 
 const DROP_OR_PASTE_MAX_LENGTH = 500_000;
+
+const MAX_DROP_LENGTH = 20;
 
 const NODE_BASELINE = 5000;
 
@@ -362,6 +366,7 @@ const AUTO_EXPORT_SETTINGS: readonly SelectOption<AutoExport>[] = [
 ];
 
 export {
+  ALLOWED_IMPORT_EXTENSIONS,
   ALLOWED_PROTOCOLS,
   ALLOWED_TYPES,
   APP_START_TIME,
@@ -384,6 +389,7 @@ export {
   LIMITS,
   LINE_HEIGHT_SETTINGS,
   MAX_BYTES_FILE,
+  MAX_DROP_LENGTH,
   MAX_FILE_DROPS,
   MAX_SIZE,
   MAX_TEXT_LENGTH,

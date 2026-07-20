@@ -1,9 +1,7 @@
 import db from "@electron/db/database";
 import { sanitizeImportString } from "@electron/fs/fs-helpers";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { MAX_BYTES_FILE, MAX_TEXT_LENGTH } from "@shared/constants";
-import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import {
   ImportRequestSchema,
@@ -16,10 +14,7 @@ import path from "path";
 async function batchImport(filePaths: string[]) {
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
-  await fs.mkdir(imagesFolder, { recursive: true }).catch((error: unknown) => {
-    console.error("[sanitizeImportString]: Failed to create directory:", error);
-    throw new AppBackendError(AppErrorCode.FileWriteError);
-  });
+  await fs.mkdir(imagesFolder, { recursive: true });
   const uniqueFilePaths = new Set<string>(filePaths);
   let duplicateCount = 0;
   let errorCount = 0;

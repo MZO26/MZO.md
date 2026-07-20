@@ -82,7 +82,9 @@ function registerElectronIpc(win: BrowserWindow) {
       const validatedData = validation(OpenAutoExportPathSchema, payload);
       const targetDir = settings["auto_export_path"];
       if (!targetDir) return false;
-      const filePath = getFilePath(targetDir, validatedData);
+      const autoExportPath = resolveAutoExportPath(targetDir);
+      await fs.mkdir(autoExportPath, { recursive: true });
+      const filePath = getFilePath(autoExportPath, validatedData);
       const error = await shell.openPath(filePath);
       return error === "";
     });
@@ -94,15 +96,13 @@ function registerElectronIpc(win: BrowserWindow) {
       if (!checkRateLimit("open:auto-export-folder", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const settings = settingsService.getSettings();
-      if (settings["auto_export"] !== true) return null;
+      if (settings["auto_export"] !== true) return false;
       const validatedData = validation(OpenAutoExportPathSchema, payload);
-      if (!validatedData.updated_at) return null;
+      if (!validatedData.updated_at) return false;
       const targetDir = settings["auto_export_path"];
-      if (!targetDir) return null;
+      if (!targetDir) return false;
       const autoExportPath = resolveAutoExportPath(targetDir);
-      await fs.mkdir(autoExportPath, { recursive: true }).catch(() => {
-        throw new AppBackendError(AppErrorCode.FileWriteError);
-      });
+      await fs.mkdir(autoExportPath, { recursive: true });
       const filePath = getFilePath(autoExportPath, validatedData);
       try {
         await fs.access(filePath, fs.constants.R_OK);
@@ -128,9 +128,7 @@ function registerElectronIpc(win: BrowserWindow) {
       const targetDir = settings["auto_export_path"];
       if (!targetDir) return null;
       const autoExportPath = resolveAutoExportPath(targetDir);
-      await fs.mkdir(autoExportPath, { recursive: true }).catch(() => {
-        throw new AppBackendError(AppErrorCode.FileWriteError);
-      });
+      await fs.mkdir(autoExportPath, { recursive: true });
       const filePath = getFilePath(autoExportPath, validatedData);
       try {
         await fs.access(filePath, fs.constants.R_OK);

@@ -1,4 +1,7 @@
-import type { SIDEBAR_FILTER_MODES } from "@shared/constants";
+import type {
+  ALLOWED_IMPORT_EXTENSIONS,
+  SIDEBAR_FILTER_MODES,
+} from "@shared/constants";
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
 import type {
   CodeTheme,
@@ -115,6 +118,8 @@ type FileContent = {
 };
 
 type PDFAssets = { template: string; css: string };
+
+type ImportExtension = (typeof ALLOWED_IMPORT_EXTENSIONS)[number];
 
 type ContentType = "markdown" | "html" | "json" | "text";
 
@@ -234,6 +239,7 @@ export type {
   FilterMode,
   ImageSrc,
   ImportedContent,
+  ImportExtension,
   ImportStats,
   LinkAttributes,
   MathOptions,

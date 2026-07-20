@@ -46,7 +46,6 @@ async function processAndInsertImages(files: File[], editor: Editor | null) {
       file.type.startsWith("image/"),
   );
   if (validFiles.length === 0) return;
-  const pos = editor.state.selection.to;
   try {
     const compressedResults = await Promise.all(
       validFiles.map(async (file) => {
@@ -84,7 +83,7 @@ async function processAndInsertImages(files: File[], editor: Editor | null) {
     editor
       .chain()
       .focus()
-      .insertContentAt(pos, content, {
+      .insertContent(content, {
         updateSelection: true,
       })
       .run();

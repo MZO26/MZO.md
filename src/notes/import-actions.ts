@@ -85,4 +85,4 @@ async function setImportedContent(
   }
 }
 
-export { setImportedContent };
+export { normalizeFileContent, setImportedContent };

@@ -28,17 +28,11 @@ async function singleExport(filePath: string, data: string) {
 
 async function batchExport(folder: string, payload: ExportedContent[]) {
   const absoluteTargetFolder = path.resolve(folder);
-  await fs.mkdir(folder, { recursive: true }).catch((error: unknown) => {
-    console.error("[batchExport]: Failed to create directory:", error);
-    throw new AppBackendError(AppErrorCode.FileWriteError);
-  });
+  await fs.mkdir(folder, { recursive: true });
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
   const assetsDir = path.join(absoluteTargetFolder, "assets");
-  await fs.mkdir(assetsDir, { recursive: true }).catch((error: unknown) => {
-    console.error("[batchExport]: Failed to create directory:", error);
-    throw new AppBackendError(AppErrorCode.FileWriteError);
-  });
+  await fs.mkdir(assetsDir, { recursive: true });
   const exported = await processWithLimit(
     payload,
     20,
@@ -108,10 +102,7 @@ async function singlePDFExport(filePath: string, data: string) {
 }
 
 async function batchPDFExport(folder: string, payload: ExportedContent[]) {
-  await fs.mkdir(folder, { recursive: true }).catch((error: unknown) => {
-    console.error("[batchPDFExport]: Failed to create directory:", error);
-    throw new AppBackendError(AppErrorCode.FileWriteError);
-  });
+  await fs.mkdir(folder, { recursive: true });
   const absoluteTargetFolder = path.resolve(folder);
   const assets = await getPDFAssets();
   let hiddenWin = createHiddenPdfWindow();

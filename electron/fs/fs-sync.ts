@@ -22,12 +22,7 @@ async function checkSyncState(
   });
   let markdown: string | null = null;
   try {
-    await fs
-      .mkdir(autoExportPath, { recursive: true })
-      .catch((error: unknown) => {
-        console.error("[checkSyncState]: Failed to create directory:", error);
-        throw new AppBackendError(AppErrorCode.FileWriteError);
-      });
+    await fs.mkdir(autoExportPath, { recursive: true });
     const fsStat = await fs.stat(absoluteFilePath);
     if (!fsStat) {
       console.log("MISSING");

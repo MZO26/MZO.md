@@ -10,6 +10,7 @@ import {
 } from "@/api/api";
 import { resetEditorHistory, updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/sidebar/sidebar-features";
+import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
 import { getTableOfContents } from "@/extensions/tableOfContents";
 import { setImportedContent } from "@/notes/import-actions";
 import {
@@ -257,6 +258,7 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     };
   });
   searchEngine.upsertNote(updatedListItem);
+  refreshSidebar(noteStore.get("notes"));
   if (isActiveNote) {
     updateStats();
     const currentHeadings = getTableOfContents(editor);
@@ -273,6 +275,10 @@ const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 async function handleSelectNote(id: string) {
   const editor = getAppItem("editor");
   debouncedSaveNote.flush();
+  if (stateStore.get("activeId") === id) {
+    console.log("Already active. Skipping select.");
+    return;
+  }
   stateStore.setState({ activeId: id });
   noteStore.setState({ activeNote: null });
   editor.setEditable(false, false);

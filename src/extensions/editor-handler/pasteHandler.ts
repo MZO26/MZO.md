@@ -1,5 +1,9 @@
 import { processAndInsertImages } from "@/extensions/image/image";
-import { ALLOWED_TYPES, DOMPURIFY_CONFIG } from "@shared/constants";
+import {
+  ALLOWED_TYPES,
+  DOMPURIFY_CONFIG,
+  DROP_OR_PASTE_MAX_LENGTH,
+} from "@shared/constants";
 import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";
@@ -29,6 +33,11 @@ export const PasteHandler = Extension.create({
                   );
                 },
               );
+              return true;
+            }
+            const plainText = clipboardData.getData("text/plain") || "";
+            if (plainText.length > DROP_OR_PASTE_MAX_LENGTH) {
+              event.preventDefault();
               return true;
             }
             return false;
