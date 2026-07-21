@@ -76,6 +76,8 @@ const MAX_CHARACTERS = 1_000_000;
 
 const MAX_DROP_PASTE_CHARACTERS = 100_000;
 
+const CHAR_BASELINE = 100_000;
+
 const MAX_DROP_LENGTH = 20;
 
 const NODE_BASELINE = 5000;
@@ -182,7 +184,6 @@ const THEME_DATA: Record<
 } as const;
 
 const DOMPURIFY_CONFIG = {
-  ADD_ATTR: ["data-type", "data-id", "contenteditable"],
   FORBID_TAGS: [
     "script",
     "style",
@@ -372,6 +373,7 @@ export {
   APP_START_TIME,
   AUTO_EXPORT_SETTINGS,
   BLOCK_TYPES,
+  CHAR_BASELINE,
   CODE_THEME_MAP,
   CODE_THEME_SETTINGS,
   CONTENT_TYPE_MAP,

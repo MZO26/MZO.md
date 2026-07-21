@@ -96,4 +96,4 @@ async function setImportedContent(
   }
 }
 
-export { normalizeFileContent, setImportedContent };
+export { isEditorDoc, normalizeFileContent, setImportedContent };

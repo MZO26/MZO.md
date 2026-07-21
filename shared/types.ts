@@ -168,10 +168,6 @@ interface TemplateRegistry {
   noteItemTemplate: HTMLTemplateElement;
 }
 
-type ImageSrc = {
-  imageSrc: string;
-};
-
 type ThemeResult = { theme: Theme; codeTheme: CodeTheme };
 
 type ResizeOptions = {
@@ -237,7 +233,6 @@ export type {
   Failure,
   FileContent,
   FilterMode,
-  ImageSrc,
   ImportedContent,
   ImportExtension,
   ImportStats,

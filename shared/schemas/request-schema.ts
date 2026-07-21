@@ -39,13 +39,8 @@ const FileNameSchema = z
   .transform(normalizeFileName)
   .pipe(z.string().min(1).max(255));
 
-// for md, txt, html and pdf (because html is used for pdf)
 const StringContentSchema = z
   .string()
-  .refine((val) => {
-    console.log("String lengh:", val.length);
-    return true;
-  })
   .max(MAX_IPC_PAYLOAD_SIZE, "Content exceeds maximum size")
   .optional()
   .transform((val) => {

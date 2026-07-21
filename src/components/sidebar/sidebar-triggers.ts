@@ -17,8 +17,10 @@ import {
   deleteDialog,
   syncDialog,
 } from "@/settings/dialog-init";
+import { sleep } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
+import { CHAR_BASELINE, YIELD_MS } from "@shared/constants";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { OpenAutoExportPathRequest } from "@shared/schemas/request-schema";
@@ -284,11 +286,13 @@ async function triggerSyncCheck(id: string) {
         );
         if (!confirmed) return;
         if (!isSyncVersionCurrent(id, version)) return;
+        if (syncResult.data.markdown.length > CHAR_BASELINE) {
+          await sleep(YIELD_MS);
+        }
         editor.commands.setContent(syncResult.data.markdown, {
           emitUpdate: true,
           contentType: "markdown",
         });
-        return;
       }
     }
   } finally {

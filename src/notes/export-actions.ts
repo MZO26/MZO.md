@@ -17,54 +17,44 @@ async function getBatchExportContent(
   notes: Note[],
   extension: ExportFormat,
 ): Promise<Result<ExportedContent[]>> {
-  const processedPayloads: ExportedContent[] = [];
-  if (extension === "json" || extension === "txt") {
-    try {
-      const isJson = extension === "json";
-      for (const note of notes) {
-        processedPayloads.push({
-          created_at: note.created_at,
-          fileName: note.title,
-          content: isJson
-            ? JSON.stringify(note.content, null, 2)
-            : generateText(note.content, getCachedEditorExtensions(), {
-                blockSeparator: "\n",
-              }),
-          extension,
-        });
-      }
-      return { success: true, data: processedPayloads };
-    } catch (error) {
-      console.error(
-        "[getBatchExportContent]: Failed converting data for batch export (JSON / TXT): ",
-        error,
-      );
-      return { success: false, error: AppErrorCode.InvalidData };
-    }
-  }
-  const markdown = extension === "md";
   try {
-    const extensions = getCachedEditorExtensions();
-    const manager = markdown ? getMarkdownManager() : null;
+    let formatContent: (content: Note["content"]) => string;
+    switch (extension) {
+      case "json":
+        formatContent = (c) => JSON.stringify(c, null, 2);
+        break;
+      case "txt": {
+        const exts = getCachedEditorExtensions();
+        formatContent = (c) => generateText(c, exts, { blockSeparator: "\n" });
+        break;
+      }
+      case "html": {
+        const exts = getCachedEditorExtensions();
+        formatContent = (c) => generateHTML(c, exts);
+        break;
+      }
+      case "md": {
+        const manager = getMarkdownManager();
+        formatContent = (c) => manager.serialize(c);
+        break;
+      }
+      default:
+        return { success: false, error: AppErrorCode.InvalidData };
+    }
+    const data: ExportedContent[] = [];
     for (const note of notes) {
       if (!note?.content) continue;
-      let outputContent: string;
-      if (markdown) {
-        outputContent = manager!.serialize(note.content);
-      } else {
-        outputContent = generateHTML(note.content, extensions);
-      }
-      processedPayloads.push({
+      data.push({
         created_at: note.created_at,
         fileName: note.title,
-        content: outputContent,
+        content: formatContent(note.content),
         extension,
       });
     }
-    return { success: true, data: processedPayloads };
+    return { success: true, data };
   } catch (error) {
     console.error(
-      "[getBatchExportContent]: Failed converting data for batch export (MD / HTML):",
+      `[getBatchExportContent]: Failed batch export for ${extension.toUpperCase()}:`,
       error,
     );
     return { success: false, error: AppErrorCode.InvalidData };
@@ -79,7 +69,7 @@ async function getExportContent(
   id: string,
   extension: string,
 ): Promise<Result<ExportRequest>> {
-  const activeNote = noteStore.getState().activeNote;
+  const activeNote = noteStore.get("activeNote");
   let note: Note | null = null;
   if (activeNote?.id === id) {
     note = activeNote;

@@ -17,7 +17,6 @@ The following components are provided under the MIT License:
 - vite (Copyright (c) Evan You)
 - electron-vite (Copyright (c) Alex Wei)
 - electron-builder (Copyright (c) 2015, loopline-systems)
-- marked (Copyright (c) Christopher Jeffrey, MarkedJS)
 - ProseMirror (Copyright (c) Marijn Haverbeke)
 - KaTeX (Copyright (c) Khan Academy)
 

@@ -24,7 +24,6 @@ Built with Electron, TypeScript, Sqlite, and TipTap / ProseMirror.
 - minisearch
 - electron-vite
 - Vite
-- Marked
 - DOMPurify
 - Zod
 - Lucide

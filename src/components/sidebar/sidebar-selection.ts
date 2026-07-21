@@ -14,6 +14,9 @@ import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
 import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
 import { requireElement } from "@/utils/dom";
+import { MAX_CHARACTERS } from "@shared/constants";
+import { generateHTML, generateText } from "@tiptap/core";
+import { getCachedEditorExtensions } from "../editor/editor-features";
 
 // sidebar footer selection mode
 
@@ -37,23 +40,30 @@ async function copyRichTextSelection(selectedIds: string[]) {
     );
     return;
   }
-  const content = await getBatchExportContent(result.data, "html");
-  if (!content.success) {
-    console.error(
-      "[copyMarkdownSelection -> getBatchExportContent]: Failed to get markdown:",
-      content.error,
-    );
-    await showNotification("Failed to get Markdown", "");
+  let clipboardLimit = 0;
+  const clipboardCandidates: { html: string; text: string }[] = [];
+  const extensions = getCachedEditorExtensions();
+  for (const data of result.data) {
+    const text = generateText(data.content, extensions).trim();
+    if (clipboardLimit + text.length > MAX_CHARACTERS) break;
+    clipboardLimit += text.length;
+    clipboardCandidates.push({
+      html: generateHTML(data.content, extensions),
+      text,
+    });
+  }
+  if (clipboardCandidates.length === 0) {
+    await showNotification("Failed to copy to clipboard", "Note is too long");
     return;
   }
   try {
-    const html = content.data
-      .map((item) => item.content.trim())
+    const html = clipboardCandidates
+      .map((item) => item.html)
       .filter(Boolean)
       .join("\n<hr>\n");
 
-    const plain = content.data
-      .map((item) => item.content.trim())
+    const plain = clipboardCandidates
+      .map((item) => item.text)
       .filter(Boolean)
       .join("\n\n");
 

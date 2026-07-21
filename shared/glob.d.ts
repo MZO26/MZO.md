@@ -15,7 +15,6 @@ import {
 } from "@shared/shared/types";
 import type {
   ExportedContent,
-  ImageSrc,
   ImportStats,
   MenuType,
   NoteMenuPayload,
@@ -30,7 +29,13 @@ declare global {
       showNotification: (title: string, body: string) => Promise<Result<void>>;
       setTheme: (theme: Theme, focus?: boolean) => Promise<Result<Theme>>;
       windowPin: () => Promise<Result<boolean>>;
-      imageWriteMany: (payload: ImagePayload[]) => Promise<Result<ImageSrc[]>>;
+      imageWriteMany: (payload: ImagePayload[]) => Promise<
+        Result<
+          {
+            imageSrc: string;
+          }[]
+        >
+      >;
       onThemeChanged: (
         callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
       ) => () => void;

@@ -99,7 +99,10 @@ function initListeners() {
   });
 
   window.noteAPI.onTriggerSync(async (id: string) => {
-    await triggerSyncCheck(id);
+    const loading = createGlobalSpinner();
+    await loading.wrap(async () => {
+      await triggerSyncCheck(id);
+    });
   });
 
   window.electronAPI.onThemeChanged(async (resolvedTheme) => {
