@@ -1,7 +1,7 @@
 import { BLOCK_TYPES, UNTITLED } from "@shared/constants";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { Metadata } from "@shared/types";
-import type { JSONContent } from "@tiptap/core";
+import { type JSONContent } from "@tiptap/core";
 
 function getMetadata(content: EditorDoc): Metadata {
   return {
@@ -52,29 +52,11 @@ function textConverter(plainText: string): JSONContent[] | undefined {
     }));
 }
 
-function jsonConverter(rawJson: string): JSONContent[] | undefined {
-  if (!rawJson?.trim()) return undefined;
-  try {
-    const parsed = JSON.parse(rawJson);
-    const stringified = JSON.stringify(parsed, null, 2);
-    return [
-      {
-        type: "codeBlock",
-        attrs: { language: "json" },
-        content: [{ type: "text", text: stringified }],
-      },
-    ];
-  } catch {
-    return undefined;
+function wrapAsDoc(content: unknown): EditorDoc | undefined {
+  if (Array.isArray(content)) {
+    return { type: "doc", content };
   }
-}
-
-function wrapAsDoc(content: JSONContent[] | undefined): EditorDoc | undefined {
-  if (!content?.length) return undefined;
-  return {
-    type: "doc",
-    content,
-  };
+  return undefined;
 }
 
 function titleGenerator(doc: EditorDoc): string {
@@ -176,7 +158,6 @@ function getTags(doc: EditorDoc) {
 export {
   extractText,
   getMetadata,
-  jsonConverter,
   snippetGenerator,
   textConverter,
   titleGenerator,

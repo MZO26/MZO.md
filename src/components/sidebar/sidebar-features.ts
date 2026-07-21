@@ -17,14 +17,14 @@ import {
 import { debounce } from "@/utils/async";
 import { createIconButton, createInfoSpan, requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { estimateReadingTime, getExtension } from "@/utils/note";
+import {
+  estimateReadingTime,
+  getExtension,
+  isValidExtension,
+} from "@/utils/note";
 import { getAppItem, getUIItems } from "@/utils/registry";
 import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
-import {
-  CONTENT_TYPE_MAP,
-  DEBOUNCE_MS,
-  MAX_FILE_DROPS,
-} from "@shared/constants";
+import { DEBOUNCE_MS, MAX_FILE_DROPS } from "@shared/constants";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import type { ResizeOptions } from "@shared/types";
 import tippy from "tippy.js";
@@ -255,14 +255,12 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
       );
       return;
     }
-    const validFilePaths = files.flatMap((file) => {
-      const extension = getExtension(file.name);
-      if (!(extension in CONTENT_TYPE_MAP) && !(extension === "txt")) {
-        return [];
-      }
-      const filePath = window.electronAPI?.getPathForFile?.(file);
-      return filePath ? [filePath] : [];
-    });
+    const validFilePaths: string[] = [];
+    for (const file of files) {
+      if (!isValidExtension(getExtension(file.name))) continue;
+      const filePath = window.electronAPI.getPathForFile?.(file);
+      if (filePath) validFilePaths.push(filePath);
+    }
     if (validFilePaths.length === 0) return;
     const request: FilePathRequest = {
       source: "external",

@@ -58,7 +58,7 @@ async function processAndInsertImages(files: File[], editor: Editor | null) {
           return null;
         }
         const extension =
-          MIME_TO_EXT[file.type as keyof typeof MIME_TO_EXT] ?? "jpeg";
+          MIME_TO_EXT[file.type as keyof typeof MIME_TO_EXT] ?? "webp";
         return {
           extension,
           imageData: result.data,

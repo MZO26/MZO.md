@@ -5,7 +5,6 @@ import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import {
   getMetadata,
-  jsonConverter,
   textConverter,
   titleGenerator,
   wrapAsDoc,
@@ -21,33 +20,45 @@ import { marked } from "marked";
 
 function normalizeFileContent(file: ImportedContent): EditorDoc | undefined {
   const { content, extension } = file;
-  if (!content) return undefined;
-  if (typeof content === "string") {
-    if (extension === "json") {
-      const doc = wrapAsDoc(jsonConverter(content));
-      return isEditorDoc(doc) ? doc : undefined;
+  if (typeof content !== "string") return undefined;
+  try {
+    switch (extension) {
+      case "json": {
+        try {
+          const parsed = JSON.parse(content);
+          if (isEditorDoc(parsed)) return parsed;
+          const doc = wrapAsDoc(parsed);
+          return isEditorDoc(doc) ? doc : undefined;
+        } catch (error) {
+          console.error("[normalizeFileContent]: JSON Parse failed:", error);
+          return undefined;
+        }
+      }
+      case "html": {
+        const safe = DOMPurify.sanitize(content, DOMPURIFY_CONFIG);
+        const doc = generateJSON(safe, getCachedEditorExtensions());
+        return isEditorDoc(doc) ? doc : undefined;
+      }
+      case "md": {
+        const html = marked.parse(content) as string;
+        const safe = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
+        const doc = generateJSON(safe, getCachedEditorExtensions());
+        return isEditorDoc(doc) ? doc : undefined;
+      }
+      case "txt": {
+        const doc = wrapAsDoc(textConverter(content));
+        return isEditorDoc(doc) ? doc : undefined;
+      }
+      default:
+        return undefined;
     }
-    if (extension === "html") {
-      const safe = DOMPurify.sanitize(content, DOMPURIFY_CONFIG);
-      const doc = generateJSON(safe, getCachedEditorExtensions());
-      return isEditorDoc(doc) ? doc : undefined;
-    }
-    if (extension === "md") {
-      const html = marked.parse(content) as string;
-      const safe = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
-      const doc = generateJSON(safe, getCachedEditorExtensions());
-      return isEditorDoc(doc) ? doc : undefined;
-    }
-    if (extension === "txt") {
-      const doc = wrapAsDoc(textConverter(content));
-      return isEditorDoc(doc) ? doc : undefined;
-    }
+  } catch (error) {
+    console.error(
+      `[normalizeFileContent]: Normalization failed for extension .${extension}:`,
+      error,
+    );
+    return undefined;
   }
-  //already object
-  if (extension === "json" && isEditorDoc(content)) {
-    return content;
-  }
-  return undefined;
 }
 
 function isEditorDoc(value: unknown): value is EditorDoc {

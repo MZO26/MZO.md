@@ -93,7 +93,7 @@ type Metadata = {
 type ImportedContent = {
   fileName: string;
   content: Content;
-  extension: "md" | "html" | "json" | "txt";
+  extension: ImportExtension;
 };
 
 type ImportStats = {
@@ -121,7 +121,7 @@ type PDFAssets = { template: string; css: string };
 
 type ImportExtension = (typeof ALLOWED_IMPORT_EXTENSIONS)[number];
 
-type ContentType = "markdown" | "html" | "json" | "text";
+type ContentType = ImportExtension;
 
 type ZoomAction = "get" | "in" | "out" | "reset";
 
