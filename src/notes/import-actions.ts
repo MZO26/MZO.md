@@ -1,4 +1,7 @@
-import { getCachedEditorExtensions } from "@/components/editor/editor-features";
+import {
+  getCachedEditorExtensions,
+  getMarkdownManager,
+} from "@/components/editor/editor-features";
 import { stateStore } from "@/settings/app-state";
 import { addActiveTagToDoc } from "@/utils/note";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
@@ -14,7 +17,6 @@ import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { ImportedContent, Result } from "@shared/types";
 import { generateJSON } from "@tiptap/core";
 import DOMPurify from "dompurify";
-import { marked } from "marked";
 
 // function to either sanitize content or format it to make import cleaner
 
@@ -40,9 +42,7 @@ function normalizeFileContent(file: ImportedContent): EditorDoc | undefined {
         return isEditorDoc(doc) ? doc : undefined;
       }
       case "md": {
-        const html = marked.parse(content) as string;
-        const safe = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
-        const doc = generateJSON(safe, getCachedEditorExtensions());
+        const doc = getMarkdownManager().parse(content);
         return isEditorDoc(doc) ? doc : undefined;
       }
       case "txt": {

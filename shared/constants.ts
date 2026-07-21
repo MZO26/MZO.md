@@ -19,7 +19,6 @@ import type {
   SelectionActionConfig,
   SelectOption,
 } from "@shared/types";
-import { marked } from "marked";
 
 const APP_START_TIME = Date.now();
 
@@ -66,14 +65,16 @@ const ALLOWED_IMPORT_EXTENSIONS = ["md", "html", "json", "txt"] as const;
 
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 26,214,400B. file.size from JS is always in bytes
 
-const YIELD_MS = 100;
+const YIELD_MS = 200;
 
-const MAX_BYTES_FILE = 3 * 1024 * 1024;
-// 3 (MB) * 1024 (KB) * 1024 (B) = 3,145,728 B
+const MAX_BYTES_FILE = 1 * 1024 * 1024;
+// 1 (MB) * 1024 (KB) * 1024 (B) = 1,048,576 B
 
-const MAX_TEXT_LENGTH = 5_000_000;
+const MAX_IPC_PAYLOAD_SIZE = 3_000_000;
 
-const DROP_OR_PASTE_MAX_LENGTH = 500_000;
+const MAX_CHARACTERS = 1_000_000;
+
+const MAX_DROP_PASTE_CHARACTERS = 100_000;
 
 const MAX_DROP_LENGTH = 20;
 
@@ -180,9 +181,8 @@ const THEME_DATA: Record<
   },
 } as const;
 
-marked.use({ gfm: true, breaks: true, async: false });
-
 const DOMPURIFY_CONFIG = {
+  ADD_ATTR: ["data-type", "data-id", "contenteditable"],
   FORBID_TAGS: [
     "script",
     "style",
@@ -378,7 +378,6 @@ export {
   DEBOUNCE_MS,
   DEFAULT_SETTINGS,
   DOMPURIFY_CONFIG,
-  DROP_OR_PASTE_MAX_LENGTH,
   EMPTY_DOC,
   EXPORT_FORMAT_SETTINGS,
   FONT_FAMILY_SETTINGS,
@@ -389,10 +388,12 @@ export {
   LIMITS,
   LINE_HEIGHT_SETTINGS,
   MAX_BYTES_FILE,
+  MAX_CHARACTERS,
   MAX_DROP_LENGTH,
+  MAX_DROP_PASTE_CHARACTERS,
   MAX_FILE_DROPS,
+  MAX_IPC_PAYLOAD_SIZE,
   MAX_SIZE,
-  MAX_TEXT_LENGTH,
   MIME_TO_EXT,
   NODE_BASELINE,
   NOTE_ITEM_DISPLAY_SETTINGS,

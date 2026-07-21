@@ -4,7 +4,7 @@ import {
 } from "@electron/fs/fs-auto-export";
 import { getFilePath } from "@electron/fs/fs-helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { SYNC_BUFFER } from "@shared/constants";
+import { MAX_BYTES_FILE, SYNC_BUFFER } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import type { AutoExportWritePayload, Note } from "@shared/schemas/note-schema";
 import type { SyncResult } from "@shared/types";
@@ -27,6 +27,10 @@ async function checkSyncState(
     if (!fsStat) {
       console.log("MISSING");
       return { status: "MISSING" };
+    }
+    if (fsStat.size > MAX_BYTES_FILE) {
+      console.log(`[checkSyncState]: File size too big`);
+      throw new AppBackendError(AppErrorCode.CancelledOperation);
     }
     const dbUpdatedAt = new Date(payload.updated_at).getTime();
     if (fsStat.mtimeMs <= dbUpdatedAt + SYNC_BUFFER) {

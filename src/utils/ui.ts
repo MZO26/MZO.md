@@ -44,7 +44,7 @@ function initTippyDelegate(
     target: "[data-tippy-content]",
     theme: "app-theme",
     placement: placement ?? "auto",
-    trigger: "mouseenter focus",
+    trigger: "mouseenter",
     appendTo: appendTo || container,
     animation: "scale-subtle",
     duration: [120, 90],

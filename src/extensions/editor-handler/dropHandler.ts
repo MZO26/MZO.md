@@ -3,9 +3,9 @@ import { normalizeFileContent } from "@/notes/import-actions";
 import { getExtension, isValidExtension } from "@/utils/note";
 import {
   ALLOWED_TYPES,
-  DROP_OR_PASTE_MAX_LENGTH,
   MAX_BYTES_FILE,
   MAX_DROP_LENGTH,
+  MAX_DROP_PASTE_CHARACTERS,
 } from "@shared/constants";
 import { Editor, Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
@@ -18,7 +18,7 @@ async function processDroppedFiles(editor: Editor | null, files: File[]) {
     if (file.size > MAX_BYTES_FILE) continue;
     try {
       const content = await file.text();
-      if (content.length > DROP_OR_PASTE_MAX_LENGTH) continue;
+      if (content.length > MAX_DROP_PASTE_CHARACTERS) continue;
       const json = normalizeFileContent({
         fileName: file.name,
         content,

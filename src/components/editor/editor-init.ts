@@ -31,7 +31,11 @@ import {
 } from "@/settings/app-state";
 import { requireElement } from "@/utils/dom";
 import { createGlobalSpinner } from "@/utils/ui";
-import { ALLOWED_PROTOCOLS, SHARED_KATEX_OPTIONS } from "@shared/constants";
+import {
+  ALLOWED_PROTOCOLS,
+  MAX_CHARACTERS,
+  SHARED_KATEX_OPTIONS,
+} from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
@@ -125,7 +129,6 @@ function getNoteEditorExtensions() {
       },
       emptyNodeClass: "is-empty",
       showOnlyWhenEditable: true,
-      showOnlyCurrent: false,
       includeChildren: false,
     }),
     CharacterCount.configure({
@@ -134,6 +137,7 @@ function getNoteEditorExtensions() {
         text = text.trim();
         return text ? text.split(/\s+/).length : 0;
       },
+      limit: MAX_CHARACTERS,
     }),
     Image.configure({
       allowBase64: true,
@@ -236,45 +240,23 @@ function getRequestExtensions() {
     CustomUnderline,
     Highlight,
     WikiLink,
-    Image.configure({
-      allowBase64: true,
-      HTMLAttributes: { loading: "lazy" },
-    }),
-    NoteTag,
-    Table.configure({
-      HTMLAttributes: { class: "table" },
-    }),
+    Image,
+    Table,
     TableRow,
-    TableHeader.configure({
-      HTMLAttributes: { class: "th" },
-    }),
-    TableCell.configure({
-      HTMLAttributes: { class: "td" },
-    }),
+    TableCell,
+    TableHeader,
+    NoteTag,
     CustomHeading.configure({
       levels: [1, 2, 3, 4, 5, 6],
     }),
-    TrailingNode.configure({
-      node: "paragraph",
-      notAfter: ["paragraph"],
-    }),
     StarterKit.configure({
       heading: false,
-      codeBlock: false,
       listItem: false,
       listKeymap: false,
       orderedList: false,
       bulletList: false,
       underline: false,
       trailingNode: false,
-    }),
-    CodeBlockLowlight.configure({
-      lowlight,
-      enableTabIndentation: true,
-      defaultLanguage: "plaintext",
-      HTMLAttributes: {
-        spellcheck: "false",
-      },
     }),
   ];
 }

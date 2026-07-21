@@ -87,7 +87,9 @@ const WikiLink = Node.create<WikiLinkOptions>({
   markdownTokenizer: {
     name: "wikilink",
     level: "inline",
-    start: "[[",
+    start(src: string) {
+      return src.indexOf("[[");
+    },
     tokenize(src: string) {
       const match = src.match(/^\[\[([^\]]+)\]\]/);
       if (!match) return undefined;

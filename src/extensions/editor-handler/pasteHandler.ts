@@ -2,7 +2,7 @@ import { processAndInsertImages } from "@/extensions/image/image";
 import {
   ALLOWED_TYPES,
   DOMPURIFY_CONFIG,
-  DROP_OR_PASTE_MAX_LENGTH,
+  MAX_DROP_PASTE_CHARACTERS,
 } from "@shared/constants";
 import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
@@ -36,7 +36,7 @@ export const PasteHandler = Extension.create({
               return true;
             }
             const plainText = clipboardData.getData("text/plain") || "";
-            if (plainText.length > DROP_OR_PASTE_MAX_LENGTH) {
+            if (plainText.length > MAX_DROP_PASTE_CHARACTERS) {
               event.preventDefault();
               return true;
             }

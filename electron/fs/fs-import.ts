@@ -1,7 +1,7 @@
 import db from "@electron/db/database";
 import { sanitizeImportString } from "@electron/fs/fs-helpers";
 import { validation } from "@electron/ipc/ipc-validation";
-import { MAX_BYTES_FILE, MAX_TEXT_LENGTH } from "@shared/constants";
+import { MAX_BYTES_FILE, MAX_CHARACTERS } from "@shared/constants";
 import { processWithLimit } from "@shared/limiter";
 import {
   ImportRequestSchema,
@@ -24,7 +24,6 @@ async function batchImport(filePaths: string[]) {
     async (file) => {
       try {
         const stats = await fs.stat(file);
-        // 1mb max
         if (!stats.isFile()) {
           ++errorCount;
           return null;
@@ -42,10 +41,11 @@ async function batchImport(filePaths: string[]) {
         }
         const extension = path.extname(file).slice(1).toLowerCase();
         const content = await fs.readFile(file, "utf8");
-        if (content.length > MAX_TEXT_LENGTH) {
+        if (content.length > MAX_CHARACTERS) {
           ++errorCount;
           return null;
         }
+        console.log(content.length);
         const importedFileDir = path.dirname(file);
         const sanitizedContent = await sanitizeImportString(
           content,

@@ -1,4 +1,4 @@
-import { MAX_TEXT_LENGTH, UNTITLED } from "@shared/constants";
+import { MAX_IPC_PAYLOAD_SIZE, UNTITLED } from "@shared/constants";
 import {
   AutoExportWritePayloadSchema,
   DateSchema,
@@ -42,7 +42,11 @@ const FileNameSchema = z
 // for md, txt, html and pdf (because html is used for pdf)
 const StringContentSchema = z
   .string()
-  .max(MAX_TEXT_LENGTH, "Content exceeds maximum size")
+  .refine((val) => {
+    console.log("String lengh:", val.length);
+    return true;
+  })
+  .max(MAX_IPC_PAYLOAD_SIZE, "Content exceeds maximum size")
   .optional()
   .transform((val) => {
     if (!val || val.trim() === "") {

@@ -78,8 +78,11 @@ const NoteTag = Node.create<NoteTagOptions>({
   markdownTokenizer: {
     name: "noteTag",
     level: "inline",
-    start: "#",
+    start(src: string) {
+      return src.indexOf("#");
+    },
     tokenize(src: string) {
+      if (/^#{1,6}(?:\s|\t)/.test(src)) return;
       const match = src.match(
         /^#([\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?)(?![\p{L}\p{N}_-])/u,
       );

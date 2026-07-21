@@ -69,8 +69,7 @@ export const Highlight = Mark.create({
     name: "highlight",
     level: "inline",
     start: (src) => src.indexOf("=="),
-
-    tokenize(src, _tokens, lexer) {
+    tokenize(src) {
       const match = src.match(/^==([^=\n][^=\n]*?)==/);
       if (!match) return undefined;
       const rawText = typeof match[1] === "string" ? match[1].trim() : "";
@@ -79,7 +78,6 @@ export const Highlight = Mark.create({
         type: "highlight",
         raw: match[0],
         rawText,
-        tokens: lexer.inlineTokens(rawText),
       };
     },
   },

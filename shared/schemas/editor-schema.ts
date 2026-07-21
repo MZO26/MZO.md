@@ -1,13 +1,13 @@
-import { MAX_TEXT_LENGTH } from "@shared/constants";
+import { EMPTY_DOC } from "@shared/constants";
 import type { JSONContent } from "@tiptap/core";
 import z from "zod";
 
-const JSONNode: z.ZodType<JSONContent> = z.lazy(() =>
+const JSONNodeSchema: z.ZodType<JSONContent> = z.lazy(() =>
   z
     .object({
       type: z.string().nullable().optional(),
       attrs: z.record(z.string(), z.unknown()).nullable().optional(),
-      content: z.array(JSONNode).optional(),
+      content: z.array(JSONNodeSchema).optional(),
       marks: z.array(z.record(z.string(), z.unknown())).nullable().optional(),
       text: z.string().nullable().optional(),
     })
@@ -18,29 +18,14 @@ const EditorDocSchema = z
   .object({
     type: z.literal("doc"),
     attrs: z.record(z.string(), z.unknown()).optional(),
-    content: z.array(JSONNode).default([{ type: "paragraph" }]),
+    content: z.array(JSONNodeSchema).default([
+      {
+        type: "heading",
+        attrs: { level: 1 },
+      },
+    ]),
   })
-  .superRefine((doc, ctx) => {
-    const jsonString = JSON.stringify(doc);
-    if (jsonString.includes('"data:image/')) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Inline Base64 images are not allowed.",
-        path: ["content"],
-      });
-    }
-    if (jsonString.length > MAX_TEXT_LENGTH) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Document exceeds ${MAX_TEXT_LENGTH} characters.`,
-        path: ["content"],
-      });
-    }
-  })
-  .default({
-    type: "doc",
-    content: [{ type: "paragraph" }],
-  });
+  .default(EMPTY_DOC);
 
 const DbContentSchema = z
   .string()
@@ -70,5 +55,13 @@ const ExternalUrlSchema = z.string().refine((value) => {
 }, "Invalid URL or unsupported protocol");
 
 type EditorDoc = z.infer<typeof EditorDocSchema>;
+type JSONNode = z.infer<typeof JSONNodeSchema>;
 
-export { DbContentSchema, EditorDocSchema, ExternalUrlSchema, type EditorDoc };
+export {
+  DbContentSchema,
+  EditorDocSchema,
+  ExternalUrlSchema,
+  JSONNodeSchema,
+  type EditorDoc,
+  type JSONNode,
+};
