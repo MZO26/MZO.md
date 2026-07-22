@@ -1,6 +1,7 @@
 import { getRequestExtensions } from "@/components/editor/editor-init";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
+import { waitForPaint } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS } from "@shared/constants";
 import { Editor } from "@tiptap/core";
@@ -66,20 +67,6 @@ function initEditorSearch(editor: Editor) {
       });
   }
 
-  function scrollToSelection(editor: Editor) {
-    const pos = editor.state.selection.anchor;
-    const coords = editor.view.coordsAtPos(pos);
-    const containerRect = editorWrapper.getBoundingClientRect();
-    const targetTop =
-      editorWrapper.scrollTop +
-      (coords.top - containerRect.top) -
-      editorWrapper.clientHeight / 2;
-    editorWrapper.scrollTo({
-      top: Math.max(0, targetTop),
-      behavior: "smooth",
-    });
-  }
-
   function syncQuery() {
     editor.commands.setSearchTerm({
       searchTerm: input.value,
@@ -104,14 +91,26 @@ function initEditorSearch(editor: Editor) {
     updateButtons();
   }
 
+  async function scrollToSelection(editor: Editor, container: HTMLDivElement) {
+    const pos = editor.state.selection.from;
+    await waitForPaint(2);
+    const coords = editor.view.coordsAtPos(pos);
+    const editorRect = editor.view.dom.getBoundingClientRect();
+    const targetTop = coords.top - editorRect.top;
+    container.scrollTo({
+      top: Math.max(0, targetTop - container.clientHeight / 2),
+      behavior: "auto",
+    });
+  }
+
   function goPrev() {
     editor.commands.findPrev();
-    scrollToSelection(editor);
+    void scrollToSelection(editor, editorWrapper).catch(console.error);
   }
 
   function goNext() {
     editor.commands.findNext();
-    scrollToSelection(editor);
+    void scrollToSelection(editor, editorWrapper).catch(console.error);
   }
 
   inputWrapper.addEventListener("click", (event: Event) => {

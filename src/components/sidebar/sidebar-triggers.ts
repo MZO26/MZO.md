@@ -8,6 +8,7 @@ import {
   showNotification,
   syncRequest,
 } from "@/api/api";
+import { getCachedEditorExtensions } from "@/components/editor/editor-features";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote } from "@/notes/note-actions";
 import { handleDuplicateNote } from "@/notes/note-duplicate";
@@ -25,7 +26,6 @@ import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { OpenAutoExportPathRequest } from "@shared/schemas/request-schema";
 import { generateHTML, generateText } from "@tiptap/core";
-import { getCachedEditorExtensions } from "../editor/editor-features";
 
 function triggerTableMenu(action: string) {
   const editor = getAppItem("editor");

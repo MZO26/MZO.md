@@ -683,7 +683,7 @@
 .ProseMirror-active-search-match {
   background-color: color-mix(
     in srgb,
-    var(--search-match-bg) 75%,
+    var(--search-match-bg) 50%,
     var(--accent-hover)
   );
   color: var(--text-main);

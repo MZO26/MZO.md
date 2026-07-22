@@ -139,6 +139,16 @@ function toNoteListItem(note: Note): NoteListItem {
   };
 }
 
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+async function waitForPaint(frames = 2): Promise<void> {
+  for (let i = 0; i < frames; i++) {
+    await nextFrame();
+  }
+}
+
 async function checkNoteSize(doc: EditorDoc) {
   console.log(doc.content.length);
   if (doc.content.length > NODE_BASELINE) {
@@ -154,6 +164,8 @@ export {
   getExtension,
   hasNoteTag,
   isValidExtension,
+  nextFrame,
   toNoteListItem,
   updateNoteCount,
+  waitForPaint,
 };
