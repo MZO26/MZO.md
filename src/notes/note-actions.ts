@@ -63,7 +63,6 @@ async function handleCreateNote() {
   }
   const noteListItem = toNoteListItem(result.data);
   noteStore.setState((state) => ({
-    activeNote: result.data,
     notes: [noteListItem, ...state.notes],
     visibleIds: [noteListItem.id, ...state.visibleIds],
     noteIndex: new Map(state.noteIndex).set(noteListItem.id, noteListItem),
@@ -161,10 +160,6 @@ async function handleDeleteManyNotes(ids: string[]) {
       noteIndex.delete(id);
     }
     return {
-      activeNote:
-        state.activeNote && deletedIds.has(state.activeNote.id)
-          ? null
-          : state.activeNote,
       notes: state.notes.filter((note) => !deletedIds.has(note.id)),
       visibleIds: state.visibleIds.filter((noteId) => !deletedIds.has(noteId)),
       noteIndex,
@@ -192,7 +187,6 @@ async function handleDeleteNote(id: string) {
     const noteIndex = new Map(state.noteIndex);
     noteIndex.delete(id);
     return {
-      activeNote: state.activeNote?.id === id ? null : state.activeNote,
       notes: state.notes.filter((note) => note.id !== id),
       visibleIds: state.visibleIds.filter((noteId) => noteId !== id),
       noteIndex,
@@ -210,15 +204,16 @@ async function handleDeleteNote(id: string) {
 // update
 
 async function handleSaveNote(id: string, flush: boolean = false) {
-  if (stateStore.get("activeId") !== id) return;
-  const activeNote = noteStore.get("activeNote");
+  const activeId = stateStore.get("activeId");
+  if (activeId !== id) return;
+  const activeNote = noteStore.get("noteIndex").get(activeId);
   if (!activeNote) return;
+  const autoExportEnabled = isAutoExportEnabled();
   const editor = getAppItem("editor");
   const content = editor.getJSON();
-  const markdown = isAutoExportEnabled() ? editor.getMarkdown() : undefined;
+  const markdown = autoExportEnabled ? editor.getMarkdown() : undefined;
   const metaData = getMetadata(content);
   const newTitle = titleGenerator(content);
-  const autoExportEnabled = isAutoExportEnabled();
   const payload: UpdateNotePayload = {
     id,
     title: newTitle,
@@ -246,10 +241,6 @@ async function handleSaveNote(id: string, flush: boolean = false) {
       visibleIds = [updatedListItem.id, ...state.visibleIds];
     }
     return {
-      activeNote:
-        state.activeNote?.id === result.data.id
-          ? result.data
-          : state.activeNote,
       notes: state.notes.map((n) =>
         n.id === updatedListItem.id ? updatedListItem : n,
       ),
@@ -280,7 +271,6 @@ async function handleSelectNote(id: string) {
     return;
   }
   stateStore.setState({ activeId: id });
-  noteStore.setState({ activeNote: null });
   editor.setEditable(false, false);
   const result = await getNoteById(id);
   if (stateStore.getState().activeId !== id) return;
@@ -297,14 +287,12 @@ async function handleSelectNote(id: string) {
   } catch (error) {
     console.error("Invalid Editor content:", error);
     editor.setEditable(false, false);
-    noteStore.setState({ activeNote: result.data });
     updateToc([]);
     updateStats();
     await showNotification("Invalid content detected", "Couldn't load content");
     return;
   }
   if (stateStore.getState().activeId !== id) return;
-  noteStore.setState({ activeNote: result.data });
   resetEditorHistory(editor);
   const headings = getTableOfContents(editor);
   updateToc(headings);

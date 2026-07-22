@@ -7,7 +7,7 @@ import { findElement, setActiveItem } from "@/utils/dom";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem, getUIItem } from "@/utils/registry";
 import { DEFAULT_SETTINGS, UNTAGGED } from "@shared/constants";
-import type { Note, NoteListItem } from "@shared/schemas/note-schema";
+import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 interface AppState {
@@ -30,7 +30,6 @@ interface NoteStore {
   notes: NoteListItem[];
   visibleIds: string[];
   noteIndex: Map<string, NoteListItem>;
-  activeNote: Note | null;
   recentNotes: string[];
 }
 
@@ -38,7 +37,6 @@ const NOTE_STORE: NoteStore = {
   notes: [],
   visibleIds: [],
   noteIndex: new Map<string, NoteListItem>(),
-  activeNote: null,
   recentNotes: [],
 };
 

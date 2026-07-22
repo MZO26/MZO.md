@@ -97,7 +97,7 @@ declare global {
       pinMany: (ids: string[]) => Promise<Result<boolean>>;
       databaseBackup: () => Promise<Result<number>>;
       databaseBackupRestore: () => Promise<Result<void>>;
-      setActiveNote: (id: string | null) => void;
+      setActiveNote: (id: string) => void;
     };
     storeAPI: {
       onSettingsChanged: (

@@ -19,7 +19,6 @@ import type {
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type {
   ExportedContent,
-  ImageSrc,
   ImportStats,
   Result,
   SyncResult,
@@ -166,7 +165,7 @@ async function showNotification(
 
 async function imageWriteMany(
   payload: ImagePayload[],
-): Promise<Result<ImageSrc[]>> {
+): Promise<Result<{ imageSrc: string }[]>> {
   return invoke(window.electronAPI.imageWriteMany(payload));
 }
 

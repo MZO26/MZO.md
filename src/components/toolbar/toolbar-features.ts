@@ -161,13 +161,15 @@ function createTagElement(
 }
 
 function renderTags(container: HTMLDivElement) {
-  const activeTags = noteStore.get("activeNote")?.tags;
-  const id = stateStore.get("activeId");
+  const activeId = stateStore.get("activeId");
+  if (!activeId) return;
+  const activeTags = noteStore.get("noteIndex").get(activeId)?.tags;
+  if (!activeTags) return;
   container.replaceChildren();
   const tagMap = new Map<string, number>();
   const tagArr = noteStore
     .get("notes")
-    .filter((n) => n.id !== id)
+    .filter((n) => n.id !== activeId)
     .flatMap((n) => n.tags);
   for (const entry of tagArr) {
     tagMap.set(entry, (tagMap.get(entry) || 0) + 1);
@@ -193,7 +195,9 @@ function renderTags(container: HTMLDivElement) {
 }
 
 function renderLinks(container: HTMLDivElement) {
-  const activeNote = noteStore.get("activeNote");
+  const activeId = stateStore.get("activeId");
+  if (!activeId) return;
+  const activeNote = noteStore.get("noteIndex").get(activeId);
   container.replaceChildren();
   if (!activeNote) return;
   const validLinks = activeNote.links.filter((l) => l.id !== activeNote.id);

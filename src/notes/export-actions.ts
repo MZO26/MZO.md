@@ -3,7 +3,6 @@ import {
   getCachedEditorExtensions,
   getMarkdownManager,
 } from "@/components/editor/editor-features";
-import { noteStore } from "@/settings/app-state";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { titleGenerator } from "@shared/generators";
@@ -69,18 +68,11 @@ async function getExportContent(
   id: string,
   extension: string,
 ): Promise<Result<ExportRequest>> {
-  const activeNote = noteStore.get("activeNote");
-  let note: Note | null = null;
-  if (activeNote?.id === id) {
-    note = activeNote;
-  } else {
-    const result = await getNoteById(id);
-    if (!result.success) {
-      return { success: false, error: result.error };
-    }
-    note = result.data;
+  const result = await getNoteById(id);
+  if (!result.success) {
+    return { success: false, error: result.error };
   }
-  if (!note) return { success: false, error: AppErrorCode.InvalidData };
+  const note = result.data;
   let content: string;
   switch (extension) {
     case "json":

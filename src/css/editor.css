@@ -16,6 +16,58 @@
   font-family: inherit;
 }
 
+.ProseMirror > * {
+  content-visibility: auto;
+}
+
+.ProseMirror > p {
+  contain-intrinsic-block-size: auto
+    calc(((var(--font-size) * var(--line-height)) * 2) + 1em);
+}
+
+.ProseMirror > h1,
+.ProseMirror > h2,
+.ProseMirror > h3 {
+  contain-intrinsic-block-size: auto calc((var(--font-size) * 1.5) + 1em);
+}
+
+.ProseMirror > blockquote {
+  contain-intrinsic-block-size: auto calc(((var(--font-size) * 1.65) * 4) + 2em);
+}
+
+.ProseMirror > ul,
+.ProseMirror > ol {
+  contain-intrinsic-block-size: auto calc(((var(--font-size) * 1.2) * 3) + 1em);
+}
+
+.ProseMirror > h1,
+.ProseMirror > h2,
+.ProseMirror > h3,
+.ProseMirror > h4,
+.ProseMirror > h5,
+.ProseMirror > h6 {
+  content-visibility: auto;
+}
+
+.ProseMirror > h1 {
+  contain-intrinsic-block-size: auto 2.8em;
+}
+.ProseMirror > h2 {
+  contain-intrinsic-block-size: auto 3.05em;
+}
+.ProseMirror > h3 {
+  contain-intrinsic-block-size: auto 3.1em;
+}
+.ProseMirror > h4 {
+  contain-intrinsic-block-size: auto 3em;
+}
+.ProseMirror > h5 {
+  contain-intrinsic-block-size: auto 2.9em;
+}
+.ProseMirror > h6 {
+  contain-intrinsic-block-size: auto 2.85em;
+}
+
 .ProseMirror ::selection {
   background: var(--selection-bg);
 }
@@ -402,7 +454,7 @@
   background: var(--hljs-bg);
   color: var(--hljs-fg);
   padding: 0;
-  white-space: inherit;
+  white-space: pre;
 }
 
 .ProseMirror img,

@@ -34,6 +34,7 @@ import { createGlobalSpinner } from "@/utils/ui";
 import {
   ALLOWED_PROTOCOLS,
   MAX_CHARACTERS,
+  NODE_BASELINE,
   SHARED_KATEX_OPTIONS,
 } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
@@ -194,8 +195,11 @@ function getNoteEditorExtensions() {
       },
       link: {
         openOnClick: false,
-        autolink: true,
         defaultProtocol: "https",
+        shouldAutoLink: () => {
+          if (!editor) return true;
+          return editor.state.doc.childCount <= NODE_BASELINE;
+        },
         HTMLAttributes: {
           target: "_blank",
           rel: "noopener noreferrer",

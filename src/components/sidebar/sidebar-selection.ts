@@ -141,15 +141,10 @@ async function pinSelection(selectedIds: string[]) {
       noteIndex.set(updatedNote.id, updatedNote);
       return updatedNote;
     });
-    const activeNote =
-      state.activeNote && selectedIdSet.has(state.activeNote.id)
-        ? { ...state.activeNote, pinned: !state.activeNote.pinned }
-        : state.activeNote;
     return {
       ...state,
       notes: notes,
       noteIndex: noteIndex,
-      activeNote,
     };
   });
   updateSelectionUI();

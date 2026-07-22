@@ -132,7 +132,7 @@ contextBridge.exposeInMainWorld("noteAPI", {
   pinMany: (ids: string[]) => ipcRenderer.invoke("note:pin-many", ids),
   databaseBackup: () => ipcRenderer.invoke("db-backup"),
   databaseBackupRestore: () => ipcRenderer.invoke("db-backup-restore"),
-  setActiveNote: (id: string | null) => ipcRenderer.send("note:set-active", id),
+  setActiveNote: (id: string) => ipcRenderer.send("note:set-active", id),
 });
 contextBridge.exposeInMainWorld("storeAPI", {
   onSettingsChanged: (callback: (settings: Partial<AppSettings>) => void) => {

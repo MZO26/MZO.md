@@ -190,10 +190,6 @@ async function triggerPin(id: string) {
     return {
       notes: state.notes.map((n) => (n.id === id ? updatedNote : n)),
       noteIndex: nextNoteIndex,
-      activeNote:
-        state.activeNote?.id === id
-          ? { ...state.activeNote, pinned: result.data }
-          : state.activeNote,
     };
   });
 }
