@@ -2,7 +2,6 @@ import { createNote } from "@/api/api";
 import { getMarkdownManager } from "@/components/editor/editor-features";
 import { isAutoExportEnabled } from "@/notes/note-actions";
 import { noteStore, searchEngine } from "@/settings/app-state";
-import { toNoteListItem } from "@/utils/note";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
 
 async function handleDuplicateNote(note: Note) {
@@ -36,13 +35,12 @@ async function handleDuplicateNote(note: Note) {
     );
     return;
   }
-  const noteListItem = toNoteListItem(result.data);
   noteStore.setState((state) => ({
-    notes: [noteListItem, ...state.notes],
-    visibleIds: [noteListItem.id, ...state.visibleIds],
-    noteIndex: new Map(state.noteIndex).set(noteListItem.id, noteListItem),
+    notes: [result.data, ...state.notes],
+    visibleIds: [result.data.id, ...state.visibleIds],
+    noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
   }));
-  searchEngine.upsertNote(noteListItem);
+  searchEngine.upsertNote(result.data);
 }
 
 export { handleDuplicateNote };

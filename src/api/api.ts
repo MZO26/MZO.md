@@ -48,20 +48,22 @@ async function getAllBackup(): Promise<Result<Note[]>> {
   return invoke(window.noteAPI.getAllBackup());
 }
 
-async function createNote(payload: CreateNotePayload): Promise<Result<Note>> {
+async function createNote(
+  payload: CreateNotePayload,
+): Promise<Result<NoteListItem>> {
   return invoke(window.noteAPI.create(payload));
 }
 
 async function createManyNotes(
   payload: CreateNotePayload[],
-): Promise<Result<Note[]>> {
+): Promise<Result<NoteListItem[]>> {
   return invoke(window.noteAPI.createMany(payload));
 }
 
 async function updateNote(
   note: UpdateNotePayload,
   flush: boolean,
-): Promise<Result<Note>> {
+): Promise<Result<NoteListItem>> {
   return invoke(window.noteAPI.update(note, flush));
 }
 

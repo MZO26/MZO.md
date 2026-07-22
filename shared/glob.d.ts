@@ -64,12 +64,14 @@ declare global {
       getAllBackup: () => Promise<Result<Note[]>>;
       getById: (id: string) => Promise<Result<Note>>;
       getManyById: (ids: string[]) => Promise<Result<Note[]>>;
-      create: (payload: CreateNotePayload) => Promise<Result<Note>>;
-      createMany: (payload: CreateNotePayload[]) => Promise<Result<Note[]>>;
+      create: (payload: CreateNotePayload) => Promise<Result<NoteListItem>>;
+      createMany: (
+        payload: CreateNotePayload[],
+      ) => Promise<Result<NoteListItem[]>>;
       update: (
         payload: UpdateNotePayload,
         flush: boolean,
-      ) => Promise<Result<Note>>;
+      ) => Promise<Result<NoteListItem>>;
       delete: (id: string) => Promise<Result<void>>;
       deleteMany: (ids: string[]) => Promise<Result<void>>;
       selectAutoExportFolder: () => Promise<Result<string>>;

@@ -7,6 +7,7 @@ import {
   CreateTransactionSchema,
   LinksSchema,
   NoteFromDB,
+  NoteListItemFromDB,
   OldNoteSchema,
   TagsSchema,
   ToggleManyPinsSchema,
@@ -38,6 +39,7 @@ class AppDB {
   private readonly dbPath: string;
   public transactions: Transactions;
   private getAllNotesStmt: StatementSync;
+  private getAllBackupStmt: StatementSync;
   private getNoteByIdStmt: StatementSync;
   private getManyNotesByIdStmt: StatementSync;
   private getAllTagsStmt: StatementSync;
@@ -59,9 +61,13 @@ class AppDB {
       this.transactions = new Transactions(this.db);
       // predefined statements to prevent parsing them for every transaction
       this.getAllNotesStmt = this.db.prepare(
-        `SELECT * FROM notes 
+        `SELECT id, title, pinned, snippet, created_at, updated_at
+      FROM notes 
       ORDER BY updated_at DESC`,
       );
+      this.getAllBackupStmt = this.db.prepare(`
+        SELECT * FROM notes ORDER BY updated_at DESC
+        `);
       this.getNoteByIdStmt = this.db.prepare(
         `SELECT * FROM notes WHERE id = $id`,
       );
@@ -268,7 +274,7 @@ class AppDB {
     return validation(StoreRowSchema, row);
   }
 
-  public create(payload: CreateNotePayload): Note {
+  public create(payload: CreateNotePayload): NoteListItem {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
     let { tags, links, content, ...rest } = payload;
@@ -290,7 +296,7 @@ class AppDB {
     return result;
   }
 
-  public createMany(payloads: CreateNotePayload[]): Note[] {
+  public createMany(payloads: CreateNotePayload[]): NoteListItem[] {
     const now = new Date().toISOString();
     const dbContents = [];
     for (const payload of payloads) {
@@ -315,7 +321,7 @@ class AppDB {
     return result;
   }
 
-  public update(payload: UpdateNotePayload): Note {
+  public update(payload: UpdateNotePayload): NoteListItem {
     let { tags, links, content, ...rest } = payload;
     const stringifiedContent = JSON.stringify(content);
     const now = new Date().toISOString();
@@ -351,13 +357,12 @@ class AppDB {
     const linkMap = this.getLinkMapAll() ?? new Map();
     const results: NoteListItem[] = [];
     for (const row of this.getAllNotesStmt.iterate() as IterableIterator<NoteRow>) {
-      const validatedNote = validation(NoteFromDB, {
+      const validatedNote = validation(NoteListItemFromDB, {
         ...row,
         tags: tagMap.get(row.id) ?? [],
         links: linkMap.get(row.id) ?? [],
       });
-      const { content, ...lightweightNote } = validatedNote;
-      results.push(lightweightNote);
+      results.push(validatedNote);
     }
     return results;
   }
@@ -366,7 +371,7 @@ class AppDB {
     const results: Note[] = [];
     const tagMap = this.getTagMapAll() ?? new Map();
     const linkMap = this.getLinkMapAll() ?? new Map();
-    for (const row of this.getAllNotesStmt.iterate() as IterableIterator<NoteRow>) {
+    for (const row of this.getAllBackupStmt.iterate() as IterableIterator<NoteRow>) {
       const validatedNote = validation(NoteFromDB, {
         ...row,
         tags: tagMap.get(row.id) ?? [],

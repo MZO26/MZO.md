@@ -3,9 +3,9 @@ import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
 import {
-  NoteFromDB,
+  NoteListItemFromDB,
   type CreateTransaction,
-  type Note,
+  type NoteListItem,
   type NoteRow,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
@@ -25,10 +25,10 @@ class Transactions {
     this.db = dbConnection;
 
     this.createNoteStmt = this.db.prepare(
-      `INSERT INTO notes (id, title, content, snippet, pinned, created_at, updated_at) VALUES ($id, $title, $content, $snippet, $pinned, $created_at, $updated_at) RETURNING *`,
+      `INSERT INTO notes (id, title, content, snippet, pinned, created_at, updated_at) VALUES ($id, $title, $content, $snippet, $pinned, $created_at, $updated_at) RETURNING id, title, snippet, pinned, created_at, updated_at`,
     );
     this.updateNoteStmt = this.db
-      .prepare(`UPDATE notes SET title = $title, content = $content, snippet = $snippet, updated_at = $updated_at WHERE id = $id RETURNING *
+      .prepare(`UPDATE notes SET title = $title, content = $content, snippet = $snippet, updated_at = $updated_at WHERE id = $id RETURNING id, title, snippet, pinned, created_at, updated_at
     `);
     this.deleteNoteStmt = this.db.prepare("DELETE FROM notes WHERE id = $id");
     this.deleteManyNotesStmt = this.db.prepare(`
@@ -95,7 +95,7 @@ class Transactions {
   }
 
   private runCreateManyLogic(paramsArr: CreateTransaction[]): {
-    row: NoteRow;
+    row: Omit<NoteRow, "content">;
     safeTags: string[];
     safeLinks: string[];
   }[] {
@@ -104,7 +104,9 @@ class Transactions {
       const { tags, links, ...noteParams } = params;
       const safeTags = tags ?? [];
       const safeLinks = links ?? [];
-      const result = this.createNoteStmt.get(noteParams) as NoteRow | undefined;
+      const result = this.createNoteStmt.get(noteParams) as
+        | Omit<NoteRow, "content">
+        | undefined;
       if (!result) {
         throw new AppBackendError(AppErrorCode.DBError);
       }
@@ -125,13 +127,13 @@ class Transactions {
     return results;
   }
 
-  public safeCreateMany(paramsArr: CreateTransaction[]): Note[] {
+  public safeCreateMany(paramsArr: CreateTransaction[]): NoteListItem[] {
     if (paramsArr.length === 0) return [];
     const dbResults = this.transaction(() => {
       return this.runCreateManyLogic(paramsArr);
     });
     return dbResults.map((result) =>
-      validation(NoteFromDB, {
+      validation(NoteListItemFromDB, {
         ...result.row,
         tags: result.safeTags,
         links: result.safeLinks
@@ -145,8 +147,10 @@ class Transactions {
     noteParams: Omit<CreateTransaction, "tags" | "links">,
     safeTags: string[],
     safeLinks: string[],
-  ): NoteRow {
-    const result = this.createNoteStmt.get(noteParams) as NoteRow | undefined;
+  ): Omit<NoteRow, "content"> {
+    const result = this.createNoteStmt.get(noteParams) as
+      | Omit<NoteRow, "content">
+      | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -165,7 +169,7 @@ class Transactions {
     return result;
   }
 
-  public safeCreate(params: CreateTransaction): Note {
+  public safeCreate(params: CreateTransaction): NoteListItem {
     const { tags, links, ...noteParams } = params;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];
@@ -174,7 +178,7 @@ class Transactions {
     );
     const allLinks = AppDB.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== params.id);
-    return validation(NoteFromDB, {
+    return validation(NoteListItemFromDB, {
       ...result,
       tags: safeTags,
       links: validLinks,
@@ -194,8 +198,10 @@ class Transactions {
     noteParams: Omit<UpdateTransaction, "tags" | "links">,
     safeTags: string[],
     safeLinks: string[],
-  ): NoteRow {
-    const result = this.updateNoteStmt.get(noteParams) as NoteRow | undefined;
+  ): Omit<NoteRow, "content"> {
+    const result = this.updateNoteStmt.get(noteParams) as
+      | Omit<NoteRow, "content">
+      | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -216,7 +222,7 @@ class Transactions {
     return result;
   }
 
-  public safeUpdate(params: UpdateTransaction): Note {
+  public safeUpdate(params: UpdateTransaction): NoteListItem {
     const { tags, links, ...noteParams } = params;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];
@@ -225,7 +231,7 @@ class Transactions {
     );
     const allLinks = AppDB.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== params.id);
-    return validation(NoteFromDB, {
+    return validation(NoteListItemFromDB, {
       ...result,
       tags: safeTags,
       links: validLinks,

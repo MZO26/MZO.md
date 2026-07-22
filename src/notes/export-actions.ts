@@ -17,40 +17,56 @@ async function getBatchExportContent(
   extension: ExportFormat,
 ): Promise<Result<ExportedContent[]>> {
   try {
-    let formatContent: (content: Note["content"]) => string;
     switch (extension) {
       case "json":
-        formatContent = (c) => JSON.stringify(c, null, 2);
-        break;
+        return {
+          success: true,
+          data: notes.map((note) => ({
+            created_at: note.created_at,
+            fileName: note.title,
+            extension: extension,
+            content: JSON.stringify(note.content, null, 2),
+          })),
+        };
       case "txt": {
         const exts = getCachedEditorExtensions();
-        formatContent = (c) => generateText(c, exts, { blockSeparator: "\n" });
-        break;
+        return {
+          success: true,
+          data: notes.map((note) => ({
+            created_at: note.created_at,
+            fileName: note.title,
+            extension: extension,
+            content: generateText(note.content, exts, { blockSeparator: "\n" }),
+          })),
+        };
       }
       case "html": {
         const exts = getCachedEditorExtensions();
-        formatContent = (c) => generateHTML(c, exts);
-        break;
+        return {
+          success: true,
+          data: notes.map((note) => ({
+            created_at: note.created_at,
+            fileName: note.title,
+            extension: extension,
+            content: generateHTML(note.content, exts),
+          })),
+        };
       }
       case "md": {
         const manager = getMarkdownManager();
-        formatContent = (c) => manager.serialize(c);
-        break;
+        return {
+          success: true,
+          data: notes.map((note) => ({
+            created_at: note.created_at,
+            fileName: note.title,
+            extension: extension,
+            content: manager.serialize(note.content),
+          })),
+        };
       }
       default:
         return { success: false, error: AppErrorCode.InvalidData };
     }
-    const data: ExportedContent[] = [];
-    for (const note of notes) {
-      if (!note?.content) continue;
-      data.push({
-        created_at: note.created_at,
-        fileName: note.title,
-        content: formatContent(note.content),
-        extension,
-      });
-    }
-    return { success: true, data };
   } catch (error) {
     console.error(
       `[getBatchExportContent]: Failed batch export for ${extension.toUpperCase()}:`,

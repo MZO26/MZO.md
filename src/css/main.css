@@ -695,9 +695,8 @@
   transition:
     grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
   will-change: grid-template-columns, grid-template-rows;
-  contain: layout;
+  overflow: hidden;
 }
 
 .app-container.focus {
@@ -796,6 +795,7 @@
   min-height: 0;
   min-width: 0;
   overflow: hidden;
+  contain: strict;
   transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

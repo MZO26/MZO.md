@@ -62,9 +62,7 @@ function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
   container.appendChild(fragment);
   updateActiveStates(buttonMap, actions, editor);
   editor.on("transaction", ({ transaction }) => {
-    if (!transaction.docChanged && !transaction.selectionSet) {
-      return;
-    }
+    if (!transaction.docChanged && !transaction.selectionSet) return;
     updateActiveStates(buttonMap, actions, editor);
   });
 }

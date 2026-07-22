@@ -24,13 +24,12 @@ import {
   stateStore,
 } from "@/settings/app-state";
 import { debounce } from "@/utils/async";
-import { addActiveTagToDoc, checkNoteSize, toNoteListItem } from "@/utils/note";
+import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS, EMPTY_DOC, UNTITLED } from "@shared/constants";
 import { getMetadata, titleGenerator } from "@shared/generators";
 import {
   type CreateNotePayload,
-  type NoteListItem,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
@@ -61,15 +60,14 @@ async function handleCreateNote() {
     console.error("[handleCreateNote]: Failed to create note:", result.error);
     return;
   }
-  const noteListItem = toNoteListItem(result.data);
   noteStore.setState((state) => ({
-    notes: [noteListItem, ...state.notes],
-    visibleIds: [noteListItem.id, ...state.visibleIds],
-    noteIndex: new Map(state.noteIndex).set(noteListItem.id, noteListItem),
+    notes: [result.data, ...state.notes],
+    visibleIds: [result.data.id, ...state.visibleIds],
+    noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
   }));
-  searchEngine.upsertNote(noteListItem);
+  searchEngine.upsertNote(result.data);
   stateStore.setState({ activeId: result.data.id });
-  editor.commands.setContent(result.data.content, {
+  editor.commands.setContent(editorContent, {
     emitUpdate: false,
     contentType: "json",
   });
@@ -122,20 +120,15 @@ async function handleImportNote(request: FilePathRequest) {
       `Duplicates skipped: ${duplicates}\n` +
       `Errors: ${errors}`,
   );
-  const notes: NoteListItem[] = [];
-  for (const note of result.data) {
-    const noteListItem = toNoteListItem(note);
-    notes.push(noteListItem);
-  }
   noteStore.setState((state) => ({
-    notes: [...notes, ...state.notes],
-    visibleIds: [...notes.map((n) => n.id), ...state.visibleIds],
+    notes: [...result.data, ...state.notes],
+    visibleIds: [...result.data.map((n) => n.id), ...state.visibleIds],
     noteIndex: new Map([
       ...state.noteIndex,
-      ...notes.map((n) => [n.id, n] as const),
+      ...result.data.map((n) => [n.id, n] as const),
     ]),
   }));
-  searchEngine.addMany(notes);
+  searchEngine.addMany(result.data);
 }
 
 //----------------------------------------------------------
@@ -227,28 +220,27 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     return;
   }
   const isActiveNote = stateStore.get("activeId") === id;
-  const updatedListItem = toNoteListItem(result.data);
   const activeTag = stateStore.get("activeTag");
   noteStore.setState((state) => {
     const noteIndex = new Map(state.noteIndex);
-    noteIndex.set(updatedListItem.id, updatedListItem);
-    const matchesTag = matchesActiveTag(updatedListItem, activeTag);
-    const alreadyVisible = state.visibleIds.includes(updatedListItem.id);
+    noteIndex.set(result.data.id, result.data);
+    const matchesTag = matchesActiveTag(result.data, activeTag);
+    const alreadyVisible = state.visibleIds.includes(result.data.id);
     let visibleIds = state.visibleIds;
     if (alreadyVisible && !matchesTag) {
-      visibleIds = state.visibleIds.filter((vid) => vid !== updatedListItem.id);
+      visibleIds = state.visibleIds.filter((vid) => vid !== result.data.id);
     } else if (!alreadyVisible && matchesTag) {
-      visibleIds = [updatedListItem.id, ...state.visibleIds];
+      visibleIds = [result.data.id, ...state.visibleIds];
     }
     return {
       notes: state.notes.map((n) =>
-        n.id === updatedListItem.id ? updatedListItem : n,
+        n.id === result.data.id ? result.data : n,
       ),
       visibleIds,
       noteIndex,
     };
   });
-  searchEngine.upsertNote(updatedListItem);
+  searchEngine.upsertNote(result.data);
   refreshSidebar(noteStore.get("notes"));
   if (isActiveNote) {
     updateStats();
@@ -265,15 +257,16 @@ const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 
 async function handleSelectNote(id: string) {
   const editor = getAppItem("editor");
+  const activeId = stateStore.get("activeId");
   debouncedSaveNote.flush();
-  if (stateStore.get("activeId") === id) {
+  if (activeId === id) {
     console.log("Already active. Skipping select.");
     return;
   }
   stateStore.setState({ activeId: id });
   editor.setEditable(false, false);
   const result = await getNoteById(id);
-  if (stateStore.getState().activeId !== id) return;
+  if (stateStore.get("activeId") !== id) return;
   if (!result.success) {
     console.error("[handleSelectNote]: Failed to fetch note:", result.error);
     return;
