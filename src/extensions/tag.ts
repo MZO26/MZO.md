@@ -249,12 +249,20 @@ const NoteTag = Node.create<NoteTagOptions>({
       props: {
         decorations(state) {
           const pluginState = tagAutocompleteKey.getState(state);
-          if (!pluginState) return DecorationSet.empty;
-          const span = document.createElement("span");
-          span.className = "autocomplete";
-          span.textContent = pluginState.autocompleteText;
+          if (!pluginState || !pluginState.autocompleteText) {
+            return DecorationSet.empty;
+          }
           return DecorationSet.create(state.doc, [
-            Decoration.widget(pluginState.to, span, { side: 1 }),
+            Decoration.widget(
+              pluginState.to,
+              () => {
+                const span = document.createElement("span");
+                span.className = "autocomplete";
+                span.textContent = pluginState.autocompleteText;
+                return span;
+              },
+              { side: 1 },
+            ),
           ]);
         },
       },

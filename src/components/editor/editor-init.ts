@@ -1,5 +1,6 @@
 import { resetEditorHistory } from "@/components/editor/editor-features";
 import { applyTagView } from "@/components/sidebar/sidebar-features";
+import { ActiveCodeHighlight } from "@/extensions/active-codeblock-highlight";
 import { SearchAndReplace } from "@/extensions/docSearch";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
 import {
@@ -11,7 +12,6 @@ import {
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
-import { lowlight } from "@/extensions/lowlight";
 import { CustomHeading } from "@/extensions/overrides/headings";
 import {
   CustomBlockMath,
@@ -38,7 +38,6 @@ import {
 } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
-import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
 import {
@@ -177,8 +176,13 @@ function getNoteEditorExtensions() {
       notAfter: ["paragraph"],
     }),
     StarterKit.configure({
+      codeBlock: {
+        enableTabIndentation: true,
+        HTMLAttributes: {
+          spellcheck: false,
+        },
+      },
       heading: false,
-      codeBlock: false,
       listItem: false,
       listKeymap: false,
       orderedList: false,
@@ -213,14 +217,7 @@ function getNoteEditorExtensions() {
         class: "editor-dropcursor",
       },
     }),
-    CodeBlockLowlight.configure({
-      lowlight,
-      enableTabIndentation: true,
-      defaultLanguage: "plaintext",
-      HTMLAttributes: {
-        spellcheck: "false",
-      },
-    }),
+    ActiveCodeHighlight,
     CustomInlineMath.configure({
       onClick: handleMathClick,
       katexOptions: SHARED_KATEX_OPTIONS,

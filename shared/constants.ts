@@ -24,8 +24,6 @@ const APP_START_TIME = Date.now();
 
 const IPC_TIMERS = new Map<string, number>();
 
-const MAX_FILE_DROPS = 50;
-
 const ZOOMS = [1, 1.1, 1.25] as const;
 
 const CONTENT_TYPE_MAP: Record<string, EditorContentType> = {
@@ -67,14 +65,17 @@ const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 
 
 const YIELD_MS = 200;
 
-const MAX_BYTES_FILE = 1 * 1024 * 1024;
-// 1 (MB) * 1024 (KB) * 1024 (B) = 1,048,576 B
+const MAX_FILE_DROPS = 50;
 
-const MAX_IPC_PAYLOAD_SIZE = 3_000_000;
+const MAX_BYTES_FILE = 2 * 1024 * 1024;
 
-const MAX_CHARACTERS = 1_000_000;
+const MAX_IPC_PAYLOAD_SIZE = 5_000_000;
+
+const MAX_CHARACTERS = 3_000_000;
 
 const MAX_DROP_PASTE_CHARACTERS = 100_000;
+
+const MAX_CODE_BLOCK_HIGHLIGHT_LENGTH = 20_000;
 
 const CHAR_BASELINE = 100_000;
 
@@ -391,6 +392,7 @@ export {
   LINE_HEIGHT_SETTINGS,
   MAX_BYTES_FILE,
   MAX_CHARACTERS,
+  MAX_CODE_BLOCK_HIGHLIGHT_LENGTH,
   MAX_DROP_LENGTH,
   MAX_DROP_PASTE_CHARACTERS,
   MAX_FILE_DROPS,
