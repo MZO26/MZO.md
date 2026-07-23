@@ -73,10 +73,11 @@ async function setImportedContent(
 ): Promise<Result<CreateNotePayload[]>> {
   try {
     const processedPayloads: CreateNotePayload[] = [];
+    const activeTag = stateStore.get("activeTag");
     for (const file of files) {
       const json = normalizeFileContent(file);
-      if (!json) return { success: false, error: AppErrorCode.InvalidData };
-      const updatedJson = addActiveTagToDoc(json, stateStore.get("activeTag"));
+      if (!json) continue;
+      const updatedJson = addActiveTagToDoc(json, activeTag);
       const metadata = getMetadata(updatedJson);
       const payload: CreateNotePayload = {
         title: titleGenerator(updatedJson),
@@ -85,6 +86,9 @@ async function setImportedContent(
         pinned: false,
       };
       processedPayloads.push(payload);
+    }
+    if (processedPayloads.length === 0 && files.length > 0) {
+      return { success: false, error: AppErrorCode.InvalidData };
     }
     return { success: true, data: processedPayloads };
   } catch (error) {

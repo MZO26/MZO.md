@@ -434,7 +434,8 @@
   background: var(--hljs-bg);
   color: var(--hljs-fg);
   padding: 0;
-  white-space: pre;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .ProseMirror img,

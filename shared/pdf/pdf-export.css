@@ -77,20 +77,6 @@
   color: #666666;
 }
 
-.ProseMirror h1.is-empty::before,
-.ProseMirror h2.is-empty::before,
-.ProseMirror h3.is-empty::before,
-.ProseMirror h4.is-empty::before,
-.ProseMirror h5.is-empty::before,
-.ProseMirror h6.is-empty::before {
-  content: attr(data-placeholder);
-  float: left;
-  color: #dee2e6;
-  pointer-events: none;
-  height: 0;
-  font-weight: normal;
-}
-
 .ProseMirror p {
   font-size: 11pt;
   line-height: 1.6;
@@ -99,14 +85,6 @@
   color: #1a1a1a;
   orphans: 3;
   widows: 3;
-}
-
-.ProseMirror p.is-empty::before {
-  content: attr(data-placeholder);
-  float: left;
-  color: #adb5bd;
-  pointer-events: none;
-  height: 0;
 }
 
 .ProseMirror hr {

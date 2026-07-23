@@ -89,24 +89,55 @@ async function getExportContent(
     return { success: false, error: result.error };
   }
   const note = result.data;
-  let content: string;
   switch (extension) {
-    case "json":
-      content = JSON.stringify(note.content, null, 2);
-      break;
+    case "json": {
+      return {
+        success: true,
+        data: {
+          created_at: note.created_at,
+          extension,
+          fileName: titleGenerator(note.content),
+          content: JSON.stringify(note.content),
+        },
+      };
+    }
     case "html":
-    case "pdf":
+    case "pdf": {
       const html = generateHTML(note.content, getCachedEditorExtensions());
-      content = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
-      break;
-    case "md":
-      content = getMarkdownManager().serialize(note.content);
-      break;
-    case "txt":
-      content = generateText(note.content, getCachedEditorExtensions(), {
-        blockSeparator: "\n",
-      });
-      break;
+      return {
+        success: true,
+        data: {
+          created_at: note.created_at,
+          extension,
+          fileName: titleGenerator(note.content),
+          content: DOMPurify.sanitize(html, DOMPURIFY_CONFIG),
+        },
+      };
+    }
+    case "md": {
+      return {
+        success: true,
+        data: {
+          created_at: note.created_at,
+          extension,
+          fileName: titleGenerator(note.content),
+          content: getMarkdownManager().serialize(note.content),
+        },
+      };
+    }
+    case "txt": {
+      return {
+        success: true,
+        data: {
+          created_at: note.created_at,
+          extension,
+          fileName: titleGenerator(note.content),
+          content: generateText(note.content, getCachedEditorExtensions(), {
+            blockSeparator: "\n",
+          }),
+        },
+      };
+    }
     default:
       console.error(
         "[getExportContent]: Unsupported export format:",
@@ -117,13 +148,6 @@ async function getExportContent(
         error: AppErrorCode.InvalidData,
       };
   }
-  const payload: ExportRequest = {
-    created_at: note.created_at,
-    extension,
-    fileName: titleGenerator(note.content),
-    content,
-  };
-  return { success: true, data: payload };
 }
 
 export { getBatchExportContent, getExportContent };
