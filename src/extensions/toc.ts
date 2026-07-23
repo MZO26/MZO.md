@@ -3,6 +3,12 @@ import { findElement, requireElement } from "@/utils/dom";
 import { initTippyDelegate } from "@/utils/ui";
 import type { Editor } from "@tiptap/core";
 
+export interface TocItem {
+  id: string;
+  level: number;
+  text: string;
+}
+
 function getTableOfContents(editor: Editor | null) {
   const headings: TocItem[] = [];
   editor?.state.doc.descendants((node) => {
@@ -23,12 +29,6 @@ function getTableOfContents(editor: Editor | null) {
   return headings;
 }
 
-export interface TocItem {
-  id: string;
-  level: number;
-  text: string;
-}
-
 function initTableOfContents() {
   const container = requireElement<HTMLDivElement>(".toc");
   initTippyDelegate(container, document.documentElement, "left");
@@ -42,11 +42,12 @@ function initTableOfContents() {
       const heading = findElement<HTMLHeadingElement>(`[id="${targetId}"]`);
       if (!heading) return;
       heading.scrollIntoView({
-        behavior: "smooth",
+        behavior: "auto",
         block: "center",
       });
     }
   });
+
   return function updateToc(items: TocItem[]) {
     if (items.length === 0) {
       const span = createInfoSpan("No headings here.");

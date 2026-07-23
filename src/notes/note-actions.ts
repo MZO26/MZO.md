@@ -11,7 +11,7 @@ import {
 import { resetEditorHistory, updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/sidebar/sidebar-features";
 import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
-import { getTableOfContents } from "@/extensions/tableOfContents";
+import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
 import {
   markNoteAsRecent,

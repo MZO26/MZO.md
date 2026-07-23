@@ -1,7 +1,7 @@
 import { resetEditorHistory } from "@/components/editor/editor-features";
 import { applyTagView } from "@/components/sidebar/sidebar-features";
-import { ActiveCodeHighlight } from "@/extensions/active-codeblock-highlight";
-import { SearchAndReplace } from "@/extensions/docSearch";
+import { ActiveCodeHighlight } from "@/extensions/codeblock-highlight";
+import { SearchAndReplace } from "@/extensions/doc-search";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
 import {
   GoogleDocsCleanup,
@@ -20,11 +20,11 @@ import {
 } from "@/extensions/overrides/mathematics";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { Placeholder } from "@/extensions/placeholder";
-import { initTableOfContents } from "@/extensions/tableOfContents";
 import { NoteTag } from "@/extensions/tag";
+import { TextMetrics } from "@/extensions/text-metrics";
+import { initTableOfContents } from "@/extensions/toc";
 import { WikiLinkPreview } from "@/extensions/wikilinks/wikilink-preview";
 import { WikiLink } from "@/extensions/wikilinks/wikilinks";
-import { TextMetrics } from "@/extensions/word-count";
 import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
 import {
   noteStore,

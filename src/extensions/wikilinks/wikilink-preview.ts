@@ -84,14 +84,14 @@ export const WikiLinkPreview = Extension.create({
         const el = instance.reference as HTMLElement | null;
         const id = (el?.getAttribute("data-id") || "").trim();
         if (!id) return false;
-        const notes = noteStore.get("notes");
-        const targetNote = notes.find((n) => n.id === id);
+        const targetNote = noteStore.get("noteIndex").get(id);
         if (!targetNote) return false;
         const activeId = stateStore.get("activeId");
         if (targetNote.id === activeId) {
           instance.setContent("Can't reference the same note.");
           return;
         }
+        const notes = noteStore.get("notes");
         const matchingNotes = notes.filter(
           (n) => n.title.toLowerCase() === targetNote.title.toLowerCase(),
         );

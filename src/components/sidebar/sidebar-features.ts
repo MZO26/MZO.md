@@ -3,7 +3,7 @@ import {
   buildSnippet,
   updateSnippetHighlight,
 } from "@/components/sidebar/sidebar-note-items";
-import { getTextMetrics } from "@/extensions/word-count";
+import { getTextMetrics } from "@/extensions/text-metrics";
 import { handleImportNote } from "@/notes/note-actions";
 import type { SearchMatchResult } from "@/notes/search";
 import {

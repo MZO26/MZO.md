@@ -934,7 +934,7 @@ svg.empty-state-icon {
   opacity: 0;
   visibility: hidden;
   position: fixed;
-  top: 80px;
+  top: 50px;
   right: 10px;
   display: flex;
   flex-direction: column;
@@ -994,7 +994,7 @@ svg.empty-state-icon {
 
 .toc-dots {
   position: absolute;
-  top: 75px;
+  top: 70px;
   right: 20px;
   width: 4px;
   height: 4px;
@@ -1002,15 +1002,15 @@ svg.empty-state-icon {
   background-color: var(--text-muted);
   border-radius: 50%;
   box-shadow:
-    0 -8px 0 0 currentColor,
-    0 8px 0 0 currentColor;
+    0 -7.5px 0 0 currentColor,
+    0 7.5px 0 0 currentColor;
   transition: top 0.2s ease;
 }
 
 .toc-hover-zone {
   position: absolute;
   right: 10px;
-  top: 60px;
+  top: 55px;
   width: 50px;
   height: 30px;
   display: flex;
@@ -1027,11 +1027,12 @@ svg.empty-state-icon {
 
 .app-container.focus .toc-hover-zone,
 .app-container.toolbar-collapsed .toc-hover-zone {
-  top: 30px;
+  top: 35px;
 }
+
 .app-container.focus .toc-dots,
 .app-container.toolbar-collapsed .toc-dots {
-  top: 30px;
+  top: 50px;
 }
 
 .app-container.focus .toc,
@@ -1120,10 +1121,13 @@ svg.empty-state-icon {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow: hidden;
-  text-align: left;
   width: min(40vw, 80ch);
   height: min(40vh, 300px);
+}
+
+.wikilink-preview > .wikilink-preview-content {
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .wikilink-preview.is-empty {
