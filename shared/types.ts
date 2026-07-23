@@ -256,6 +256,7 @@ export type {
   TemplateRegistry,
   ThemeResult,
   TitleBarOverlayOptions,
+  ToolbarItem,
   UIRegistry,
   UrlDecision,
   WorkerResult,

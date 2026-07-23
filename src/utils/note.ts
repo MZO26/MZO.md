@@ -150,7 +150,7 @@ async function waitForPaint(frames = 2): Promise<void> {
 }
 
 async function checkNoteSize(doc: EditorDoc) {
-  console.log(doc.content.length);
+  console.log(`Node amount: ${doc.content.length}`);
   if (doc.content.length > NODE_BASELINE) {
     await sleep(YIELD_MS);
   }

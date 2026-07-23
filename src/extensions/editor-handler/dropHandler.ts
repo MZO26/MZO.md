@@ -44,7 +44,6 @@ export const DropHandler = Extension.create({
           handleDrop(view, event, _slice, moved) {
             if (moved) return false;
             const files = Array.from(event.dataTransfer?.files ?? []);
-            console.log(files);
             if (files.length === 0) return false;
             const coords = view.posAtCoords({
               left: event.clientX,
@@ -73,7 +72,6 @@ export const DropHandler = Extension.create({
                   (f) => !ALLOWED_TYPES.includes(f.type),
                 );
                 if (imageFiles.length > 0) {
-                  console.log(imageFiles);
                   await processAndInsertImages(imageFiles, editor);
                 }
                 if (contentFiles.length > 0) {

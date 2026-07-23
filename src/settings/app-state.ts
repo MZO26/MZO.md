@@ -42,7 +42,6 @@ const NOTE_STORE: NoteStore = {
 
 let prevId: string | null = null;
 let prevSearchQuery: string = "";
-let prevVisibleIds: string[] | null = null;
 
 const stateStore = createStore<AppState>(STATE_STORE);
 
@@ -56,22 +55,38 @@ function createStore<T>(initialState: T) {
   let state = initialState;
   const listeners = new Set<(state: T) => void>();
   const getState = () => state;
-  const get = <K extends keyof T>(key: K): T[K] => {
-    return state[key];
-  };
+  const get = <K extends keyof T>(key: K): T[K] => state[key];
   const setState = (newState: Partial<T> | ((state: T) => Partial<T>)) => {
     const nextState =
-      typeof newState === "function"
-        ? (newState as (state: T) => Partial<T>)(state)
-        : newState;
+      typeof newState === "function" ? newState(state) : newState;
+    if (!nextState) return;
     state = { ...state, ...nextState };
-    listeners.forEach((listener) => listener(state));
+    [...listeners].forEach((listener) => {
+      try {
+        listener(state);
+      } catch (error) {
+        console.error("[store] listener failed", error);
+      }
+    });
   };
   const subscribe = (listener: (state: T) => void) => {
     listeners.add(listener);
     return () => listeners.delete(listener);
   };
-  return { getState, get, setState, subscribe };
+  const subscribeSel = <S>(
+    selector: (state: T) => S,
+    listener: (selected: S) => void,
+    isEqual: (previous: S, next: S) => boolean = Object.is,
+  ) => {
+    let previousSelected = selector(state);
+    return subscribe((state) => {
+      const nextSelected = selector(state);
+      if (isEqual(previousSelected, nextSelected)) return;
+      previousSelected = nextSelected;
+      listener(nextSelected);
+    });
+  };
+  return { getState, get, setState, subscribe, subscribeSel };
 }
 
 async function loadSettings(): Promise<AppSettings> {
@@ -98,13 +113,6 @@ async function syncNoteStore() {
     });
     searchEngine.bulkLoad(sortedNotes);
   }
-}
-
-function getVisibleNotes(state: NoteStore) {
-  const notes = state.visibleIds
-    .map((id) => state.noteIndex.get(id))
-    .filter((note): note is NoteListItem => !!note);
-  return notes;
 }
 
 //------------------------------------------------------------
@@ -229,13 +237,30 @@ stateStore.subscribe((state) => {
   }
 });
 
-noteStore.subscribe((state) => {
-  if (state.visibleIds !== prevVisibleIds) {
-    prevVisibleIds = state.visibleIds;
-    updateNoteCount(state.visibleIds.length);
-    refreshSidebar(getVisibleNotes(state));
-  }
-});
+function areArraysShallowEqual<T>(previous: T[], next: T[]) {
+  return (
+    previous.length === next.length &&
+    previous.every(
+      (previousItem, itemIndex) => previousItem === next[itemIndex],
+    )
+  );
+}
+
+function getVisibleNotes(state: NoteStore) {
+  const notes = state.visibleIds
+    .map((id) => state.noteIndex.get(id))
+    .filter((note): note is NoteListItem => !!note);
+  return notes;
+}
+
+noteStore.subscribeSel(
+  getVisibleNotes,
+  (visibleNotes) => {
+    updateNoteCount(visibleNotes.length);
+    refreshSidebar(visibleNotes);
+  },
+  areArraysShallowEqual,
+);
 
 export {
   applySearch,

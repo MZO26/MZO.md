@@ -1,7 +1,10 @@
 import { createIconButton } from "@/components/sidebar/sidebar-features";
+import { settingsStore } from "@/settings/app-state";
 import { getAppItem } from "@/utils/registry";
-import type { Action, ActionMap } from "@shared/types";
+import type { Action, ActionMap, ToolbarItem } from "@shared/types";
 import type { Editor } from "@tiptap/core";
+
+let cachedActions: ReturnType<typeof getActions> | null = null;
 
 function createButton(key: string, item: Action) {
   const btn = createIconButton(item.icon, key, item.shortcut);
@@ -16,10 +19,8 @@ function createDivider() {
   return element;
 }
 
-function createToolbarFragment(
-  actions: ActionMap,
-  buttonMap: Map<string, HTMLButtonElement>,
-) {
+function createToolbarFragment(actions: ActionMap) {
+  const buttonMap = new Map<string, HTMLButtonElement>();
   const fragment = document.createDocumentFragment();
   for (const [key, item] of Object.entries(actions)) {
     if (item.type === "divider") {
@@ -31,7 +32,17 @@ function createToolbarFragment(
       buttonMap.set(key, actionBtn);
     }
   }
-  return fragment;
+  return { fragment, buttonMap };
+}
+
+function isAction(item: ToolbarItem): item is Action {
+  return item.type !== "divider";
+}
+
+function getActions(actions: ActionMap): [string, Action][] {
+  return (cachedActions ??= Object.entries(actions).filter(
+    (entry): entry is [string, Action] => isAction(entry[1]),
+  ));
 }
 
 function updateActiveStates(
@@ -39,12 +50,12 @@ function updateActiveStates(
   actions: ActionMap,
   editor: Editor,
 ): void {
-  for (const [key, item] of Object.entries(actions)) {
-    if (item.type === "divider") continue;
+  const actionEntries = getActions(actions);
+  for (const [key, item] of actionEntries) {
     const btn = buttonElements.get(key);
     if (!btn) continue;
-    const isActive = item?.isActive?.(editor) ?? false;
-    const isDisabled = item?.isDisabled?.(editor) ?? false;
+    const isActive = item.isActive?.(editor) ?? false;
+    const isDisabled = item.isDisabled?.(editor) ?? false;
     if (btn.classList.contains("is-active") !== isActive) {
       btn.classList.toggle("is-active", isActive);
     }
@@ -57,21 +68,25 @@ function updateActiveStates(
 function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
   const editor = getAppItem("editor");
   container.replaceChildren();
-  const buttonMap = new Map<string, HTMLButtonElement>();
-  const fragment = createToolbarFragment(actions, buttonMap);
+  const { fragment, buttonMap } = createToolbarFragment(actions);
   container.appendChild(fragment);
-  updateActiveStates(buttonMap, actions, editor);
+  function refresh(): void {
+    if (settingsStore.get("toolbar_collapsed") === true) return;
+    updateActiveStates(buttonMap, actions, editor);
+  }
+  refresh();
   editor.on("transaction", ({ transaction }) => {
     if (!transaction.docChanged && !transaction.selectionSet) return;
-    updateActiveStates(buttonMap, actions, editor);
+    refresh();
   });
+  return { refresh };
 }
 
 function buildTopToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
   container.replaceChildren();
-  const buttonMap = new Map<string, HTMLButtonElement>();
-  const fragment = createToolbarFragment(actions, buttonMap);
+  const { fragment, buttonMap } = createToolbarFragment(actions);
   container.appendChild(fragment);
+  return buttonMap;
 }
 
 function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
@@ -93,4 +108,5 @@ export {
   buildTopToolbarMenu,
   createDivider,
   setupToolbarListeners,
+  updateActiveStates,
 };

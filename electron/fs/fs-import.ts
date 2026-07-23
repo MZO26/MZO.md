@@ -45,7 +45,7 @@ async function batchImport(filePaths: string[]) {
           ++errorCount;
           return null;
         }
-        console.log(content.length);
+        console.log(`Content length: ${content.length} characters`);
         const importedFileDir = path.dirname(file);
         const sanitizedContent = await sanitizeImportString(
           content,

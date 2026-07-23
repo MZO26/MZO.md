@@ -10,7 +10,6 @@ import {
 } from "@/api/api";
 import { resetEditorHistory, updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/sidebar/sidebar-features";
-import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
 import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
 import {
@@ -241,7 +240,6 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     };
   });
   searchEngine.upsertNote(result.data);
-  refreshSidebar(noteStore.get("notes"));
   if (isActiveNote) {
     updateStats();
     const currentHeadings = getTableOfContents(editor);
