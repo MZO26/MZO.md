@@ -140,8 +140,6 @@ async function triggerCopyRichText(id: string) {
     await showNotification("Failed to get html", "");
     return;
   }
-  const note = noteStore.get("notes").find((n) => n.id === id);
-  if (!note) return;
   const html = generateHTML(result.data.content, getCachedEditorExtensions());
   const plain = generateText(result.data.content, getCachedEditorExtensions(), {
     blockSeparator: "\n",

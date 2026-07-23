@@ -221,7 +221,8 @@ const NoteTag = Node.create<NoteTagOptions>({
           if (!normalizedQuery) return null;
           let bestMatch: string | null = null;
           let exactMatchFound = false;
-          for (const note of noteStore.get("notes")) {
+          const notes = noteStore.get("notes");
+          for (const note of notes) {
             for (const tag of note.tags) {
               if (tag === normalizedQuery) {
                 bestMatch = tag;

@@ -22,13 +22,12 @@ import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 // helper functions for callbacks
 
 async function ensureNoteSaved(id: string) {
-  const note = noteStore.get("notes").find((n) => n.id === id);
-  if (!note) return;
-  if (stateStore.get("activeId") !== id) return;
+  if (!noteStore.get("noteIndex").has(id) || stateStore.get("activeId") !== id)
+    return;
   debouncedSaveNote.cancel();
   await handleSaveNote(id, true);
   if (stateStore.get("activeId") !== id) return;
-  const savedNote = noteStore.get("notes").find((n) => n.id === id);
+  const savedNote = noteStore.get("noteIndex").get(id);
   if (!savedNote) return;
   return {
     created_at: savedNote.created_at,
@@ -37,6 +36,7 @@ async function ensureNoteSaved(id: string) {
     updated_at: savedNote.updated_at,
   };
 }
+
 //----------------------------------------------------------
 
 // electron callbacks that only get registered once at startup. Thus no need for assignment of cleanups

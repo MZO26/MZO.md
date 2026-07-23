@@ -63,7 +63,7 @@ const ALLOWED_IMPORT_EXTENSIONS = ["md", "html", "json", "txt"] as const;
 
 const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 26,214,400B. file.size from JS is always in bytes
 
-const YIELD_MS = 200;
+const YIELD_MS = 300;
 
 const MAX_FILE_DROPS = 50;
 
