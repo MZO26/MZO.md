@@ -27,21 +27,18 @@ const EditorDocSchema = z
   })
   .default(EMPTY_DOC);
 
-const DbContentSchema = z
-  .string()
-  .transform((val, ctx) => {
-    try {
-      const parsed = JSON.parse(val);
-      return parsed;
-    } catch (e) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Content is corrupted (invalid JSON)",
-      });
-      return z.NEVER;
-    }
-  })
-  .pipe(EditorDocSchema);
+const DbContentSchema = z.string().transform((val, ctx) => {
+  try {
+    const parsed = JSON.parse(val);
+    return parsed;
+  } catch (e) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Content is corrupted (invalid JSON)",
+    });
+    return z.NEVER;
+  }
+});
 
 //input gets validated -> processed into parsed object -> piped to validate output against EditorDocSchema
 
