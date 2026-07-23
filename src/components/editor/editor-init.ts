@@ -19,10 +19,12 @@ import {
   handleMathClick,
 } from "@/extensions/overrides/mathematics";
 import { CustomUnderline } from "@/extensions/overrides/underline";
+import { Placeholder } from "@/extensions/placeholder";
 import { initTableOfContents } from "@/extensions/tableOfContents";
 import { NoteTag } from "@/extensions/tag";
 import { WikiLinkPreview } from "@/extensions/wikilinks/wikilink-preview";
 import { WikiLink } from "@/extensions/wikilinks/wikilinks";
+import { TextMetrics } from "@/extensions/word-count";
 import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
 import {
   noteStore,
@@ -47,12 +49,6 @@ import {
   TableHeader,
   TableRow,
 } from "@tiptap/extension-table";
-import {
-  CharacterCount,
-  Focus,
-  Placeholder,
-  TrailingNode,
-} from "@tiptap/extensions";
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import "katex/dist/katex.min.css";
@@ -116,27 +112,8 @@ function getNoteEditorExtensions() {
         restoreSidebarScope();
       },
     }),
-    Focus.configure({
-      className: "has-focus",
-      mode: "all",
-    }),
-    Placeholder.configure({
-      placeholder: ({ node }) => {
-        if (node.type.name === "heading") {
-          return "Untitled";
-        }
-        return "";
-      },
-      emptyNodeClass: "is-empty",
-      showOnlyWhenEditable: true,
-      includeChildren: false,
-    }),
-    CharacterCount.configure({
-      textCounter: (text) => text.length,
-      wordCounter: (text) => {
-        text = text.trim();
-        return text ? text.split(/\s+/).length : 0;
-      },
+    Placeholder,
+    TextMetrics.configure({
       limit: MAX_CHARACTERS,
     }),
     Image.configure({
@@ -172,10 +149,6 @@ function getNoteEditorExtensions() {
     CustomHeading.configure({
       levels: [1, 2, 3, 4, 5, 6],
     }),
-    TrailingNode.configure({
-      node: "paragraph",
-      notAfter: ["paragraph"],
-    }),
     StarterKit.configure({
       codeBlock: {
         enableTabIndentation: true,
@@ -189,7 +162,6 @@ function getNoteEditorExtensions() {
       orderedList: false,
       bulletList: false,
       underline: false,
-      trailingNode: false,
       undoRedo: {
         depth: 20,
       },

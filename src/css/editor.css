@@ -25,12 +25,6 @@
     calc(((var(--font-size) * var(--line-height)) * 2) + 1em);
 }
 
-.ProseMirror > h1,
-.ProseMirror > h2,
-.ProseMirror > h3 {
-  contain-intrinsic-block-size: auto calc((var(--font-size) * 1.5) + 1em);
-}
-
 .ProseMirror > blockquote {
   contain-intrinsic-block-size: auto calc(((var(--font-size) * 1.65) * 4) + 2em);
 }
@@ -38,15 +32,6 @@
 .ProseMirror > ul,
 .ProseMirror > ol {
   contain-intrinsic-block-size: auto calc(((var(--font-size) * 1.2) * 3) + 1em);
-}
-
-.ProseMirror > h1,
-.ProseMirror > h2,
-.ProseMirror > h3,
-.ProseMirror > h4,
-.ProseMirror > h5,
-.ProseMirror > h6 {
-  content-visibility: auto;
 }
 
 .ProseMirror > h1 {
@@ -86,12 +71,7 @@
   outline: 1px solid transparent;
 }
 
-.ProseMirror h1.is-empty::before,
-.ProseMirror h2.is-empty::before,
-.ProseMirror h3.is-empty::before,
-.ProseMirror h4.is-empty::before,
-.ProseMirror h5.is-empty::before,
-.ProseMirror h6.is-empty::before {
+.ProseMirror > h1.is-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   height: 0;
@@ -692,57 +672,6 @@
 
 .ProseMirror:focus {
   outline: none;
-}
-
-.ProseMirror.focus-mode-active:has(.has-focus) > *:not(.has-focus) {
-  opacity: 0.45;
-  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ProseMirror.focus-mode-active > *:has(.has-focus),
-.ProseMirror.focus-mode-active .has-focus {
-  opacity: 1;
-}
-
-.ProseMirror.focus-mode-active
-  .has-focus:is(
-    p,
-    ul,
-    ol,
-    li,
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    hr,
-    table,
-    tr,
-    td,
-    th,
-    img
-  ) {
-  background-color: var(--bg-button);
-  border-radius: 4px;
-}
-
-.ProseMirror.focus-mode-active .has-focus:is(blockquote) {
-  border-left-color: var(--accent-primary);
-  border-radius: 4px;
-}
-
-.ProseMirror.focus-mode-active .has-focus:is(pre) {
-  box-shadow: 0 0 0 1px var(--accent-primary);
-  border-radius: 4px;
-}
-
-.ProseMirror.focus-mode-active .has-focus {
-  background-color: var(--bg-sidebar);
-  box-shadow: var(--shadow);
-  transition:
-    background-color 0.2s ease,
-    box-shadow 0.2s ease;
 }
 
 .autocomplete {

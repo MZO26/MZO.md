@@ -3,6 +3,7 @@ import {
   buildSnippet,
   updateSnippetHighlight,
 } from "@/components/sidebar/sidebar-note-items";
+import { getTextMetrics } from "@/extensions/word-count";
 import { handleImportNote } from "@/notes/note-actions";
 import type { SearchMatchResult } from "@/notes/search";
 import {
@@ -88,11 +89,11 @@ function updateStats() {
     "charCountEl",
     "readingTime",
   ]);
-  const charCount = editor.storage.characterCount.characters();
-  const wordCount = editor.storage.characterCount.words();
-  charCountEl.textContent = charCount.toString();
-  wordCountEl.textContent = wordCount === 1 ? "1 word" : `${wordCount} words`;
-  readingTime.textContent = estimateReadingTime(wordCount);
+  const { characters, words } = getTextMetrics(editor);
+  charCountEl.textContent =
+    characters === 1 ? "1 character" : `${characters} characters`;
+  wordCountEl.textContent = words === 1 ? "1 word" : `${words} words`;
+  readingTime.textContent = estimateReadingTime(words);
 }
 
 //------------------------------------------------------------

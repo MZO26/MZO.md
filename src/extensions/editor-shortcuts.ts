@@ -79,10 +79,6 @@ export const MasterShortcuts = Extension.create({
         }
         return false;
       },
-      "Mod-d": () => {
-        this.editor.view.dom.classList.toggle("focus-mode-active");
-        return true;
-      },
       "Mod-Alt-Enter": () => {
         if (!this.editor.isActive("link")) return false;
         const { selection } = this.editor.state;

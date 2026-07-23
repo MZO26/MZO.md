@@ -131,7 +131,6 @@ npm install
 | <kbd>Mod</kbd> + <kbd>Alt</kbd> + <kbd>Backspace</kbd> |              | Delete table                   |
 | **Editor Controls**                                    |              |                                |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>       |              | Paste without formatting       |
-| <kbd>Mod</kbd> + <kbd>D</kbd>                          |              | Toggle editor focus mode       |
 | <kbd>Escape</kbd>                                      |              | Remove focus from editor       |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd>+<kbd>Enter</kbd>     |              | Insert Space at end of a block |
 
