@@ -2,7 +2,7 @@
 
 A minimalist, local-first note app for desktop.
 
-Built with Electron, TypeScript, Sqlite, and TipTap / ProseMirror.
+Built with Electron, TypeScript, SQLite, and TipTap / ProseMirror.
 
 ## Features
 
