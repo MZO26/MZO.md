@@ -1,7 +1,11 @@
 import db from "@electron/db/database";
 import { sanitizeImportString } from "@electron/fs/fs-helpers";
 import { validation } from "@electron/ipc/ipc-validation";
-import { MAX_BYTES_FILE, MAX_CHARACTERS } from "@shared/constants";
+import {
+  CONCURRENCY_IMPORT,
+  MAX_BYTES_FILE,
+  MAX_CHARACTERS,
+} from "@shared/constants";
 import { processWithLimit } from "@shared/limiter";
 import {
   ImportRequestSchema,
@@ -20,7 +24,7 @@ async function batchImport(filePaths: string[]) {
   let errorCount = 0;
   const imported = await processWithLimit(
     [...uniqueFilePaths],
-    20,
+    CONCURRENCY_IMPORT,
     async (file) => {
       try {
         const stats = await fs.stat(file);

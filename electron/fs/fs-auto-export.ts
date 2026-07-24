@@ -7,6 +7,7 @@ import {
 import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
+import { CONCURRENCY_DELETE } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import {
@@ -34,8 +35,8 @@ async function isAutoExport(id: string): Promise<boolean> {
     if (!enabled || !targetDir) return false;
     const validatedData = validation(IdSchema, id);
     const notes = db.getOldNotes([validatedData]);
-    if (!Array.isArray(notes) || !notes[0]) return false;
-    const note = notes[0];
+    const note = Array.isArray(notes) ? notes[0] : undefined;
+    if (!note) return false;
     const exportPath = resolveAutoExportPath(targetDir);
     const absoluteFilePath = getFilePath(exportPath, {
       created_at: note.created_at,
@@ -243,7 +244,7 @@ async function deleteAutoExportFile(
   targetDir: string,
   oldNotes: Pick<Note, "created_at" | "title">[],
 ) {
-  await processWithLimit(oldNotes, 20, async (note) => {
+  await processWithLimit(oldNotes, CONCURRENCY_DELETE, async (note) => {
     const validatedFileData = validation(DeleteAutoExportRequestSchema, {
       created_at: note.created_at,
       fileName: note.title,

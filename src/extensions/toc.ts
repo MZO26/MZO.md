@@ -43,7 +43,7 @@ function initTableOfContents() {
       if (!heading) return;
       heading.scrollIntoView({
         behavior: "auto",
-        block: "center",
+        block: "start",
       });
     }
   });

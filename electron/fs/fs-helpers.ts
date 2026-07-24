@@ -1,5 +1,6 @@
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
+import { CONCURRENCY_IMAGE } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import { FileNameSchema } from "@shared/schemas/request-schema";
@@ -52,22 +53,30 @@ async function sanitizeExportString(
     return `assets/${fileName}`;
   });
   if (fileNames.size > 0) {
-    await processWithLimit([...fileNames], 5, async (fileName) => {
-      const internalPath = path.join(internalImgDir, fileName);
-      const exportPath = path.join(assetsDir, fileName);
-      try {
-        await fs.copyFile(internalPath, exportPath, fs.constants.COPYFILE_EXCL);
-      } catch (error: unknown) {
-        const err = error as NodeJS.ErrnoException;
-        if (err.code === "EEXIST") return;
-        if (err.code !== "ENOENT") {
-          console.error(
-            "[sanitizeExportString]: Failed to copy file",
-            err.code,
+    await processWithLimit(
+      [...fileNames],
+      CONCURRENCY_IMAGE,
+      async (fileName) => {
+        const internalPath = path.join(internalImgDir, fileName);
+        const exportPath = path.join(assetsDir, fileName);
+        try {
+          await fs.copyFile(
+            internalPath,
+            exportPath,
+            fs.constants.COPYFILE_EXCL,
           );
+        } catch (error: unknown) {
+          const err = error as NodeJS.ErrnoException;
+          if (err.code === "EEXIST") return;
+          if (err.code !== "ENOENT") {
+            console.error(
+              "[sanitizeExportString]: Failed to copy file",
+              err.code,
+            );
+          }
         }
-      }
-    });
+      },
+    );
   }
   return portableContent;
 }
@@ -86,25 +95,29 @@ async function sanitizeImportString(
     },
   );
   if (fileNames.size > 0) {
-    await processWithLimit([...fileNames], 5, async (fileName) => {
-      const sourceImagePath = path.join(importedFileDir, "assets", fileName);
-      const destImagePath = path.join(internalImgDir, fileName);
-      try {
-        await fs.copyFile(
-          sourceImagePath,
-          destImagePath,
-          fs.constants.COPYFILE_EXCL,
-        );
-      } catch (error) {
-        const err = error as NodeJS.ErrnoException;
-        if (err.code === "EEXIST") return;
-        if (err.code !== "ENOENT")
-          console.error(
-            "[sanitizeImportString]: Failed to copy file:",
-            err.code,
+    await processWithLimit(
+      [...fileNames],
+      CONCURRENCY_IMAGE,
+      async (fileName) => {
+        const sourceImagePath = path.join(importedFileDir, "assets", fileName);
+        const destImagePath = path.join(internalImgDir, fileName);
+        try {
+          await fs.copyFile(
+            sourceImagePath,
+            destImagePath,
+            fs.constants.COPYFILE_EXCL,
           );
-      }
-    });
+        } catch (error) {
+          const err = error as NodeJS.ErrnoException;
+          if (err.code === "EEXIST") return;
+          if (err.code !== "ENOENT")
+            console.error(
+              "[sanitizeImportString]: Failed to copy file:",
+              err.code,
+            );
+        }
+      },
+    );
   }
   return internalContent;
 }

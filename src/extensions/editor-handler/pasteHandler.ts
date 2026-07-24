@@ -10,10 +10,8 @@ import DOMPurify from "dompurify";
 
 export const PasteHandler = Extension.create({
   name: "PasteHandler",
-
   addProseMirrorPlugins() {
     const editor = this.editor;
-
     return [
       new Plugin({
         props: {

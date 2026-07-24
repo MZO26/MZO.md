@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initQuickSwitcher();
   initEditorSearch(editor);
   handleSidebarEmptyState();
-  handleEditorEmptyState(stateStore.getState().activeId);
+  handleEditorEmptyState(stateStore.get("activeId"));
   if (settings["toolbar_collapsed"] === true) {
     await setToolbarCollapsed(true);
   }

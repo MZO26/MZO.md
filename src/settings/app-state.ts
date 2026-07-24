@@ -51,7 +51,7 @@ const noteStore = createStore<NoteStore>(NOTE_STORE);
 
 const searchEngine = new NoteSearch();
 
-function createStore<T>(initialState: T) {
+function createStore<T extends object>(initialState: T) {
   let state = initialState;
   const listeners = new Set<(state: T) => void>();
   const getState = () => state;
@@ -59,7 +59,15 @@ function createStore<T>(initialState: T) {
   const setState = (newState: Partial<T> | ((state: T) => Partial<T>)) => {
     const nextState =
       typeof newState === "function" ? newState(state) : newState;
-    if (!nextState) return;
+    if (!nextState || Object.keys(nextState).length === 0) return;
+    let hasChanged = false;
+    for (const key of Object.keys(nextState) as Array<keyof T>) {
+      if (!Object.is(state[key], nextState[key])) {
+        hasChanged = true;
+        break;
+      }
+    }
+    if (!hasChanged) return;
     state = { ...state, ...nextState };
     [...listeners].forEach((listener) => {
       try {

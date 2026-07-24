@@ -53,19 +53,19 @@ type Code =
   | "atom-one-dark"
   | "colorless";
 
-type Result<T, E = AppErrorCode> =
-  | { success: true; data: T }
-  | {
-      success: false;
-      error: E;
-    };
+type Success<T> = {
+  success: true;
+  data: T;
+};
 
-type Success<T> = Extract<Result<T>, { success: true }>;
-type Failure<E = AppErrorCode> = Extract<Result<never, E>, { success: false }>;
+type Failure<E = AppErrorCode> = {
+  success: false;
+  error: E;
+};
 
-type WorkerResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: WorkerErrorCode };
+type Result<T, E = AppErrorCode> = Success<T> | Failure<E>;
+
+type WorkerResult<T = WorkerErrorCode> = Success<T> | Failure<T>;
 
 type Action = {
   type?: "action";

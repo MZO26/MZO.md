@@ -1,11 +1,11 @@
 import { pinWindow, setTheme, updateSettings } from "@/api/api";
 import { createDivider } from "@/components/toolbar/toolbar-factory";
+import { toolbarApi } from "@/components/toolbar/toolbar-init";
 import { noteStore, stateStore } from "@/settings/app-state";
 import { createInfoSpan } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
 import type { Theme } from "@shared/schemas/store-schema";
-import { toolbarApi } from "./toolbar-init";
 
 function setEditorWidth(container: HTMLDivElement) {
   const widths = ["comfortable", "normal", "wide"];
@@ -110,8 +110,7 @@ function renderTags(container: HTMLDivElement) {
   const tagMap = new Map<string, number>();
   const tagArr = noteStore
     .get("notes")
-    .filter((n) => n.id !== activeId)
-    .flatMap((n) => n.tags);
+    .flatMap((n) => (n.id !== activeId ? n.tags : []));
   for (const entry of tagArr) {
     tagMap.set(entry, (tagMap.get(entry) || 0) + 1);
   }

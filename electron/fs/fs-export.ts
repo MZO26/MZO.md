@@ -3,6 +3,10 @@ import { sanitizeExportString, writeAtomic } from "@electron/fs/fs-helpers";
 import { getPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { createHiddenPdfWindow } from "@electron/win";
+import {
+  CONCURRENCY_EXPORT_NORMAL,
+  CONCURRENCY_EXPORT_PDF,
+} from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import type { ExportedContent, PDFAssets } from "@shared/types";
@@ -35,7 +39,7 @@ async function batchExport(folder: string, payload: ExportedContent[]) {
   await fs.mkdir(assetsDir, { recursive: true });
   const exported = await processWithLimit(
     payload,
-    20,
+    CONCURRENCY_EXPORT_NORMAL,
     async (item: ExportedContent) => {
       try {
         const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
@@ -107,16 +111,20 @@ async function batchPDFExport(folder: string, payload: ExportedContent[]) {
   const assets = await getPDFAssets();
   let hiddenWin = createHiddenPdfWindow();
   try {
-    const exported = await processWithLimit(payload, 1, async (item) => {
-      const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
-      const filePath = await exportPDFNote({
-        win: hiddenWin,
-        filePath: absoluteFilePath,
-        html: item.content,
-        assets,
-      });
-      return filePath;
-    });
+    const exported = await processWithLimit(
+      payload,
+      CONCURRENCY_EXPORT_PDF,
+      async (item) => {
+        const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
+        const filePath = await exportPDFNote({
+          win: hiddenWin,
+          filePath: absoluteFilePath,
+          html: item.content,
+          assets,
+        });
+        return filePath;
+      },
+    );
     return exported.filter((item) => item !== null);
   } catch (error) {
     console.error("[batchPDFExport]: Error while exporting:", error);

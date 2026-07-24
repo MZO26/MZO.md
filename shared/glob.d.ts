@@ -56,7 +56,7 @@ declare global {
       ) => Promise<Result<boolean>>;
       getAutoExportPath: (
         payload: OpenAutoExportPathRequest,
-      ) => Promise<Result<string>>;
+      ) => Promise<Result<string | null>>;
       openAppPath: () => Promise<Result<boolean>>;
     };
     noteAPI: {

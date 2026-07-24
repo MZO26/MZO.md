@@ -1,36 +1,41 @@
-function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
+type Debounced<T extends (...args: any[]) => void> = ((
+  ...args: Parameters<T>
+) => void) & {
+  cancel: () => void;
+  flush: () => void;
+};
+
+function debounce<T extends (...args: any[]) => void>(
+  fn: T,
+  wait: number,
+): Debounced<T> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
   let lastArgs: Parameters<T> | null = null;
-
-  const debounced = (...args: Parameters<T>) => {
-    lastArgs = args; // Saves the last arguments for potential immediate execution
-    if (timeout) clearTimeout(timeout);
-
-    timeout = setTimeout(() => {
-      func(...args);
-      // After execution, clean up the timeout and last arguments
-      timeout = null;
+  function cancel() {
+    if (timer !== null) clearTimeout(timer);
+    timer = null;
+    lastArgs = null;
+  }
+  function flush() {
+    if (timer === null || lastArgs === null) return;
+    const args = lastArgs;
+    cancel();
+    fn(...args);
+  }
+  const debounced = ((...args: Parameters<T>) => {
+    lastArgs = args;
+    if (timer !== null) clearTimeout(timer);
+    timer = setTimeout(() => {
+      const argsToUse = lastArgs;
+      timer = null;
       lastArgs = null;
+      if (argsToUse !== null) {
+        fn(...argsToUse);
+      }
     }, wait);
-  };
-
-  // Add a flush method to allow immediate execution of the last call if it is pending
-  debounced.flush = () => {
-    if (timeout && lastArgs) {
-      clearTimeout(timeout);
-      func(...lastArgs);
-      timeout = null;
-      lastArgs = null;
-    }
-  };
-
-  debounced.cancel = () => {
-    if (timeout) {
-      clearTimeout(timeout);
-      timeout = null;
-      lastArgs = null;
-    }
-  };
+  }) as Debounced<T>;
+  debounced.cancel = cancel;
+  debounced.flush = flush;
   return debounced;
 }
 

@@ -15,6 +15,12 @@ enum AppErrorCode {
   ExportError = "EXPORT_ERROR",
 }
 
+const WORKER_ERROR_MESSAGES: Record<WorkerErrorCode, string> = {
+  [WorkerErrorCode.CompressionError]: "Image compression failed.",
+  [WorkerErrorCode.InvalidImageError]: "Invalid image file.",
+  [WorkerErrorCode.UnknownError]: "An unexpected worker error occurred.",
+};
+
 const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   [AppErrorCode.DBError]: "Failed to access database.",
   [AppErrorCode.InvalidData]: "Couldn't read the notes' data.",
@@ -26,4 +32,4 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   [AppErrorCode.ExportError]: "Export failed.",
 };
 
-export { AppErrorCode, ERROR_MESSAGES, WorkerErrorCode };
+export { AppErrorCode, ERROR_MESSAGES, WORKER_ERROR_MESSAGES, WorkerErrorCode };
