@@ -34,7 +34,7 @@ function setUpEditorMenu(win: BrowserWindow) {
     const items: Electron.MenuItemConstructorOptions[] = [];
     const hasSelection = params.selectionText?.trim().length > 0;
     const isImage = params.mediaType === "image";
-    const hasLink = Boolean(params.linkURL);
+    const hasLink = !!params.linkURL;
     const canEdit =
       params.isEditable ||
       params.editFlags.canCut ||

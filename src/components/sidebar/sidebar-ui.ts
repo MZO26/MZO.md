@@ -57,7 +57,7 @@ function handleSidebarEmptyState() {
 
 function updateSidebarEmptyState(emptyState: HTMLDivElement) {
   const searchQuery = stateStore.get("searchQuery");
-  const isSearch = Boolean(searchQuery?.trim());
+  const isSearch = !!searchQuery?.trim();
   const titleEl = requireElement<HTMLHeadingElement>(
     ".empty-state-title",
     emptyState,
@@ -145,7 +145,7 @@ function renderNoteList(notes: NoteListItem[]) {
     fragment.appendChild(headerElement);
   }
   const sortedNotes = [...notes].sort(compareNotes);
-  const isFiltered = Boolean(activeTag);
+  const isFiltered = !!activeTag;
   const isLimited = !isFiltered && sortedNotes.length > SIDEBAR_ALL_NOTES_LIMIT;
   const displayNotes = isFiltered
     ? sortedNotes
