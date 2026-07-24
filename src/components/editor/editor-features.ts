@@ -6,21 +6,10 @@ import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS } from "@shared/constants";
 import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
-import { EditorState } from "@tiptap/pm/state";
 import { getSearchState } from "prosemirror-search";
 
 let editorExtensions: ReturnType<typeof getRequestExtensions> | undefined;
-
 let markdownManager: MarkdownManager | undefined;
-
-function resetEditorHistory(editor: Editor) {
-  const newState = EditorState.create({
-    doc: editor.state.doc,
-    plugins: editor.state.plugins,
-    schema: editor.state.schema,
-  });
-  editor.view.updateState(newState);
-}
 
 function getCachedEditorExtensions() {
   return (editorExtensions ??= getRequestExtensions());
@@ -193,9 +182,4 @@ function initEditorSearch(editor: Editor) {
   return { open, close };
 }
 
-export {
-  getCachedEditorExtensions,
-  getMarkdownManager,
-  initEditorSearch,
-  resetEditorHistory,
-};
+export { getCachedEditorExtensions, getMarkdownManager, initEditorSearch };

@@ -5,6 +5,7 @@ import { noteStore, searchEngine } from "@/settings/app-state";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
 
 async function handleDuplicateNote(note: Note) {
+  const isAutoExport = isAutoExportEnabled();
   const {
     id: originalId,
     links: originalLinks,
@@ -17,12 +18,12 @@ async function handleDuplicateNote(note: Note) {
     .filter((link) => link.dir === "out")
     .map((link) => link.id);
   let markdown: string | undefined;
-  if (isAutoExportEnabled()) {
+  if (isAutoExport) {
     markdown = getMarkdownManager().serialize(note.content);
   }
   const data: CreateNotePayload = {
     ...rest,
-    ...(isAutoExportEnabled() && markdown !== undefined ? { markdown } : {}),
+    ...(isAutoExport && markdown !== undefined ? { markdown } : {}),
     links: outgoingLinkIds,
     pinned: false,
   };

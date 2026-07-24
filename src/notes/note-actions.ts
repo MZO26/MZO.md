@@ -8,7 +8,7 @@ import {
   showNotification,
   updateNote,
 } from "@/api/api";
-import { resetEditorHistory, updateToc } from "@/components/editor/editor-init";
+import { updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/sidebar/sidebar-features";
 import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
@@ -32,6 +32,7 @@ import {
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
+import { EditorState } from "@tiptap/pm/state";
 
 // helpers
 
@@ -66,11 +67,13 @@ async function handleCreateNote() {
   }));
   searchEngine.upsertNote(result.data);
   stateStore.setState({ activeId: result.data.id });
-  editor.commands.setContent(editorContent, {
-    emitUpdate: false,
-    contentType: "json",
+  const newDoc = editor.schema.nodeFromJSON(editorContent);
+  const newState = EditorState.create({
+    schema: editor.schema,
+    doc: newDoc,
+    plugins: editor.extensionManager.plugins,
   });
-  resetEditorHistory(editor);
+  editor.view.updateState(newState);
   editor.commands.focus();
   const headings = getTableOfContents(editor);
   updateToc(headings);
@@ -271,10 +274,13 @@ async function handleSelectNote(id: string) {
   }
   try {
     await checkNoteSize(result.data.content);
-    editor.commands.setContent(result.data.content, {
-      emitUpdate: false,
-      contentType: "json",
+    const newDoc = editor.schema.nodeFromJSON(result.data.content);
+    const newState = EditorState.create({
+      schema: editor.schema,
+      doc: newDoc,
+      plugins: editor.extensionManager.plugins,
     });
+    editor.view.updateState(newState);
   } catch (error) {
     console.error("Invalid Editor content:", error);
     editor.setEditable(false, false);
@@ -284,7 +290,6 @@ async function handleSelectNote(id: string) {
     return;
   }
   if (stateStore.getState().activeId !== id) return;
-  resetEditorHistory(editor);
   const headings = getTableOfContents(editor);
   updateToc(headings);
   updateStats();

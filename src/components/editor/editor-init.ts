@@ -1,4 +1,3 @@
-import { resetEditorHistory } from "@/components/editor/editor-features";
 import { applyTagView } from "@/components/sidebar/sidebar-features";
 import { ActiveCodeHighlight } from "@/extensions/codeblock-highlight";
 import { SearchAndReplace } from "@/extensions/doc-search";
@@ -269,6 +268,5 @@ export {
   getNoteEditorExtensions,
   getRequestExtensions,
   initEditor,
-  resetEditorHistory,
   setupEditorListeners,
 };

@@ -56,6 +56,15 @@ function createStore<T extends object>(initialState: T) {
   const listeners = new Set<(state: T) => void>();
   const getState = () => state;
   const get = <K extends keyof T>(key: K): T[K] => state[key];
+  const notify = () => {
+    [...listeners].forEach((listener) => {
+      try {
+        listener(state);
+      } catch (error) {
+        console.error("[store] listener failed", error);
+      }
+    });
+  };
   const setState = (newState: Partial<T> | ((state: T) => Partial<T>)) => {
     const nextState =
       typeof newState === "function" ? newState(state) : newState;
@@ -69,13 +78,7 @@ function createStore<T extends object>(initialState: T) {
     }
     if (!hasChanged) return;
     state = { ...state, ...nextState };
-    [...listeners].forEach((listener) => {
-      try {
-        listener(state);
-      } catch (error) {
-        console.error("[store] listener failed", error);
-      }
-    });
+    notify();
   };
   const subscribe = (listener: (state: T) => void) => {
     listeners.add(listener);
@@ -123,10 +126,6 @@ async function syncNoteStore() {
   }
 }
 
-//------------------------------------------------------------
-
-// active tag logic
-
 function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
   if (activeTag === null) return true;
   if (activeTag === UNTAGGED) return !note.tags || note.tags.length === 0;
@@ -160,12 +159,6 @@ function clearActiveTagView() {
   applyView(null);
 }
 
-//------------------------------------------------------------
-
-// search logic
-
-// applies the search to the note state to only show searched items or empty state
-
 function applySearch(searchMatches: SearchMatchResult[]) {
   const matchedIdSet = new Set(searchMatches.map((match) => match.item.id));
   const activeTag = stateStore.get("activeTag");
@@ -182,8 +175,6 @@ function applySearch(searchMatches: SearchMatchResult[]) {
   });
 }
 
-// removes search scope but stays in activeTag scope if there is one
-
 function restoreSidebarScope() {
   const activeTag = stateStore.get("activeTag");
   noteStore.setState((state) => ({
@@ -192,10 +183,6 @@ function restoreSidebarScope() {
       .map((note) => note.id),
   }));
 }
-
-//------------------------------------------------------------
-
-// recent notes logic
 
 function markNoteAsRecent(noteId: string) {
   noteStore.setState((state) => {
@@ -220,9 +207,21 @@ function pruneRecentNotes() {
   }));
 }
 
-//------------------------------------------------------------
+function areArraysShallowEqual<T>(previous: T[], next: T[]) {
+  return (
+    previous.length === next.length &&
+    previous.every(
+      (previousItem, itemIndex) => previousItem === next[itemIndex],
+    )
+  );
+}
 
-// store subscribers
+function getVisibleNotes(state: NoteStore) {
+  const notes = state.visibleIds
+    .map((id) => state.noteIndex.get(id))
+    .filter((note): note is NoteListItem => !!note);
+  return notes;
+}
 
 stateStore.subscribe((state) => {
   if (state.activeId !== prevId) {
@@ -244,22 +243,6 @@ stateStore.subscribe((state) => {
     });
   }
 });
-
-function areArraysShallowEqual<T>(previous: T[], next: T[]) {
-  return (
-    previous.length === next.length &&
-    previous.every(
-      (previousItem, itemIndex) => previousItem === next[itemIndex],
-    )
-  );
-}
-
-function getVisibleNotes(state: NoteStore) {
-  const notes = state.visibleIds
-    .map((id) => state.noteIndex.get(id))
-    .filter((note): note is NoteListItem => !!note);
-  return notes;
-}
 
 noteStore.subscribeSel(
   getVisibleNotes,
