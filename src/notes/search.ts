@@ -38,7 +38,7 @@ export class NoteSearch {
 
   private toDoc(note: NoteListItem): NoteSearchDoc {
     return {
-      id: String(note.id),
+      id: note.id,
       title: note.title ?? "",
       snippet: note.snippet ?? "",
       tags: Array.isArray(note.tags) ? note.tags : [],

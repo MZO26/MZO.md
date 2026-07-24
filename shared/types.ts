@@ -65,7 +65,22 @@ type Failure<E = AppErrorCode> = {
 
 type Result<T, E = AppErrorCode> = Success<T> | Failure<E>;
 
-type WorkerResult<T = WorkerErrorCode> = Success<T> | Failure<T>;
+type WorkerSuccess<T> = {
+  success: true;
+  data: T;
+};
+
+interface WorkerRequest<T> {
+  id: string;
+  payload: T;
+}
+
+type WorkerFailure<E = WorkerErrorCode> = {
+  success: false;
+  error: E;
+};
+
+type WorkerResult<T, E = WorkerErrorCode> = WorkerSuccess<T> | WorkerFailure<E>;
 
 type Action = {
   type?: "action";
@@ -115,6 +130,13 @@ type FileContent = {
   previousTitle?: string;
   content: string;
   extension: "md";
+};
+
+type ImageCompressionPayload = {
+  buffer: ArrayBuffer;
+  mimeType: string;
+  maxWidth: number;
+  quality: number;
 };
 
 type PDFAssets = { template: string; css: string };
@@ -233,6 +255,7 @@ export type {
   Failure,
   FileContent,
   FilterMode,
+  ImageCompressionPayload,
   ImportedContent,
   ImportExtension,
   ImportStats,
@@ -259,6 +282,7 @@ export type {
   ToolbarItem,
   UIRegistry,
   UrlDecision,
+  WorkerRequest,
   WorkerResult,
   ZoomAction,
 };

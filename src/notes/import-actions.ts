@@ -1,9 +1,7 @@
-import {
-  getCachedEditorExtensions,
-  getMarkdownManager,
-} from "@/components/editor/editor-features";
+import { getCachedEditorExtensions } from "@/components/editor/editor-features";
 import { stateStore } from "@/settings/app-state";
 import { addActiveTagToDoc } from "@/utils/note";
+import { getAppItem } from "@/utils/registry";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import {
@@ -42,7 +40,8 @@ function normalizeFileContent(file: ImportedContent): EditorDoc | undefined {
         return isEditorDoc(doc) ? doc : undefined;
       }
       case "md": {
-        const doc = getMarkdownManager().parse(content);
+        const editor = getAppItem("editor");
+        const doc = editor.markdown?.parse(content);
         return isEditorDoc(doc) ? doc : undefined;
       }
       case "txt": {

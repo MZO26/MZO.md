@@ -1,10 +1,11 @@
 import { createNote } from "@/api/api";
-import { getMarkdownManager } from "@/components/editor/editor-features";
 import { isAutoExportEnabled } from "@/notes/note-actions";
 import { noteStore, searchEngine } from "@/settings/app-state";
+import { getAppItem } from "@/utils/registry";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
 
 async function handleDuplicateNote(note: Note) {
+  const editor = getAppItem("editor");
   const isAutoExport = isAutoExportEnabled();
   const {
     id: originalId,
@@ -17,10 +18,9 @@ async function handleDuplicateNote(note: Note) {
   const outgoingLinkIds = originalLinks
     .filter((link) => link.dir === "out")
     .map((link) => link.id);
-  let markdown: string | undefined;
-  if (isAutoExport) {
-    markdown = getMarkdownManager().serialize(note.content);
-  }
+  const markdown = isAutoExport
+    ? editor.markdown?.serialize(note.content)
+    : undefined;
   const data: CreateNotePayload = {
     ...rest,
     ...(isAutoExport && markdown !== undefined ? { markdown } : {}),

@@ -1,4 +1,5 @@
 enum WorkerErrorCode {
+  InitializeError = "INIT_ERROR",
   CompressionError = "COMPRESSION_FAILED",
   InvalidImageError = "INVALID_IMAGE",
   UnknownError = "UNKNOWN_ERROR",
@@ -16,6 +17,7 @@ enum AppErrorCode {
 }
 
 const WORKER_ERROR_MESSAGES: Record<WorkerErrorCode, string> = {
+  [WorkerErrorCode.InitializeError]: "Worker failed to initialize",
   [WorkerErrorCode.CompressionError]: "Image compression failed.",
   [WorkerErrorCode.InvalidImageError]: "Invalid image file.",
   [WorkerErrorCode.UnknownError]: "An unexpected worker error occurred.",

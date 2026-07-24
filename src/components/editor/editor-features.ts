@@ -6,47 +6,24 @@ import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS } from "@shared/constants";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import { Editor } from "@tiptap/core";
-import { MarkdownManager } from "@tiptap/markdown";
-import { EditorState, TextSelection } from "@tiptap/pm/state";
 import { getSearchState } from "prosemirror-search";
 
 let editorExtensions: ReturnType<typeof getRequestExtensions> | undefined;
-let markdownManager: MarkdownManager | undefined;
 
 function recreateEditorState(editor: Editor, doc: EditorDoc) {
-  const resetState = EditorState.create({
-    schema: editor.schema,
-    doc: editor.state.doc,
-    plugins: editor.state.plugins,
-  });
-  editor.view.updateState(resetState);
-  const newDoc = editor.schema.nodeFromJSON(doc);
-  let tr = editor.view.state.tr.replaceWith(
-    0,
-    editor.view.state.doc.content.size,
-    newDoc.content,
-  );
-  tr = tr.setMeta("addToHistory", false);
-  tr = tr.setSelection(TextSelection.atStart(tr.doc));
-  console.log(editor.state.selection.from);
-  editor.view.dispatch(tr);
-  requestAnimationFrame(() => {
-    const scroller = editor.view.dom.parentElement;
-    if (scroller) {
-      scroller.scrollTop = 0;
-    }
-  });
-  editor.view.focus();
+  editor
+    .chain()
+    .setMeta("addToHistory", false)
+    .setContent(doc, {
+      emitUpdate: true,
+      errorOnInvalidContent: false,
+    })
+    .focus("start")
+    .run();
 }
 
 function getCachedEditorExtensions() {
   return (editorExtensions ??= getRequestExtensions());
-}
-
-function getMarkdownManager() {
-  return (markdownManager ??= new MarkdownManager({
-    extensions: getCachedEditorExtensions(),
-  }));
 }
 
 function hasSearchMatch(editor: Editor): boolean {
@@ -199,20 +176,15 @@ function initEditorSearch(editor: Editor) {
   });
 
   editorWrapper.addEventListener("keydown", (event) => {
-    const isFind =
-      (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f";
-    if (!isFind) return;
-    event.preventDefault();
-    open();
+    if (!event.ctrlKey && !event.metaKey) return;
+    if (event.key === "f" || event.key === "F") {
+      event.preventDefault();
+      open();
+    }
   });
 
   updateButtons();
   return { open, close };
 }
 
-export {
-  getCachedEditorExtensions,
-  getMarkdownManager,
-  initEditorSearch,
-  recreateEditorState,
-};
+export { getCachedEditorExtensions, initEditorSearch, recreateEditorState };

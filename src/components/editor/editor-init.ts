@@ -237,8 +237,7 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   editorWrapper.addEventListener("contextmenu", (e: MouseEvent) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
-    const cell = target.closest(".ProseMirror table .selectedCell");
-    if (cell) {
+    if (target.closest(".selectedCell")) {
       e.preventDefault();
       window.electronAPI.showContextMenu("table");
     }

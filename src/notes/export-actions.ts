@@ -1,8 +1,6 @@
 import { getNoteById } from "@/api/api";
-import {
-  getCachedEditorExtensions,
-  getMarkdownManager,
-} from "@/components/editor/editor-features";
+import { getCachedEditorExtensions } from "@/components/editor/editor-features";
+import { getAppItem } from "@/utils/registry";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { titleGenerator } from "@shared/generators";
@@ -53,14 +51,14 @@ async function getBatchExportContent(
         };
       }
       case "md": {
-        const manager = getMarkdownManager();
+        const editor = getAppItem("editor");
         return {
           success: true,
           data: notes.map((note) => ({
             created_at: note.created_at,
             fileName: note.title,
             extension: extension,
-            content: manager.serialize(note.content),
+            content: editor.markdown?.serialize(note.content) ?? "",
           })),
         };
       }
@@ -115,13 +113,14 @@ async function getExportContent(
       };
     }
     case "md": {
+      const editor = getAppItem("editor");
       return {
         success: true,
         data: {
           created_at: note.created_at,
           extension,
           fileName: titleGenerator(note.content),
-          content: getMarkdownManager().serialize(note.content),
+          content: editor.markdown?.serialize(note.content) ?? "",
         },
       };
     }

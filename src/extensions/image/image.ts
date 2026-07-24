@@ -1,41 +1,8 @@
 import { imageWriteMany } from "@/api/api";
+import { compressImageInWorker } from "@/utils/workers/worker-line";
 import { ALLOWED_TYPES, MAX_SIZE, MIME_TO_EXT } from "@shared/constants";
 import type { ImagePayload } from "@shared/schemas/image-schema";
-import type { Result } from "@shared/types";
 import type { Editor } from "@tiptap/core";
-
-const worker = new Worker(new URL("./image-worker.ts", import.meta.url), {
-  type: "module",
-});
-
-function compressImageInWorker(
-  file: File,
-  maxWidth = 1000,
-  quality = 0.9,
-): Promise<Result<Uint8Array>> {
-  return new Promise(async (resolve) => {
-    // uuid for compression job. functions like a tracking number to identify request
-    const id = crypto.randomUUID();
-    const arrayBuffer = await file.arrayBuffer();
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data.id === id) {
-        // only if id matches to filter out unrelated messages to this image
-        worker.removeEventListener("message", handleMessage); // removes listener to free up memory
-        if (event.data.success) {
-          // if compression worked, event.data.data returns the compressed Uint8Array ready for IPC bridge.
-          resolve({ success: true, data: event.data.data });
-        } else {
-          resolve({ success: false, error: event.data.message });
-        }
-      }
-    };
-    worker.addEventListener("message", handleMessage);
-    worker.postMessage(
-      { id, buffer: arrayBuffer, mimeType: file.type, maxWidth, quality },
-      [arrayBuffer],
-    );
-  });
-}
 
 async function processAndInsertImages(files: File[], editor: Editor | null) {
   if (!editor) return;
