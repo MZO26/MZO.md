@@ -4,6 +4,7 @@ enum WorkerErrorCode {
   InvalidImageError = "INVALID_IMAGE",
   UnknownError = "UNKNOWN_ERROR",
   TimeoutError = "TIMEOUT_ERROR",
+  InvalidDataError = "INVALID_DATA",
 }
 
 enum AppErrorCode {
@@ -18,6 +19,7 @@ enum AppErrorCode {
 }
 
 const WORKER_ERROR_MESSAGES: Record<WorkerErrorCode, string> = {
+  [WorkerErrorCode.InvalidDataError]: "Worker got invalid payload",
   [WorkerErrorCode.TimeoutError]: "Worker took too long",
   [WorkerErrorCode.InitializeError]: "Worker failed to initialize",
   [WorkerErrorCode.CompressionError]: "Image compression failed.",

@@ -11,25 +11,24 @@ import {
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
-import { CustomHeading } from "@/extensions/overrides/headings";
 import {
   CustomBlockMath,
   CustomInlineMath,
-  handleMathClick,
-} from "@/extensions/overrides/mathematics";
+} from "@/extensions/mathematics/mathematics";
+import { handleMathClick } from "@/extensions/mathematics/mathematics-dialog";
+import { CustomHeading } from "@/extensions/overrides/headings";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { Placeholder } from "@/extensions/placeholder";
-import { NoteTag } from "@/extensions/tag";
+import { NoteTag } from "@/extensions/tag/tag";
+import { NoteTagHandler } from "@/extensions/tag/tag-handler";
 import { TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
-import { WikiLinkPreview } from "@/extensions/wikilinks/wikilink-preview";
-import { WikiLink } from "@/extensions/wikilinks/wikilinks";
+import { WikilinkHandler } from "@/extensions/wikilink/wikilink-handler";
+import { WikiLinkPreview } from "@/extensions/wikilink/wikilink-preview";
+import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
-import {
-  noteStore,
-  restoreSidebarScope,
-  stateStore,
-} from "@/settings/app-state";
+import { noteStore, stateStore } from "@/state/state";
+import { restoreSidebarScope } from "@/state/state-helpers";
 import { requireElement } from "@/utils/dom";
 import { createGlobalSpinner } from "@/utils/ui";
 import {
@@ -58,10 +57,7 @@ export const updateToc = initTableOfContents();
 
 function initEditor(settings: Partial<AppSettings>): Editor {
   const editorWrapper = requireElement<HTMLDivElement>("#editor");
-  if (editor) {
-    return editor;
-  }
-  editor = new Editor({
+  editor ??= new Editor({
     element: editorWrapper,
     extensions: getNoteEditorExtensions(),
     editorProps: {
@@ -96,8 +92,7 @@ function getNoteEditorExtensions() {
     }),
     CustomUnderline,
     Highlight,
-    WikiLinkPreview,
-    WikiLink.configure({
+    WikilinkHandler.configure({
       onClick: async (id) => {
         const noteExists = noteStore.get("noteIndex").has(id);
         if (!noteExists) {
@@ -111,6 +106,7 @@ function getNoteEditorExtensions() {
         restoreSidebarScope();
       },
     }),
+    WikiLinkPreview,
     Placeholder,
     TextMetrics.configure({
       limit: MAX_CHARACTERS,
@@ -126,7 +122,7 @@ function getNoteEditorExtensions() {
       },
       HTMLAttributes: { loading: "lazy" },
     }),
-    NoteTag.configure({
+    NoteTagHandler.configure({
       onClick: (id: string) => {
         applyTagView(id);
       },

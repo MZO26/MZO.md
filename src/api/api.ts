@@ -1,4 +1,4 @@
-import { settingsStore } from "@/settings/app-state";
+import { settingsStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { DEBOUNCE_MS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";

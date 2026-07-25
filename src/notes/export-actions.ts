@@ -1,5 +1,5 @@
 import { getNoteById } from "@/api/api";
-import { getCachedEditorExtensions } from "@/components/editor/editor-features";
+import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import { getAppItem } from "@/utils/registry";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";

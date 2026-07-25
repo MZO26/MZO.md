@@ -1,8 +1,8 @@
 import { selectAutoExportFolder, updateSettings } from "@/api/api";
 import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
-import { noteStore } from "@/settings/app-state";
 import { selectBuilder } from "@/settings/setting-factory";
 import { applyAppTheme, resolveTheme, setCodeTheme } from "@/settings/theme";
+import { noteStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";

@@ -1,6 +1,6 @@
 import { getNoteById } from "@/api/api";
-import { getCachedEditorExtensions } from "@/components/editor/editor-features";
-import { noteStore, stateStore } from "@/settings/app-state";
+import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
+import { noteStore, stateStore } from "@/state/state";
 import { getAppItem } from "@/utils/registry";
 import { DOMPURIFY_CONFIG, KATEX_MACROS } from "@shared/constants";
 import type { Note } from "@shared/schemas/note-schema";

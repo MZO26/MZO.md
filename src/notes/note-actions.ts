@@ -14,15 +14,17 @@ import { updateStats } from "@/components/sidebar/sidebar-features";
 import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
 import {
-  markNoteAsRecent,
-  matchesActiveTag,
   noteStore,
-  pruneRecentNotes,
-  removeRecentNote,
   searchEngine,
   settingsStore,
   stateStore,
-} from "@/settings/app-state";
+} from "@/state/state";
+import {
+  markNoteAsRecent,
+  matchesActiveTag,
+  pruneRecentNotes,
+  removeRecentNote,
+} from "@/state/state-helpers";
 import { debounce } from "@/utils/async";
 import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";

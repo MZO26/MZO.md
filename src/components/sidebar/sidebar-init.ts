@@ -21,12 +21,8 @@ import {
   handleImportNote,
   handleSelectNote,
 } from "@/notes/note-actions";
-import {
-  clearActiveTagView,
-  noteStore,
-  settingsStore,
-  stateStore,
-} from "@/settings/app-state";
+import { noteStore, settingsStore, stateStore } from "@/state/state";
+import { clearActiveTagView } from "@/state/state-helpers";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItems, getUIItems, registerAppEvents } from "@/utils/registry";

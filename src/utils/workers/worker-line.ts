@@ -8,6 +8,15 @@ const imageWorker =
       })
     : null;
 
+const markdownWorker =
+  typeof window !== "undefined"
+    ? new Worker(new URL("./worker-markdown.ts", import.meta.url), {
+        type: "module",
+      })
+    : null;
+
+const workOnMarkdownParsing = createWorker<string, string>(markdownWorker);
+
 const workOnImageCompression = createWorker<
   ImageCompressionPayload,
   Uint8Array
@@ -32,4 +41,10 @@ async function compressImageInWorker(
   );
 }
 
-export { compressImageInWorker, imageWorker, workOnImageCompression };
+export {
+  compressImageInWorker,
+  imageWorker,
+  markdownWorker,
+  workOnImageCompression,
+  workOnMarkdownParsing,
+};

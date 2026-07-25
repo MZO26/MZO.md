@@ -1146,6 +1146,10 @@ svg.empty-state-icon {
   overflow-wrap: break-word;
 }
 
+.wikilink-preview-content::selection {
+  background-color: var(--selection-bg);
+}
+
 .wikilink-preview-content::-webkit-scrollbar-corner {
   background-color: transparent;
 }

@@ -15,7 +15,7 @@ import {
   toggleToolbar,
 } from "@/components/toolbar/toolbar-features";
 import { handleSelectNote } from "@/notes/note-actions";
-import { stateStore } from "@/settings/app-state";
+import { stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";

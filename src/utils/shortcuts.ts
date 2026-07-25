@@ -1,5 +1,5 @@
 import { handleZoom } from "@/api/api";
-import { stateStore } from "@/settings/app-state";
+import { stateStore } from "@/state/state";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 

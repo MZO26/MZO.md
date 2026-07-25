@@ -1,6 +1,6 @@
 import { createNote } from "@/api/api";
 import { isAutoExportEnabled } from "@/notes/note-actions";
-import { noteStore, searchEngine } from "@/settings/app-state";
+import { noteStore, searchEngine } from "@/state/state";
 import { getAppItem } from "@/utils/registry";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
 

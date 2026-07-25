@@ -1,6 +1,6 @@
 import { openExternal } from "@/api/api";
 import { promptImageUpload } from "@/extensions/image/image";
-import { openMathDialog } from "@/extensions/overrides/mathematics";
+import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
 import type { LinkAttributes } from "@shared/types";
 import { Extension } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";

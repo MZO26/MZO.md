@@ -37,6 +37,7 @@ function createWorker<WInput, WOutput>(worker: Worker | null) {
         return;
       }
       const id = crypto.randomUUID();
+      const startTime = performance.now();
       let timer: ReturnType<typeof setTimeout>;
       const workerDone = () => {
         clearTimeout(timer);
@@ -49,8 +50,10 @@ function createWorker<WInput, WOutput>(worker: Worker | null) {
         if (event.data.id === id) {
           workerDone();
           if (event.data.success) {
+            const endTime = performance.now();
+            const timeTakenMs = Math.round(endTime - startTime);
             console.log(
-              `Worker with ID: ${id} took ${timer} ms to complete the job`,
+              `Worker with ID: ${id} took ${timeTakenMs} ms to complete the job`,
             );
             resolve({ success: true, data: event.data.data });
           } else {
@@ -65,6 +68,7 @@ function createWorker<WInput, WOutput>(worker: Worker | null) {
         workerDone();
         resolve({ success: false, error: WorkerErrorCode.UnknownError });
       };
+
       timer = setTimeout(() => {
         workerDone();
         resolve({

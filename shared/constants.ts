@@ -97,7 +97,7 @@ const UNTAGGED = "_untagged_";
 
 const SIDEBAR_ALL_NOTES_LIMIT = 50;
 
-const MAX_WORKER_TIMEOUT_MS = 20_000;
+const MAX_WORKER_TIMEOUT_MS = 120_000;
 
 const SIDEBAR_FILTER_MODES = ["recent", "search", "tag"] as const;
 

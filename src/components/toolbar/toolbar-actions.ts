@@ -7,7 +7,7 @@ import {
   toggleToolbar,
 } from "@/components/toolbar/toolbar-features";
 import { promptImageUpload } from "@/extensions/image/image";
-import { openMathDialog } from "@/extensions/overrides/mathematics";
+import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
 import { getAppItem } from "@/utils/registry";
 import type { ActionMap } from "@shared/types";
 

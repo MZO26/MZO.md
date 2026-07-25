@@ -5,7 +5,6 @@ import {
   showNotification,
 } from "@/api/api";
 import { exportSelection } from "@/components/sidebar/sidebar-selection";
-import { noteStore } from "@/settings/app-state";
 import { settingsContainer, settingsDialog } from "@/settings/dialog-init";
 import {
   createSettingsMenu,
@@ -16,6 +15,7 @@ import {
   setSelectListeners,
 } from "@/settings/setting-items-init";
 import { applyAppTheme } from "@/settings/theme";
+import { noteStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";

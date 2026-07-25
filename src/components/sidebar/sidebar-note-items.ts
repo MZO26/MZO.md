@@ -2,7 +2,7 @@ import {
   handleSidebarEmptyState,
   renderNoteList,
 } from "@/components/sidebar/sidebar-ui";
-import { settingsStore } from "@/settings/app-state";
+import { settingsStore } from "@/state/state";
 import { formatNoteDate } from "@/utils/date";
 import { findElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";

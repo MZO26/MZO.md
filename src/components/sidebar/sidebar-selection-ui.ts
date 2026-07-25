@@ -1,5 +1,5 @@
 import { createIconButton } from "@/components/sidebar/sidebar-features";
-import { noteStore, stateStore } from "@/settings/app-state";
+import { noteStore, stateStore } from "@/state/state";
 import { findElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";

@@ -1,7 +1,7 @@
-import { getCachedEditorExtensions } from "@/components/editor/editor-features";
-import { stateStore } from "@/settings/app-state";
+import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
+import { stateStore } from "@/state/state";
 import { addActiveTagToDoc } from "@/utils/note";
-import { getAppItem } from "@/utils/registry";
+import { workOnMarkdownParsing } from "@/utils/workers/worker-line";
 import { DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import {
@@ -18,7 +18,9 @@ import DOMPurify from "dompurify";
 
 // function to either sanitize content or format it to make import cleaner
 
-function normalizeFileContent(file: ImportedContent): EditorDoc | undefined {
+async function normalizeFileContent(
+  file: ImportedContent,
+): Promise<EditorDoc | undefined> {
   const { content, extension } = file;
   if (typeof content !== "string") return undefined;
   try {
@@ -40,9 +42,21 @@ function normalizeFileContent(file: ImportedContent): EditorDoc | undefined {
         return isEditorDoc(doc) ? doc : undefined;
       }
       case "md": {
-        const editor = getAppItem("editor");
-        const doc = editor.markdown?.parse(content);
-        return isEditorDoc(doc) ? doc : undefined;
+        try {
+          const response = await workOnMarkdownParsing(content);
+          if (!response.success) {
+            console.error(
+              "[normalizeFileContent]: Worker failed to parse Markdown:",
+              response.error,
+            );
+            return undefined;
+          }
+          const doc = response.success ? JSON.parse(response.data) : undefined;
+          return isEditorDoc(doc) ? doc : undefined;
+        } catch (error) {
+          console.error("[normalizeFileContent]: Failed to parse JSON");
+          return undefined;
+        }
       }
       case "txt": {
         const doc = wrapAsDoc(textConverter(content));
@@ -74,7 +88,7 @@ async function setImportedContent(
     const processedPayloads: CreateNotePayload[] = [];
     const activeTag = stateStore.get("activeTag");
     for (const file of files) {
-      const json = normalizeFileContent(file);
+      const json = await normalizeFileContent(file);
       if (!json) continue;
       const updatedJson = addActiveTagToDoc(json, activeTag);
       const metadata = getMetadata(updatedJson);

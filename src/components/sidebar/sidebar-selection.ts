@@ -5,15 +5,15 @@ import {
   pinMany,
   showNotification,
 } from "@/api/api";
-import { getCachedEditorExtensions } from "@/components/editor/editor-features";
+import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import {
   setSelectionMode,
   updateSelectionUI,
 } from "@/components/sidebar/sidebar-selection-ui";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
-import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
 import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
+import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { MAX_CHARACTERS } from "@shared/constants";
 import { generateHTML, generateText } from "@tiptap/core";

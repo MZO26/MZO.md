@@ -1,7 +1,7 @@
 import { pinWindow, setTheme, updateSettings } from "@/api/api";
 import { createDivider } from "@/components/toolbar/toolbar-factory";
 import { toolbarApi } from "@/components/toolbar/toolbar-init";
-import { noteStore, stateStore } from "@/settings/app-state";
+import { noteStore, stateStore } from "@/state/state";
 import { createInfoSpan } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";

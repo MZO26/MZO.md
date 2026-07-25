@@ -1,11 +1,8 @@
 import { createInfoSpan } from "@/components/sidebar/sidebar-features";
 import { handleSelectNote } from "@/notes/note-actions";
-import {
-  noteStore,
-  restoreSidebarScope,
-  stateStore,
-} from "@/settings/app-state";
 import { listEl, switchDialog } from "@/settings/dialog-init";
+import { noteStore, stateStore } from "@/state/state";
+import { restoreSidebarScope } from "@/state/state-helpers";
 import { getAppItem } from "@/utils/registry";
 import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
 import type { NoteListItem } from "@shared/schemas/note-schema";

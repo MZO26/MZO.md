@@ -13,7 +13,7 @@ import {
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
 import { debouncedSaveNote, handleSaveNote } from "@/notes/note-actions";
-import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
+import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 

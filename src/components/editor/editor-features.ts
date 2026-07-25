@@ -1,4 +1,3 @@
-import { getRequestExtensions } from "@/components/editor/editor-init";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { waitForPaint } from "@/utils/note";
@@ -7,8 +6,6 @@ import { DEBOUNCE_MS } from "@shared/constants";
 import type { EditorDoc } from "@shared/schemas/editor-schema";
 import { Editor } from "@tiptap/core";
 import { getSearchState } from "prosemirror-search";
-
-let editorExtensions: ReturnType<typeof getRequestExtensions> | undefined;
 
 function recreateEditorState(editor: Editor, doc: EditorDoc) {
   editor
@@ -21,10 +18,6 @@ function recreateEditorState(editor: Editor, doc: EditorDoc) {
     })
     .focus("start")
     .run();
-}
-
-function getCachedEditorExtensions() {
-  return (editorExtensions ??= getRequestExtensions());
 }
 
 function hasSearchMatch(editor: Editor): boolean {
@@ -188,4 +181,4 @@ function initEditorSearch(editor: Editor) {
   return { open, close };
 }
 
-export { getCachedEditorExtensions, initEditorSearch, recreateEditorState };
+export { initEditorSearch, recreateEditorState };

@@ -1,6 +1,6 @@
 import { createIconButton } from "@/components/sidebar/sidebar-features";
 import { createNoteItem } from "@/components/sidebar/sidebar-note-items";
-import { noteStore, stateStore } from "@/settings/app-state";
+import { noteStore, stateStore } from "@/state/state";
 import {
   createInfoSpan,
   findElement,

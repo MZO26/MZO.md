@@ -1,4 +1,4 @@
-import { noteStore } from "@/settings/app-state";
+import { noteStore } from "@/state/state";
 import type { NoteListItem, NoteSearchDoc } from "@shared/schemas/note-schema";
 import MiniSearch, { type Options } from "minisearch";
 

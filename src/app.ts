@@ -12,8 +12,10 @@ import {
   initToolbar,
   initTopToolbar,
 } from "@/components/toolbar/toolbar-init";
-import { initSettings, stateStore, syncNoteStore } from "@/settings/app-state";
 import { initAppSettings } from "@/settings/setting-init";
+import { stateStore } from "@/state/state";
+import { initSettings, syncNoteStore } from "@/state/state-init";
+import "@/state/state-subscribe";
 import { startAppClock } from "@/utils/date";
 import { renderIcons } from "@/utils/icons";
 import {

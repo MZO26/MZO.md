@@ -6,15 +6,13 @@ import {
 import { getTextMetrics } from "@/extensions/text-metrics";
 import { handleImportNote } from "@/notes/note-actions";
 import type { SearchMatchResult } from "@/notes/search";
+import { noteStore, searchEngine, stateStore } from "@/state/state";
 import {
   applySearch,
   applyTagView,
   applyUntaggedView,
-  noteStore,
   restoreSidebarScope,
-  searchEngine,
-  stateStore,
-} from "@/settings/app-state";
+} from "@/state/state-helpers";
 import { debounce } from "@/utils/async";
 import { createIconButton, createInfoSpan, requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";

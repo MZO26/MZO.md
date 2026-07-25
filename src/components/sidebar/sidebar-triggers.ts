@@ -8,16 +8,16 @@ import {
   showNotification,
   syncRequest,
 } from "@/api/api";
-import { getCachedEditorExtensions } from "@/components/editor/editor-features";
+import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote } from "@/notes/note-actions";
 import { handleDuplicateNote } from "@/notes/note-duplicate";
-import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
 import {
   confirmWithDialog,
   deleteDialog,
   syncDialog,
 } from "@/settings/dialog-init";
+import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { sleep } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
