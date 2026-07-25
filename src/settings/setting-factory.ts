@@ -51,7 +51,7 @@ function initQuickActionContainer() {
   const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
   const row = document.createElement("div");
   row.className = "settings-row";
-  row.dataset["category"] = "General" as SettingsCategory;
+  row.dataset["category"] = "General";
   const frag = document.createDocumentFragment();
   for (const action of QUICK_ACTIONS) {
     const btn = createIconButton(action.icon, action.label);

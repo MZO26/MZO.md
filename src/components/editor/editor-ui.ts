@@ -1,6 +1,11 @@
-import { findElement } from "@/utils/dom";
+import { createTemplateCloner, findElement, isDiv } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getTemplateItem } from "@/utils/registry";
+
+const getEditorEmptyStateClone = createTemplateCloner(
+  "editorEmptyStateTemplate",
+  isDiv,
+);
 
 function handleEditorEmptyState(activeId: string | null) {
   const editorContainer = getAppItem("editorContainer");
@@ -15,7 +20,7 @@ function handleEditorEmptyState(activeId: string | null) {
   topToolbar?.classList.toggle("hidden", showEmptyState);
   if (showEmptyState) {
     if (!existingEmptyState) {
-      const newEmptyState = createEditorEmptyState();
+      const newEmptyState = getEditorEmptyStateClone();
       editorContainer.appendChild(newEmptyState);
       renderIcons(newEmptyState);
     }
@@ -24,12 +29,4 @@ function handleEditorEmptyState(activeId: string | null) {
   }
 }
 
-function createEditorEmptyState() {
-  const template = getTemplateItem("editorEmptyStateTemplate");
-  const emptyState = template.content.firstElementChild?.cloneNode(
-    true,
-  ) as HTMLDivElement;
-  return emptyState;
-}
-
-export { createEditorEmptyState, handleEditorEmptyState };
+export { handleEditorEmptyState };

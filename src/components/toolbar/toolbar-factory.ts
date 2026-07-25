@@ -95,7 +95,8 @@ function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
     const target = e.target as HTMLElement | null;
     if (!target) return;
     const btn = target.closest<HTMLButtonElement>("[data-action]");
-    const key = btn?.getAttribute("data-action") as keyof typeof actions;
+    const key = btn?.getAttribute("data-action");
+    if (!key) return;
     const item = actions[key];
     if (item && "run" in item) {
       item.run(editor);

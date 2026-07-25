@@ -1,3 +1,6 @@
+import type { TemplateRegistry } from "@shared/types";
+import { getTemplateItem } from "./registry";
+
 function requireElement<T extends HTMLElement>(
   selector: string,
   parent: Document | HTMLElement = document,
@@ -16,7 +19,7 @@ function findElement<T extends HTMLElement>(
   return parent.querySelector<T>(selector);
 }
 
-function setActiveItem(element: HTMLElement, parent: HTMLElement) {
+function setActiveItem(element: HTMLElement | null, parent: HTMLElement) {
   if (!element) return;
   const currentlyActive = parent.querySelector(".is-active");
   if (currentlyActive) {
@@ -51,10 +54,41 @@ function createInfoSpan(
   return span;
 }
 
+function createTemplateCloner<T extends Element>(
+  template: keyof TemplateRegistry,
+  fn: (node: Node | null) => node is T,
+) {
+  let cachedNode: T | null = null;
+  return function getClone(): T {
+    if (!cachedNode) {
+      const templateElement = getTemplateItem(template);
+      if (!(templateElement instanceof HTMLTemplateElement)) {
+        throw new Error(`Element '${template}' is not a template.`);
+      }
+      const templateChild = templateElement.content.firstElementChild;
+      if (!fn(templateChild)) {
+        throw new Error(`Template '${template}' is missing.`);
+      }
+      cachedNode = templateChild;
+    }
+    const clonedNode = cachedNode.cloneNode(true);
+    if (!fn(clonedNode)) {
+      throw new Error(`Failed to clone template '${template}'.`);
+    }
+    return clonedNode;
+  };
+}
+
+function isDiv(node: Node | null): node is HTMLDivElement {
+  return node instanceof HTMLDivElement;
+}
+
 export {
   createIconButton,
   createInfoSpan,
+  createTemplateCloner,
   findElement,
+  isDiv,
   requireElement,
   setActiveItem,
 };

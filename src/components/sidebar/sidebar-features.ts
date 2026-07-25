@@ -45,8 +45,8 @@ function handleSearchInput(searchInput: string) {
     : searchEngine.search(nextQuery);
   applySearch(results);
   const noteElements = Array.from(
-    sidebar.getElementsByClassName("note-item"),
-  ) as HTMLDivElement[];
+    sidebar.querySelectorAll<HTMLDivElement>("note-item"),
+  );
   updateSearchHighlights(noteElements, results);
 }
 

@@ -26,7 +26,7 @@ const IPC_TIMERS = new Map<string, number>();
 
 const ZOOMS = [1, 1.1, 1.25] as const;
 
-const CONTENT_TYPE_MAP: Record<string, EditorContentType> = {
+const CONTENT_TYPE_MAP: Record<string, EditorContentType | undefined> = {
   md: "markdown",
   html: "html",
   json: "json",
@@ -50,12 +50,12 @@ const DEBOUNCE_MS = {
   slow: 3000, // note save + auto export
 } as const;
 
-const MIME_TO_EXT = {
+const MIME_TO_EXT: Record<string, string | undefined> = {
   "image/jpeg": "jpeg",
   "image/png": "png",
   "image/gif": "gif",
   "image/webp": "webp",
-} as const;
+};
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 

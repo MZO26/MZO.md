@@ -3,16 +3,23 @@ import { createNoteItem } from "@/components/sidebar/sidebar-note-items";
 import { noteStore, stateStore } from "@/state/state";
 import {
   createInfoSpan,
+  createTemplateCloner,
   findElement,
+  isDiv,
   requireElement,
   setActiveItem,
 } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { compareNotes, updateNoteCount } from "@/utils/note";
-import { getAppItem, getTemplateItem } from "@/utils/registry";
+import { getAppItem } from "@/utils/registry";
 import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { FilterMode } from "@shared/types";
+
+const getSidebarEmptyStateClone = createTemplateCloner(
+  "sidebarEmptyStateTemplate",
+  isDiv,
+);
 
 function setSidebarState(element: HTMLDivElement, collapsed: boolean) {
   const isCollapsed = element.classList.contains("collapsed");
@@ -31,10 +38,7 @@ function handleSidebarEmptyState() {
   );
   if (shouldShowEmptyState) {
     if (!existingEmptyState) {
-      const template = getTemplateItem("sidebarEmptyStateTemplate");
-      const newEmptyState = template.content.firstElementChild?.cloneNode(
-        true,
-      ) as HTMLDivElement;
+      const newEmptyState = getSidebarEmptyStateClone();
       updateSidebarEmptyState(newEmptyState);
       sidebar.appendChild(newEmptyState);
     } else {

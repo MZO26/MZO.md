@@ -4,18 +4,15 @@ import {
 } from "@/components/sidebar/sidebar-ui";
 import { settingsStore } from "@/state/state";
 import { formatNoteDate } from "@/utils/date";
-import { findElement } from "@/utils/dom";
+import { createTemplateCloner, findElement, isDiv } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { getTemplateItem } from "@/utils/registry";
 import { UNTITLED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 
-let cachedNoteItem: HTMLDivElement | null = null;
+const getNoteItemClone = createTemplateCloner("noteItemTemplate", isDiv);
 
 function createNoteItem(note: NoteListItem) {
-  cachedNoteItem ??= getTemplateItem("noteItemTemplate").content
-    .firstElementChild as HTMLDivElement;
-  const item = cachedNoteItem.cloneNode(true) as HTMLDivElement;
+  const item = getNoteItemClone();
   const display = settingsStore.get("note_item_display");
   item.setAttribute("data-id", note.id);
   item.setAttribute("data-pinned", String(!!note.pinned));
