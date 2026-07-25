@@ -97,6 +97,8 @@ const UNTAGGED = "_untagged_";
 
 const SIDEBAR_ALL_NOTES_LIMIT = 50;
 
+const MAX_WORKER_TIMEOUT_MS = 20_000;
+
 const SIDEBAR_FILTER_MODES = ["recent", "search", "tag"] as const;
 
 const ALLOWED_PROTOCOLS = ["https:", "http:", "appimg:", "file:"];
@@ -413,6 +415,7 @@ export {
   MAX_FILE_DROPS,
   MAX_IPC_PAYLOAD_SIZE,
   MAX_SIZE,
+  MAX_WORKER_TIMEOUT_MS,
   MIME_TO_EXT,
   NODE_BASELINE,
   NOTE_ITEM_DISPLAY_SETTINGS,

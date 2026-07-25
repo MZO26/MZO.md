@@ -40,8 +40,6 @@ function isAutoExportEnabled() {
   return settingsStore.get("auto_export") ?? false;
 }
 
-//----------------------------------------------------------
-
 // create
 
 async function handleCreateNote() {
@@ -74,8 +72,6 @@ async function handleCreateNote() {
   updateStats();
   markNoteAsRecent(result.data.id);
 }
-
-//------------------------------------------------------------
 
 // import + create many
 
@@ -126,8 +122,6 @@ async function handleImportNote(request: FilePathRequest) {
   }));
   searchEngine.addMany(result.data);
 }
-
-//----------------------------------------------------------
 
 // delete
 
@@ -188,8 +182,6 @@ async function handleDeleteNote(id: string) {
   removeRecentNote(id);
 }
 
-//---------------------------------------------------------
-
 // update
 
 async function handleSaveNote(id: string, flush: boolean = false) {
@@ -246,8 +238,6 @@ async function handleSaveNote(id: string, flush: boolean = false) {
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 
-//------------------------------------------------------------
-
 // getById
 
 async function handleSelectNote(id: string) {
@@ -284,8 +274,6 @@ async function handleSelectNote(id: string) {
   editor.setEditable(true, false);
   markNoteAsRecent(id);
 }
-
-//------------------------------------------------------------
 
 export {
   debouncedSaveNote,

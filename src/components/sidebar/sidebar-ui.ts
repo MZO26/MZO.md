@@ -14,19 +14,11 @@ import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { FilterMode } from "@shared/types";
 
-// sidebar
-
-// element is appContainer (sidebar is bound to grid layout)
-
 function setSidebarState(element: HTMLDivElement, collapsed: boolean) {
   const isCollapsed = element.classList.contains("collapsed");
   if (isCollapsed === collapsed) return;
   element.classList.toggle("collapsed", collapsed);
 }
-
-//-----------------------------------------------------------
-
-// sidebar empty state
 
 function handleSidebarEmptyState() {
   const sidebar = getAppItem("sidebar");
@@ -81,8 +73,6 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement) {
   iconEl.replaceChildren(newIcon);
   renderIcons(emptyState);
 }
-
-//----------------------------------------------------------
 
 // note list
 

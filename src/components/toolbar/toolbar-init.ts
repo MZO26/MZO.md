@@ -71,17 +71,17 @@ function initTopToolbar() {
   initTippyDelegate(topToolbar, appContainer);
   appPinBtn.addEventListener(
     "click",
-    createAsyncHandler(async () => setWindowTop(appPinBtn)),
+    createAsyncHandler(async () => await setWindowTop(appPinBtn)),
   );
   registerAppEvents(document, {
     "app:set-editor-width": () => setEditorWidth(appContainer),
-    "app:toggle-focus-mode": () => initFocusMode(),
-    "app:exit-focus-mode": () => {
+    "app:toggle-focus-mode": async () => await initFocusMode(),
+    "app:exit-focus-mode": async () => {
       if (appContainer.classList.contains("focus")) {
-        initFocusMode();
+        await initFocusMode();
       }
     },
-    "app:toggle-toolbar": () => toggleToolbar(),
+    "app:toggle-toolbar": async () => await toggleToolbar(),
   });
 }
 

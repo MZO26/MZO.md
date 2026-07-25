@@ -33,8 +33,6 @@ function subscribe<T extends unknown[]>(
   };
 }
 
-//----------------------------------------------------------
-
 contextBridge.exposeInMainWorld(
   "appInfo",
   Object.freeze({

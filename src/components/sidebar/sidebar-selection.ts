@@ -5,6 +5,7 @@ import {
   pinMany,
   showNotification,
 } from "@/api/api";
+import { getCachedEditorExtensions } from "@/components/editor/editor-features";
 import {
   setSelectionMode,
   updateSelectionUI,
@@ -16,13 +17,6 @@ import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
 import { requireElement } from "@/utils/dom";
 import { MAX_CHARACTERS } from "@shared/constants";
 import { generateHTML, generateText } from "@tiptap/core";
-import { getCachedEditorExtensions } from "../editor/editor-features";
-
-// sidebar footer selection mode
-
-//-------------------------------------------------------
-
-// selection actions
 
 async function copyRichTextSelection(selectedIds: string[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;

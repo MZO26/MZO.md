@@ -74,8 +74,6 @@ async function getBatchExportContent(
   }
 }
 
-//------------------------------------------------------------
-
 // single export content function triggered by callback on note menu interaction
 
 async function getExportContent(

@@ -124,13 +124,15 @@ function initQuickSwitcher() {
   }
 
   function handleDocumentKeydown(event: KeyboardEvent) {
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "p") {
+    if (!event.ctrlKey && !event.metaKey) return;
+    if (event.key === "p" || event.key === "P") {
       event.preventDefault();
       toggleSwitcher();
     }
   }
 
   function handleListClick(event: MouseEvent) {
+    if (!switchDialog.open) return;
     const target = event.target as HTMLElement | null;
     if (!target) return;
     const optionEl = target.closest<HTMLDivElement>("[data-index]");

@@ -25,8 +25,6 @@ import type {
   ZoomAction,
 } from "@shared/types";
 
-// only really needed for extra error catching if something goes through IPC Bridge which shouldn't happen
-
 async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
   try {
     return await ipcPromise;
@@ -35,8 +33,6 @@ async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
     return { success: false, error: AppErrorCode.UnknownError };
   }
 }
-
-//----------------------------------------------------------
 
 // note api
 
@@ -127,8 +123,6 @@ async function selectAutoExportFolder(): Promise<Result<string>> {
   return invoke(window.noteAPI.selectAutoExportFolder());
 }
 
-//----------------------------------------------------------
-
 // settings api
 
 async function getSettings<K extends keyof AppSettings>(
@@ -146,8 +140,6 @@ async function setSettings(
 ): Promise<Result<AppSettings>> {
   return invoke(window.storeAPI.setSettings(settings));
 }
-
-//----------------------------------------------------------
 
 // electron api
 
@@ -204,8 +196,6 @@ async function getAutoExportPath(
 async function pinWindow(): Promise<Result<boolean>> {
   return invoke(window.electronAPI.windowPin());
 }
-
-//----------------------------------------------------------
 
 // debounced calls
 

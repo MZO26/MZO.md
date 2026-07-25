@@ -1,3 +1,4 @@
+import { MAX_WORKER_TIMEOUT_MS } from "@shared/constants";
 import { WorkerErrorCode } from "@shared/errors";
 import type { WorkerResult } from "@shared/types";
 
@@ -18,7 +19,7 @@ function handleWorkerError(err: unknown): {
   if (err instanceof WorkerTaskError) {
     return { success: false, error: err.code };
   }
-  console.error("[Worker Error]: ", err);
+  console.error("[Worker Error]:", err);
   return {
     success: false,
     error: WorkerErrorCode.UnknownError,
@@ -36,25 +37,41 @@ function createWorker<WInput, WOutput>(worker: Worker | null) {
         return;
       }
       const id = crypto.randomUUID();
-      const handleMessage = (event: MessageEvent) => {
+      let timer: ReturnType<typeof setTimeout>;
+      const workerDone = () => {
+        clearTimeout(timer);
+        worker.removeEventListener("message", handleMessage);
+        worker.removeEventListener("error", handleError);
+      };
+      const handleMessage = (
+        event: MessageEvent<{ id: string } & WorkerResult<WOutput>>,
+      ) => {
         if (event.data.id === id) {
-          worker.removeEventListener("message", handleMessage);
-          worker.removeEventListener("error", handleError);
+          workerDone();
           if (event.data.success) {
-            resolve({ success: true, data: event.data.data as WOutput });
+            console.log(
+              `Worker with ID: ${id} took ${timer} ms to complete the job`,
+            );
+            resolve({ success: true, data: event.data.data });
           } else {
             resolve({
               success: false,
-              error: event.data.error as WorkerErrorCode,
+              error: event.data.error,
             });
           }
         }
       };
       const handleError = () => {
-        worker.removeEventListener("message", handleMessage);
-        worker.removeEventListener("error", handleError);
+        workerDone();
         resolve({ success: false, error: WorkerErrorCode.UnknownError });
       };
+      timer = setTimeout(() => {
+        workerDone();
+        resolve({
+          success: false,
+          error: WorkerErrorCode.TimeoutError,
+        });
+      }, MAX_WORKER_TIMEOUT_MS);
       worker.addEventListener("message", handleMessage);
       worker.addEventListener("error", handleError);
       worker.postMessage({ id, payload }, transferables);

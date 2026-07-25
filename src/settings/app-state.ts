@@ -1,4 +1,4 @@
-import { getAll, getAllSettings, updateSettings } from "@/api/api";
+import { updateSettings } from "@/api/api";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-ui";
@@ -9,6 +9,7 @@ import { getAppItem, getUIItem } from "@/utils/registry";
 import { DEFAULT_SETTINGS, UNTAGGED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
+import type { Result } from "@shared/types";
 
 interface AppState {
   activeId: string | null;
@@ -100,30 +101,28 @@ function createStore<T extends object>(initialState: T) {
   return { getState, get, setState, subscribe, subscribeSel };
 }
 
-async function loadSettings(): Promise<AppSettings> {
-  const result = await getAllSettings();
-  if (!result.success) {
-    console.error("[loadSettings]: Failed to load settings. Using defaults.");
+function initSettings(
+  settingsResult: Result<AppSettings> | null | undefined,
+): AppSettings {
+  if (!settingsResult?.success) {
+    console.error(
+      "[initSettings]: Failed to init settings. Using store state.",
+      settingsResult?.error,
+    );
     return settingsStore.getState();
   }
-  settingsStore.setState(result.data);
+  settingsStore.setState(settingsResult.data);
   return settingsStore.getState();
 }
 
-async function syncNoteStore() {
-  const result = await getAll();
-  if (!result.success) {
-    console.error("[getAll]: Failed to fetch all notes:", result.error);
-    return;
-  } else {
-    const sortedNotes = result.data.sort(compareNotes);
-    noteStore.setState({
-      notes: sortedNotes,
-      visibleIds: sortedNotes.map((n) => n.id),
-      noteIndex: new Map(sortedNotes.map((n) => [n.id, n] as const)),
-    });
-    searchEngine.bulkLoad(sortedNotes);
-  }
+function syncNoteStore(notes: NoteListItem[]) {
+  const sortedNotes = notes.sort(compareNotes);
+  noteStore.setState({
+    notes: sortedNotes,
+    visibleIds: sortedNotes.map((n) => n.id),
+    noteIndex: new Map(sortedNotes.map((n) => [n.id, n] as const)),
+  });
+  searchEngine.bulkLoad(sortedNotes);
 }
 
 function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
@@ -258,7 +257,7 @@ export {
   applyTagView,
   applyUntaggedView,
   clearActiveTagView,
-  loadSettings,
+  initSettings,
   markNoteAsRecent,
   matchesActiveTag,
   noteStore,

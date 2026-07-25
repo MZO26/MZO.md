@@ -1,22 +1,11 @@
 import { selectAutoExportFolder, updateSettings } from "@/api/api";
+import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
 import { noteStore } from "@/settings/app-state";
+import { selectBuilder } from "@/settings/setting-factory";
 import { applyAppTheme, resolveTheme, setCodeTheme } from "@/settings/theme";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import type {
-  AppSettings,
-  FontFamily,
-  FontSize,
-  HighlightTheme,
-  LineHeight,
-  NoteItemDisplay,
-  Theme,
-} from "@shared/schemas/store-schema";
-import type { ExportFormat } from "@shared/types";
-
-import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
-import { selectBuilder } from "@/settings/setting-factory";
 import {
   AUTO_EXPORT_SETTINGS,
   CODE_THEME_SETTINGS,
@@ -29,6 +18,16 @@ import {
   SPELLCHECK_SETTINGS,
   THEME_SETTINGS,
 } from "@shared/constants";
+import type {
+  AppSettings,
+  FontFamily,
+  FontSize,
+  HighlightTheme,
+  LineHeight,
+  NoteItemDisplay,
+  Theme,
+} from "@shared/schemas/store-schema";
+import type { ExportFormat } from "@shared/types";
 
 function buildSelects() {
   selectBuilder("theme", THEME_SETTINGS, "Appearance", "App-Theme");
@@ -85,8 +84,6 @@ function initAppearanceSettings(
     return;
   }
 
-  // code theme
-
   document.documentElement.setAttribute(
     "data-code-theme",
     settings["code_theme"],
@@ -97,8 +94,6 @@ function initAppearanceSettings(
     const codePref = setCodeTheme(baseTheme);
     updateSettings({ code_theme: codePref });
   });
-
-  // theme
   themeSelect.value = settings["theme"];
   themeSelect.addEventListener(
     "change",
@@ -117,8 +112,6 @@ function initAppearanceSettings(
     }),
   );
 
-  // highlight
-
   document.documentElement.setAttribute(
     "data-highlight",
     settings["highlight"],
@@ -132,8 +125,6 @@ function initAppearanceSettings(
       highlight: target?.value as HighlightTheme,
     });
   });
-
-  // note item display
 
   sidebar.setAttribute("data-noteItem", settings["note_item_display"]);
   noteItemSelect.value = settings["note_item_display"];
@@ -150,8 +141,6 @@ function initAppearanceSettings(
     }),
   );
 }
-
-//--------------------------------------------------------------
 
 function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
   const editorWrapper = getAppItem("editorWrapper");
@@ -179,8 +168,6 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
   )
     return;
 
-  // editor font family
-
   const applyFont = (val: string) => {
     const current = val || "system";
     editorWrapper.style.setProperty("--editor-font-family", current);
@@ -198,8 +185,6 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
     applyFont(newFont);
     updateSettings({ font_family: newFont as FontFamily });
   });
-
-  // editor font size
 
   const applySize = (val: string | number) => {
     let current = Number(val) || 18;
@@ -221,8 +206,6 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
     updateSettings({ font_size: String(newSize) as FontSize });
   });
 
-  // editor line height
-
   const applyLineHeight = (val: string | number) => {
     let current = Number(val) || 1.5;
     current = Math.max(1.4, Math.min(current, 1.6));
@@ -243,8 +226,6 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
     updateSettings({ line_height: String(newHeight) as LineHeight });
   });
 
-  // spellcheck
-
   const enabled = settings["spellcheck"] === true;
   const editor = getAppItem("editor");
   editor.view.dom.spellcheck = enabled;
@@ -260,8 +241,6 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
   });
 }
 
-//--------------------------------------------------------------
-
 function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
   const exportFormatSelect = findElement<HTMLSelectElement>(
     "#export-format",
@@ -272,9 +251,6 @@ function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
     container,
   );
   if (!exportFormatSelect || !autoExportSelect) return;
-
-  // file backup
-
   exportFormatSelect.value = settings["export_format"];
   exportFormatSelect.addEventListener(
     "change",
@@ -286,7 +262,6 @@ function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
     }),
   );
 
-  // auto export setting
   const autoExportPath = settings["auto_export_path"];
   autoExportSelect.setAttribute("data-tippy-dynamic", "");
   autoExportSelect.setAttribute(
@@ -326,10 +301,6 @@ function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
     }),
   );
 }
-
-//--------------------------------------------------------------
-
-// init function
 
 function setSelectListeners(settings: AppSettings, container: HTMLDivElement) {
   initAppearanceSettings(settings, container);

@@ -35,8 +35,6 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
   },
 };
 
-//-------------------------------------------------------------
-
 // editor toolbar
 
 const TOOLBAR_ACTIONS: ActionMap = {

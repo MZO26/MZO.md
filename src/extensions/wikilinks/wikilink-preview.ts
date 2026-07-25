@@ -10,21 +10,25 @@ import katex from "katex";
 import { delegate, type DelegateInstance, type Instance } from "tippy.js";
 
 function renderMathBlocks(root: ParentNode) {
-  root
-    .querySelectorAll('[data-type="inline-math"], [data-type="block-math"]')
-    .forEach((el) => {
-      const latex = el.getAttribute("data-latex");
-      if (!latex) return;
-      try {
-        katex.render(latex, el as HTMLElement, {
-          throwOnError: false,
-          displayMode: el.getAttribute("data-type") === "block-math",
-          macros: { ...KATEX_MACROS },
-        });
-      } catch {
-        el.textContent = latex;
-      }
-    });
+  const elements = Array.from(
+    root.querySelectorAll<HTMLElement>(
+      '[data-type="inline-math"], [data-type="block-math"]',
+    ),
+  );
+  if (elements.length === 0) return;
+  for (const el of elements) {
+    const latex = el.getAttribute("data-latex");
+    if (!latex) continue;
+    try {
+      katex.render(latex, el, {
+        throwOnError: false,
+        displayMode: el.getAttribute("data-type") === "block-math",
+        macros: KATEX_MACROS,
+      });
+    } catch {
+      el.textContent = latex;
+    }
+  }
 }
 
 type PreviewInstance = Instance & {

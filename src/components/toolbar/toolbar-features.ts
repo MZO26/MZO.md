@@ -25,15 +25,15 @@ async function setWindowTop(toggleBtn: HTMLButtonElement) {
   toggleBtn.classList.toggle("pin", result.data);
 }
 
-function initFocusMode() {
+async function initFocusMode() {
   const appContainer = getAppItem("appContainer");
   const newState = !appContainer.classList.contains("focus");
   const isToolbarCollapsed =
     appContainer.classList.contains("toolbar-collapsed");
-  requestAnimationFrame(() => {
+  requestAnimationFrame(async () => {
     appContainer.classList.toggle("focus", newState);
     if (isToolbarCollapsed) return;
-    setTheme(
+    await setTheme(
       document.documentElement.getAttribute("data-theme") as Exclude<
         Theme,
         "system"

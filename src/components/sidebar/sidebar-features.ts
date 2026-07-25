@@ -78,10 +78,6 @@ function updateSearchHighlights(
   }
 }
 
-//------------------------------------------------------------
-
-// footer-bar
-
 function updateStats() {
   const editor = getAppItem("editor");
   const { wordCountEl, charCountEl, readingTime } = getUIItems([
@@ -95,10 +91,6 @@ function updateStats() {
   wordCountEl.textContent = words === 1 ? "1 word" : `${words} words`;
   readingTime.textContent = estimateReadingTime(words);
 }
-
-//------------------------------------------------------------
-
-// sidebar-header all tag button
 
 function createAllTagsPopover(button: HTMLButtonElement) {
   const popover = document.createElement("div");
@@ -160,10 +152,6 @@ function renderAllTags(button: HTMLButtonElement, tags: string[]) {
   menu.content.replaceChildren(frag);
 }
 
-//-------------------------------------------------------------
-
-// resizing logic
-
 function resizeSidebar(
   resizerSelector: string,
   sidebarSelector: string,
@@ -213,10 +201,6 @@ function resizeSidebar(
     }
   });
 }
-
-//---------------------------------------------------------
-
-// file drop logic
 
 function setupSidebarFileDrop(sidebar: HTMLDivElement) {
   const setActive = (active: boolean) => {
@@ -277,7 +261,6 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
   sidebar.addEventListener("drop", handleDrop);
   sidebar.addEventListener("dragleave", handleDragLeave);
 }
-//------------------------------------------------------------
 
 // debounced functions
 

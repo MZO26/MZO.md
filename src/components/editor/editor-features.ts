@@ -15,8 +15,9 @@ function recreateEditorState(editor: Editor, doc: EditorDoc) {
     .chain()
     .setMeta("addToHistory", false)
     .setContent(doc, {
-      emitUpdate: true,
+      emitUpdate: false,
       errorOnInvalidContent: false,
+      contentType: "json",
     })
     .focus("start")
     .run();

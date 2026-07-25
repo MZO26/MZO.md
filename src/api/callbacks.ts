@@ -17,10 +17,6 @@ import { noteStore, settingsStore, stateStore } from "@/settings/app-state";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 
-//-------------------------------------------------------
-
-// helper functions for callbacks
-
 async function ensureNoteSaved(id: string) {
   if (!noteStore.get("noteIndex").has(id) || stateStore.get("activeId") !== id)
     return;
@@ -37,9 +33,6 @@ async function ensureNoteSaved(id: string) {
   };
 }
 
-//----------------------------------------------------------
-
-// electron callbacks that only get registered once at startup. Thus no need for assignment of cleanups
 function initListeners() {
   window.storeAPI.onSettingsChanged((settings) => {
     settingsStore.setState(settings);

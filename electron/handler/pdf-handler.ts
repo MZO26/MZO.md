@@ -19,7 +19,7 @@ async function loadPDFAssets() {
 }
 
 function getPDFAssets() {
-  cachedPDFAssets ??= loadPDFAssets().catch((error) => {
+  cachedPDFAssets ??= loadPDFAssets().catch((error: unknown) => {
     cachedPDFAssets = null;
     throw error;
   });

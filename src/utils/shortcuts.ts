@@ -18,6 +18,14 @@ function isEditorFocused(target: EventTarget | null) {
 
 function initGlobalShortcuts() {
   window.addEventListener("keydown", (e) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable
+    ) {
+      return;
+    }
     const { key, ctrlKey, metaKey } = e;
     const isMod = ctrlKey || metaKey;
     if (isMod && (key === "+" || key === "=")) {

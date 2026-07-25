@@ -45,18 +45,10 @@ function createNoteItem(note: NoteListItem) {
   return item;
 }
 
-//-----------------------------------------------------------
-
-// sidebar change handler for note items
-
 function refreshSidebar(notes: NoteListItem[]) {
   renderNoteList(notes);
   handleSidebarEmptyState();
 }
-
-//----------------------------------------------------------
-
-// snippet highlighter for note items
 
 function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

@@ -230,6 +230,8 @@ function getRequestExtensions() {
       underline: false,
       trailingNode: false,
     }),
+    CustomBlockMath,
+    CustomInlineMath,
   ];
 }
 
