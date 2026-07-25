@@ -68,7 +68,6 @@ function createWorker<WInput, WOutput>(worker: Worker | null) {
         workerDone();
         resolve({ success: false, error: WorkerErrorCode.UnknownError });
       };
-
       timer = setTimeout(() => {
         workerDone();
         resolve({

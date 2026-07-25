@@ -10,17 +10,17 @@ import {
   titleGenerator,
   wrapAsDoc,
 } from "@shared/generators";
-import type { EditorDoc } from "@shared/schemas/editor-schema";
+import { isEditorDoc } from "@shared/schemas/editor-schema";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { ImportedContent, Result } from "@shared/types";
-import { generateJSON } from "@tiptap/core";
+import { generateJSON, type JSONContent } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
 // function to either sanitize content or format it to make import cleaner
 
 async function normalizeFileContent(
   file: ImportedContent,
-): Promise<EditorDoc | undefined> {
+): Promise<JSONContent | undefined> {
   const { content, extension } = file;
   if (typeof content !== "string") return undefined;
   try {
@@ -74,13 +74,6 @@ async function normalizeFileContent(
   }
 }
 
-function isEditorDoc(value: unknown): value is EditorDoc {
-  if (typeof value !== "object" || value === null) return false;
-  if (!("type" in value) || value.type !== "doc") return false;
-  if (!("content" in value) || !Array.isArray(value.content)) return false;
-  return true;
-}
-
 async function setImportedContent(
   files: ImportedContent[],
 ): Promise<Result<CreateNotePayload[]>> {
@@ -113,4 +106,4 @@ async function setImportedContent(
   }
 }
 
-export { isEditorDoc, normalizeFileContent, setImportedContent };
+export { normalizeFileContent, setImportedContent };

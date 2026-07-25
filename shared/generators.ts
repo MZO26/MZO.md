@@ -1,9 +1,8 @@
 import { BLOCK_TYPES, UNTITLED } from "@shared/constants";
-import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { Metadata } from "@shared/types";
 import { type JSONContent } from "@tiptap/core";
 
-function getMetadata(content: EditorDoc): Metadata {
+function getMetadata(content: JSONContent): Metadata {
   return {
     snippet: snippetGenerator(content),
     links: getLinks(content),
@@ -52,14 +51,14 @@ function textConverter(plainText: string): JSONContent[] | undefined {
     }));
 }
 
-function wrapAsDoc(content: unknown): EditorDoc | undefined {
+function wrapAsDoc(content: unknown): JSONContent | undefined {
   if (Array.isArray(content)) {
     return { type: "doc", content };
   }
   return undefined;
 }
 
-function titleGenerator(doc: EditorDoc): string {
+function titleGenerator(doc: JSONContent): string {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0) {
     return UNTITLED;
   }
@@ -89,7 +88,7 @@ function truncateTitle(text: string, maxLength: number = 50): string {
   return safeText.replace(/[.,:;!\-?]+$/, "").trim() + "...";
 }
 
-function snippetGenerator(doc: EditorDoc | undefined): string {
+function snippetGenerator(doc: JSONContent): string {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0) {
     return "";
   }
@@ -111,7 +110,7 @@ function snippetGenerator(doc: EditorDoc | undefined): string {
   return cleaned.length > 100 ? cleaned.slice(0, 97) + "..." : cleaned;
 }
 
-function getLinks(doc: EditorDoc) {
+function getLinks(doc: JSONContent) {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0)
     return [];
   const seen = new Set<string>();
@@ -131,7 +130,7 @@ function getLinks(doc: EditorDoc) {
   return Array.from(seen);
 }
 
-function getTags(doc: EditorDoc) {
+function getTags(doc: JSONContent) {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0)
     return [];
   const seen = new Set<string>();

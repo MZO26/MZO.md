@@ -3,11 +3,10 @@ import { requireElement } from "@/utils/dom";
 import { waitForPaint } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS } from "@shared/constants";
-import type { EditorDoc } from "@shared/schemas/editor-schema";
-import { Editor } from "@tiptap/core";
+import { Editor, type JSONContent } from "@tiptap/core";
 import { getSearchState } from "prosemirror-search";
 
-function recreateEditorState(editor: Editor, doc: EditorDoc) {
+function recreateEditorState(editor: Editor, doc: JSONContent) {
   editor
     .chain()
     .setMeta("addToHistory", false)

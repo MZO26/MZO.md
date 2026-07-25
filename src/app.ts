@@ -15,7 +15,6 @@ import {
 import { initAppSettings } from "@/settings/setting-init";
 import { stateStore } from "@/state/state";
 import { initSettings, syncNoteStore } from "@/state/state-init";
-import "@/state/state-subscribe";
 import { startAppClock } from "@/utils/date";
 import { renderIcons } from "@/utils/icons";
 import {

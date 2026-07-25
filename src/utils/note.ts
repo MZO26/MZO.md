@@ -7,7 +7,6 @@ import {
   UNTAGGED,
   YIELD_MS,
 } from "@shared/constants";
-import type { EditorDoc } from "@shared/schemas/editor-schema";
 import type { Note, NoteListItem } from "@shared/schemas/note-schema";
 import type { ImportExtension } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
@@ -38,9 +37,9 @@ function compareNotes(a: NoteListItem, b: NoteListItem) {
 }
 
 function addActiveTagToDoc(
-  doc: EditorDoc,
+  doc: JSONContent,
   activeTag: string | null,
-): EditorDoc {
+): JSONContent {
   if (activeTag === null || activeTag === UNTAGGED) return doc;
   const normalizedTag = activeTag.trim();
   if (!normalizedTag) return doc;
@@ -89,7 +88,7 @@ function addActiveTagToDoc(
   };
 }
 
-function hasNoteTag(doc: EditorDoc, tagId: string): boolean {
+function hasNoteTag(doc: JSONContent, tagId: string): boolean {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0)
     return false;
   const normalized = tagId.trim().toLowerCase();
@@ -149,9 +148,9 @@ async function waitForPaint(frames = 2): Promise<void> {
   }
 }
 
-async function checkNoteSize(doc: EditorDoc) {
-  console.log(`Node amount: ${doc.content.length}`);
-  if (doc.content.length > NODE_BASELINE) {
+async function checkNoteSize(doc: JSONContent) {
+  console.log(`Node amount: ${doc.content?.length}`);
+  if (doc.content && doc.content.length > NODE_BASELINE) {
     await sleep(YIELD_MS);
   }
 }
