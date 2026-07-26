@@ -786,3 +786,7 @@ body.is-dragging * {
   color: var(--text-muted);
   opacity: 1;
 }
+
+.active-search-highlight {
+  background-color: var(--editor-highlight);
+}

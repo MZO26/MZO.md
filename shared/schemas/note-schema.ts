@@ -13,6 +13,8 @@ const TitleSchema = z.string().min(1).max(50).default(UNTITLED);
 
 const SnippetSchema = z.string().max(100).default("");
 
+const QuerySchema = z.string().min(1).max(100);
+
 // DB -> App
 const DBBooleanSchema = z
   .union([z.literal(0), z.literal(1)])
@@ -70,6 +72,7 @@ const NoteTableSchema = z.object({
   title: TitleSchema,
   snippet: SnippetSchema,
   content: EditorDocSchema,
+  plain_text: PlainTextSchema,
   pinned: z.boolean(),
   created_at: DateSchema,
   updated_at: DateSchema,
@@ -95,7 +98,10 @@ const NoteFromDB = NoteSchema.extend({
   links: LinksSchema,
 });
 
-const NoteListItemFromDB = NoteFromDB.omit({ content: true });
+const NoteListItemFromDB = NoteFromDB.omit({
+  content: true,
+  plain_text: true,
+});
 // Payload Evaluation: Expects content to be stringified and converts booleans to 0 or 1 for DB
 const NoteToDBSchema = NoteSchema.extend({
   id: IdSchema,
@@ -132,19 +138,17 @@ const NoteRowSchema = z.object({
   id: IdSchema,
   title: TitleSchema,
   content: z.string(),
+  plain_text: PlainTextSchema,
   snippet: SnippetSchema,
   pinned: z.union([z.literal(0), z.literal(1)]).default(0),
   created_at: DateSchema,
   updated_at: DateSchema,
 });
 
-const NoteSearchDocSchema = NoteSchema.omit({
-  content: true,
-  pinned: true,
-  links: true,
-  created_at: true,
-  updated_at: true,
-});
+const SearchResultSchema = NoteSchema.pick({
+  id: true,
+  title: true,
+}).extend({ search_match: QuerySchema, rank: z.number() });
 
 const NoteMenuPayloadSchema = z.object({
   id: IdSchema,
@@ -159,11 +163,12 @@ const AutoExportWritePayloadSchema = z.object({
   oldFileName: z.string().optional(),
 });
 
+type SearchQuery = z.infer<typeof QuerySchema>;
+type SearchResult = z.infer<typeof SearchResultSchema>;
 type NoteMenuPayload = z.infer<typeof NoteMenuPayloadSchema>;
 type TagNameRow = z.infer<typeof TagNameRowSchema>;
 type NoteListItem = z.infer<typeof NoteListItemFromDB>;
 type AutoExportWritePayload = z.infer<typeof AutoExportWritePayloadSchema>;
-type NoteSearchDoc = z.infer<typeof NoteSearchDocSchema>;
 type NoteRow = z.infer<typeof NoteRowSchema>;
 type TagRow = z.infer<typeof TagRowSchema>;
 type LinkRow = z.infer<typeof LinkRowSchema>;
@@ -198,6 +203,8 @@ export {
   NoteToDBSchema,
   OldNoteSchema,
   PlainTextSchema,
+  QuerySchema,
+  SearchResultSchema,
   SnippetSchema,
   TagRowsSchema,
   TagSchema,
@@ -217,7 +224,8 @@ export {
   type NoteListItem,
   type NoteMenuPayload,
   type NoteRow,
-  type NoteSearchDoc,
+  type SearchQuery,
+  type SearchResult,
   type Tag,
   type TagName,
   type TagNameRow,

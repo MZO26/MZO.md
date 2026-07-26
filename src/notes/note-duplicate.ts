@@ -1,6 +1,6 @@
 import { createNote } from "@/api/api";
 import { isAutoExportEnabled } from "@/notes/note-actions";
-import { noteStore, searchEngine } from "@/state/state";
+import { noteStore } from "@/state/state";
 import { getAppItem } from "@/utils/registry";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
 
@@ -41,7 +41,6 @@ async function handleDuplicateNote(note: Note) {
     visibleIds: [result.data.id, ...state.visibleIds],
     noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
   }));
-  searchEngine.upsertNote(result.data);
 }
 
 export { handleDuplicateNote };

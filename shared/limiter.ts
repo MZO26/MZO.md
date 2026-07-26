@@ -10,10 +10,9 @@ async function processWithLimit<T, R>(
     throw new AppBackendError(AppErrorCode.CancelledOperation);
   }
   const results = new Array<R>(items.length);
-  let nextItemIndex = 0;
+  const iterator = items.entries();
   async function worker(): Promise<void> {
-    for (const item of items) {
-      const index = nextItemIndex++;
+    for (const [index, item] of iterator) {
       results[index] = await processItem(item, index);
     }
   }

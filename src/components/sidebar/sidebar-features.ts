@@ -1,12 +1,7 @@
-import { showNotification } from "@/api/api";
-import {
-  buildSnippet,
-  updateSnippetHighlight,
-} from "@/components/sidebar/sidebar-note-items";
+import { search, showNotification } from "@/api/api";
 import { getTextMetrics } from "@/extensions/text-metrics";
 import { handleImportNote } from "@/notes/note-actions";
-import type { SearchMatchResult } from "@/notes/search";
-import { noteStore, searchEngine, stateStore } from "@/state/state";
+import { stateStore } from "@/state/state";
 import {
   applySearch,
   applyTagView,
@@ -30,8 +25,7 @@ import tippy from "tippy.js";
 
 export let allTagsMenu: ReturnType<typeof createAllTagsPopover> | null = null;
 
-function handleSearchInput(searchInput: string) {
-  const sidebar = getAppItem("sidebar");
+async function handleSearch(searchInput: string) {
   const nextQuery = searchInput.trim();
   const prevQuery = stateStore.get("searchQuery");
   if (nextQuery === prevQuery) return;
@@ -40,40 +34,19 @@ function handleSearchInput(searchInput: string) {
     restoreSidebarScope();
     return;
   }
-  const results = nextQuery.startsWith("#")
-    ? searchEngine.searchTags(nextQuery.slice(1))
-    : searchEngine.search(nextQuery);
-  applySearch(results);
-  const noteElements = Array.from(
-    sidebar.querySelectorAll<HTMLDivElement>("note-item"),
-  );
-  updateSearchHighlights(noteElements, results);
-}
-
-function updateSearchHighlights(
-  noteElements: HTMLDivElement[],
-  results: SearchMatchResult[],
-) {
-  const resultsById = new Map(
-    results.map((result) => [result.item.id, result]),
-  );
-  const noteIndex = noteStore.get("noteIndex");
-  for (const noteElement of noteElements) {
-    const noteId = noteElement.getAttribute("data-id");
-    if (!noteId) continue;
-    const result = resultsById.get(noteId);
-    if (result) {
-      const { snippet, indices } = buildSnippet(
-        result.item.snippet,
-        result.queryTerms,
-      );
-      updateSnippetHighlight(noteElement, snippet, indices);
-      continue;
-    }
-    const note = noteIndex.get(noteId);
-    if (!note) continue;
-    updateSnippetHighlight(noteElement, note.snippet, []);
+  const result = await search(nextQuery);
+  if (!result.success) {
+    console.error("[handleSearch]: Failed to search:", result.error);
+    return;
   }
+  const data = result.data.map((row) => {
+    const { search_match, ...rest } = row;
+    return {
+      ...rest,
+      snippet: row.search_match,
+    };
+  });
+  applySearch(data);
 }
 
 function updateStats() {
@@ -211,6 +184,7 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
   const handleDragOver = (event: DragEvent) => {
     if (!hasFiles(event)) return;
     event.preventDefault();
+    event.stopPropagation();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = "copy";
     }
@@ -220,6 +194,7 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
   const handleDragLeave = (event: DragEvent) => {
     if (!hasFiles(event)) return;
     event.preventDefault();
+    event.stopPropagation();
     const relatedTarget = event.relatedTarget as Node | null;
     if (!sidebar.contains(relatedTarget)) {
       setActive(false);
@@ -229,6 +204,7 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
   const handleDrop = async (event: DragEvent) => {
     if (!hasFiles(event)) return;
     event.preventDefault();
+    event.stopPropagation();
     setActive(false);
     const files = Array.from(event.dataTransfer?.files ?? []);
     if (files.length > MAX_FILE_DROPS) {
@@ -238,16 +214,16 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
       );
       return;
     }
-    const validFilePaths: string[] = [];
+    const validFilePaths = new Set<string>();
     for (const file of files) {
       if (!isValidExtension(getExtension(file.name))) continue;
       const filePath = window.electronAPI.getPathForFile?.(file);
-      if (filePath) validFilePaths.push(filePath);
+      if (filePath) validFilePaths.add(filePath);
     }
-    if (validFilePaths.length === 0) return;
+    if (validFilePaths.size === 0) return;
     const request: FilePathRequest = {
       source: "external",
-      filePaths: validFilePaths,
+      filePaths: Array.from(validFilePaths),
     };
     const loading = createGlobalSpinner(0);
     await loading.wrap(async () => {
@@ -266,15 +242,14 @@ const debouncedSearch = debounce((e: Event) => {
   const target = e.target as HTMLInputElement | null;
   if (!target) return;
   const value = (target.value ?? "").trim();
-  handleSearchInput(value);
-}, DEBOUNCE_MS.very_fast);
+  handleSearch(value);
+}, DEBOUNCE_MS.normal);
 
 export {
   applyTagView,
   createIconButton,
   createInfoSpan,
   debouncedSearch,
-  handleSearchInput,
   renderAllTags,
   resizeSidebar,
   setupSidebarFileDrop,

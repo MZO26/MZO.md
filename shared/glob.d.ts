@@ -60,6 +60,9 @@ declare global {
       openAppPath: () => Promise<Result<boolean>>;
     };
     noteAPI: {
+      search: (
+        query: string,
+      ) => Promise<Result<NoteListItem & { search_match: string }[]>>;
       getAll: () => Promise<Result<NoteListItem[]>>;
       getAllBackup: () => Promise<Result<Note[]>>;
       getById: (id: string) => Promise<Result<Note>>;

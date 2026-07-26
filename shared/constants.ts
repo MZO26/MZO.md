@@ -36,9 +36,10 @@ const SYNC_BUFFER = 2000; // 2 seconds to account for DB timestamp differences o
 
 const LIMITS = {
   WRITE_HEAVY: 500,
-  WRITE_STANDARD: 500,
-  WRITE_LIGHT: 300,
+  WRITE_STANDARD: 300,
+  WRITE_LIGHT: 100,
   READ_HEAVY: 500,
+  READ_NORMAL: 300,
   READ_LIGHT: 100,
   WRITE_FLUSH: 5,
 };

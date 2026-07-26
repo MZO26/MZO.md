@@ -75,6 +75,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   openAppPath: () => ipcRenderer.invoke("open:app-path"),
 });
 contextBridge.exposeInMainWorld("noteAPI", {
+  search: (query: string) => ipcRenderer.invoke("note:search", query),
   getAll: () => ipcRenderer.invoke("note:get-all"),
   getAllBackup: () => ipcRenderer.invoke("note:get-all-backup"),
   create: (payload: CreateNotePayload) =>

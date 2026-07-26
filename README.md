@@ -8,7 +8,7 @@ Built with Electron, TypeScript, SQLite, and TipTap / ProseMirror.
 
 - Local-first storage with SQLite
 - Optional auto-export to markdown files
-- Fast note-search with minisearch
+- Fast note-search with FTS5
 - Markdown-focused editing with TipTap / ProseMirror
 - Connect and organize notes with links and tags
 - Export notes to Markdown, Plain Text, HTML, JSON and PDF
@@ -21,7 +21,6 @@ Built with Electron, TypeScript, SQLite, and TipTap / ProseMirror.
 - Electron
 - TypeScript
 - TipTap / ProseMirror
-- minisearch
 - electron-vite
 - Vite
 - DOMPurify

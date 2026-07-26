@@ -53,6 +53,12 @@ type Code =
   | "atom-one-dark"
   | "colorless";
 
+type Expand<T> = T extends unknown ? { [K in keyof T]: T[K] } : never;
+
+type DeepExpand<T> = T extends object
+  ? { [K in keyof T]: DeepExpand<T[K]> }
+  : T;
+
 type Success<T> = {
   success: true;
   data: T;
@@ -249,7 +255,9 @@ export type {
   Code,
   ContentType,
   CoreRegistry,
+  DeepExpand,
   EditorContentType,
+  Expand,
   ExportedContent,
   ExportFormat,
   Failure,

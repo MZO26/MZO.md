@@ -36,6 +36,12 @@ async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
 
 // note api
 
+async function search(
+  query: string,
+): Promise<Result<(NoteListItem & { search_match: string })[]>> {
+  return invoke(window.noteAPI.search(query));
+}
+
 async function getAll(): Promise<Result<NoteListItem[]>> {
   return invoke(window.noteAPI.getAll());
 }
@@ -248,6 +254,7 @@ export {
   pin,
   pinMany,
   pinWindow,
+  search,
   selectAutoExportFolder,
   setTheme,
   showNotification,

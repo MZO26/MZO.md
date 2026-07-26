@@ -13,12 +13,7 @@ import { updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/sidebar/sidebar-features";
 import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
-import {
-  noteStore,
-  searchEngine,
-  settingsStore,
-  stateStore,
-} from "@/state/state";
+import { noteStore, settingsStore, stateStore } from "@/state/state";
 import {
   markNoteAsRecent,
   matchesActiveTag,
@@ -48,9 +43,11 @@ async function handleCreateNote() {
   const editor = getAppItem("editor");
   const activeTag = stateStore.get("activeTag");
   const editorContent = addActiveTagToDoc(EMPTY_DOC, activeTag);
+  const text = editor.getText();
   const metadata = getMetadata(editorContent);
   const payload: CreateNotePayload = {
     content: editorContent,
+    plain_text: text,
     ...metadata,
     title: UNTITLED,
     pinned: false,
@@ -65,7 +62,6 @@ async function handleCreateNote() {
     visibleIds: [result.data.id, ...state.visibleIds],
     noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
   }));
-  searchEngine.upsertNote(result.data);
   stateStore.setState({ activeId: result.data.id });
   recreateEditorState(editor, editorContent);
   editor.commands.focus();
@@ -122,7 +118,6 @@ async function handleImportNote(request: FilePathRequest) {
       ...result.data.map((n) => [n.id, n] as const),
     ]),
   }));
-  searchEngine.addMany(result.data);
 }
 
 // delete
@@ -150,7 +145,6 @@ async function handleDeleteManyNotes(ids: string[]) {
       noteIndex,
     };
   });
-  searchEngine.removeMany([...deletedIds]);
   if (isActiveDeleted) {
     stateStore.setState({ activeId: null });
   }
@@ -177,7 +171,6 @@ async function handleDeleteNote(id: string) {
       noteIndex,
     };
   });
-  searchEngine.removeNote(id);
   if (isActiveDeletedId) {
     stateStore.setState({ activeId: null });
   }
@@ -194,6 +187,7 @@ async function handleSaveNote(id: string, flush: boolean = false) {
   const autoExportEnabled = isAutoExportEnabled();
   const editor = getAppItem("editor");
   const content = editor.getJSON();
+  const text = editor.getText();
   const markdown = autoExportEnabled ? editor.getMarkdown() : undefined;
   const metaData = getMetadata(content);
   const newTitle = titleGenerator(content);
@@ -201,6 +195,7 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     id,
     title: newTitle,
     content,
+    plain_text: text,
     ...metaData,
     ...(autoExportEnabled && markdown !== undefined ? { markdown } : {}),
   };
@@ -230,7 +225,6 @@ async function handleSaveNote(id: string, flush: boolean = false) {
       noteIndex,
     };
   });
-  searchEngine.upsertNote(result.data);
   if (isActiveNote) {
     updateStats();
     const currentHeadings = getTableOfContents(editor);

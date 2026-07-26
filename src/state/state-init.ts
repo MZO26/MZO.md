@@ -1,12 +1,7 @@
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-ui";
-import {
-  noteStore,
-  searchEngine,
-  settingsStore,
-  stateStore,
-} from "@/state/state";
+import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { areArraysShallowEqual, getVisibleNotes } from "@/state/state-helpers";
 import { findElement, setActiveItem } from "@/utils/dom";
 import { compareNotes, updateNoteCount } from "@/utils/note";
@@ -39,7 +34,6 @@ function syncNoteStore(notes: NoteListItem[]) {
     visibleIds: sortedNotes.map((n) => n.id),
     noteIndex: new Map(sortedNotes.map((n) => [n.id, n] as const)),
   });
-  searchEngine.bulkLoad(sortedNotes);
 }
 
 stateStore.subscribe((state) => {

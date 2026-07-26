@@ -9,6 +9,7 @@ import {
   type NoteRow,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
+import type { DeepExpand, Expand } from "@shared/types";
 import { DatabaseSync, type StatementSync } from "node:sqlite";
 
 class Transactions {
@@ -25,10 +26,10 @@ class Transactions {
     this.db = dbConnection;
 
     this.createNoteStmt = this.db.prepare(
-      `INSERT INTO notes (id, title, content, snippet, pinned, created_at, updated_at) VALUES ($id, $title, $content, $snippet, $pinned, $created_at, $updated_at) RETURNING id, title, snippet, pinned, created_at, updated_at`,
+      `INSERT INTO notes (id, title, content, plain_text, snippet, pinned, created_at, updated_at) VALUES ($id, $title, $content, $plain_text, $snippet, $pinned, $created_at, $updated_at) RETURNING id, title, snippet, pinned, created_at, updated_at`,
     );
     this.updateNoteStmt = this.db
-      .prepare(`UPDATE notes SET title = $title, content = $content, snippet = $snippet, updated_at = $updated_at WHERE id = $id RETURNING id, title, snippet, pinned, created_at, updated_at
+      .prepare(`UPDATE notes SET title = $title, content = $content, plain_text = $plain_text, snippet = $snippet, updated_at = $updated_at WHERE id = $id RETURNING id, title, snippet, pinned, created_at, updated_at
     `);
     this.deleteNoteStmt = this.db.prepare("DELETE FROM notes WHERE id = $id");
     this.deleteManyNotesStmt = this.db.prepare(`
@@ -94,18 +95,18 @@ class Transactions {
     return result;
   }
 
-  private runCreateManyLogic(paramsArr: CreateTransaction[]): {
-    row: Omit<NoteRow, "content">;
-    safeTags: string[];
-    safeLinks: string[];
-  }[] {
-    const results = [];
+  private runCreateManyLogic(paramsArr: CreateTransaction[]) {
+    const results: DeepExpand<{
+      row: Omit<NoteRow, "content" | "plain_text">;
+      safeTags: string[];
+      safeLinks: string[];
+    }>[] = [];
     for (const params of paramsArr) {
       const { tags, links, ...noteParams } = params;
       const safeTags = tags ?? [];
       const safeLinks = links ?? [];
       const result = this.createNoteStmt.get(noteParams) as
-        | Omit<NoteRow, "content">
+        | Expand<Omit<NoteRow, "content">>
         | undefined;
       if (!result) {
         throw new AppBackendError(AppErrorCode.DBError);
@@ -147,9 +148,9 @@ class Transactions {
     noteParams: Omit<CreateTransaction, "tags" | "links">,
     safeTags: string[],
     safeLinks: string[],
-  ): Omit<NoteRow, "content"> {
+  ) {
     const result = this.createNoteStmt.get(noteParams) as
-      | Omit<NoteRow, "content">
+      | Expand<Omit<NoteRow, "content" | "plain_text">>
       | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
@@ -198,9 +199,9 @@ class Transactions {
     noteParams: Omit<UpdateTransaction, "tags" | "links">,
     safeTags: string[],
     safeLinks: string[],
-  ): Omit<NoteRow, "content"> {
+  ) {
     const result = this.updateNoteStmt.get(noteParams) as
-      | Omit<NoteRow, "content">
+      | Expand<Omit<NoteRow, "content" | "plain_text">>
       | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);

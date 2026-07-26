@@ -30,14 +30,17 @@ import {
   type AppSettings,
   type StoreRow,
 } from "@shared/schemas/store-schema";
+import type { Expand } from "@shared/types";
 import { app } from "electron";
 import { backup, DatabaseSync, type StatementSync } from "node:sqlite";
 import path from "path";
+import { NotesSearch } from "./fts";
 
 class AppDB {
   private db: DatabaseSync | undefined;
   private readonly dbPath: string;
   public transactions: Transactions;
+  public search: NotesSearch;
   private getAllNotesStmt: StatementSync;
   private getAllBackupStmt: StatementSync;
   private getNoteByIdStmt: StatementSync;
@@ -59,6 +62,7 @@ class AppDB {
     try {
       this.db = this.open();
       this.transactions = new Transactions(this.db);
+      this.search = new NotesSearch(this.db);
       // predefined statements to prevent parsing them for every transaction
       this.getAllNotesStmt = this.db.prepare(
         `SELECT id, title, pinned, snippet, created_at, updated_at
@@ -162,6 +166,7 @@ class AppDB {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL CHECK(length(title) > 0),
         content TEXT NOT NULL,
+        plain_text TEXT NOT NULL,
         pinned INTEGER NOT NULL DEFAULT 0,
         snippet TEXT DEFAULT '',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -210,6 +215,13 @@ class AppDB {
     `);
   }
 
+  private createIndexes(db: DatabaseSync) {
+    db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_note_tags_tag_name ON note_tags(tag_name);
+    CREATE INDEX IF NOT EXISTS idx_note_links_target_id ON note_links(target_id);
+    `);
+  }
+
   private getTagMapAll(): Map<string, Tag[]> {
     const allTags = this.getAllTagsStmt.all() as TagRow[];
     const tagMap = new Map<string, Tag[]>();
@@ -251,7 +263,7 @@ class AppDB {
   private getLinkMapMany(ids: string[]): Map<string, Link[]> {
     const allLinks = this.getManyLinksStmt.all({
       $ids: JSON.stringify(ids),
-    }) as (LinkRow & { dir: "in" | "out" })[];
+    }) as Expand<LinkRow & { dir: "in" | "out" }>[];
     const linkMap = new Map<string, Link[]>();
     for (const { source_id, target_id, dir } of allLinks) {
       const note_id = dir === "out" ? source_id : target_id;
@@ -457,11 +469,13 @@ class AppDB {
     });
   }
 
-  public getOldNotes(ids: string[]): Pick<Note, "created_at" | "title">[] {
+  public getOldNotes(
+    ids: string[],
+  ): Expand<Pick<Note, "created_at" | "title">>[] {
     if (ids.length === 0) return [];
     const rows = this.getOldTitleStmt.all({
       $ids: JSON.stringify(ids),
-    }) as Pick<Note, "created_at" | "title">[];
+    }) as Expand<Pick<Note, "created_at" | "title">>[];
     if (rows.length !== ids.length) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -520,6 +534,7 @@ class AppDB {
       this.execPragma("busy_timeout = 5000");
       this.execPragma("synchronous = NORMAL");
       this.createTables(db);
+      this.createIndexes(db);
       const integrity = this.queryPragma<{ quick_check: string }>(
         "quick_check",
         db,

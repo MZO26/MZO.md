@@ -32,6 +32,7 @@ import {
   CreateNotesPayloadsSchema,
   IdSchema,
   IdsSchema,
+  QuerySchema,
   UpdateNotePayloadSchema,
 } from "@shared/schemas/note-schema";
 import {
@@ -57,6 +58,15 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit("note:get-all-backup", LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       return db.getAllBackup();
+    });
+  });
+
+  ipcMain.handle("note:search", (e, query: unknown) => {
+    return result(e, async () => {
+      if (!checkRateLimit("note:search", LIMITS.READ_NORMAL))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validatedData = validation(QuerySchema, query);
+      return db.search.search(validatedData);
     });
   });
 

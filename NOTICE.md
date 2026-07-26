@@ -9,7 +9,6 @@ This application includes third-party software components.
 The following components are provided under the MIT License:
 
 - Electron (Copyright (c) Electron contributors)
-- minisearch (Copyright (c) Luca Ongaro)
 - Tiptap (Copyright (c) 2026, Tiptap GmbH)
 - lowlight (Copyright (c) Titus Wormer)
 - tippy.js (Copyright (c) atomiks)

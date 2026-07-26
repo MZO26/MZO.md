@@ -2,14 +2,29 @@ import {
   handleSidebarEmptyState,
   renderNoteList,
 } from "@/components/sidebar/sidebar-ui";
-import { settingsStore } from "@/state/state";
+import { noteStore, settingsStore } from "@/state/state";
 import { formatNoteDate } from "@/utils/date";
 import { createTemplateCloner, findElement, isDiv } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { UNTITLED } from "@shared/constants";
+import { DOMPURIFY_CONFIG, UNTITLED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { AppSettings } from "@shared/schemas/store-schema";
+import DOMPurify from "dompurify";
 
 const getNoteItemClone = createTemplateCloner("noteItemTemplate", isDiv);
+
+function getSafeSnippet(
+  item: HTMLDivElement,
+  note: NoteListItem,
+  display: AppSettings["note_item_display"],
+) {
+  const contentEl = findElement<HTMLDivElement>(".note-content", item);
+  if (!contentEl) return;
+  const searchSnippets = noteStore.get("searchSnippets") || {};
+  const displaySnippet = searchSnippets[note.id] || note.snippet;
+  const safe = DOMPurify.sanitize(displaySnippet, DOMPURIFY_CONFIG);
+  contentEl.innerHTML = display === "preview" ? safe : "";
+}
 
 function createNoteItem(note: NoteListItem) {
   const item = getNoteItemClone();
@@ -19,13 +34,10 @@ function createNoteItem(note: NoteListItem) {
   item.setAttribute("data-tippy-content", note.title);
   if (note.pinned) renderIcons(item);
   const titleEl = findElement<HTMLSpanElement>(".note-title", item);
-  if (titleEl) titleEl.textContent = note.title.trim() || UNTITLED;
+  if (titleEl) titleEl.innerHTML = note.title.trim() || UNTITLED;
   const dateEl = findElement<HTMLDivElement>(".note-date", item);
   if (dateEl) dateEl.textContent = formatNoteDate(note.updated_at);
-  const contentEl = findElement<HTMLDivElement>(".note-content", item);
-  if (contentEl) {
-    contentEl.textContent = display === "preview" ? note.snippet : "";
-  }
+  getSafeSnippet(item, note, display);
   const tagsContainer = findElement<HTMLDivElement>(".note-tags", item);
   if (tagsContainer) {
     tagsContainer.replaceChildren();

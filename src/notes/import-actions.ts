@@ -13,7 +13,7 @@ import {
 import { isEditorDoc } from "@shared/schemas/editor-schema";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { ImportedContent, Result } from "@shared/types";
-import { generateJSON, type JSONContent } from "@tiptap/core";
+import { generateJSON, generateText, type JSONContent } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
 // function to either sanitize content or format it to make import cleaner
@@ -78,16 +78,20 @@ async function setImportedContent(
   files: ImportedContent[],
 ): Promise<Result<CreateNotePayload[]>> {
   try {
+    console.log("setImportedContent executing with file count:", files.length);
     const processedPayloads: CreateNotePayload[] = [];
     const activeTag = stateStore.get("activeTag");
+    const extensions = getCachedEditorExtensions();
     for (const file of files) {
       const json = await normalizeFileContent(file);
       if (!json) continue;
       const updatedJson = addActiveTagToDoc(json, activeTag);
+      const text = generateText(updatedJson, extensions);
       const metadata = getMetadata(updatedJson);
       const payload: CreateNotePayload = {
         title: titleGenerator(updatedJson),
         content: updatedJson,
+        plain_text: text,
         ...metadata,
         pinned: false,
       };

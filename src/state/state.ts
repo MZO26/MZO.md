@@ -1,4 +1,3 @@
-import { NoteSearch } from "@/notes/search";
 import { DEFAULT_SETTINGS } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
@@ -24,6 +23,7 @@ interface NoteStore {
   visibleIds: string[];
   noteIndex: Map<string, NoteListItem>;
   recentNotes: string[];
+  searchSnippets: Record<string, string>;
 }
 
 const NOTE_STORE: NoteStore = {
@@ -31,6 +31,7 @@ const NOTE_STORE: NoteStore = {
   visibleIds: [],
   noteIndex: new Map<string, NoteListItem>(),
   recentNotes: [],
+  searchSnippets: {},
 };
 
 const stateStore = createStore<AppState>(STATE_STORE);
@@ -38,8 +39,6 @@ const stateStore = createStore<AppState>(STATE_STORE);
 const settingsStore = createStore<AppSettings>(DEFAULT_SETTINGS);
 
 const noteStore = createStore<NoteStore>(NOTE_STORE);
-
-const searchEngine = new NoteSearch();
 
 function createStore<T extends object>(initialState: T) {
   let state = initialState;
@@ -90,11 +89,4 @@ function createStore<T extends object>(initialState: T) {
   return { getState, get, setState, subscribe, subscribeSel };
 }
 
-export {
-  noteStore,
-  searchEngine,
-  settingsStore,
-  stateStore,
-  type AppState,
-  type NoteStore,
-};
+export { noteStore, settingsStore, stateStore, type AppState, type NoteStore };

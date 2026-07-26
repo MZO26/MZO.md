@@ -1,5 +1,4 @@
 import { updateSettings } from "@/api/api";
-import type { SearchMatchResult } from "@/notes/search";
 import { noteStore, stateStore, type NoteStore } from "@/state/state";
 import { getUIItem } from "@/utils/registry";
 import { UNTAGGED } from "@shared/constants";
@@ -38,19 +37,24 @@ function clearActiveTagView() {
   applyView(null);
 }
 
-function applySearch(searchMatches: SearchMatchResult[]) {
-  const matchedIdSet = new Set(searchMatches.map((match) => match.item.id));
+function applySearch(matches: NoteListItem[]) {
+  const matchedIdSet = new Set(matches.map((match) => match.id));
+  const searchSnippets: Record<string, string> = {};
+  for (const match of matches) {
+    searchSnippets[match.id] = match.snippet;
+  }
   const activeTag = stateStore.get("activeTag");
   const notes = noteStore.get("notes");
   const visibleIds = notes
     .filter((note) => {
-      const isSearchMatch = matchedIdSet.has(note.id);
+      const isMatch = matchedIdSet.has(note.id);
       const matchesScope = matchesActiveTag(note, activeTag);
-      return isSearchMatch && matchesScope;
+      return isMatch && matchesScope;
     })
     .map((note) => note.id);
   noteStore.setState({
     visibleIds,
+    searchSnippets,
   });
 }
 
@@ -60,6 +64,7 @@ function restoreSidebarScope() {
     visibleIds: state.notes
       .filter((note) => matchesActiveTag(note, activeTag))
       .map((note) => note.id),
+    searchSnippets: {},
   }));
 }
 
@@ -96,10 +101,9 @@ function areArraysShallowEqual<T>(previous: T[], next: T[]) {
 }
 
 function getVisibleNotes(state: NoteStore) {
-  const notes = state.visibleIds
+  return state.visibleIds
     .map((id) => state.noteIndex.get(id))
     .filter((note): note is NoteListItem => !!note);
-  return notes;
 }
 
 export {
