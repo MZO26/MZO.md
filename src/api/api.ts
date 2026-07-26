@@ -205,27 +205,30 @@ async function pinWindow(): Promise<Result<boolean>> {
 
 // debounced calls
 
-const debouncedSetSettings = debounce(
-  async (settings: Partial<AppSettings>) => {
-    try {
-      const result = await setSettings(settings);
-      if (!result.success) {
-        console.error(
-          "[setSettings]: Failed to update settings:",
-          result.error,
-        );
-        return;
-      }
-    } catch (error: unknown) {
-      console.error("[setSettings]: Unknown error", error);
+let pendingSettings: Partial<AppSettings> = {};
+
+const debouncedSetSettings = debounce(async () => {
+  console.log(pendingSettings);
+  const settingsToSave = { ...pendingSettings };
+  pendingSettings = {};
+  try {
+    const result = await setSettings(settingsToSave);
+    if (!result.success) {
+      console.error("[setSettings]: Failed to update settings:", result.error);
+      pendingSettings = { ...settingsToSave, ...pendingSettings };
+      return;
     }
-  },
-  DEBOUNCE_MS.fast,
-);
+    console.log("Saved settings");
+  } catch (error: unknown) {
+    console.error("[setSettings]: Unknown error", error);
+    pendingSettings = { ...settingsToSave, ...pendingSettings };
+  }
+}, DEBOUNCE_MS.fast);
 
 const updateSettings = (settings: Partial<AppSettings>) => {
   settingsStore.setState(settings);
-  debouncedSetSettings(settings);
+  pendingSettings = { ...pendingSettings, ...settings };
+  debouncedSetSettings();
 };
 
 export {

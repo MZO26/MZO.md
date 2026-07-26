@@ -15,7 +15,7 @@ class NotesSearch {
         SELECT
         rowid,
         bm25(notes_fts, 10.0, 1.0) AS rank,
-        snippet(notes_fts, -1, '<mark class="active-search-highlight">', '</mark>', '...', 10) AS search_match
+        snippet(notes_fts, -1, '<mark class="active-search-highlight">', '</mark>', '...', 15) AS search_match
         FROM notes_fts
         WHERE notes_fts MATCH $ftsQuery
     )

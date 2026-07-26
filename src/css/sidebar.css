@@ -73,6 +73,12 @@
   transition: background-color 0.2s ease;
 }
 
+.resizer-sidebar:hover,
+.resizer-sidebar.is-resizing {
+  background-color: var(--ui-resizer) !important;
+  pointer-events: auto !important;
+}
+
 .resizer-sidebar::after {
   content: "";
   position: absolute;
@@ -80,35 +86,6 @@
   bottom: 0;
   left: -5px;
   right: -5px;
-}
-
-.select-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.select-wrapper::after {
-  content: "";
-  position: absolute;
-  right: 32px;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 25px;
-  width: 1px;
-  background-color: var(--text-main);
-  opacity: 0.2;
-  pointer-events: none;
-}
-
-.select-icon {
-  position: absolute;
-  right: 8px;
-  width: 10px;
-  height: 10px;
-  pointer-events: none;
-  color: var(--text-main);
 }
 
 .sidebar-empty-state {
@@ -140,23 +117,10 @@
   display: none;
 }
 
-.resizer-sidebar:hover,
-.resizer-sidebar.is-resizing {
-  background-color: var(--ui-resizer) !important;
-  pointer-events: auto !important;
-}
-
 body.is-dragging,
 body.is-dragging * {
   transition: none !important;
   user-select: none;
-}
-
-.sidebar-section {
-  border: none;
-  width: 100%;
-  border-top: 1px solid var(--border-color);
-  margin: 15px 0;
 }
 
 .sidebar-header {
@@ -534,6 +498,20 @@ body.is-dragging * {
   opacity: 0.9;
 }
 
+.tag-node,
+.tag {
+  background: var(--tag-bg);
+  color: var(--tag-color);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--tag-border);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
 .tag-node {
   display: inline-block;
   vertical-align: baseline;
@@ -543,17 +521,8 @@ body.is-dragging * {
   margin: 0.5em 0.15em;
   border-radius: 1em;
   font-weight: 500;
-  background-color: var(--tag-bg);
-  color: var(--tag-color);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--tag-border);
-  white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
 }
 
 .tag-node::after {
@@ -569,17 +538,6 @@ body.is-dragging * {
   padding: 2px 7px;
   border-radius: 20px;
   font-size: 0.65rem;
-  background: var(--tag-bg);
-  color: var(--tag-color);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--tag-border);
-  box-shadow: none;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
 }
 
 .wikilink-preview-content .tag-node {
@@ -594,7 +552,8 @@ body.is-dragging * {
   box-shadow: var(--shadow);
 }
 
-.tag-node:active {
+.tag-node:active,
+.tag:active {
   transform: scale(0.97);
 }
 
@@ -630,8 +589,12 @@ body.is-dragging * {
   text-overflow: ellipsis;
   color: var(--text-muted);
   font-size: 0.82rem;
-  flex-shrink: 0;
+  min-width: 0;
   padding: 4px 0;
+}
+
+.active-search-highlight {
+  background-color: var(--editor-highlight);
 }
 
 .note-item .select-box {
@@ -785,8 +748,4 @@ body.is-dragging * {
 .sidebar-info-header:focus-visible {
   color: var(--text-muted);
   opacity: 1;
-}
-
-.active-search-highlight {
-  background-color: var(--editor-highlight);
 }

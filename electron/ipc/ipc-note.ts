@@ -63,7 +63,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle("note:search", (e, query: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:search", LIMITS.READ_NORMAL))
+      if (!checkRateLimit("note:search", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(QuerySchema, query);
       return db.search.search(validatedData);

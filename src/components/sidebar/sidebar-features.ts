@@ -28,7 +28,10 @@ export let allTagsMenu: ReturnType<typeof createAllTagsPopover> | null = null;
 async function handleSearch(searchInput: string) {
   const nextQuery = searchInput.trim();
   const prevQuery = stateStore.get("searchQuery");
-  if (nextQuery === prevQuery) return;
+  if (nextQuery === prevQuery) {
+    console.log("Same query. Skipping search");
+    return;
+  }
   stateStore.setState({ searchQuery: nextQuery });
   if (!nextQuery) {
     restoreSidebarScope();
@@ -243,7 +246,7 @@ const debouncedSearch = debounce((e: Event) => {
   if (!target) return;
   const value = (target.value ?? "").trim();
   handleSearch(value);
-}, DEBOUNCE_MS.normal);
+}, DEBOUNCE_MS.very_fast);
 
 export {
   applyTagView,

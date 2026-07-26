@@ -47,11 +47,14 @@ function initEditorSearch(editor: Editor) {
 
   function updateButtons() {
     const disabled = input.value.trim() === "" || !hasSearchMatch(editor);
-    inputWrapper
-      .querySelectorAll<HTMLButtonElement>(".search-prev, .search-next")
-      .forEach((button) => {
-        button.disabled = disabled;
-      });
+    const buttons = Array.from(
+      inputWrapper.querySelectorAll<HTMLButtonElement>(
+        ".search-prev, .search-next",
+      ),
+    );
+    for (const button of buttons) {
+      button.disabled = disabled;
+    }
   }
 
   function syncQuery() {

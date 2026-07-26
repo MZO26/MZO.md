@@ -128,6 +128,9 @@ async function createWindow() {
   win.once("ready-to-show", () => {
     win?.show();
   });
+  win.webContents.on("did-finish-load", () => {
+    win?.webContents.setZoomFactor(1.1);
+  });
 }
 
 // app start
