@@ -1,4 +1,4 @@
-import { UNTITLED } from "@shared/constants";
+import { MAX_SEARCH_LENGTH, UNTITLED } from "@shared/constants";
 import {
   DbContentSchema,
   EditorDocSchema,
@@ -13,7 +13,7 @@ const TitleSchema = z.string().min(1).max(50).default(UNTITLED);
 
 const SnippetSchema = z.string().max(100).default("");
 
-const QuerySchema = z.string().min(1).max(100);
+const QuerySchema = z.string().min(1).max(MAX_SEARCH_LENGTH);
 
 // DB -> App
 const DBBooleanSchema = z

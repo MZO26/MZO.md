@@ -21,7 +21,6 @@ function recreateEditorState(editor: Editor, doc: JSONContent) {
 function hasSearchMatch(editor: Editor): boolean {
   const search = editor.storage.docSearch;
   const hasMatches = search.results.length > 0;
-  console.log(search.results.length);
   return !!hasMatches;
 }
 

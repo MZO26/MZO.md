@@ -78,7 +78,6 @@ async function setImportedContent(
   files: ImportedContent[],
 ): Promise<Result<CreateNotePayload[]>> {
   try {
-    console.log("setImportedContent executing with file count:", files.length);
     const processedPayloads: CreateNotePayload[] = [];
     const activeTag = stateStore.get("activeTag");
     const extensions = getCachedEditorExtensions();
