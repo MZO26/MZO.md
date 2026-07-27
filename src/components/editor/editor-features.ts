@@ -1,7 +1,7 @@
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
-import { waitForPaint } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
+import { waitForPaint } from "@/utils/ui";
 import { DEBOUNCE_MS } from "@shared/constants";
 import { Editor, type JSONContent } from "@tiptap/core";
 
@@ -37,7 +37,7 @@ function initEditorSearch(editor: Editor) {
   const chevronBtn = requireElement<HTMLButtonElement>(
     ".input-wrapper-chevron",
   );
-  const searchCount = requireElement<HTMLSpanElement>("#searchCount");
+  const searchCount = requireElement<HTMLSpanElement>(".search-count");
 
   chevronBtn.addEventListener("click", () => {
     const isHidden = replaceInputWrapper.classList.toggle("invisible");

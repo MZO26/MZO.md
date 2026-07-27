@@ -88,4 +88,19 @@ function createGlobalSpinner(showDelay = 200) {
   };
 }
 
-export { createGlobalSpinner, createTooltipContent, initTippyDelegate };
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+async function waitForPaint(frames = 2): Promise<void> {
+  for (let i = 0; i < frames; i++) {
+    await nextFrame();
+  }
+}
+
+export {
+  createGlobalSpinner,
+  createTooltipContent,
+  initTippyDelegate,
+  waitForPaint,
+};

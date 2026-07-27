@@ -7,7 +7,7 @@ import {
   UNTAGGED,
   YIELD_MS,
 } from "@shared/constants";
-import type { Note, NoteListItem } from "@shared/schemas/note-schema";
+import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { ImportExtension } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
 
@@ -125,29 +125,6 @@ function isValidExtension(extension: string): extension is ImportExtension {
   return ALLOWED_IMPORT_EXTENSIONS.some((e) => e === extension);
 }
 
-function toNoteListItem(note: Note): NoteListItem {
-  return {
-    id: note.id,
-    title: note.title,
-    snippet: note.snippet,
-    created_at: note.created_at,
-    updated_at: note.updated_at,
-    pinned: note.pinned,
-    tags: note.tags,
-    links: note.links,
-  };
-}
-
-function nextFrame(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
-}
-
-async function waitForPaint(frames = 2): Promise<void> {
-  for (let i = 0; i < frames; i++) {
-    await nextFrame();
-  }
-}
-
 async function checkNoteSize(doc: JSONContent) {
   console.log(`Node amount: ${doc.content?.length}`);
   if (doc.content && doc.content.length > NODE_BASELINE) {
@@ -163,8 +140,5 @@ export {
   getExtension,
   hasNoteTag,
   isValidExtension,
-  nextFrame,
-  toNoteListItem,
   updateNoteCount,
-  waitForPaint,
 };
