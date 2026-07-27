@@ -177,6 +177,12 @@ body.is-dragging * {
     visibility 0s linear 0s;
 }
 
+.search-count {
+  margin: 0 10px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
 .input-wrapper {
   background-color: var(--bg-editor);
   width: 100%;

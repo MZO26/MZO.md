@@ -4,7 +4,6 @@ import { waitForPaint } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS } from "@shared/constants";
 import { Editor, type JSONContent } from "@tiptap/core";
-import { getSearchState } from "prosemirror-search";
 
 function recreateEditorState(editor: Editor, doc: JSONContent) {
   editor
@@ -20,9 +19,10 @@ function recreateEditorState(editor: Editor, doc: JSONContent) {
 }
 
 function hasSearchMatch(editor: Editor): boolean {
-  const searchState = getSearchState(editor.state);
-  if (!searchState?.query.search) return false;
-  return !!searchState.query.findNext(editor.state, 0);
+  const search = editor.storage.docSearch;
+  const hasMatches = search.results.length > 0;
+  console.log(search.results.length);
+  return !!hasMatches;
 }
 
 function initEditorSearch(editor: Editor) {
@@ -38,6 +38,7 @@ function initEditorSearch(editor: Editor) {
   const chevronBtn = requireElement<HTMLButtonElement>(
     ".input-wrapper-chevron",
   );
+  const searchCount = requireElement<HTMLSpanElement>("#searchCount");
 
   chevronBtn.addEventListener("click", () => {
     const isHidden = replaceInputWrapper.classList.toggle("invisible");
@@ -58,10 +59,8 @@ function initEditorSearch(editor: Editor) {
   }
 
   function syncQuery() {
-    editor.commands.setSearchTerm({
-      searchTerm: input.value,
-      replaceTerm: replaceInput.value,
-    });
+    editor.commands.docSearchSetQuery(input.value);
+    updateCount();
   }
 
   function open() {
@@ -77,30 +76,61 @@ function initEditorSearch(editor: Editor) {
     inputWrapper.classList.add("invisible");
     replaceInputWrapper.classList.add("invisible");
     chevronBtn.classList.remove("open");
-    editor.commands.clearSearch();
+    editor.commands.docSearchClear();
     updateButtons();
+    updateCount();
   }
 
   async function scrollToSelection(editor: Editor, container: HTMLDivElement) {
-    const pos = editor.state.selection.from;
-    await waitForPaint(2);
-    const coords = editor.view.coordsAtPos(pos);
-    const editorRect = editor.view.dom.getBoundingClientRect();
-    const targetTop = coords.top - editorRect.top;
-    container.scrollTo({
-      top: Math.max(0, targetTop - container.clientHeight / 2),
-      behavior: "auto",
-    });
+    await waitForPaint();
+    const storage = editor.storage.docSearch;
+    if (
+      !storage?.results ||
+      storage.results.length === 0 ||
+      storage.activeIndex < 0
+    )
+      return;
+    const activeResult = storage.results[storage.activeIndex];
+    if (!activeResult) return;
+    const pos = activeResult.from;
+    if (pos > editor.state.doc.content.size) return;
+    try {
+      const coords = editor.view.coordsAtPos(pos);
+      const editorRect = editor.view.dom.getBoundingClientRect();
+      const targetTop = coords.top - editorRect.top;
+      container.scrollTo({
+        top: Math.max(0, targetTop - container.clientHeight / 2),
+        behavior: "auto",
+      });
+    } catch (error) {
+      console.error(
+        "[scrollToSelection]: Failed to scroll to selection:",
+        error,
+      );
+    }
+  }
+
+  function updateCount() {
+    const { results, activeIndex, query } = editor.storage.docSearch;
+    if (!query || results.length === 0) {
+      searchCount.textContent = "0 of 0";
+      return;
+    }
+    searchCount.textContent = `${activeIndex + 1} of ${results.length}`;
   }
 
   function goPrev() {
-    editor.commands.findPrev();
-    void scrollToSelection(editor, editorWrapper).catch(console.error);
+    if (editor.commands.docSearchPrev()) {
+      void scrollToSelection(editor, editorWrapper).catch(console.error);
+      updateCount();
+    }
   }
 
   function goNext() {
-    editor.commands.findNext();
-    void scrollToSelection(editor, editorWrapper).catch(console.error);
+    if (editor.commands.docSearchNext()) {
+      void scrollToSelection(editor, editorWrapper).catch(console.error);
+      updateCount();
+    }
   }
 
   inputWrapper.addEventListener("click", (event: Event) => {
@@ -120,23 +150,23 @@ function initEditorSearch(editor: Editor) {
   replaceInputWrapper.addEventListener("click", (event: Event) => {
     const target = event.target as HTMLElement | null;
     if (!target) return;
-    if (target.closest(".replace-one")) {
+    const isReplaceOne = target.closest(".replace-one");
+    const isReplaceAll = target.closest(".replace-all");
+    if (isReplaceOne || isReplaceAll) {
       event.preventDefault();
-      syncQuery();
-      editor.commands.replaceNext();
-      return;
-    } else if (target.closest(".replace-all")) {
-      event.preventDefault();
-      syncQuery();
-      editor.commands.replaceAll();
-      return;
+      editor.commands.docSearchSetReplacement(replaceInput.value);
+      if (isReplaceOne) {
+        editor.commands.docSearchReplaceCurrent();
+      } else {
+        editor.commands.docSearchReplaceAll();
+      }
+      updateCount();
     }
   });
 
   const debouncedSearch = debounce(() => {
     syncQuery();
     updateButtons();
-    goNext();
   }, DEBOUNCE_MS.normal);
 
   input.addEventListener("input", debouncedSearch);
@@ -160,9 +190,9 @@ function initEditorSearch(editor: Editor) {
       event.preventDefault();
       syncQuery();
       if (event.altKey && isMod) {
-        editor.commands.replaceAll();
+        editor.commands.docSearchReplaceAll();
       } else {
-        editor.commands.replaceNext();
+        editor.commands.docSearchReplaceCurrent();
       }
     } else if (event.key === "Escape") {
       event.preventDefault();

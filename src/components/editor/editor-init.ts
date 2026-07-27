@@ -1,6 +1,5 @@
 import { applyTagView } from "@/components/sidebar/sidebar-features";
 import { ActiveCodeHighlight } from "@/extensions/codeblock-highlight";
-import { SearchAndReplace } from "@/extensions/doc-search";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
 import {
   GoogleDocsCleanup,
@@ -19,6 +18,7 @@ import { handleMathClick } from "@/extensions/mathematics/mathematics-dialog";
 import { CustomHeading } from "@/extensions/overrides/headings";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { Placeholder } from "@/extensions/placeholder";
+import { DocSearch } from "@/extensions/search-replace";
 import { NoteTag } from "@/extensions/tag/tag";
 import { NoteTagHandler } from "@/extensions/tag/tag-handler";
 import { TextMetrics } from "@/extensions/text-metrics";
@@ -78,7 +78,6 @@ function initEditor(settings: Partial<AppSettings>): Editor {
 
 function getNoteEditorExtensions() {
   return [
-    SearchAndReplace,
     PasteHandler,
     GoogleDocsCleanup,
     WordCleanup,
@@ -197,6 +196,7 @@ function getNoteEditorExtensions() {
       onClick: handleMathClick,
       katexOptions: SHARED_KATEX_OPTIONS,
     }),
+    DocSearch,
   ];
 }
 

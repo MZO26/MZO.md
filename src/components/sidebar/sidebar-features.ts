@@ -18,7 +18,11 @@ import {
 } from "@/utils/note";
 import { getAppItem, getUIItems } from "@/utils/registry";
 import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
-import { DEBOUNCE_MS, MAX_FILE_DROPS } from "@shared/constants";
+import {
+  DEBOUNCE_MS,
+  MAX_FILE_DROPS,
+  MAX_SEARCH_LENGTH,
+} from "@shared/constants";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import type { ResizeOptions } from "@shared/types";
 import tippy from "tippy.js";
@@ -27,6 +31,7 @@ export let allTagsMenu: ReturnType<typeof createAllTagsPopover> | null = null;
 
 async function handleSearch(searchInput: string) {
   const nextQuery = searchInput.trim();
+  if (nextQuery.length > MAX_SEARCH_LENGTH) return;
   const prevQuery = stateStore.get("searchQuery");
   if (nextQuery === prevQuery) {
     console.log("Same query. Skipping search");

@@ -655,13 +655,13 @@
   border-radius: 999px;
 }
 
-.ProseMirror-search-match {
+.ProseMirror .doc-search-result {
   background-color: var(--search-match-bg);
   color: var(--text-main);
   border-radius: 3px;
 }
 
-.ProseMirror-active-search-match {
+.ProseMirror .doc-search-result-active {
   background-color: color-mix(
     in srgb,
     var(--search-match-bg) 50%,
