@@ -2,7 +2,8 @@ import { settingsStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { DEBOUNCE_MS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
-import type { ZoomAction } from "@shared/schemas/electron-schema";
+import type { Url } from "@shared/schemas/editor-schema";
+import type { Notification, ZoomAction } from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
@@ -19,9 +20,10 @@ import type {
   ImportRequest,
   OpenAutoExportPathRequest,
   SyncRequestPayload,
+  SyncResult,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import type { ImportStats, Result, SyncResult } from "@shared/types";
+import type { ImportStats, Result } from "@shared/types";
 
 async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
   try {
@@ -153,8 +155,8 @@ async function setTheme(
 }
 
 async function showNotification(
-  title: string,
-  body: string,
+  title: Notification["title"],
+  body: Notification["body"],
 ): Promise<Result<void>> {
   return invoke(window.electronAPI.showNotification(title, body));
 }
@@ -169,7 +171,7 @@ async function handleZoom(action: ZoomAction): Promise<Result<number>> {
   return invoke(window.electronAPI.zoom(action));
 }
 
-async function openExternal(url: string): Promise<Result<void>> {
+async function openExternal(url: Url): Promise<Result<string | void>> {
   return invoke(window.electronAPI.openExternal(url));
 }
 

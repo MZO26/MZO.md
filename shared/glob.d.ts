@@ -1,6 +1,6 @@
 import type { MenuType } from "@electron/schemas/electron-schema";
 import type { Url } from "@shared/schemas/editor-schema";
-import type { ZoomAction } from "@shared/schemas/electron-schema";
+import type { Notification, ZoomAction } from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   Id,
@@ -10,6 +10,7 @@ import type {
   NoteMenuPayload,
   SearchQuery,
   SearchResult,
+  UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type {
   ExportContent,
@@ -18,14 +19,10 @@ import type {
   ImportRequest,
   OpenAutoExportPathRequest,
   SyncRequestPayload,
+  SyncResult,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import type {
-  ImportStats,
-  Result,
-  SyncResult,
-  TableAction,
-} from "@shared/types";
+import type { ImportStats, Result, TableAction } from "@shared/types";
 
 declare global {
   interface Window {

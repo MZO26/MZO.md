@@ -2,6 +2,7 @@ import { MAX_IPC_PAYLOAD_SIZE, UNTITLED } from "@shared/constants";
 import {
   AutoExportWritePayloadSchema,
   DateSchema,
+  PlainTextSchema,
 } from "@shared/schemas/note-schema";
 import z from "zod";
 
@@ -130,6 +131,17 @@ const SyncRequestPayloadSchema = AutoExportWritePayloadSchema.extend({
   updated_at: DateSchema,
 });
 
+const SyncResultSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("MISSING") }),
+  z.object({ status: z.literal("UNCHANGED") }),
+  z.object({
+    status: z.literal("MODIFIED"),
+    markdown: PlainTextSchema,
+    appContent: PlainTextSchema,
+  }),
+]);
+
+type SyncResult = z.infer<typeof SyncResultSchema>;
 type ExportContent = z.infer<typeof ExportItemSchema>;
 type ImportContent = z.infer<typeof ImportRequestSchema>;
 type FilePathRequest = z.infer<typeof FilePathRequestSchema>;
@@ -153,6 +165,7 @@ export {
   OpenAutoExportPathSchema,
   StringContentSchema,
   SyncRequestPayloadSchema,
+  SyncResultSchema,
   WriteAutoExportRequestSchema,
   type AutoExportRequest,
   type DeleteAutoExportRequest,
@@ -164,5 +177,6 @@ export {
   type ImportRequest,
   type OpenAutoExportPathRequest,
   type SyncRequestPayload,
+  type SyncResult,
   type WriteAutoExportRequest,
 };

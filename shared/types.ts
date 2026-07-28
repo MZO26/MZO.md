@@ -206,15 +206,6 @@ type QuickActionConfig = {
   label: string;
 };
 
-type SyncResult =
-  | { status: "MISSING" }
-  | { status: "UNCHANGED" }
-  | {
-      status: "MODIFIED";
-      markdown: string;
-      dbContent: string;
-    };
-
 type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
 
 export type {
@@ -247,7 +238,6 @@ export type {
   SelectOption,
   SettingsCategory,
   Success,
-  SyncResult,
   TableAction,
   TemplateRegistry,
   TitleBarOverlayOptions,

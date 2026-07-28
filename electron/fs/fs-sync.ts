@@ -7,12 +7,13 @@ import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { MAX_BYTES_FILE, SYNC_BUFFER } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import type { AutoExportWritePayload, Note } from "@shared/schemas/note-schema";
-import type { SyncResult } from "@shared/types";
+import type { SyncResult } from "@shared/schemas/request-schema";
+import type { Expand } from "@shared/types";
 import fs from "fs/promises";
 
 async function checkSyncState(
   targetDir: string,
-  payload: AutoExportWritePayload & Pick<Note, "updated_at">,
+  payload: Expand<AutoExportWritePayload & Pick<Note, "updated_at">>,
 ): Promise<SyncResult> {
   const autoExportPath = resolveAutoExportPath(targetDir);
   const absoluteFilePath = getFilePath(autoExportPath, {
@@ -60,7 +61,7 @@ async function checkSyncState(
   return {
     status: "MODIFIED",
     markdown,
-    dbContent: payload.markdown,
+    appContent: payload.markdown,
   };
 }
 
