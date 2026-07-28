@@ -55,7 +55,7 @@ declare global {
       onRequestFlush: (callback: () => void) => () => void;
       confirmFlush: () => void;
       zoom: (action: ZoomAction) => Promise<Result<number>>;
-      openExternal: (url: Url) => Promise<Result<void>>;
+      openExternal: (url: Url) => Promise<Result<string | void>>;
       openAutoExportFolder: (
         payload: OpenAutoExportPathRequest,
       ) => Promise<Result<boolean>>;
