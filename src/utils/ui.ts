@@ -1,4 +1,5 @@
 import { requireElement } from "@/utils/dom";
+import type { ExportContent } from "@shared/schemas/request-schema";
 import { delegate, hideAll, type Placement } from "tippy.js";
 import "tippy.js/animations/scale-subtle.css";
 import "tippy.js/dist/tippy.css";
@@ -98,9 +99,28 @@ async function waitForPaint(frames = 2): Promise<void> {
   }
 }
 
+function needsLandscape(
+  content: Extract<ExportContent["extension"], "html">,
+): boolean {
+  const dom = new DOMParser().parseFromString(content, "text/html");
+  for (const table of dom.querySelectorAll<HTMLTableElement>("table")) {
+    const firstRow = table.querySelector<HTMLTableRowElement>("tr");
+    if (!firstRow) continue;
+    let columnCount = 0;
+    for (const cell of firstRow.querySelectorAll<HTMLTableCellElement>(
+      "th, td",
+    )) {
+      columnCount += Number(cell.getAttribute("colspan")) || 1;
+    }
+    if (columnCount >= 5) return true;
+  }
+  return false;
+}
+
 export {
   createGlobalSpinner,
   createTooltipContent,
   initTippyDelegate,
+  needsLandscape,
   waitForPaint,
 };

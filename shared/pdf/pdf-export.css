@@ -277,7 +277,6 @@
 
 @media print {
   @page {
-    size: A4;
     margin: 2.5cm 2cm 2.5cm 2cm;
   }
 

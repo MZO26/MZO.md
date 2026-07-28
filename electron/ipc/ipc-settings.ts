@@ -8,18 +8,19 @@ import {
 import { nextZoom } from "@electron/win";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
+import { ZoomActionSchema } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
-import type { ZoomAction } from "@shared/types";
 import { BrowserWindow, ipcMain } from "electron";
 
 function registerSettingsIpc(win: BrowserWindow) {
-  ipcMain.handle("zoom", (e, action: ZoomAction) => {
+  ipcMain.handle("zoom", (e, action: unknown) => {
     return result(e, async () => {
       if (!checkRateLimit("zoom", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validAction = validation(ZoomActionSchema, action);
       const current = win.webContents.getZoomFactor();
-      const zoom = nextZoom(current, action);
-      if (action !== "get") {
+      const zoom = nextZoom(current, validAction);
+      if (validAction !== "get") {
         win.webContents.setZoomFactor(zoom);
       }
       return zoom;

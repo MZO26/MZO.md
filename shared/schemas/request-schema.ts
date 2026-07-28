@@ -74,6 +74,7 @@ const JsonSchema = ExportBaseSchema.extend({
 
 const PdfSchema = ExportBaseSchema.extend({
   extension: z.literal("pdf"),
+  landscape: z.boolean().default(false),
 });
 
 const ExportRequestSchema = z.discriminatedUnion("extension", [
@@ -125,15 +126,12 @@ const FilePathRequestSchema = z.discriminatedUnion("source", [
   }),
 ]);
 
-const NotificationSchema = z.object({
-  title: z.string().trim().min(1).max(50),
-  body: z.string().trim().max(100).default(""),
-});
-
 const SyncRequestPayloadSchema = AutoExportWritePayloadSchema.extend({
   updated_at: DateSchema,
 });
 
+type ExportContent = z.infer<typeof ExportItemSchema>;
+type ImportContent = z.infer<typeof ImportRequestSchema>;
 type FilePathRequest = z.infer<typeof FilePathRequestSchema>;
 type SyncRequestPayload = z.infer<typeof SyncRequestPayloadSchema>;
 type OpenAutoExportPathRequest = z.infer<typeof OpenAutoExportPathSchema>;
@@ -152,16 +150,17 @@ export {
   FileNameSchema,
   FilePathRequestSchema,
   ImportRequestSchema,
-  NotificationSchema,
   OpenAutoExportPathSchema,
   StringContentSchema,
   SyncRequestPayloadSchema,
   WriteAutoExportRequestSchema,
   type AutoExportRequest,
   type DeleteAutoExportRequest,
+  type ExportContent,
   type ExportManyRequest,
   type ExportRequest,
   type FilePathRequest,
+  type ImportContent,
   type ImportRequest,
   type OpenAutoExportPathRequest,
   type SyncRequestPayload,

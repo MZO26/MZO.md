@@ -12,14 +12,15 @@ import {
 } from "@shared/generators";
 import { isEditorDoc } from "@shared/schemas/editor-schema";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
-import type { ImportedContent, Result } from "@shared/types";
+import type { ImportContent } from "@shared/schemas/request-schema";
+import type { Result } from "@shared/types";
 import { generateJSON, generateText, type JSONContent } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
 // function to either sanitize content or format it to make import cleaner
 
 async function normalizeFileContent(
-  file: ImportedContent,
+  file: ImportContent,
 ): Promise<JSONContent | undefined> {
   const { content, extension } = file;
   if (typeof content !== "string") return undefined;
@@ -75,7 +76,7 @@ async function normalizeFileContent(
 }
 
 async function setImportedContent(
-  files: ImportedContent[],
+  files: ImportContent[],
 ): Promise<Result<CreateNotePayload[]>> {
   try {
     const processedPayloads: CreateNotePayload[] = [];

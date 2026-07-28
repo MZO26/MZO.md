@@ -48,7 +48,7 @@ function buildPreviewCard(content: Note["content"]) {
   }
   const hasText = (cardContent.textContent || "").trim().length > 0;
   const hasMedia =
-    cardContent.querySelectorAll(
+    cardContent.querySelectorAll<HTMLElement>(
       "img, hr, [data-type='inline-math'], [data-type='block-math']",
     ).length > 0;
   if (!hasText && !hasMedia) {

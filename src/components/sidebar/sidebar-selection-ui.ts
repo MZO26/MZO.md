@@ -75,7 +75,7 @@ function updateSelectionUI() {
   const { selectedIds, selectionMode } = stateStore.getState();
   const sidebar = getAppItem("sidebar");
   sidebar.classList.toggle("selection-mode", selectionMode);
-  const noteItems = sidebar.querySelectorAll<HTMLDivElement>(".note-item");
+  const noteItems = [...sidebar.querySelectorAll<HTMLDivElement>(".note-item")];
   for (const item of noteItems) {
     const id = item?.getAttribute("data-id");
     const isSelected = !!id && selectedIds.has(id);

@@ -11,7 +11,7 @@ function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
 }
 
 function applyView(nextTag: string | null) {
-  const { activeTag } = stateStore.getState();
+  const activeTag = stateStore.get("activeTag");
   if (activeTag === nextTag) return;
   stateStore.setState({ activeTag: nextTag, searchQuery: "" });
   getUIItem("searchInput").value = "";

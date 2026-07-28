@@ -2,14 +2,18 @@ import { settingsStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { DEBOUNCE_MS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
+import type { ZoomAction } from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
   Note,
   NoteListItem,
+  SearchQuery,
+  SearchResult,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type {
+  ExportContent,
   ExportRequest,
   FilePathRequest,
   ImportRequest,
@@ -17,13 +21,7 @@ import type {
   SyncRequestPayload,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import type {
-  ExportedContent,
-  ImportStats,
-  Result,
-  SyncResult,
-  ZoomAction,
-} from "@shared/types";
+import type { ImportStats, Result, SyncResult } from "@shared/types";
 
 async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
   try {
@@ -36,9 +34,7 @@ async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
 
 // note api
 
-async function search(
-  query: string,
-): Promise<Result<(NoteListItem & { search_match: string })[]>> {
+async function search(query: SearchQuery): Promise<Result<SearchResult[]>> {
   return invoke(window.noteAPI.search(query));
 }
 
@@ -92,8 +88,8 @@ async function exportNote(
 }
 
 async function exportManyNotes(
-  payload: ExportedContent[],
-): Promise<Result<ExportedContent[]>> {
+  payload: ExportContent[],
+): Promise<Result<ExportContent[]>> {
   return invoke(window.noteAPI.noteExportMany(payload));
 }
 
@@ -169,7 +165,7 @@ async function imageWriteMany(
   return invoke(window.electronAPI.imageWriteMany(payload));
 }
 
-async function handleZoom(action: ZoomAction): Promise<Result<ZoomAction>> {
+async function handleZoom(action: ZoomAction): Promise<Result<number>> {
   return invoke(window.electronAPI.zoom(action));
 }
 

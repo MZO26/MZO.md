@@ -2,8 +2,8 @@ import { settingsService } from "@electron/handler/settings-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { win } from "@electron/main";
 import { ZOOMS } from "@shared/constants";
+import type { ZoomAction } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
-import type { ZoomAction } from "@shared/types";
 import { BrowserWindow } from "electron";
 
 function nextZoom(current: number, action: ZoomAction) {

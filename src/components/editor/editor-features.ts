@@ -47,10 +47,8 @@ function initEditorSearch(editor: Editor) {
 
   function updateButtons() {
     const disabled = input.value.trim() === "" || !hasSearchMatch(editor);
-    const buttons = Array.from(
-      inputWrapper.querySelectorAll<HTMLButtonElement>(
-        ".search-prev, .search-next",
-      ),
+    const buttons = inputWrapper.querySelectorAll<HTMLButtonElement>(
+      ".search-prev, .search-next",
     );
     for (const button of buttons) {
       button.disabled = disabled;

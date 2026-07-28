@@ -122,7 +122,7 @@ function initAppearanceSettings(
     if (!target) return;
     document.documentElement.setAttribute("data-highlight", target.value);
     updateSettings({
-      highlight: target?.value as HighlightTheme,
+      highlight: target.value as HighlightTheme,
     });
   });
 

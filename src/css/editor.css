@@ -263,6 +263,8 @@
 }
 
 .ProseMirror .tableWrapper {
+  width: 100%;
+  max-width: 100%;
   margin: 1.5em 0;
   padding: 0;
   overflow-x: auto;
@@ -272,16 +274,36 @@
   border-radius: 8px;
 }
 
-.ProseMirror table,
-.wikilink-preview-content table {
+.ProseMirror table {
   border-collapse: collapse;
   margin: 0;
-  width: 100%;
-  min-width: 100px;
-  max-width: 100%;
+  min-width: 100%;
+  width: max-content;
   table-layout: fixed;
   background: transparent;
   color: var(--text-main);
+}
+
+.wikilink-preview-content table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  border-collapse: collapse;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+}
+
+.wikilink-preview-content table::-webkit-scrollbar {
+  height: 8px;
+  display: block;
+}
+
+.wikilink-preview-content::-webkit-scrollbar-corner {
+  background-color: transparent;
 }
 
 .ProseMirror th,
@@ -346,7 +368,7 @@
   top: 0;
   bottom: 0;
   left: 2px;
-  width: 1px;
+  width: 2px;
   border-radius: 999px;
   background: var(--accent-primary);
   opacity: 0;

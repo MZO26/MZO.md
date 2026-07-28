@@ -1,19 +1,23 @@
 import { getNoteById } from "@/api/api";
 import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import { getAppItem } from "@/utils/registry";
-import { DOMPURIFY_CONFIG } from "@shared/constants";
+import { needsLandscape } from "@/utils/ui";
+import { DOMPURIFY_CONFIG, NODE_BASELINE } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { titleGenerator } from "@shared/generators";
 import type { Note } from "@shared/schemas/note-schema";
-import type { ExportRequest } from "@shared/schemas/request-schema";
-import type { ExportedContent, ExportFormat, Result } from "@shared/types";
+import type {
+  ExportContent,
+  ExportRequest,
+} from "@shared/schemas/request-schema";
+import type { Result } from "@shared/types";
 import { generateHTML, generateText } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
 async function getBatchExportContent(
   notes: Note[],
-  extension: ExportFormat,
-): Promise<Result<ExportedContent[]>> {
+  extension: ExportContent["extension"],
+): Promise<Result<ExportContent[]>> {
   try {
     switch (extension) {
       case "json":
@@ -50,6 +54,30 @@ async function getBatchExportContent(
           })),
         };
       }
+      case "pdf": {
+        const exts = getCachedEditorExtensions();
+        return {
+          success: true,
+          data: notes.map((note) => {
+            const html = generateHTML(note.content, exts) as Extract<
+              ExportContent["extension"],
+              "html"
+            >;
+            const noteSize = note.content.content?.length;
+            const landscape =
+              typeof noteSize === "number" && noteSize > NODE_BASELINE
+                ? false
+                : needsLandscape(html);
+            return {
+              created_at: note.created_at,
+              fileName: note.title,
+              extension: extension,
+              content: html,
+              landscape,
+            };
+          }),
+        };
+      }
       case "md": {
         const editor = getAppItem("editor");
         return {
@@ -78,7 +106,7 @@ async function getBatchExportContent(
 
 async function getExportContent(
   id: string,
-  extension: string,
+  extension: ExportContent["extension"],
 ): Promise<Result<ExportRequest>> {
   const result = await getNoteById(id);
   if (!result.success) {
@@ -97,9 +125,11 @@ async function getExportContent(
         },
       };
     }
-    case "html":
-    case "pdf": {
-      const html = generateHTML(note.content, getCachedEditorExtensions());
+    case "html": {
+      const html = generateHTML(
+        note.content,
+        getCachedEditorExtensions(),
+      ) as Extract<ExportContent["extension"], "html">;
       return {
         success: true,
         data: {
@@ -107,6 +137,28 @@ async function getExportContent(
           extension,
           fileName: titleGenerator(note.content),
           content: DOMPurify.sanitize(html, DOMPURIFY_CONFIG),
+        },
+      };
+    }
+    case "pdf": {
+      const html = generateHTML(
+        note.content,
+        getCachedEditorExtensions(),
+      ) as Extract<ExportContent["extension"], "html">;
+      const noteSize = note.content.content?.length;
+      const landscape =
+        typeof noteSize === "number" && noteSize > NODE_BASELINE
+          ? false
+          : needsLandscape(html);
+      console.log(landscape);
+      return {
+        success: true,
+        data: {
+          created_at: note.created_at,
+          extension,
+          fileName: titleGenerator(note.content),
+          content: DOMPurify.sanitize(html, DOMPURIFY_CONFIG),
+          landscape,
         },
       };
     }

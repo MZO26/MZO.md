@@ -57,9 +57,9 @@ function initQuickSwitcher() {
   }
 
   function updateSelection() {
-    const items = Array.from(
-      listEl.querySelectorAll<HTMLDivElement>(".quick-switch-item"),
-    );
+    const items = [
+      ...listEl.querySelectorAll<HTMLDivElement>(".quick-switch-item"),
+    ];
     for (const [index, item] of items.entries()) {
       item?.classList.toggle("active", index === activeIndex);
     }

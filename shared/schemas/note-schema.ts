@@ -181,6 +181,8 @@ type UpdateNotePayload = z.infer<typeof UpdateNotePayloadSchema>;
 type CreateNotePayload = z.infer<typeof CreateNotePayloadSchema>;
 type CreateNotesPayload = z.infer<typeof CreateNotesPayloadsSchema>;
 type Note = z.infer<typeof NoteSchema>;
+type Id = z.infer<typeof IdSchema>;
+type Ids = z.infer<typeof IdsSchema>;
 
 export {
   AutoExportWritePayloadSchema,
@@ -218,6 +220,8 @@ export {
   type CreateNotePayload,
   type CreateNotesPayload,
   type CreateTransaction,
+  type Id,
+  type Ids,
   type Link,
   type LinkRow,
   type Note,

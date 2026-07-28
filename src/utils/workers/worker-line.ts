@@ -26,8 +26,8 @@ const workOnImageCompression = createWorker<
 
 async function compressImageInWorker(
   file: File,
-  maxWidth = 1000,
-  quality = 0.9,
+  maxWidth: number,
+  quality: number,
 ): Promise<WorkerResult<Uint8Array>> {
   const arrayBuffer = await file.arrayBuffer();
   return workOnImageCompression(

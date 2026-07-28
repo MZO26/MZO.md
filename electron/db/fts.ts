@@ -15,7 +15,7 @@ class NotesSearch {
         SELECT
         rowid,
         bm25(notes_fts, 10.0, 1.0) AS rank,
-        snippet(notes_fts, -1, '<mark class="active-search-highlight">', '</mark>', '...', 15) AS search_match
+        snippet(notes_fts, -1, '<mark class="active-search-highlight">', '</mark>', '...', 10) AS search_match
         FROM notes_fts
         WHERE notes_fts MATCH $ftsQuery
     )
@@ -81,6 +81,7 @@ class NotesSearch {
   }
 
   private isRebuilding = false;
+  private hasRebuilt = false;
 
   public rebuildIndex(db: DatabaseSync) {
     db.exec(`
@@ -93,23 +94,28 @@ class NotesSearch {
   public search(query: SearchQuery) {
     const ftsQuery = this.normalizeFTSQuery(query);
     if (!ftsQuery) return [];
-    if (this.isRebuilding) {
-      return [];
-    }
+    if (this.isRebuilding) return [];
     try {
       return this.searchStmt.all({
         $ftsQuery: ftsQuery,
       }) as SearchResult[];
     } catch (error) {
-      console.warn(
+      if (this.hasRebuilt) {
+        console.error("[FTS5]: Search failed again and is now disabled.");
+        return [];
+      }
+      console.error(
         "[FTS5]: Search failed. Desynchronized index. Rebuilding...",
         error,
       );
       this.isRebuilding = true;
       try {
         this.rebuildIndex(this.db);
+      } catch (error) {
+        console.error("[FTS5]: Error during rebuild process:", error);
       } finally {
         this.isRebuilding = false;
+        this.hasRebuilt = true;
       }
       return [];
     }

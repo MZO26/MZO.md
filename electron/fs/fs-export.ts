@@ -9,7 +9,8 @@ import {
 } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
-import type { ExportedContent, PDFAssets } from "@shared/types";
+import type { ExportContent } from "@shared/schemas/request-schema";
+import type { Expand, PDFAssets } from "@shared/types";
 import type { BrowserWindow, PrintToPDFOptions } from "electron";
 import { app } from "electron";
 import fs from "fs/promises";
@@ -30,7 +31,7 @@ async function singleExport(filePath: string, data: string) {
   });
 }
 
-async function batchExport(folder: string, payload: ExportedContent[]) {
+async function batchExport(folder: string, payload: ExportContent[]) {
   const absoluteTargetFolder = path.resolve(folder);
   await fs.mkdir(folder, { recursive: true });
   const userDataPath = app.getPath("userData");
@@ -40,7 +41,7 @@ async function batchExport(folder: string, payload: ExportedContent[]) {
   const exported = await processWithLimit(
     payload,
     CONCURRENCY_EXPORT_NORMAL,
-    async (item: ExportedContent) => {
+    async (item: ExportContent) => {
       try {
         const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
         const portableContent = await sanitizeExportString(
@@ -61,15 +62,16 @@ async function batchExport(folder: string, payload: ExportedContent[]) {
 
 async function exportPDFNote(params: {
   win: BrowserWindow;
+  landscape: boolean;
   filePath: string;
   html: string;
   assets: PDFAssets;
 }) {
-  const { win, filePath, html, assets } = params;
+  const { win, landscape, filePath, html, assets } = params;
   const pdfOptions: PrintToPDFOptions = {
     pageSize: "A4",
     printBackground: true,
-    landscape: false,
+    landscape,
   };
   const htmlString = renderPDFCanvas(html, assets);
   const encoded = Buffer.from(htmlString, "utf8").toString("base64");
@@ -85,12 +87,17 @@ async function exportPDFNote(params: {
   return filePath;
 }
 
-async function singlePDFExport(filePath: string, data: string) {
+async function singlePDFExport(
+  filePath: string,
+  data: string,
+  landscape: boolean,
+) {
   const hiddenWin = createHiddenPdfWindow();
   const assets = await getPDFAssets();
   try {
     await exportPDFNote({
       win: hiddenWin,
+      landscape,
       filePath,
       html: data,
       assets,
@@ -105,7 +112,10 @@ async function singlePDFExport(filePath: string, data: string) {
   }
 }
 
-async function batchPDFExport(folder: string, payload: ExportedContent[]) {
+async function batchPDFExport(
+  folder: string,
+  payload: Expand<Extract<ExportContent, { extension: "pdf" }>>[],
+) {
   await fs.mkdir(folder, { recursive: true });
   const absoluteTargetFolder = path.resolve(folder);
   const assets = await getPDFAssets();
@@ -118,6 +128,7 @@ async function batchPDFExport(folder: string, payload: ExportedContent[]) {
         const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
         const filePath = await exportPDFNote({
           win: hiddenWin,
+          landscape: item.landscape,
           filePath: absoluteFilePath,
           html: item.content,
           assets,

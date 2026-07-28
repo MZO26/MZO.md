@@ -1,5 +1,18 @@
-import type { Note, NoteListItem } from "@shared/schemas/note-schema";
+import type { MenuType } from "@electron/schemas/electron-schema";
+import type { Url } from "@shared/schemas/editor-schema";
+import type { ZoomAction } from "@shared/schemas/electron-schema";
+import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
+  Id,
+  Ids,
+  Note,
+  NoteListItem,
+  NoteMenuPayload,
+  SearchQuery,
+  SearchResult,
+} from "@shared/schemas/note-schema";
+import type {
+  ExportContent,
   ExportRequest,
   FilePathRequest,
   ImportRequest,
@@ -7,18 +20,11 @@ import type {
   SyncRequestPayload,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import {
-  Result,
-  type CreateNotePayload,
-  type ImagePayload,
-  type UpdateNotePayload,
-} from "@shared/shared/types";
 import type {
-  ExportedContent,
   ImportStats,
-  MenuType,
-  NoteMenuPayload,
+  Result,
   SyncResult,
+  TableAction,
 } from "@shared/types";
 
 declare global {
@@ -26,28 +32,30 @@ declare global {
     appInfo: Readonly<{ isMac: boolean }>;
     electronAPI: {
       getPathForFile: (file: File) => string;
-      showNotification: (title: string, body: string) => Promise<Result<void>>;
-      setTheme: (theme: Theme, focus?: boolean) => Promise<Result<Theme>>;
+      showNotification: (
+        title: Notification["title"],
+        body: Notification["body"],
+      ) => Promise<Result<void>>;
+      setTheme: (
+        theme: Theme,
+        focus?: boolean,
+      ) => Promise<Result<Exclude<Theme, "system">>>;
       windowPin: () => Promise<Result<boolean>>;
-      imageWriteMany: (payload: ImagePayload[]) => Promise<
-        Result<
-          {
-            imageSrc: string;
-          }[]
-        >
-      >;
+      imageWriteMany: (
+        payload: ImagePayload[],
+      ) => Promise<Result<{ imageSrc: string }[]>>;
       onThemeChanged: (
         callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
       ) => () => void;
       showContextMenu: (menuType: MenuType, payload?: NoteMenuPayload) => void;
-      onTriggerTableAction: (callback: (action: string) => void) => void;
+      onTriggerTableAction: (callback: (action: TableAction) => void) => void;
       onTriggerNoteAction: (
         callback: (payload: NoteMenuPayload) => void,
       ) => void;
       onRequestFlush: (callback: () => void) => () => void;
       confirmFlush: () => void;
-      zoom: (action: string) => Promise<Result<number>>;
-      openExternal: (url: string) => Promise<Result<void>>;
+      zoom: (action: ZoomAction) => Promise<Result<number>>;
+      openExternal: (url: Url) => Promise<Result<void>>;
       openAutoExportFolder: (
         payload: OpenAutoExportPathRequest,
       ) => Promise<Result<boolean>>;
@@ -60,13 +68,11 @@ declare global {
       openAppPath: () => Promise<Result<boolean>>;
     };
     noteAPI: {
-      search: (
-        query: string,
-      ) => Promise<Result<NoteListItem & { search_match: string }[]>>;
+      search: (query: SearchQuery) => Promise<Result<SearchResult[]>>;
       getAll: () => Promise<Result<NoteListItem[]>>;
       getAllBackup: () => Promise<Result<Note[]>>;
-      getById: (id: string) => Promise<Result<Note>>;
-      getManyById: (ids: string[]) => Promise<Result<Note[]>>;
+      getById: (id: Id) => Promise<Result<Note>>;
+      getManyById: (ids: Ids) => Promise<Result<Note[]>>;
       create: (payload: CreateNotePayload) => Promise<Result<NoteListItem>>;
       createMany: (
         payload: CreateNotePayload[],
@@ -75,34 +81,34 @@ declare global {
         payload: UpdateNotePayload,
         flush: boolean,
       ) => Promise<Result<NoteListItem>>;
-      delete: (id: string) => Promise<Result<void>>;
-      deleteMany: (ids: string[]) => Promise<Result<void>>;
+      delete: (id: Id) => Promise<Result<void>>;
+      deleteMany: (ids: Ids) => Promise<Result<void>>;
       selectAutoExportFolder: () => Promise<Result<string>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
       onTriggerExport: (
-        callback: (id: string, extension: string) => void,
+        callback: (id: Id, extension: ExportContent["extension"]) => void,
       ) => () => void;
-      onTriggerPath: (callback: (id: string) => void) => () => void;
-      onTriggerDefaultEditor: (callback: (id: string) => void) => () => void;
-      onTriggerCopyRichText: (callback: (id: string) => void) => () => void;
-      onTriggerCopyPath: (callback: (id: string) => void) => () => void;
+      onTriggerPath: (callback: (id: Id) => void) => () => void;
+      onTriggerDefaultEditor: (callback: (id: Id) => void) => () => void;
+      onTriggerCopyRichText: (callback: (id: Id) => void) => () => void;
+      onTriggerCopyPath: (callback: (id: Id) => void) => () => void;
       noteExportMany: (
-        payload: ExportedContent[],
-      ) => Promise<Result<ExportedContent[]>>;
+        payload: ExportContent[],
+      ) => Promise<Result<ExportContent[]>>;
       noteImport: (
         payload: FilePathRequest,
       ) => Promise<Result<{ data: ImportRequest[]; stats: ImportStats }>>;
-      onTriggerDelete: (callback: (id: string) => void) => () => void;
-      onTriggerDuplicate: (callback: (id: string) => void) => () => void;
-      onTriggerPin: (callback: (id: string) => void) => () => void;
-      onTriggerSelect: (callback: (id: string) => void) => () => void;
-      onTriggerSync: (callback: (id: string) => void) => () => void;
+      onTriggerDelete: (callback: (id: Id) => void) => () => void;
+      onTriggerDuplicate: (callback: (id: Id) => void) => () => void;
+      onTriggerPin: (callback: (id: Id) => void) => () => void;
+      onTriggerSelect: (callback: (id: Id) => void) => () => void;
+      onTriggerSync: (callback: (id: Id) => void) => () => void;
       syncRequest: (payload: SyncRequestPayload) => Promise<Result<SyncResult>>;
-      pin: (id: string) => Promise<Result<boolean>>;
-      pinMany: (ids: string[]) => Promise<Result<boolean>>;
+      pin: (id: Id) => Promise<Result<boolean>>;
+      pinMany: (ids: Ids) => Promise<Result<boolean>>;
       databaseBackup: () => Promise<Result<number>>;
       databaseBackupRestore: () => Promise<Result<void>>;
-      setActiveNote: (id: string) => void;
+      setActiveNote: (id: Id) => void;
     };
     storeAPI: {
       onSettingsChanged: (

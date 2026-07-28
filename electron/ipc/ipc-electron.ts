@@ -16,14 +16,14 @@ import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
+import {
+  MenuTypeSchema,
+  NotificationSchema,
+} from "@shared/schemas/electron-schema";
 import { ImagePayloadsSchema } from "@shared/schemas/image-schema";
 import { NoteMenuPayloadSchema } from "@shared/schemas/note-schema";
-import {
-  NotificationSchema,
-  OpenAutoExportPathSchema,
-} from "@shared/schemas/request-schema";
-import { type Theme } from "@shared/schemas/store-schema";
-import type { MenuType } from "@shared/types";
+import { OpenAutoExportPathSchema } from "@shared/schemas/request-schema";
+import { StoreSchema } from "@shared/schemas/store-schema";
 import {
   app,
   BrowserWindow,
@@ -35,15 +35,16 @@ import {
 import fs from "fs/promises";
 
 function registerElectronIpc(win: BrowserWindow) {
-  ipcMain.on("context-menu:show", (e, menuType: MenuType, payload: unknown) => {
+  ipcMain.on("context-menu:show", (e, type: unknown, payload: unknown) => {
     return result(e, async () => {
       if (!checkRateLimit("context-menu:show", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       if (!win) return;
+      const validMenuType = validation(MenuTypeSchema, type);
       let menu: Menu;
-      if (menuType === "table") {
+      if (validMenuType === "table") {
         menu = setUpTableMenu(win);
-      } else if (menuType === "note") {
+      } else if (validMenuType === "note") {
         const validatedData = validation(NoteMenuPayloadSchema, payload);
         menu = await setUpNoteMenu(win, validatedData);
       } else {
@@ -152,11 +153,12 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("theme:set", (e, theme: Theme, focus?: boolean) => {
+  ipcMain.handle("theme:set", (e, theme: unknown, focus?: boolean) => {
     return result(e, async () => {
       if (!checkRateLimit("theme:set", LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      const resolvedTheme = initTheme(theme);
+      const validTheme = validation(StoreSchema.shape.theme, theme);
+      const resolvedTheme = initTheme(validTheme);
       const windowTheme = getTitleBarOverlay(resolvedTheme, focus ?? false);
       for (const window of BrowserWindow.getAllWindows()) {
         window.setBackgroundColor(windowTheme.backgroundColor);

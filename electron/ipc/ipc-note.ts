@@ -225,10 +225,8 @@ function registerNoteIpc(win: BrowserWindow) {
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ExportManyRequestSchema, payload);
       const selectedFolder = await handleExportManyDialog(win);
-      const hasPdf = validatedData.some(
-        (item) => "extension" in item && item.extension === "pdf",
-      );
-      if (hasPdf) {
+      const isPdf = validatedData.every((item) => item.extension === "pdf");
+      if (isPdf) {
         return await batchPDFExport(selectedFolder, validatedData);
       }
       return await batchExport(selectedFolder, validatedData);
@@ -246,7 +244,7 @@ function registerNoteIpc(win: BrowserWindow) {
           : JSON.stringify(validatedData.content, null, 2);
       const filePath = await handleExportDialog(win, validatedData);
       if (validatedData.extension === "pdf") {
-        return await singlePDFExport(filePath, data);
+        return await singlePDFExport(filePath, data, validatedData.landscape);
       }
       return await singleExport(filePath, data);
     });

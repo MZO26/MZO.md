@@ -1,7 +1,5 @@
-import { validation } from "@electron/ipc/ipc-validation";
 import { THEME_DATA } from "@shared/constants";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import { StoreSchema } from "@shared/schemas/store-schema";
 import type { NativeWindowColors } from "@shared/types";
 import { BrowserWindow, nativeTheme } from "electron";
 
@@ -22,8 +20,7 @@ function getTitleBarOverlay(
 }
 
 // tells electron if theme is dark or light
-function initTheme(savedTheme: unknown): Exclude<Theme, "system"> {
-  const validTheme = validation(StoreSchema.shape.theme, savedTheme);
+function initTheme(validTheme: Theme): Exclude<Theme, "system"> {
   if (validTheme === "system") {
     nativeTheme.themeSource = "system";
     return nativeTheme.shouldUseDarkColors ? "dark" : "light";

@@ -76,10 +76,10 @@ async function copyRichTextSelection(selectedIds: string[]) {
 
 async function exportSelection(selectedIds: string[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-  const notes = noteStore.get("notes");
+  const { notes, noteIndex } = noteStore.getState();
   const allSelected =
     selectedIds.length === notes.length &&
-    selectedIds.every((id) => notes.some((note) => note.id === id));
+    selectedIds.every((id) => noteIndex.has(id));
   const exportResult = allSelected
     ? await getAllBackup()
     : await getManyById(selectedIds);

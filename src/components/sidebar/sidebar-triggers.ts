@@ -24,10 +24,14 @@ import { getAppItem } from "@/utils/registry";
 import { CHAR_BASELINE, YIELD_MS } from "@shared/constants";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
-import type { OpenAutoExportPathRequest } from "@shared/schemas/request-schema";
+import type {
+  ExportContent,
+  OpenAutoExportPathRequest,
+} from "@shared/schemas/request-schema";
+import type { TableAction } from "@shared/types";
 import { generateHTML, generateText } from "@tiptap/core";
 
-function triggerTableMenu(action: string) {
+function triggerTableMenu(action: TableAction) {
   const editor = getAppItem("editor");
   const chain = editor.chain().focus();
   switch (action) {
@@ -66,7 +70,10 @@ function triggerNoteItemMenu(payload: NoteMenuPayload) {
   }
 }
 
-async function triggerSingleExport(id: string, extension: string) {
+async function triggerSingleExport(
+  id: string,
+  extension: ExportContent["extension"],
+) {
   const result = await getExportContent(id, extension);
   if (!result.success) {
     console.error("[exportTrigger]: Failed to fetch note data:", result.error);

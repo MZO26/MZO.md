@@ -72,6 +72,7 @@ const ExternalUrlSchema = z.string().refine((value) => {
 }, "Invalid URL or unsupported protocol");
 
 type EditorDoc = z.infer<typeof EditorDocSchema>;
+type Url = z.infer<typeof ExternalUrlSchema>;
 
 export {
   DbContentSchema,
@@ -79,4 +80,5 @@ export {
   ExternalUrlSchema,
   isEditorDoc,
   type EditorDoc,
+  type Url,
 };

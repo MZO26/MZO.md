@@ -102,6 +102,10 @@ const MAX_SEARCH_LENGTH = 100;
 
 const MAX_WORKER_TIMEOUT_MS = 120_000;
 
+const IMAGE_MAX_WIDTH = 1000;
+
+const IMAGE_QUALITY = 0.9;
+
 const SIDEBAR_FILTER_MODES = ["recent", "search", "tag"] as const;
 
 const ALLOWED_PROTOCOLS = ["https:", "http:", "appimg:", "file:"];
@@ -170,30 +174,30 @@ const THEME_DATA: Record<
   }
 > = {
   light: {
-    color: "#f2f2f4", // --bg-sidebar
+    color: "#fcfcfc", // --bg-sidebar
     symbolColor: "#18181b", // --text-main
-    background: "#f2f2f4", // --bg-sidebar
+    background: "#fcfcfc", // --bg-sidebar
     isDark: false,
     focus: "#fcfcfc", // --bg-editor
   },
   dark: {
-    color: "#16161a", // --bg-sidebar
+    color: "#1d1d20", // --bg-sidebar
     symbolColor: "#a1a1aa", // --text-muted
-    background: "#16161a", // --bg-sidebar
+    background: "#1d1d20", // --bg-sidebar
     isDark: true,
     focus: "#1d1d20", // --bg-editor
   },
   light_warm: {
-    color: "#eceae3", // --bg-sidebar
+    color: "#f8f7f3", // --bg-sidebar
     symbolColor: "#5e5b56", // --text-muted
-    background: "#eceae3",
+    background: "#f8f7f3",
     isDark: false,
     focus: "#f8f7f3", // --bg-editor
   },
   dark_warm: {
-    color: "#110f0b", // --bg-sidebar
+    color: "#1e1b17", // --bg-sidebar
     symbolColor: "#9e9890", // --text-muted
-    background: "#110f0b", // --bg-sidebar
+    background: "#1e1b17", // --bg-sidebar
     isDark: true,
     focus: "#1e1b17", // --bg-editor
   },
@@ -406,6 +410,8 @@ export {
   FONT_FAMILY_SETTINGS,
   FONT_SIZE_SETTINGS,
   HIGHLIGHT_THEME_SETTINGS,
+  IMAGE_MAX_WIDTH,
+  IMAGE_QUALITY,
   IPC_TIMERS,
   KATEX_MACROS,
   LIMITS,

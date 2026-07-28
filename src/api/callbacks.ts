@@ -16,6 +16,7 @@ import { debouncedSaveNote, handleSaveNote } from "@/notes/note-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
+import type { ExportContent } from "@shared/schemas/request-schema";
 
 async function ensureNoteSaved(id: string) {
   if (!noteStore.get("noteIndex").has(id) || stateStore.get("activeId") !== id)
@@ -44,9 +45,11 @@ function initListeners() {
     triggerNoteItemMenu(payload),
   );
 
-  window.noteAPI.onTriggerExport(async (id: string, extension: string) => {
-    await triggerSingleExport(id, extension);
-  });
+  window.noteAPI.onTriggerExport(
+    async (id: string, extension: ExportContent["extension"]) => {
+      await triggerSingleExport(id, extension);
+    },
+  );
 
   window.noteAPI.onTriggerPath(async (id: string) => {
     const autoExportPayload = await ensureNoteSaved(id);

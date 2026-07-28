@@ -3,12 +3,8 @@ import type {
   SIDEBAR_FILTER_MODES,
 } from "@shared/constants";
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
-import type {
-  CodeTheme,
-  ExportFormat,
-  Theme,
-} from "@shared/schemas/store-schema";
-import type { Content, Editor, SetContentOptions } from "@tiptap/core";
+import type { ExportFormat, Theme } from "@shared/schemas/store-schema";
+import type { Editor, SetContentOptions } from "@tiptap/core";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -42,7 +38,7 @@ type TitleBarOverlayOptions = {
 
 type UrlDecision = "allow" | "block" | "external";
 
-type ResolvedTheme = "light" | "dark";
+type ResolvedTheme = Extract<Theme, "light" | "dark">;
 
 type SelectOption<T extends string | boolean> = { value: T; label: string };
 
@@ -52,6 +48,15 @@ type Code =
   | "atom-one-light"
   | "atom-one-dark"
   | "colorless";
+
+type TableAction =
+  | "addRowBefore"
+  | "addRowAfter"
+  | "addColumnBefore"
+  | "addColumnAfter"
+  | "deleteRow"
+  | "deleteColumn"
+  | "deleteTable";
 
 type Expand<T> = T extends unknown ? { [K in keyof T]: T[K] } : never;
 
@@ -111,31 +116,10 @@ type Metadata = {
   links: string[];
 };
 
-type ImportedContent = {
-  fileName: string;
-  content: Content;
-  extension: ImportExtension;
-};
-
 type ImportStats = {
   total: number;
   duplicates: number;
   errors: number;
-};
-
-type ExportedContent = {
-  created_at: string;
-  fileName: string;
-  content: string;
-  extension: ExportFormat;
-};
-
-type FileContent = {
-  id: string;
-  fileName: string;
-  previousTitle?: string;
-  content: string;
-  extension: "md";
 };
 
 type ImageCompressionPayload = {
@@ -151,13 +135,9 @@ type ImportExtension = (typeof ALLOWED_IMPORT_EXTENSIONS)[number];
 
 type ContentType = ImportExtension;
 
-type ZoomAction = "get" | "in" | "out" | "reset";
-
 type EditorContentType = NonNullable<SetContentOptions["contentType"]>;
 
 type SettingsCategory = "Appearance" | "Editor" | "General";
-
-type MenuType = "table" | "text" | "note";
 
 interface AppRegistry {
   ui: Partial<UIRegistry>;
@@ -196,21 +176,10 @@ interface TemplateRegistry {
   noteItemTemplate: HTMLTemplateElement;
 }
 
-type ThemeResult = { theme: Theme; codeTheme: CodeTheme };
-
 type ResizeOptions = {
   minWidth?: number;
   maxWidth?: number;
   cssVariable?: string;
-};
-
-type SearchOptions = {
-  searchTerm?: string;
-  replaceTerm?: string;
-  caseSensitive?: boolean;
-  wholeWord?: boolean;
-  regexp?: boolean;
-  literal?: boolean;
 };
 
 type SelectionAction =
@@ -258,18 +227,14 @@ export type {
   DeepExpand,
   EditorContentType,
   Expand,
-  ExportedContent,
   ExportFormat,
   Failure,
-  FileContent,
   FilterMode,
   ImageCompressionPayload,
-  ImportedContent,
   ImportExtension,
   ImportStats,
   LinkAttributes,
   MathOptions,
-  MenuType,
   Metadata,
   NativeWindowColors,
   PDFAssets,
@@ -277,20 +242,18 @@ export type {
   ResizeOptions,
   ResolvedTheme,
   Result,
-  SearchOptions,
   SelectionAction,
   SelectionActionConfig,
   SelectOption,
   SettingsCategory,
   Success,
   SyncResult,
+  TableAction,
   TemplateRegistry,
-  ThemeResult,
   TitleBarOverlayOptions,
   ToolbarItem,
   UIRegistry,
   UrlDecision,
   WorkerRequest,
   WorkerResult,
-  ZoomAction,
 };

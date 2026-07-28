@@ -217,10 +217,11 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     } else if (!alreadyVisible && matchesTag) {
       visibleIds = [result.data.id, ...state.visibleIds];
     }
+    const notes = state.notes.map((n) =>
+      n.id === result.data.id ? result.data : n,
+    );
     return {
-      notes: state.notes.map((n) =>
-        n.id === result.data.id ? result.data : n,
-      ),
+      notes,
       visibleIds,
       noteIndex,
     };

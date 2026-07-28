@@ -1,4 +1,5 @@
 import { WorkerTaskError } from "@/utils/workers/worker-factory";
+import { IMAGE_MAX_WIDTH, IMAGE_QUALITY } from "@shared/constants";
 import { WorkerErrorCode } from "@shared/errors";
 
 function getScaledSize(
@@ -16,8 +17,8 @@ function getScaledSize(
 
 async function compressImage(
   blob: Blob,
-  maxWidth = 1000,
-  quality = 0.9,
+  maxWidth = IMAGE_MAX_WIDTH,
+  quality = IMAGE_QUALITY,
 ): Promise<Uint8Array> {
   const bitmap = await createImageBitmap(blob).catch(() => {
     throw new WorkerTaskError(WorkerErrorCode.InvalidImageError);

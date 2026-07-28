@@ -1,7 +1,12 @@
+import type { Url } from "@shared/schemas/editor-schema";
+import type { MenuType, ZoomAction } from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
+  Id,
+  Ids,
   NoteMenuPayload,
+  SearchQuery,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type {
@@ -12,7 +17,7 @@ import type {
   SyncRequestPayload,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import type { MenuType, ZoomAction } from "@shared/types";
+import type { TableAction } from "@shared/types";
 import {
   contextBridge,
   ipcRenderer,
@@ -53,9 +58,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   ) => {
     subscribe("theme-changed", callback);
   },
-  showContextMenu: (menuType: MenuType, payload?: NoteMenuPayload) =>
-    ipcRenderer.send("context-menu:show", menuType, payload),
-  onTriggerTableAction: (callback: (action: string) => void) => {
+  showContextMenu: (type: MenuType, payload?: NoteMenuPayload) =>
+    ipcRenderer.send("context-menu:show", type, payload),
+  onTriggerTableAction: (callback: (action: TableAction) => void) => {
     subscribe("trigger:table-action", callback);
   },
   onTriggerNoteAction: (callback: (payload: NoteMenuPayload) => void) => {
@@ -65,7 +70,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     subscribe("request-flush", () => callback()),
   confirmFlush: () => ipcRenderer.send("flush-confirmed"),
   zoom: (action: ZoomAction) => ipcRenderer.invoke("zoom", action),
-  openExternal: (url: string) => ipcRenderer.invoke("open:external", url),
+  openExternal: (url: Url) => ipcRenderer.invoke("open:external", url),
   openAutoExportFolder: (payload: OpenAutoExportPathRequest) =>
     ipcRenderer.invoke("open:auto-export-folder", payload),
   openInDefaultEditor: (payload: OpenAutoExportPathRequest) =>
@@ -75,7 +80,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   openAppPath: () => ipcRenderer.invoke("open:app-path"),
 });
 contextBridge.exposeInMainWorld("noteAPI", {
-  search: (query: string) => ipcRenderer.invoke("note:search", query),
+  search: (query: SearchQuery) => ipcRenderer.invoke("note:search", query),
   getAll: () => ipcRenderer.invoke("note:get-all"),
   getAllBackup: () => ipcRenderer.invoke("note:get-all-backup"),
   create: (payload: CreateNotePayload) =>
@@ -84,8 +89,8 @@ contextBridge.exposeInMainWorld("noteAPI", {
     ipcRenderer.invoke("note:create-many", payload),
   update: (payload: UpdateNotePayload, flush: boolean) =>
     ipcRenderer.invoke("note:update", payload, flush),
-  delete: (id: string) => ipcRenderer.invoke("note:delete", id),
-  deleteMany: (ids: string[]) => ipcRenderer.invoke("note:delete-many", ids),
+  delete: (id: Id) => ipcRenderer.invoke("note:delete", id),
+  deleteMany: (ids: Ids) => ipcRenderer.invoke("note:delete-many", ids),
   selectAutoExportFolder: () => ipcRenderer.invoke("select:auto-export-folder"),
   noteExport: (payload: ExportRequest) =>
     ipcRenderer.invoke("note:export", payload),
@@ -93,51 +98,54 @@ contextBridge.exposeInMainWorld("noteAPI", {
     ipcRenderer.invoke("note:export-many", payload),
   noteImport: (payload: FilePathRequest) =>
     ipcRenderer.invoke("note:import", payload),
-  onTriggerExport: (callback: (id: string, extension: string) => void) => {
+  onTriggerExport: (
+    callback: (id: Id, extension: ExportRequest["extension"]) => void,
+  ) => {
     subscribe("note:trigger-export", callback);
   },
-  onTriggerPath: (callback: (id: string) => void) => {
+  onTriggerPath: (callback: (id: Id) => void) => {
     subscribe("note:trigger-path", callback);
   },
-  onTriggerDefaultEditor: (callback: (id: string) => void) => {
+  onTriggerDefaultEditor: (callback: (id: Id) => void) => {
     subscribe("note:trigger-default-editor", callback);
   },
-  onTriggerCopyRichText: (callback: (id: string) => void) => {
+  onTriggerCopyRichText: (callback: (id: Id) => void) => {
     subscribe("note:trigger-copy-rich-text", callback);
   },
-  onTriggerCopyPath: (callback: (id: string) => void) => {
+  onTriggerCopyPath: (callback: (id: Id) => void) => {
     subscribe("note:trigger-copy-path", callback);
   },
-  onTriggerDelete: (callback: (id: string) => void) => {
+  onTriggerDelete: (callback: (id: Id) => void) => {
     subscribe("note:trigger-delete", callback);
   },
-  onTriggerDuplicate: (callback: (id: string) => void) => {
+  onTriggerDuplicate: (callback: (id: Id) => void) => {
     subscribe("note:trigger-duplicate", callback);
   },
-  onTriggerPin: (callback: (id: string) => void) => {
+  onTriggerPin: (callback: (id: Id) => void) => {
     subscribe("note:trigger-pin", callback);
   },
-  onTriggerSelect: (callback: (id: string) => void) => {
+  onTriggerSelect: (callback: (id: Id) => void) => {
     subscribe("note:trigger-select", callback);
   },
-  onTriggerSync: (callback: (id: string) => void) => {
+  onTriggerSync: (callback: (id: Id) => void) => {
     subscribe("note:trigger-sync", callback);
   },
   syncRequest: (payload: SyncRequestPayload) =>
     ipcRenderer.invoke("note:sync", payload),
-  getById: (id: string) => ipcRenderer.invoke("note:getById", id),
-  getManyById: (ids: string[]) => ipcRenderer.invoke("note:getManyById", ids),
-  pin: (id: string) => ipcRenderer.invoke("note:pin", id),
-  pinMany: (ids: string[]) => ipcRenderer.invoke("note:pin-many", ids),
+  getById: (id: Id) => ipcRenderer.invoke("note:getById", id),
+  getManyById: (ids: Ids) => ipcRenderer.invoke("note:getManyById", ids),
+  pin: (id: Id) => ipcRenderer.invoke("note:pin", id),
+  pinMany: (ids: Ids) => ipcRenderer.invoke("note:pin-many", ids),
   databaseBackup: () => ipcRenderer.invoke("db-backup"),
   databaseBackupRestore: () => ipcRenderer.invoke("db-backup-restore"),
-  setActiveNote: (id: string) => ipcRenderer.send("note:set-active", id),
+  setActiveNote: (id: Id) => ipcRenderer.send("note:set-active", id),
 });
 contextBridge.exposeInMainWorld("storeAPI", {
   onSettingsChanged: (callback: (settings: Partial<AppSettings>) => void) => {
     subscribe("settings-changed", callback);
   },
-  getSettings: (key: string) => ipcRenderer.invoke("electron-store:get", key),
+  getSettings: (key: keyof AppSettings) =>
+    ipcRenderer.invoke("electron-store:get", key),
   getAllSettings: () => ipcRenderer.invoke("electron-store:getAll"),
   setSettings: (settings: Partial<AppSettings>) =>
     ipcRenderer.invoke("electron-store:set", settings),

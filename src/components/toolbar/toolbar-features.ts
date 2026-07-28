@@ -1,11 +1,11 @@
-import { pinWindow, setTheme, updateSettings } from "@/api/api";
+import { pinWindow, updateSettings } from "@/api/api";
 import { createDivider } from "@/components/toolbar/toolbar-factory";
-import { toolbarApi } from "@/components/toolbar/toolbar-init";
 import { noteStore, stateStore } from "@/state/state";
 import { createInfoSpan } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
-import type { Theme } from "@shared/schemas/store-schema";
+import type { Link } from "@shared/schemas/note-schema";
+import { toolbarApi } from "./toolbar-init";
 
 function setEditorWidth(container: HTMLDivElement) {
   const widths = ["comfortable", "normal", "wide"];
@@ -25,56 +25,25 @@ async function setWindowTop(toggleBtn: HTMLButtonElement) {
   toggleBtn.classList.toggle("pin", result.data);
 }
 
-async function initFocusMode() {
+function initFocusMode() {
   const appContainer = getAppItem("appContainer");
   const newState = !appContainer.classList.contains("focus");
-  const isToolbarCollapsed =
-    appContainer.classList.contains("toolbar-collapsed");
-  requestAnimationFrame(async () => {
-    appContainer.classList.toggle("focus", newState);
-    if (isToolbarCollapsed) return;
-    await setTheme(
-      document.documentElement.getAttribute("data-theme") as Exclude<
-        Theme,
-        "system"
-      >,
-      newState,
-    ).catch((error: unknown) => {
-      console.error(
-        "[initFocusMode -> setTheme]: Failed to sync theme with main process.",
-        error,
-      );
-    });
-  });
+  appContainer.classList.toggle("focus", newState);
 }
 
-async function setToolbarCollapsed(collapsed: boolean) {
+function setToolbarCollapsed(collapsed: boolean) {
   const appContainer = getAppItem("appContainer");
-  const isFocus = appContainer.classList.contains("focus");
-  requestAnimationFrame(async () => {
-    appContainer.classList.toggle("toolbar-collapsed", collapsed);
-    if (isFocus) return;
-    await setTheme(
-      document.documentElement.getAttribute("data-theme") as Exclude<
-        Theme,
-        "system"
-      >,
-      collapsed,
-    )
-      .catch((error: unknown) => {
-        console.error(
-          "[initFocusMode -> setTheme]: Failed to sync theme with main process.",
-          error,
-        );
-      })
-      .finally(() => toolbarApi?.refresh());
-  });
+  appContainer.classList.toggle("toolbar-collapsed", collapsed);
 }
 
 async function toggleToolbar() {
   const appContainer = getAppItem("appContainer");
   const newState = !appContainer.classList.contains("toolbar-collapsed");
-  await setToolbarCollapsed(newState);
+  try {
+    setToolbarCollapsed(newState);
+  } finally {
+    toolbarApi?.refresh();
+  }
   updateSettings({ toolbar_collapsed: newState });
 }
 
@@ -108,11 +77,13 @@ function renderTags(container: HTMLDivElement) {
   if (!activeTags) return;
   container.replaceChildren();
   const tagMap = new Map<string, number>();
-  const tagArr = noteStore
-    .get("notes")
-    .flatMap((n) => (n.id !== activeId ? n.tags : []));
-  for (const entry of tagArr) {
-    tagMap.set(entry, (tagMap.get(entry) || 0) + 1);
+  const notes = noteStore.get("notes");
+  for (const note of notes) {
+    if (note.id === activeId) continue;
+    const tags = note.tags ?? [];
+    for (const tag of tags) {
+      tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+    }
   }
   const sortedTags = [...tagMap.entries()]
     .sort((a, b) => b[1] - a[1])
@@ -140,13 +111,17 @@ function renderLinks(container: HTMLDivElement) {
   const activeNote = noteStore.get("noteIndex").get(activeId);
   container.replaceChildren();
   if (!activeNote) return;
-  const validLinks = activeNote.links.filter((l) => l.id !== activeNote.id);
-  const backlinks = validLinks.filter((l) => l.dir === "in");
-  const outgoingLinks = validLinks.filter((l) => l.dir === "out");
-  if (
-    (backlinks.length === 0 && outgoingLinks.length === 0) ||
-    validLinks.length === 0
-  ) {
+  const backlinks: Link[] = [];
+  const outgoingLinks: Link[] = [];
+  for (const link of activeNote.links) {
+    if (link.id === activeNote.id) continue;
+    if (link.dir === "in") {
+      backlinks.push(link);
+    } else if (link.dir === "out") {
+      outgoingLinks.push(link);
+    }
+  }
+  if (backlinks.length === 0 && outgoingLinks.length === 0) {
     const span = document.createElement("span");
     span.classList.add("link", `link-current`);
     span.setAttribute("data-link", activeNote.id);

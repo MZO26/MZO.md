@@ -681,11 +681,6 @@ body.is-dragging * {
   transform: scale(0.55);
 }
 
-.note-content mark {
-  background-color: var(--editor-highlight);
-  color: var(--text-main);
-}
-
 .note-count {
   padding-right: 4px;
 }
