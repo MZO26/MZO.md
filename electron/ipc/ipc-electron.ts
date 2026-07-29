@@ -5,8 +5,8 @@ import {
 } from "@electron/fs/fs-auto-export";
 import { handleImageWriteMany } from "@electron/fs/fs-image";
 import { processUrl } from "@electron/handler/navigation-handler";
-import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
+import { resolveAutoExport } from "@electron/ipc/ipc-helpers";
 import {
   checkRateLimit,
   result,
@@ -15,8 +15,8 @@ import {
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
-import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
 import {
+  ExternalUrlSchema,
   MenuTypeSchema,
   NotificationSchema,
 } from "@shared/schemas/electron-schema";
@@ -78,11 +78,9 @@ function registerElectronIpc(win: BrowserWindow) {
       if (!checkRateLimit("open:default-editor", LIMITS.READ_LIGHT)) {
         throw new AppBackendError(AppErrorCode.RateLimitError);
       }
-      const settings = settingsService.getSettings();
-      if (settings["auto_export"] !== true) return false;
+      const { targetDir, isAutoExport } = resolveAutoExport();
+      if (!targetDir || !isAutoExport) return false;
       const validatedData = validation(OpenAutoExportPathSchema, payload);
-      const targetDir = settings["auto_export_path"];
-      if (!targetDir) return false;
       const autoExportPath = resolveAutoExportPath(targetDir);
       await fs.mkdir(autoExportPath, { recursive: true });
       const filePath = getFilePath(autoExportPath, validatedData);
@@ -96,12 +94,10 @@ function registerElectronIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("open:auto-export-folder", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      const settings = settingsService.getSettings();
-      if (settings["auto_export"] !== true) return false;
+      const { targetDir, isAutoExport } = resolveAutoExport();
+      if (!targetDir || !isAutoExport) return false;
       const validatedData = validation(OpenAutoExportPathSchema, payload);
       if (!validatedData.updated_at) return false;
-      const targetDir = settings["auto_export_path"];
-      if (!targetDir) return false;
       const autoExportPath = resolveAutoExportPath(targetDir);
       await fs.mkdir(autoExportPath, { recursive: true });
       const filePath = getFilePath(autoExportPath, validatedData);
@@ -122,12 +118,10 @@ function registerElectronIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("get:auto-export-path", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      const settings = settingsService.getSettings();
-      if (settings["auto_export"] !== true) return null;
+      const { targetDir, isAutoExport } = resolveAutoExport();
+      if (!targetDir || !isAutoExport) return null;
       const validatedData = validation(OpenAutoExportPathSchema, payload);
       if (!validatedData.updated_at) return null;
-      const targetDir = settings["auto_export_path"];
-      if (!targetDir) return null;
       const autoExportPath = resolveAutoExportPath(targetDir);
       await fs.mkdir(autoExportPath, { recursive: true });
       const filePath = getFilePath(autoExportPath, validatedData);
@@ -157,7 +151,7 @@ function registerElectronIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("theme:set", LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      const validTheme = validation(StoreSchema.shape.theme, theme);
+      const validTheme = validation(StoreSchema.shape["theme"], theme);
       const resolvedTheme = initTheme(validTheme);
       const windowTheme = getTitleBarOverlay(resolvedTheme, focus ?? false);
       for (const window of BrowserWindow.getAllWindows()) {

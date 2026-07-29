@@ -1,4 +1,5 @@
 import { createWorker } from "@/utils/workers/worker-factory";
+import { IMAGE_MAX_WIDTH, IMAGE_QUALITY } from "@shared/constants";
 import type { ImageCompressionPayload, WorkerResult } from "@shared/types";
 
 const imageWorker =
@@ -26,8 +27,8 @@ const workOnImageCompression = createWorker<
 
 async function compressImageInWorker(
   file: File,
-  maxWidth: number,
-  quality: number,
+  maxWidth: number = IMAGE_MAX_WIDTH,
+  quality: number = IMAGE_QUALITY,
 ): Promise<WorkerResult<Uint8Array>> {
   const arrayBuffer = await file.arrayBuffer();
   return workOnImageCompression(

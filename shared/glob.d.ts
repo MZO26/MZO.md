@@ -1,6 +1,9 @@
 import type { MenuType } from "@electron/schemas/electron-schema";
-import type { Url } from "@shared/schemas/editor-schema";
-import type { Notification, ZoomAction } from "@shared/schemas/electron-schema";
+import type {
+  Notification,
+  Url,
+  ZoomAction,
+} from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   Id,

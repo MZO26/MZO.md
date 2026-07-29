@@ -4,7 +4,12 @@ import {
 } from "@electron/fs/fs-auto-export";
 import { getFilePath } from "@electron/fs/fs-helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { MAX_BYTES_FILE, SYNC_BUFFER } from "@shared/constants";
+import {
+  appError,
+  devLog,
+  MAX_BYTES_FILE,
+  SYNC_BUFFER,
+} from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import type { AutoExportWritePayload, Note } from "@shared/schemas/note-schema";
 import type { SyncResult } from "@shared/schemas/request-schema";
@@ -26,26 +31,26 @@ async function checkSyncState(
     await fs.mkdir(autoExportPath, { recursive: true });
     const fsStat = await fs.stat(absoluteFilePath);
     if (!fsStat) {
-      console.log("MISSING");
+      devLog("MISSING");
       return { status: "MISSING" };
     }
     if (fsStat.size > MAX_BYTES_FILE) {
-      console.log(`[checkSyncState]: File size too big`);
+      devLog(`[checkSyncState]: File size too big`);
       throw new AppBackendError(AppErrorCode.CancelledOperation);
     }
     const dbUpdatedAt = new Date(payload.updated_at).getTime();
     if (fsStat.mtimeMs <= dbUpdatedAt + SYNC_BUFFER) {
-      console.log("UNCHANGED");
+      devLog("UNCHANGED");
       return { status: "UNCHANGED" };
     }
     markdown = await fs.readFile(absoluteFilePath, "utf-8");
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
     if (err.code === "ENOENT") {
-      console.log(`[checkSyncState] MISSING: ${payload.fileName}`);
+      devLog(`[checkSyncState] MISSING: ${payload.fileName}`);
       return { status: "MISSING" };
     }
-    console.error(
+    appError(
       `[checkSyncState]: File access error for ${payload.fileName}:`,
       err.message,
     );
@@ -54,10 +59,10 @@ async function checkSyncState(
   const normalizedLocal = normalizeText(markdown).trimEnd();
   const normalizedDB = normalizeText(payload.markdown).trimEnd();
   if (normalizedLocal === normalizedDB) {
-    console.log("UNCHANGED");
+    devLog("UNCHANGED");
     return { status: "UNCHANGED" };
   }
-  console.log("MODIFIED");
+  devLog("MODIFIED");
   return {
     status: "MODIFIED",
     markdown,

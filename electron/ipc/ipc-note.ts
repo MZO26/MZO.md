@@ -18,8 +18,11 @@ import {
 } from "@electron/fs/fs-export";
 import { batchImport } from "@electron/fs/fs-import";
 import { checkSyncState } from "@electron/fs/fs-sync";
-import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
+import {
+  resolveAutoExport,
+  restoreFromBackupPath,
+} from "@electron/ipc/ipc-helpers";
 import {
   checkRateLimit,
   result,
@@ -27,9 +30,11 @@ import {
 } from "@electron/ipc/ipc-validation";
 import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
+import { DbContentCodec } from "@shared/schemas/editor-schema";
 import {
   CreateNotePayloadSchema,
   CreateNotesPayloadsSchema,
+  DbBoolCodec,
   IdSchema,
   IdsSchema,
   QuerySchema,
@@ -41,8 +46,7 @@ import {
   FilePathRequestSchema,
   SyncRequestPayloadSchema,
 } from "@shared/schemas/request-schema";
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
-import fs from "fs/promises";
+import { BrowserWindow, dialog, ipcMain } from "electron";
 
 function registerNoteIpc(win: BrowserWindow) {
   ipcMain.handle("note:get-all", (e) => {
@@ -75,7 +79,12 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit("note:create", LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(CreateNotePayloadSchema, payload);
-      return db.create(validatedData);
+      const noteData = {
+        ...validatedData,
+        pinned: DbBoolCodec.encode(validatedData.pinned),
+        content: DbContentCodec.encode(validatedData.content),
+      };
+      return db.create(noteData);
     });
   });
 
@@ -84,7 +93,12 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit("note:create-many", LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(CreateNotesPayloadsSchema, payloads);
-      return db.createMany(validatedData);
+      const noteData = validatedData.map((data) => ({
+        ...data,
+        pinned: DbBoolCodec.encode(data.pinned),
+        content: DbContentCodec.encode(data.content),
+      }));
+      return db.createMany(noteData);
     });
   });
 
@@ -99,17 +113,19 @@ function registerNoteIpc(win: BrowserWindow) {
         }
       }
       const validatedData = validation(UpdateNotePayloadSchema, payload);
-      const { markdown, ...noteData } = validatedData;
-      const settings = settingsService.getSettings();
-      const isAutoExport = settings["auto_export"] === true;
-      const targetDir = isAutoExport ? settings["auto_export_path"] : null;
+      const noteData = {
+        ...validatedData,
+        content: DbContentCodec.encode(validatedData.content),
+      };
+      const { markdown, ...dbPayload } = noteData;
+      const { targetDir, isAutoExport } = resolveAutoExport();
       const oldTitle =
         isAutoExport && targetDir
           ? db.getOldNotes([validatedData.id])
           : undefined;
-      const result = db.update(noteData);
+      const result = db.update(dbPayload);
       if (!isAutoExport || !targetDir) return result;
-      if (markdown === undefined) return result;
+      if (!markdown) return result;
       await writeAutoExportFile({
         created_at: result.created_at,
         fileName: result.title,
@@ -125,10 +141,8 @@ function registerNoteIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("note:delete", LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      const settings = settingsService.getSettings();
       const validatedData = validation(IdSchema, id);
-      const isAutoExport = settings["auto_export"] === true;
-      const targetDir = isAutoExport ? settings["auto_export_path"] : null;
+      const { targetDir, isAutoExport } = resolveAutoExport();
       const oldNote = db.getOldNotes([validatedData]);
       const result = db.delete(validatedData);
       if (!isAutoExport || !targetDir) return result;
@@ -142,9 +156,7 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit("note:delete-many", LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, ids);
-      const settings = settingsService.getSettings();
-      const isAutoExport = settings["auto_export"] === true;
-      const targetDir = isAutoExport ? settings["auto_export_path"] : null;
+      const { targetDir, isAutoExport } = resolveAutoExport();
       const oldNotes = db.getOldNotes(validatedData);
       const result = db.deleteMany(validatedData);
       if (!isAutoExport || !targetDir) return result;
@@ -191,12 +203,10 @@ function registerNoteIpc(win: BrowserWindow) {
     return result(e, async () => {
       if (!checkRateLimit("note:sync", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      const settings = settingsService.getSettings();
-      if (settings["auto_export"] !== true) return null;
       const validatedData = validation(SyncRequestPayloadSchema, payload);
       if (!validatedData.updated_at) return null;
-      const targetDir = settings["auto_export_path"];
-      if (!targetDir) return null;
+      const { targetDir, isAutoExport } = resolveAutoExport();
+      if (!targetDir || !isAutoExport) return null;
       return await checkSyncState(targetDir, validatedData);
     });
   });
@@ -283,33 +293,7 @@ function registerNoteIpc(win: BrowserWindow) {
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const backupPath = await handleDBRestoreDialog(win);
       if (!backupPath) throw new AppBackendError(AppErrorCode.InvalidData);
-      const stat = await fs.stat(backupPath);
-      // sqlite header is exactly 100 bytes long. If file is smaller than that it isn't a valid sqlite db
-      if (!stat.isFile() || stat.size < 100) {
-        throw new AppBackendError(AppErrorCode.InvalidData);
-      }
-      const dbPath = db.pathDb();
-      const tmpPath = `${dbPath}.${crypto.randomUUID()}.restore-tmp`;
-      try {
-        db.close();
-        await fs.copyFile(backupPath, tmpPath);
-        await fs.rename(tmpPath, dbPath);
-        const fileHandle = await fs.open(dbPath, "r+");
-        await fileHandle.sync();
-        await fileHandle.close();
-        await fs.rm(`${dbPath}-wal`, { force: true });
-        await fs.rm(`${dbPath}-shm`, { force: true });
-        // doesn't work in dev mode since vite connection gets lost, has to be packaged
-        setImmediate(() => {
-          app.relaunch();
-          app.exit(0);
-        });
-      } catch (error) {
-        await fs.rm(tmpPath, { force: true }).catch(() => {});
-        db.open();
-        console.error("[DB-Restore] Error during restore:", error);
-        throw new AppBackendError(AppErrorCode.FileWriteError);
-      }
+      return await restoreFromBackupPath(backupPath);
     });
   });
 }

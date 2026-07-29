@@ -21,7 +21,7 @@ import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { sleep } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { CHAR_BASELINE, YIELD_MS } from "@shared/constants";
+import { appError, CHAR_BASELINE, YIELD_MS } from "@shared/constants";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 import type {
@@ -76,13 +76,13 @@ async function triggerSingleExport(
 ) {
   const result = await getExportContent(id, extension);
   if (!result.success) {
-    console.error("[exportTrigger]: Failed to fetch note data:", result.error);
+    appError("[exportTrigger]: Failed to fetch note data:", result.error);
     await showNotification("Export Failed", ERROR_MESSAGES.EXPORT_ERROR);
     return;
   }
   const exported = await exportNote(result.data);
   if (!exported.success) {
-    console.error("[exportTrigger]: Failed to write file:", exported.error);
+    appError("[exportTrigger]: Failed to write file:", exported.error);
     if (exported.error === "CANCELLED_OPERATION") return;
     await showNotification("Export Failed", "");
     return;
@@ -116,7 +116,7 @@ async function triggerOpenInDefaultEditor(
 async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
   const result = await getAutoExportPath(syncPayload);
   if (!result.success) {
-    console.error(
+    appError(
       "[onTriggerCopyPath]: Failed to retrieve file path:",
       result.error,
     );
@@ -133,14 +133,14 @@ async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
     await showNotification("Copied to clipboard", "");
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
-    console.error("[onTriggerCopyPath]: Failed to copy file path:", error);
+    appError("[onTriggerCopyPath]: Failed to copy file path:", error);
   }
 }
 
 async function triggerCopyRichText(id: string) {
   const result = await getNoteById(id);
   if (!result.success) {
-    console.error(
+    appError(
       "[onTriggerCopyRichText]: Failed to fetch note data:",
       result.error,
     );
@@ -162,7 +162,7 @@ async function triggerCopyRichText(id: string) {
     await showNotification("Copied to clipboard", "");
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
-    console.error("[onTriggerCopyMarkdown]: Failed to copy markdown:", error);
+    appError("[onTriggerCopyMarkdown]: Failed to copy markdown:", error);
   }
 }
 
@@ -183,7 +183,7 @@ async function triggerSingleDelete(id: string) {
 async function triggerPin(id: string) {
   const result = await pin(id);
   if (!result.success) {
-    console.error("[onTriggerPin]: Failed to toggle pin:", result.error);
+    appError("[onTriggerPin]: Failed to toggle pin:", result.error);
     return;
   }
   noteStore.setState((state) => {
@@ -202,14 +202,14 @@ async function triggerPin(id: string) {
 async function triggerDuplicate(id: string) {
   const result = await getNoteById(id);
   if (!result.success) {
-    console.error(
+    appError(
       "[onTriggerDuplicate]: Failed to fetch note for duplication:",
       result.error,
     );
     return;
   }
   await handleDuplicateNote(result.data).catch((error: Error) =>
-    console.error(
+    appError(
       "[onTriggerDuplicate -> handleDuplicateNote]: Error duplicating Note",
       error,
     ),
@@ -242,7 +242,7 @@ async function triggerSyncCheck(id: string) {
     if (!isSyncVersionCurrent(id, version)) return;
     const result = await getNoteById(id);
     if (!result.success) {
-      console.error("[triggerSyncCheck]: Failed to fetch note:", result.error);
+      appError("[triggerSyncCheck]: Failed to fetch note:", result.error);
       return;
     }
     const targetDir = settingsStore.get("auto_export_path");
@@ -258,7 +258,7 @@ async function triggerSyncCheck(id: string) {
     });
     if (!isSyncVersionCurrent(id, version)) return;
     if (!syncResult.success) {
-      console.error(
+      appError(
         "[triggerSyncCheck]: Failed to perform sync check:",
         syncResult.error,
       );

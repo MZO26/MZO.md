@@ -7,6 +7,7 @@ import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import {
+  appError,
   AUTO_EXPORT_SETTINGS,
   CODE_THEME_SETTINGS,
   EXPORT_FORMAT_SETTINGS,
@@ -102,7 +103,7 @@ function initAppearanceSettings(
       if (!target) return;
       const result = await applyAppTheme(target.value as Theme);
       if (!result.success) {
-        console.error("[applyAppTheme]: Failed to apply theme", result.error);
+        appError("[applyAppTheme]: Failed to apply theme", result.error);
         return;
       }
       updateSettings({
@@ -137,7 +138,8 @@ function initAppearanceSettings(
         note_item_display: target.value as NoteItemDisplay,
       });
       sidebar.setAttribute("data-noteItem", target.value);
-      refreshSidebar(noteStore.get("notes"));
+      const notes = noteStore.get("notes");
+      refreshSidebar(notes);
     }),
   );
 }

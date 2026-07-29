@@ -601,6 +601,7 @@ body.is-dragging * {
 
 .active-search-highlight {
   background-color: var(--editor-highlight);
+  color: var(--text-main);
 }
 
 .note-item .select-box {

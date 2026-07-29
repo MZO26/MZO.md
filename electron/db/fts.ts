@@ -1,4 +1,5 @@
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
+import { appError, devLog } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import type { SearchQuery, SearchResult } from "@shared/schemas/note-schema";
 import type { DatabaseSync, StatementSync } from "node:sqlite";
@@ -15,7 +16,7 @@ class NotesSearch {
         SELECT
         rowid,
         bm25(notes_fts, 10.0, 1.0) AS rank,
-        snippet(notes_fts, -1, '<mark class="active-search-highlight">', '</mark>', '...', 10) AS search_match
+        snippet(notes_fts, -1, '<mark class="active-search-highlight">', '</mark>', '...', 8) AS search_match
         FROM notes_fts
         WHERE notes_fts MATCH $ftsQuery
     )
@@ -88,7 +89,7 @@ class NotesSearch {
       INSERT INTO notes_fts(notes_fts) VALUES ('rebuild');
       INSERT INTO notes_fts(notes_fts) VALUES ('optimize');
     `);
-    console.log("[FTS5]: Search index rebuilt and optimized successfully.");
+    devLog("[FTS5]: Search index rebuilt and optimized successfully.");
   }
 
   public search(query: SearchQuery) {
@@ -101,10 +102,10 @@ class NotesSearch {
       }) as SearchResult[];
     } catch (error) {
       if (this.hasRebuilt) {
-        console.error("[FTS5]: Search failed again and is now disabled.");
+        appError("[FTS5]: Search failed again and is now disabled.");
         return [];
       }
-      console.error(
+      appError(
         "[FTS5]: Search failed. Desynchronized index. Rebuilding...",
         error,
       );
@@ -112,7 +113,7 @@ class NotesSearch {
       try {
         this.rebuildIndex(this.db);
       } catch (error) {
-        console.error("[FTS5]: Error during rebuild process:", error);
+        appError("[FTS5]: Error during rebuild process:", error);
       } finally {
         this.isRebuilding = false;
         this.hasRebuilt = true;

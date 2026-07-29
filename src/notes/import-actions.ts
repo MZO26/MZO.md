@@ -1,8 +1,8 @@
 import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import { stateStore } from "@/state/state";
 import { addActiveTagToDoc } from "@/utils/note";
-import { workOnMarkdownParsing } from "@/utils/workers/worker-line";
-import { DOMPURIFY_CONFIG } from "@shared/constants";
+import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
+import { appError, DOMPURIFY_CONFIG } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import {
   getMetadata,
@@ -33,7 +33,7 @@ async function normalizeFileContent(
           const doc = wrapAsDoc(parsed);
           return isEditorDoc(doc) ? doc : undefined;
         } catch (error) {
-          console.error("[normalizeFileContent]: JSON Parse failed:", error);
+          appError("[normalizeFileContent]: JSON Parse failed:", error);
           return undefined;
         }
       }
@@ -46,7 +46,7 @@ async function normalizeFileContent(
         try {
           const response = await workOnMarkdownParsing(content);
           if (!response.success) {
-            console.error(
+            appError(
               "[normalizeFileContent]: Worker failed to parse Markdown:",
               response.error,
             );
@@ -55,7 +55,7 @@ async function normalizeFileContent(
           const doc = response.success ? JSON.parse(response.data) : undefined;
           return isEditorDoc(doc) ? doc : undefined;
         } catch (error) {
-          console.error("[normalizeFileContent]: Failed to parse JSON");
+          appError("[normalizeFileContent]: Failed to parse JSON");
           return undefined;
         }
       }
@@ -67,7 +67,7 @@ async function normalizeFileContent(
         return undefined;
     }
   } catch (error) {
-    console.error(
+    appError(
       `[normalizeFileContent]: Normalization failed for extension .${extension}:`,
       error,
     );
@@ -102,7 +102,7 @@ async function setImportedContent(
     }
     return { success: true, data: processedPayloads };
   } catch (error) {
-    console.error(
+    appError(
       "[setImportedContent]: Failed to process imported content:",
       error,
     );

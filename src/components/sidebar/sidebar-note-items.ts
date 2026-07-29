@@ -34,7 +34,7 @@ function createNoteItem(note: NoteListItem) {
   item.setAttribute("data-tippy-content", note.title);
   if (note.pinned) renderIcons(item);
   const titleEl = findElement<HTMLSpanElement>(".note-title", item);
-  if (titleEl) titleEl.innerHTML = note.title.trim() || UNTITLED;
+  if (titleEl) titleEl.textContent = note.title.trim() || UNTITLED;
   const dateEl = findElement<HTMLDivElement>(".note-date", item);
   if (dateEl) dateEl.textContent = formatNoteDate(note.updated_at);
   getSafeSnippet(item, note, display);
@@ -54,7 +54,7 @@ function createNoteItem(note: NoteListItem) {
   return item;
 }
 
-function refreshSidebar(notes: NoteListItem[]) {
+function refreshSidebar(notes: Readonly<NoteListItem[]>) {
   renderNoteList(notes);
   handleSidebarEmptyState();
 }

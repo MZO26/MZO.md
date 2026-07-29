@@ -37,7 +37,14 @@ function clearActiveTagView() {
   applyView(null);
 }
 
-function applySearch(matches: NoteListItem[]) {
+function applySearch(
+  matches: {
+    snippet: string;
+    id: string;
+    title: string;
+    rank: number;
+  }[],
+) {
   const matchedIdSet = new Set(matches.map((match) => match.id));
   const searchSnippets: Record<string, string> = {};
   for (const match of matches) {

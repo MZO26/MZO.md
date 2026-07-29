@@ -1,3 +1,4 @@
+import { appError } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import type { Failure } from "@shared/types";
 import { ZodError } from "zod";
@@ -12,21 +13,20 @@ class AppBackendError extends Error {
   }
 }
 
-function handleIpcError(err: unknown): Failure {
-  if (err instanceof AppBackendError) {
+function handleIpcError(error: unknown): Failure {
+  if (error instanceof AppBackendError) {
     return {
       success: false,
-      error: err.code,
+      error: error.code,
     };
   }
-  if (err instanceof ZodError) {
-    console.error("[IPC Validation]:", JSON.stringify(err, null, 2));
+  if (error instanceof ZodError) {
     return {
       success: false,
       error: AppErrorCode.InvalidData,
     };
   }
-  console.error("[IPC Unknown Error]:", err);
+  appError("[IPC Unknown Error]:", error);
   return {
     success: false,
     error: AppErrorCode.UnknownError,

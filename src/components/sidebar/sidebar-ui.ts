@@ -123,7 +123,7 @@ function handleHeaderChange(change: FilterMode, activeTag?: string) {
   }
 }
 
-function renderNoteList(notes: NoteListItem[]) {
+function renderNoteList(notes: Readonly<NoteListItem[]>) {
   const sidebar = getAppItem("sidebar");
   const { activeId, activeTag, searchQuery } = stateStore.getState();
   const fragment = document.createDocumentFragment();

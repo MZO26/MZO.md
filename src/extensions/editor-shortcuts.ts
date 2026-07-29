@@ -1,6 +1,7 @@
 import { openExternal } from "@/api/api";
 import { promptImageUpload } from "@/extensions/image/image";
 import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
+import { appError } from "@shared/constants";
 import type { LinkAttributes } from "@shared/types";
 import { Extension } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
@@ -96,16 +97,23 @@ export const MasterShortcuts = Extension.create({
         if (!extractedUrl) {
           const textContent = $from.parent.textContent?.trim();
           if (textContent) {
-            extractedUrl = /^https?:\/\//i.test(textContent)
+            extractedUrl = textContent.toLowerCase().startsWith("http")
               ? textContent
               : `https://${textContent}`;
           }
         }
         if (extractedUrl) {
-          void openExternal(extractedUrl);
+          let url: URL;
+          try {
+            url = new URL(extractedUrl);
+          } catch (error) {
+            appError("[MasterShortcuts]: Invalid URL");
+            return false;
+          }
+          void openExternal(url.href);
           return true;
         }
-        console.error(
+        appError(
           "[addKeyboardShortcuts -> link-open]: Could not extract a valid URL from the selection.",
         );
         return false;

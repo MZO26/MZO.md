@@ -1,5 +1,5 @@
-import { DBBooleanSchema } from "@shared/schemas/note-schema";
 import z from "zod";
+import { BoolDbSchema, BoolSchema } from "./note-schema";
 
 const StoreSchema = z.object({
   theme: z
@@ -44,46 +44,43 @@ const DBWindowBoundsSchema = z
   })
   .pipe(StoreSchema.shape["window_bounds"]);
 
+const StoreFromDbSchema = z.object({
+  theme: StoreSchema.shape.theme,
+  font_family: StoreSchema.shape["font_family"],
+  font_size: StoreSchema.shape["font_size"],
+  line_height: StoreSchema.shape["line_height"],
+  spellcheck: BoolSchema,
+  auto_export: BoolSchema,
+  auto_export_path: StoreSchema.shape["auto_export_path"],
+  export_format: StoreSchema.shape["export_format"],
+  code_theme: StoreSchema.shape["code_theme"],
+  highlight: StoreSchema.shape.highlight,
+  note_item_display: StoreSchema.shape["note_item_display"],
+  toolbar_collapsed: BoolSchema,
+  window_bounds: DBWindowBoundsSchema,
+  active_tag: StoreSchema.shape["active_tag"],
+});
+
 const StoreRowSchema = z.object({
   theme: StoreSchema.shape.theme,
   font_family: StoreSchema.shape["font_family"],
   font_size: StoreSchema.shape["font_size"],
   line_height: StoreSchema.shape["line_height"],
-  spellcheck: DBBooleanSchema,
-  auto_export: DBBooleanSchema,
+  spellcheck: BoolDbSchema,
+  auto_export: BoolDbSchema,
   auto_export_path: StoreSchema.shape["auto_export_path"],
   export_format: StoreSchema.shape["export_format"],
   code_theme: StoreSchema.shape["code_theme"],
   highlight: StoreSchema.shape.highlight,
   note_item_display: StoreSchema.shape["note_item_display"],
-  toolbar_collapsed: DBBooleanSchema,
-  window_bounds: DBWindowBoundsSchema,
-  active_tag: StoreSchema.shape["active_tag"],
-});
-
-const StoreToRowSchema = z.object({
-  theme: StoreSchema.shape.theme,
-  font_family: StoreSchema.shape["font_family"],
-  font_size: StoreSchema.shape["font_size"],
-  line_height: StoreSchema.shape["line_height"],
-  spellcheck: StoreSchema.shape.spellcheck.transform((val) => (val ? 1 : 0)),
-  auto_export: StoreSchema.shape["auto_export"].transform((val) =>
-    val ? 1 : 0,
-  ),
-  auto_export_path: StoreSchema.shape["auto_export_path"],
-  export_format: StoreSchema.shape["export_format"],
-  code_theme: StoreSchema.shape["code_theme"],
-  highlight: StoreSchema.shape.highlight,
-  note_item_display: StoreSchema.shape["note_item_display"],
-  toolbar_collapsed: StoreSchema.shape["toolbar_collapsed"].transform((val) =>
-    val ? 1 : 0,
-  ),
+  toolbar_collapsed: BoolDbSchema,
   window_bounds: StoreSchema.shape["window_bounds"].transform((val) =>
     JSON.stringify(val),
   ),
   active_tag: StoreSchema.shape["active_tag"],
 });
 
+type StoreFromDb = z.infer<typeof StoreFromDbSchema>;
 type StoreRow = z.infer<typeof StoreRowSchema>;
 type AppSettings = z.infer<typeof StoreSchema>;
 type ActiveTag = AppSettings["active_tag"];
@@ -104,9 +101,9 @@ type StyleKeys = Extract<
 >;
 
 export {
+  StoreFromDbSchema,
   StoreRowSchema,
   StoreSchema,
-  StoreToRowSchema,
   type ActiveTag,
   type AppSettings,
   type AutoExport,
@@ -119,6 +116,7 @@ export {
   type LineHeight,
   type NoteItemDisplay,
   type Spellcheck,
+  type StoreFromDb,
   type StoreRow,
   type StyleKeys,
   type Theme,

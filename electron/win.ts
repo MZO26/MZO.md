@@ -1,7 +1,7 @@
 import { settingsService } from "@electron/handler/settings-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { win } from "@electron/main";
-import { ZOOMS } from "@shared/constants";
+import { appError, ZOOMS } from "@shared/constants";
 import type { ZoomAction } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
 import { BrowserWindow } from "electron";
@@ -43,7 +43,7 @@ function saveWindowBounds() {
     const mergedSettings = { ...settings, window_bounds: result };
     settingsService.updateSettings(mergedSettings);
   } catch (error) {
-    console.error("[saveWindowBounds]: Failed to save window bounds:", error);
+    appError("[saveWindowBounds]: Failed to save window bounds:", error);
   }
 }
 

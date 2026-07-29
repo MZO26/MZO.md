@@ -1,6 +1,11 @@
 import { imageWriteMany } from "@/api/api";
-import { compressImageInWorker } from "@/utils/workers/worker-line";
-import { ALLOWED_TYPES, MAX_SIZE, MIME_TO_EXT } from "@shared/constants";
+import { compressImageInWorker } from "@/utils/workers/worker-init";
+import {
+  ALLOWED_TYPES,
+  appError,
+  MAX_SIZE,
+  MIME_TO_EXT,
+} from "@shared/constants";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type { Editor } from "@tiptap/core";
 
@@ -18,7 +23,7 @@ async function processAndInsertImages(files: File[], editor: Editor | null) {
       validFiles.map(async (file) => {
         const result = await compressImageInWorker(file);
         if (!result.success) {
-          console.error(
+          appError(
             "[processAndInsertImages]: Image compression failed:",
             result.error,
           );
@@ -36,7 +41,7 @@ async function processAndInsertImages(files: File[], editor: Editor | null) {
     );
     const result = await imageWriteMany(payload);
     if (!result.success) {
-      console.error(
+      appError(
         "[processAndInsertImages -> imageWriteMany]: Failed to save image:",
         result.error,
       );
@@ -54,7 +59,7 @@ async function processAndInsertImages(files: File[], editor: Editor | null) {
       })
       .run();
   } catch (error) {
-    console.error(
+    appError(
       "[processAndInsertImages]: Unknown Error. Failed to process and insert image:",
       error,
     );

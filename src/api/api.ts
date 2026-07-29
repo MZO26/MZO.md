@@ -1,9 +1,12 @@
 import { settingsStore } from "@/state/state";
 import { debounce } from "@/utils/async";
-import { DEBOUNCE_MS } from "@shared/constants";
+import { appError, DEBOUNCE_MS, devLog } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
-import type { Url } from "@shared/schemas/editor-schema";
-import type { Notification, ZoomAction } from "@shared/schemas/electron-schema";
+import type {
+  Notification,
+  Url,
+  ZoomAction,
+} from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
@@ -29,7 +32,7 @@ async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
   try {
     return await ipcPromise;
   } catch (err: unknown) {
-    console.error("[IPC Bridge Error]: ", err);
+    appError("[IPC Bridge Error]: ", err);
     return { success: false, error: AppErrorCode.UnknownError };
   }
 }
@@ -206,19 +209,19 @@ async function pinWindow(): Promise<Result<boolean>> {
 let pendingSettings: Partial<AppSettings> = {};
 
 const debouncedSetSettings = debounce(async () => {
-  console.log(pendingSettings);
+  devLog(pendingSettings);
   const settingsToSave = { ...pendingSettings };
   pendingSettings = {};
   try {
     const result = await setSettings(settingsToSave);
     if (!result.success) {
-      console.error("[setSettings]: Failed to update settings:", result.error);
+      appError("[setSettings]: Failed to update settings:", result.error);
       pendingSettings = { ...settingsToSave, ...pendingSettings };
       return;
     }
-    console.log("Saved settings");
+    devLog("Saved settings");
   } catch (error: unknown) {
-    console.error("[setSettings]: Unknown error", error);
+    appError("[setSettings]: Unknown error", error);
     pendingSettings = { ...settingsToSave, ...pendingSettings };
   }
 }, DEBOUNCE_MS.fast);

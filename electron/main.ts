@@ -1,6 +1,6 @@
 import { setUpEditorMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
-import { setupGlobalErrorHandling } from "@electron/handler/global-error-handler";
+import { setupGlobalErrorHandling } from "@electron/handler/global-handler";
 import {
   navigationHandler,
   registerCustomProtocol,
@@ -15,7 +15,7 @@ import {
   onOSThemeChange,
 } from "@electron/titlebar";
 import { saveWindowBounds } from "@electron/win";
-import { DEFAULT_SETTINGS } from "@shared/constants";
+import { appError, DEFAULT_SETTINGS } from "@shared/constants";
 import { type AppSettings } from "@shared/schemas/store-schema";
 import {
   app,
@@ -61,7 +61,7 @@ async function initSettings(): Promise<AppSettings> {
     await settingsService.initialize();
     return settingsService.getSettings();
   } catch (error) {
-    console.error(
+    appError(
       "[initSettings]: Couldn't load settings from DB. Using defaults.",
       error,
     );

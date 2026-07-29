@@ -2,7 +2,7 @@ import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
-import { DEBOUNCE_MS } from "@shared/constants";
+import { appError, DEBOUNCE_MS } from "@shared/constants";
 import { Editor, type JSONContent } from "@tiptap/core";
 
 function recreateEditorState(editor: Editor, doc: JSONContent) {
@@ -38,6 +38,8 @@ function initEditorSearch(editor: Editor) {
     ".input-wrapper-chevron",
   );
   const searchCount = requireElement<HTMLSpanElement>(".search-count");
+
+  // const globalInput = getUIItem("searchInput");
 
   chevronBtn.addEventListener("click", () => {
     const isHidden = replaceInputWrapper.classList.toggle("invisible");
@@ -100,10 +102,7 @@ function initEditorSearch(editor: Editor) {
         behavior: "auto",
       });
     } catch (error) {
-      console.error(
-        "[scrollToSelection]: Failed to scroll to selection:",
-        error,
-      );
+      appError("[scrollToSelection]: Failed to scroll to selection:", error);
     }
   }
 
@@ -118,14 +117,14 @@ function initEditorSearch(editor: Editor) {
 
   function goPrev() {
     if (editor.commands.docSearchPrev()) {
-      void scrollToSelection(editor, editorWrapper).catch(console.error);
+      void scrollToSelection(editor, editorWrapper).catch(appError);
       updateCount();
     }
   }
 
   function goNext() {
     if (editor.commands.docSearchNext()) {
-      void scrollToSelection(editor, editorWrapper).catch(console.error);
+      void scrollToSelection(editor, editorWrapper).catch(appError);
       updateCount();
     }
   }
@@ -161,12 +160,31 @@ function initEditorSearch(editor: Editor) {
     }
   });
 
+  // function syncDocSearch(activeId: string, query: SearchQuery) {
+  //   if (stateStore.get("activeId") !== activeId) return;
+  //   if (query.trim() && query.length > 2) {
+  //     open();
+  //     editor.commands.docSearchSetQuery(query);
+  //     input.value = query;
+  //     updateCount();
+  //     updateButtons();
+  //     goNext();
+  //   }
+  // }
+
   const debouncedSearch = debounce(() => {
     syncQuery();
     updateButtons();
   }, DEBOUNCE_MS.normal);
 
   input.addEventListener("input", debouncedSearch);
+
+  // globalInput.addEventListener("input", () => {
+  //   const { activeId, searchQuery } = stateStore.getState();
+  //   devLog(activeId);
+  //   if (!activeId) return;
+  //   syncDocSearch(activeId, searchQuery);
+  // });
 
   input.addEventListener("keydown", (event) => {
     if (event.repeat) return;
@@ -207,7 +225,6 @@ function initEditorSearch(editor: Editor) {
   });
 
   updateButtons();
-  return { open, close };
 }
 
 export { initEditorSearch, recreateEditorState };

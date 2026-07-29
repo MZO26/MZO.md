@@ -2,7 +2,7 @@ import { getNoteById } from "@/api/api";
 import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import { noteStore, stateStore } from "@/state/state";
 import { getAppItem } from "@/utils/registry";
-import { DOMPURIFY_CONFIG, KATEX_MACROS } from "@shared/constants";
+import { devLog, DOMPURIFY_CONFIG, KATEX_MACROS } from "@shared/constants";
 import type { Note } from "@shared/schemas/note-schema";
 import { Extension, generateHTML } from "@tiptap/core";
 import DOMPurify from "dompurify";
@@ -82,7 +82,7 @@ export const WikiLinkPreview = Extension.create({
       content: "",
       onShow: (instance: PreviewInstance) => {
         if (instance.state.isDataFetched || instance.state.isFetching) {
-          console.log("Doesn't need re-fetch.");
+          devLog("Doesn't need re-fetch.");
           return;
         }
         const el = instance.reference as HTMLElement | null;

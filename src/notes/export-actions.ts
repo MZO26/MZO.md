@@ -2,7 +2,12 @@ import { getNoteById } from "@/api/api";
 import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import { getAppItem } from "@/utils/registry";
 import { needsLandscape } from "@/utils/ui";
-import { DOMPURIFY_CONFIG, NODE_BASELINE } from "@shared/constants";
+import {
+  appError,
+  devLog,
+  DOMPURIFY_CONFIG,
+  NODE_BASELINE,
+} from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { titleGenerator } from "@shared/generators";
 import type { Note } from "@shared/schemas/note-schema";
@@ -94,7 +99,7 @@ async function getBatchExportContent(
         return { success: false, error: AppErrorCode.InvalidData };
     }
   } catch (error) {
-    console.error(
+    appError(
       `[getBatchExportContent]: Failed batch export for ${extension.toUpperCase()}:`,
       error,
     );
@@ -150,7 +155,7 @@ async function getExportContent(
         typeof noteSize === "number" && noteSize > NODE_BASELINE
           ? false
           : needsLandscape(html);
-      console.log(landscape);
+      devLog(landscape);
       return {
         success: true,
         data: {
@@ -188,10 +193,7 @@ async function getExportContent(
       };
     }
     default:
-      console.error(
-        "[getExportContent]: Unsupported export format:",
-        extension,
-      );
+      appError("[getExportContent]: Unsupported export format:", extension);
       return {
         success: false,
         error: AppErrorCode.InvalidData,

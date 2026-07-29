@@ -1,8 +1,9 @@
-import AppDB from "@electron/db/database";
+import db from "@electron/db/database";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
 import {
+  DbBoolCodec,
   NoteListItemFromDB,
   type CreateTransaction,
   type NoteListItem,
@@ -136,6 +137,7 @@ class Transactions {
     return dbResults.map((result) =>
       validation(NoteListItemFromDB, {
         ...result.row,
+        pinned: DbBoolCodec.decode(result.row.pinned),
         tags: result.safeTags,
         links: result.safeLinks
           .filter((id) => id !== result.row.id)
@@ -177,10 +179,11 @@ class Transactions {
     const result = this.transaction(() =>
       this.runCreateLogic(noteParams, safeTags, safeLinks),
     );
-    const allLinks = AppDB.getLinksById(result.id) ?? [];
+    const allLinks = db.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== params.id);
     return validation(NoteListItemFromDB, {
       ...result,
+      pinned: DbBoolCodec.decode(result.pinned),
       tags: safeTags,
       links: validLinks,
     });
@@ -230,10 +233,11 @@ class Transactions {
     const result = this.transaction(() =>
       this.runUpdateLogic(noteParams, safeTags, safeLinks),
     );
-    const allLinks = AppDB.getLinksById(result.id) ?? [];
-    const validLinks = allLinks.filter((l) => l.id !== params.id);
+    const allLinks = db.getLinksById(result.id) ?? [];
+    const validLinks = allLinks.filter((l) => l.id !== result.id);
     return validation(NoteListItemFromDB, {
       ...result,
+      pinned: DbBoolCodec.decode(result.pinned),
       tags: safeTags,
       links: validLinks,
     });

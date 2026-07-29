@@ -6,38 +6,35 @@ import {
 } from "@shared/schemas/note-schema";
 import z from "zod";
 
-const truncateAtBoundary = (input: string, maxLength: number): string => {
+function truncateAtBoundary(input: string, maxLength: number): string {
   if (input.length <= maxLength) return input;
   const slice = input.slice(0, maxLength);
-  const breakpoints = [" ", "-", "_", "."];
-  let cut = -1;
-  for (const bp of breakpoints) {
-    cut = Math.max(cut, slice.lastIndexOf(bp));
-  }
+  const cut = Math.max(
+    slice.lastIndexOf(" "),
+    slice.lastIndexOf("-"),
+    slice.lastIndexOf("_"),
+    slice.lastIndexOf("."),
+  );
   return (cut > 0 ? slice.slice(0, cut) : slice).trim();
-};
+}
 
-const normalizeFileName = (val: string): string => {
+function normalizeFileName(val: string): string {
   if (!val) return UNTITLED;
-  const safe = truncateAtBoundary(
-    val
-      .normalize("NFC")
-      .trim()
-      .replace(/[\x00-\x1f\x80-\x9f]/g, "")
-      .replace(/[/\\?%*:|"<>]/g, "")
-      .replace(/\s+/g, " ")
-      .replace(/-+/g, "-")
-      .replace(/^\.+/, "")
-      .replace(/[. ]+$/g, "")
-      .replace(/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..+)?$/i, "_$1$2"),
-    100,
-  ).replace(/[. ]+$/g, "");
-  return safe || UNTITLED;
-};
+  const sanitized = val
+    .normalize("NFC")
+    .replace(/[\x00-\x1f\x80-\x9f/\\?%*:|"<>]/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/-+/g, "-")
+    .replace(/^\.+|[. ]+$/g, "")
+    .replace(/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..+)?$/i, "_$1$2");
+  const finalName = truncateAtBoundary(sanitized, 100).replace(/[. ]+$/g, "");
+  return finalName || UNTITLED;
+}
 
 const FileNameSchema = z
   .string()
-  .transform(normalizeFileName)
+  .nullish()
+  .transform((val) => normalizeFileName(val ?? ""))
   .pipe(z.string().min(1).max(255));
 
 const StringContentSchema = z
@@ -45,9 +42,7 @@ const StringContentSchema = z
   .max(MAX_IPC_PAYLOAD_SIZE, "Content exceeds maximum size")
   .optional()
   .transform((val) => {
-    if (!val || val.trim() === "") {
-      return UNTITLED;
-    }
+    if (!val || val.trim() === "") return UNTITLED;
     return val;
   });
 

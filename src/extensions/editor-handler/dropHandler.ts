@@ -3,6 +3,7 @@ import { normalizeFileContent } from "@/notes/import-actions";
 import { getExtension, isValidExtension } from "@/utils/note";
 import {
   ALLOWED_TYPES,
+  appError,
   MAX_BYTES_FILE,
   MAX_DROP_LENGTH,
   MAX_DROP_PASTE_CHARACTERS,
@@ -26,7 +27,7 @@ async function processDroppedFiles(editor: Editor | null, files: File[]) {
       });
       if (json) editor.commands.insertContent(json, { contentType: "json" });
     } catch (error) {
-      console.error(
+      appError(
         `["processDroppedFiles]: Failed to process ${file.name}:`,
         error,
       );
@@ -78,7 +79,7 @@ export const DropHandler = Extension.create({
                   await processDroppedFiles(editor, contentFiles);
                 }
               } catch (error) {
-                console.error(
+                appError(
                   "[DropHandler]: Failed to process dropped file:",
                   error,
                 );

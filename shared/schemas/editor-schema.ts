@@ -1,5 +1,6 @@
 import { EMPTY_DOC } from "@shared/constants";
 import type { JSONContent } from "@tiptap/core";
+import type { Url } from "url";
 import z from "zod";
 
 function isEditorDoc(value: unknown): value is JSONContent {
@@ -46,38 +47,20 @@ const EditorDocSchema = z
   .refine(isEditorDocValidation, {
     message: "Invalid editor document structure",
   })
-  .transform((value): JSONContent => value)
   .default(EMPTY_DOC);
 
-const DbContentSchema = z.string().transform((val, ctx) => {
-  try {
-    const parsed = JSON.parse(val);
-    return parsed;
-  } catch (e) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Content is corrupted (invalid JSON)",
-    });
-    return z.NEVER;
-  }
+const DbContentCodec = z.codec(z.string(), EditorDocSchema, {
+  // decode checks against z.string() and parses the value
+  decode: (val) => JSON.parse(val),
+  // encode checks against EditorDocSchema and stringifies the doc for db
+  encode: (doc) => JSON.stringify(doc),
 });
 
-const ExternalUrlSchema = z.string().refine((value) => {
-  try {
-    new URL(value);
-    return true;
-  } catch {
-    return false;
-  }
-}, "Invalid URL or unsupported protocol");
-
 type EditorDoc = z.infer<typeof EditorDocSchema>;
-type Url = z.infer<typeof ExternalUrlSchema>;
 
 export {
-  DbContentSchema,
+  DbContentCodec,
   EditorDocSchema,
-  ExternalUrlSchema,
   isEditorDoc,
   type EditorDoc,
   type Url,

@@ -1,11 +1,12 @@
 import { pinWindow, updateSettings } from "@/api/api";
 import { createDivider } from "@/components/toolbar/toolbar-factory";
+import { toolbarApi } from "@/components/toolbar/toolbar-init";
 import { noteStore, stateStore } from "@/state/state";
 import { createInfoSpan } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
+import { appError } from "@shared/constants";
 import type { Link } from "@shared/schemas/note-schema";
-import { toolbarApi } from "./toolbar-init";
 
 function setEditorWidth(container: HTMLDivElement) {
   const widths = ["comfortable", "normal", "wide"];
@@ -19,7 +20,7 @@ function setEditorWidth(container: HTMLDivElement) {
 async function setWindowTop(toggleBtn: HTMLButtonElement) {
   const result = await pinWindow();
   if (!result.success) {
-    console.error("[setWindowTop]: Failed to pin window:", result.error);
+    appError("[setWindowTop]: Failed to pin window:", result.error);
     return;
   }
   toggleBtn.classList.toggle("pin", result.data);

@@ -24,6 +24,7 @@ import {
   initializeUIRegistry,
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
+import { appError } from "@shared/constants";
 
 const notesPromise = getAll();
 const settingsPromise = getAllSettings();
@@ -35,7 +36,7 @@ document.addEventListener(
     const notesResult = await notesPromise;
     const settingsResult = await settingsPromise;
     if (!notesResult.success) {
-      console.error("[getAll]: Failed to fetch all notes:", notesResult.error);
+      appError("[getAll]: Failed to fetch all notes:", notesResult.error);
       throw new Error(notesResult.error);
     }
     const settings = initSettings(settingsResult);
@@ -60,7 +61,7 @@ document.addEventListener(
     handleSidebarEmptyState();
     handleEditorEmptyState(stateStore.get("activeId"));
     if (settings["toolbar_collapsed"] === true) {
-      await setToolbarCollapsed(true);
+      setToolbarCollapsed(true);
     }
     console.timeEnd("dom-loaded");
   },

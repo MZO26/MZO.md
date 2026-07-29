@@ -1,5 +1,5 @@
+import { getTemplateItem } from "@/utils/registry";
 import type { TemplateRegistry } from "@shared/types";
-import { getTemplateItem } from "./registry";
 
 function requireElement<T extends HTMLElement>(
   selector: string,

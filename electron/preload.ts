@@ -1,5 +1,8 @@
-import type { Url } from "@shared/schemas/editor-schema";
-import type { MenuType, ZoomAction } from "@shared/schemas/electron-schema";
+import type {
+  MenuType,
+  Url,
+  ZoomAction,
+} from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,

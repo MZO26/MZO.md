@@ -23,7 +23,13 @@ import {
 import { debounce } from "@/utils/async";
 import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
-import { DEBOUNCE_MS, EMPTY_DOC, UNTITLED } from "@shared/constants";
+import {
+  appError,
+  DEBOUNCE_MS,
+  devLog,
+  EMPTY_DOC,
+  UNTITLED,
+} from "@shared/constants";
 import { getMetadata, titleGenerator } from "@shared/generators";
 import {
   type CreateNotePayload,
@@ -54,7 +60,7 @@ async function handleCreateNote() {
   };
   const result = await createNote(payload);
   if (!result.success) {
-    console.error("[handleCreateNote]: Failed to create note:", result.error);
+    appError("[handleCreateNote]: Failed to create note:", result.error);
     return;
   }
   noteStore.setState((state) => ({
@@ -80,7 +86,7 @@ async function handleImportNote(request: FilePathRequest) {
       : { source: "external", filePaths: request.filePaths },
   );
   if (!imported.success) {
-    console.error(
+    appError(
       "[handleImportNote -> importNote]: Failed to import note:",
       imported.error,
     );
@@ -88,7 +94,7 @@ async function handleImportNote(request: FilePathRequest) {
   }
   const processedPayloads = await setImportedContent(imported.data.data);
   if (!processedPayloads.success) {
-    console.error(
+    appError(
       "[handleImportNote -> setImportedContent]: Failed to process import payload:",
       processedPayloads.error,
     );
@@ -96,7 +102,7 @@ async function handleImportNote(request: FilePathRequest) {
   }
   const result = await createManyNotes(processedPayloads.data);
   if (!result.success) {
-    console.error(
+    appError(
       "[handleImportNote]: Failed to create imported notes:",
       result.error,
     );
@@ -131,7 +137,7 @@ async function handleDeleteManyNotes(ids: string[]) {
   }
   const result = await deleteManyNotes(ids);
   if (!result.success) {
-    console.error("[handleDeleteManyNotes]: Failed to delete:", result.error);
+    appError("[handleDeleteManyNotes]: Failed to delete:", result.error);
     return;
   }
   noteStore.setState((state) => {
@@ -159,7 +165,7 @@ async function handleDeleteNote(id: string) {
   }
   const result = await deleteNote(id);
   if (!result.success) {
-    console.error("[handleDeleteNote]: Failed to delete:", result.error);
+    appError("[handleDeleteNote]: Failed to delete:", result.error);
     return;
   }
   noteStore.setState((state) => {
@@ -201,7 +207,7 @@ async function handleSaveNote(id: string, flush: boolean = false) {
   };
   const result = await updateNote(payload, flush);
   if (!result.success) {
-    console.error("[handleSaveNote]: Save failed.", result.error);
+    appError("[handleSaveNote]: Save failed.", result.error);
     return;
   }
   const isActiveNote = stateStore.get("activeId") === id;
@@ -242,7 +248,7 @@ async function handleSelectNote(id: string) {
   const activeId = stateStore.get("activeId");
   debouncedSaveNote.flush();
   if (activeId === id) {
-    console.log("Already active. Skipping select.");
+    devLog("Already active. Skipping select.");
     return;
   }
   stateStore.setState({ activeId: id });
@@ -250,14 +256,14 @@ async function handleSelectNote(id: string) {
   const result = await getNoteById(id);
   if (stateStore.get("activeId") !== id) return;
   if (!result.success) {
-    console.error("[handleSelectNote]: Failed to fetch note:", result.error);
+    appError("[handleSelectNote]: Failed to fetch note:", result.error);
     return;
   }
   try {
     await checkNoteSize(result.data.content);
     recreateEditorState(editor, result.data.content);
   } catch (error) {
-    console.error("Invalid Editor content:", error);
+    appError("Invalid Editor content:", error);
     editor.setEditable(false, false);
     updateToc([]);
     updateStats();

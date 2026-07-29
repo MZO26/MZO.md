@@ -1,8 +1,5 @@
 import { MAX_SEARCH_LENGTH, UNTITLED } from "@shared/constants";
-import {
-  DbContentSchema,
-  EditorDocSchema,
-} from "@shared/schemas/editor-schema";
+import { EditorDocSchema } from "@shared/schemas/editor-schema";
 import { z } from "zod";
 
 const IdSchema = z.uuid();
@@ -15,27 +12,18 @@ const SnippetSchema = z.string().max(100).default("");
 
 const QuerySchema = z.string().min(1).max(MAX_SEARCH_LENGTH);
 
-// DB -> App
-const DBBooleanSchema = z
-  .union([z.literal(0), z.literal(1)])
-  .default(0)
-  .transform((val) => val === 1);
+const BoolSchema = z.boolean();
 
-// App -> DB
-const BooleanSchema = z
-  .boolean()
-  .default(false)
-  .transform((val) => (val ? 1 : 0) as 0 | 1);
+const BoolDbSchema = z.union([z.literal(0), z.literal(1)]);
+
+const DbBoolCodec = z.codec(BoolDbSchema, BoolSchema, {
+  decode: (val) => val === 1,
+  encode: (val) => (val ? 1 : 0),
+});
 
 const PlainTextSchema = z.string().default("");
 
 const DateSchema = z.iso.datetime();
-
-const TogglePinSchema = z.object({
-  pinned: DBBooleanSchema,
-});
-
-const ToggleManyPinsSchema = z.array(TogglePinSchema);
 
 const TagSchema = z.string().trim().min(1).max(100).toLowerCase();
 
@@ -46,16 +34,12 @@ const TagRowSchema = z.object({
   tag_name: TagSchema,
 });
 
-const TagNameRowSchema = z.object({ tag_name: TagSchema });
-
 const TagRowsSchema = z.array(TagRowSchema).default([]);
 
 const LinkRowSchema = z.object({
   source_id: IdSchema,
   target_id: IdSchema,
 });
-
-const LinkRowsSchema = z.array(LinkRowSchema).default([]);
 
 const LinkPayloadSchema = z.array(IdSchema).default([]);
 
@@ -71,15 +55,20 @@ const NoteTableSchema = z.object({
   id: IdSchema,
   title: TitleSchema,
   snippet: SnippetSchema,
-  content: EditorDocSchema,
+  content: z.string(),
   plain_text: PlainTextSchema,
-  pinned: z.boolean(),
+  pinned: BoolSchema,
   created_at: DateSchema,
   updated_at: DateSchema,
 });
 
+const NoteRowSchema = NoteTableSchema.omit({ pinned: true }).extend({
+  pinned: BoolDbSchema,
+});
+
 // Full Note Object
 const NoteSchema = NoteTableSchema.extend({
+  content: EditorDocSchema,
   tags: TagsSchema,
   links: LinksSchema,
 });
@@ -93,8 +82,8 @@ const NotesSchema = z.array(NoteSchema);
 
 // DB Results (Content gets parsed / 0 or 1 gets converted to boolean). Links have new Schema
 const NoteFromDB = NoteSchema.extend({
-  content: DbContentSchema,
-  pinned: DBBooleanSchema,
+  content: EditorDocSchema,
+  pinned: BoolSchema,
   links: LinksSchema,
 });
 
@@ -102,11 +91,12 @@ const NoteListItemFromDB = NoteFromDB.omit({
   content: true,
   plain_text: true,
 });
+
 // Payload Evaluation: Expects content to be stringified and converts booleans to 0 or 1 for DB
 const NoteToDBSchema = NoteSchema.extend({
   id: IdSchema,
   content: z.string(),
-  pinned: BooleanSchema,
+  pinned: BoolDbSchema,
   links: LinkPayloadSchema,
 });
 
@@ -134,16 +124,15 @@ const UpdateTransactionSchema = NoteToDBSchema.omit({
   created_at: true,
 });
 
-const NoteRowSchema = z.object({
-  id: IdSchema,
-  title: TitleSchema,
-  content: z.string(),
-  plain_text: PlainTextSchema,
-  snippet: SnippetSchema,
-  pinned: z.union([z.literal(0), z.literal(1)]).default(0),
-  created_at: DateSchema,
-  updated_at: DateSchema,
-});
+const DbUpdateSchema = UpdateNotePayloadSchema.omit({
+  content: true,
+  markdown: true,
+}).extend({ content: z.string() });
+
+const DbCreateSchema = CreateNotePayloadSchema.omit({
+  content: true,
+  pinned: true,
+}).extend({ content: z.string(), pinned: BoolDbSchema });
 
 const SearchResultSchema = NoteSchema.pick({
   id: true,
@@ -152,7 +141,7 @@ const SearchResultSchema = NoteSchema.pick({
 
 const NoteMenuPayloadSchema = z.object({
   id: IdSchema,
-  pinned: z.boolean().optional(),
+  pinned: BoolSchema.optional(),
 });
 
 const AutoExportWritePayloadSchema = z.object({
@@ -163,10 +152,12 @@ const AutoExportWritePayloadSchema = z.object({
   oldFileName: z.string().optional(),
 });
 
+type BoolDb = z.infer<typeof BoolDbSchema>;
+type DbUpdateArgs = z.infer<typeof DbUpdateSchema>;
+type DbCreateArgs = z.infer<typeof DbCreateSchema>;
 type SearchQuery = z.infer<typeof QuerySchema>;
 type SearchResult = z.infer<typeof SearchResultSchema>;
 type NoteMenuPayload = z.infer<typeof NoteMenuPayloadSchema>;
-type TagNameRow = z.infer<typeof TagNameRowSchema>;
 type NoteListItem = z.infer<typeof NoteListItemFromDB>;
 type AutoExportWritePayload = z.infer<typeof AutoExportWritePayloadSchema>;
 type NoteRow = z.infer<typeof NoteRowSchema>;
@@ -174,7 +165,6 @@ type TagRow = z.infer<typeof TagRowSchema>;
 type LinkRow = z.infer<typeof LinkRowSchema>;
 type Tag = z.infer<typeof TagSchema>;
 type Link = z.infer<typeof LinkSchema>;
-type TagName = z.infer<typeof TagNameRowSchema>;
 type CreateTransaction = z.infer<typeof CreateTransactionSchema>;
 type UpdateTransaction = z.infer<typeof UpdateTransactionSchema>;
 type UpdateNotePayload = z.infer<typeof UpdateNotePayloadSchema>;
@@ -186,15 +176,15 @@ type Ids = z.infer<typeof IdsSchema>;
 
 export {
   AutoExportWritePayloadSchema,
-  BooleanSchema,
+  BoolDbSchema,
+  BoolSchema,
   CreateNotePayloadSchema,
   CreateNotesPayloadsSchema,
   CreateTransactionSchema,
   DateSchema,
-  DBBooleanSchema,
+  DbBoolCodec,
   IdSchema,
   IdsSchema,
-  LinkRowsSchema,
   LinksSchema,
   NoteFromDB,
   NoteListItemFromDB,
@@ -212,14 +202,15 @@ export {
   TagSchema,
   TagsSchema,
   TitleSchema,
-  ToggleManyPinsSchema,
-  TogglePinSchema,
   UpdateNotePayloadSchema,
   UpdateTransactionSchema,
   type AutoExportWritePayload,
+  type BoolDb,
   type CreateNotePayload,
   type CreateNotesPayload,
   type CreateTransaction,
+  type DbCreateArgs,
+  type DbUpdateArgs,
   type Id,
   type Ids,
   type Link,
@@ -231,8 +222,6 @@ export {
   type SearchQuery,
   type SearchResult,
   type Tag,
-  type TagName,
-  type TagNameRow,
   type TagRow,
   type UpdateNotePayload,
   type UpdateTransaction,

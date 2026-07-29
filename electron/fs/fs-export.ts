@@ -4,6 +4,7 @@ import { getPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { createHiddenPdfWindow } from "@electron/win";
 import {
+  appError,
   CONCURRENCY_EXPORT_NORMAL,
   CONCURRENCY_EXPORT_PDF,
 } from "@shared/constants";
@@ -26,7 +27,7 @@ async function singleExport(filePath: string, data: string) {
     imagesFolder,
   );
   await writeAtomic(filePath, portableContent).catch((error) => {
-    console.error("[singleExport]: Error writing file:", error);
+    appError("[singleExport]: Error writing file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   });
 }
@@ -52,7 +53,7 @@ async function batchExport(folder: string, payload: ExportContent[]) {
         await writeAtomic(absoluteFilePath, portableContent);
         return absoluteFilePath;
       } catch (error) {
-        console.error("[batchExport]: Error while exporting:", error);
+        appError("[batchExport]: Error while exporting:", error);
         return null;
       }
     },
@@ -81,7 +82,7 @@ async function exportPDFNote(params: {
   // data:text/html tells chrome parse as html and base64 tells chrome to decode before parsing with the exact html bytes. Base64 is required to load the css correctly because chrome expects URL's to have URL-encoded content.
   const pdfBuffer = await win.webContents.printToPDF(pdfOptions);
   await writeAtomic(filePath, pdfBuffer).catch((error) => {
-    console.error("[exportPDFNote]: Error writing PDF file:", error);
+    appError("[exportPDFNote]: Error writing PDF file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   });
   return filePath;
@@ -103,7 +104,7 @@ async function singlePDFExport(
       assets,
     });
   } catch (error) {
-    console.error("[singlePDFExport]: Error writing PDF file:", error);
+    appError("[singlePDFExport]: Error writing PDF file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   } finally {
     if (hiddenWin && !hiddenWin.isDestroyed()) {
@@ -138,7 +139,7 @@ async function batchPDFExport(
     );
     return exported.filter((item) => item !== null);
   } catch (error) {
-    console.error("[batchPDFExport]: Error while exporting:", error);
+    appError("[batchPDFExport]: Error while exporting:", error);
     throw new AppBackendError(AppErrorCode.ExportError);
   } finally {
     if (hiddenWin && !hiddenWin.isDestroyed()) {

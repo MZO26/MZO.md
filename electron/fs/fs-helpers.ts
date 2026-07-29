@@ -1,6 +1,6 @@
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import { CONCURRENCY_IMAGE } from "@shared/constants";
+import { appError, CONCURRENCY_IMAGE } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import { FileNameSchema } from "@shared/schemas/request-schema";
@@ -69,10 +69,7 @@ async function sanitizeExportString(
           const err = error as NodeJS.ErrnoException;
           if (err.code === "EEXIST") return;
           if (err.code !== "ENOENT") {
-            console.error(
-              "[sanitizeExportString]: Failed to copy file",
-              err.code,
-            );
+            appError("[sanitizeExportString]: Failed to copy file", err.code);
           }
         }
       },
@@ -111,10 +108,7 @@ async function sanitizeImportString(
           const err = error as NodeJS.ErrnoException;
           if (err.code === "EEXIST") return;
           if (err.code !== "ENOENT")
-            console.error(
-              "[sanitizeImportString]: Failed to copy file:",
-              err.code,
-            );
+            appError("[sanitizeImportString]: Failed to copy file:", err.code);
         }
       },
     );

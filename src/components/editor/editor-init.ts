@@ -33,6 +33,7 @@ import { requireElement } from "@/utils/dom";
 import { createGlobalSpinner } from "@/utils/ui";
 import {
   ALLOWED_PROTOCOLS,
+  appError,
   MAX_CHARACTERS,
   NODE_BASELINE,
   SHARED_KATEX_OPTIONS,
@@ -95,7 +96,7 @@ function getNoteEditorExtensions() {
       onClick: async (id) => {
         const noteExists = noteStore.get("noteIndex").has(id);
         if (!noteExists) {
-          console.error("[Wikilink configure]: Note not found.");
+          appError("[Wikilink configure]: Note not found.");
           return;
         }
         const loading = createGlobalSpinner();
@@ -177,7 +178,7 @@ function getNoteEditorExtensions() {
             const parsed = new URL(url, "https://google.com");
             return ALLOWED_PROTOCOLS.includes(parsed.protocol);
           } catch (error: unknown) {
-            console.error("[link.configure]: Invalid URL");
+            appError("[link.configure]: Invalid URL");
             return false;
           }
         },

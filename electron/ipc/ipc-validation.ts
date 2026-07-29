@@ -5,11 +5,16 @@ import {
 } from "@electron/ipc/ipc-error-handler";
 import { registerNoteIpc } from "@electron/ipc/ipc-note";
 import { registerSettingsIpc } from "@electron/ipc/ipc-settings";
-import { APP_START_TIME, IPC_TIMERS } from "@shared/constants";
+import {
+  APP_START_TIME,
+  appError,
+  IPC_TIMERS,
+  RATE_LIMIT_DEFER_MS,
+} from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import type { Result } from "@shared/types";
 import { BrowserWindow, app, type IpcMainInvokeEvent } from "electron";
-import type z from "zod";
+import z from "zod";
 
 function registerIpc(win: BrowserWindow) {
   registerElectronIpc(win);
@@ -25,16 +30,14 @@ async function result<T>(
     validateSender(event);
     const data = await action();
     return { success: true, data };
-  } catch (err: unknown) {
-    return handleIpcError(err);
+  } catch (error: unknown) {
+    return handleIpcError(error);
   }
 }
 
 function validateSender(event: IpcMainInvokeEvent) {
   if (!event.senderFrame) {
-    console.error(
-      "[IPC Sender Validation]: Blocked: IPC Without valid senderFrame",
-    );
+    appError("[IPC Sender Validation]: Blocked: IPC Without valid senderFrame");
     throw new AppBackendError(AppErrorCode.SenderError);
   }
   const mainWindow = BrowserWindow.fromWebContents(event.sender);
@@ -52,15 +55,13 @@ function validateSender(event: IpcMainInvokeEvent) {
   if (allowedProtocols.includes(senderUrl.protocol)) {
     return true;
   }
-  console.error(
-    `[IPC Sender Validation]: Blocked senderFrame: ${senderUrl.href}`,
-  );
+  appError(`[IPC Sender Validation]: Blocked senderFrame: ${senderUrl.href}`);
   throw new AppBackendError(AppErrorCode.SenderError);
 }
 
 function checkRateLimit(channel: string, cooldownMs: number) {
   const now = Date.now();
-  if (now - APP_START_TIME < 5000) {
+  if (now - APP_START_TIME < RATE_LIMIT_DEFER_MS) {
     return true;
   }
   const lastCall = IPC_TIMERS.get(channel) || 0;
@@ -69,20 +70,16 @@ function checkRateLimit(channel: string, cooldownMs: number) {
   return true;
 }
 
-function validation<T extends z.ZodType>(
-  schema: T,
-  payload: unknown,
-): z.infer<T> {
-  const validate = schema.safeParse(payload);
-  if (!validate.success) {
-    console.error(
-      "Validation failed:",
-      JSON.stringify(validate.error, null, 2),
+function validation<T extends z.ZodType>(schema: T, payload: unknown) {
+  const result = schema.safeParse(payload);
+  if (!result.success) {
+    appError(
+      "[IPC Validation]: Validation failed:",
+      z.prettifyError(result.error),
     );
-    console.dir(validate.error.issues, { depth: null });
-    throw validate.error;
+    throw result.error;
   }
-  return validate.data;
+  return result.data;
 }
 
 export { checkRateLimit, registerIpc, result, validateSender, validation };

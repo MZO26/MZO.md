@@ -3,6 +3,7 @@ import { findElement } from "@/utils/dom";
 import { getUIItem } from "@/utils/registry";
 import {
   ALLOWED_IMPORT_EXTENSIONS,
+  devLog,
   NODE_BASELINE,
   UNTAGGED,
   YIELD_MS,
@@ -126,7 +127,7 @@ function isValidExtension(extension: string): extension is ImportExtension {
 }
 
 async function checkNoteSize(doc: JSONContent) {
-  console.log(`Node amount: ${doc.content?.length}`);
+  devLog(`Node amount: ${doc.content?.length}`);
   if (doc.content && doc.content.length > NODE_BASELINE) {
     await sleep(YIELD_MS);
   }

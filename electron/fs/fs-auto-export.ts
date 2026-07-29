@@ -4,15 +4,16 @@ import {
   sanitizeExportString,
   writeAtomic,
 } from "@electron/fs/fs-helpers";
-import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
+import { resolveAutoExport } from "@electron/ipc/ipc-helpers";
 import { validation } from "@electron/ipc/ipc-validation";
-import { CONCURRENCY_DELETE } from "@shared/constants";
+import { appError, CONCURRENCY_DELETE, devLog } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import {
   IdSchema,
   type AutoExportWritePayload,
+  type Id,
   type Note,
 } from "@shared/schemas/note-schema";
 import {
@@ -21,18 +22,15 @@ import {
   type DeleteAutoExportRequest,
   type WriteAutoExportRequest,
 } from "@shared/schemas/request-schema";
-import console from "console";
 import { app, shell } from "electron";
 import { constants } from "fs";
 import fs from "fs/promises";
 import path from "path";
 
-async function isAutoExport(id: string): Promise<boolean> {
+async function isAutoExport(id: Id): Promise<boolean> {
   try {
-    const settings = settingsService.getSettings();
-    const enabled = settings["auto_export"] ?? false;
-    const targetDir = settings["auto_export_path"];
-    if (!enabled || !targetDir) return false;
+    const { targetDir, isAutoExport } = resolveAutoExport();
+    if (!targetDir || !isAutoExport) return false;
     const validatedData = validation(IdSchema, id);
     const notes = db.getOldNotes([validatedData]);
     const note = Array.isArray(notes) ? notes[0] : undefined;
@@ -46,21 +44,18 @@ async function isAutoExport(id: string): Promise<boolean> {
     if (!absoluteFilePath) return false;
     try {
       await fs.access(absoluteFilePath, fs.constants.F_OK);
-      console.log("[isAutoExport]: This note is on the file system.", id);
+      devLog("[isAutoExport]: This note is on the file system.", id);
       return true;
     } catch (error) {
       const err = error as NodeJS.ErrnoException;
       if (err.code === "ENOENT") {
-        console.log(
-          "[isAutoExport]: This note is not on the file system yet.",
-          id,
-        );
+        devLog("[isAutoExport]: This note is not on the file system yet.", id);
         return false;
       }
       throw error;
     }
   } catch (error) {
-    console.error(
+    appError(
       "[isAutoExport]: Failed to detect if note is on file system:",
       error,
     );
@@ -107,7 +102,7 @@ async function safeRename(
   } catch (error: unknown) {
     const err = error as NodeJS.ErrnoException;
     if (err.code === "ENOENT") {
-      console.error("[writeAutoExportFileLogic -> safeRename]: File not found");
+      appError("[writeAutoExportFileLogic -> safeRename]: File not found");
       return;
     } else if (err.code === "EXDEV") {
       // for cross-partition moves
@@ -115,14 +110,14 @@ async function safeRename(
         await fs.copyFile(src, dest);
         await fs.unlink(src);
       } catch (error) {
-        console.error(
+        appError(
           "[writeAutoExportFileLogic -> safeRename]: EXDEV  fallback failed",
           error,
         );
         throw new AppBackendError(AppErrorCode.FileWriteError);
       }
     } else {
-      console.error(
+      appError(
         "[writeAutoExportFileLogic -> safeRename]: Safe rename failed",
         error,
       );
@@ -164,7 +159,7 @@ async function writeAutoExportFileLogic(
         })
       : undefined;
     if (oldAbsoluteFilePath && oldAbsoluteFilePath !== absoluteFilePath) {
-      console.log(
+      devLog(
         `[writeAutoExportFileLogic] Renaming ${oldAbsoluteFilePath} to ${absoluteFilePath}`,
       );
       await safeRename(oldAbsoluteFilePath, absoluteFilePath);
@@ -187,17 +182,15 @@ async function writeAutoExportFileLogic(
     }
     const normalizedContent = normalizeText(portableContent).trimEnd();
     if (normalizedLocal !== normalizedContent) {
-      console.log(
+      devLog(
         `[writeAutoExportFileLogic] Writing new content to ${absoluteFilePath}`,
       );
       await writeAtomic(absoluteFilePath, portableContent);
     } else {
-      console.log(
-        "[writeAutoExportFileLogic] No changes detected. Skipping write.",
-      );
+      devLog("[writeAutoExportFileLogic] No changes detected. Skipping write.");
     }
   } catch (error: unknown) {
-    console.error(`[writeAutoExportFileLogic]: Failed to write file:`, error);
+    appError(`[writeAutoExportFileLogic]: Failed to write file:`, error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }
 }
@@ -225,7 +218,7 @@ async function writeAutoExportFile({
       oldFileName,
     });
   } catch (error) {
-    console.error("[writeAutoExportFile]: Failed to write file:", error);
+    appError("[writeAutoExportFile]: Failed to write file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }
 }
@@ -257,7 +250,7 @@ async function deleteAutoExportFile(
       if (err.code === "ENOENT") {
         return;
       }
-      console.error("[deleteAutoExportFile]: Failed to delete file:", error);
+      appError("[deleteAutoExportFile]: Failed to delete file:", error);
       throw new AppBackendError(AppErrorCode.FileWriteError);
     }
   });

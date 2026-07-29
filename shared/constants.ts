@@ -22,6 +22,8 @@ import type {
 
 const APP_START_TIME = Date.now();
 
+const RATE_LIMIT_DEFER_MS = 5000;
+
 const IPC_TIMERS = new Map<string, number>();
 
 const ZOOMS = [1, 1.1, 1.25] as const;
@@ -386,11 +388,18 @@ const AUTO_EXPORT_SETTINGS: readonly SelectOption<AutoExport>[] = [
   { value: false, label: "Disable" },
 ];
 
+const devLog = import.meta.env.DEV
+  ? console.log.bind(console, "[DEV]")
+  : () => {};
+
+const appError = console.error.bind(console, "[ERROR]");
+
 export {
   ALLOWED_IMPORT_EXTENSIONS,
   ALLOWED_PROTOCOLS,
   ALLOWED_TYPES,
   APP_START_TIME,
+  appError,
   AUTO_EXPORT_SETTINGS,
   BLOCK_TYPES,
   CHAR_BASELINE,
@@ -404,6 +413,7 @@ export {
   CONTENT_TYPE_MAP,
   DEBOUNCE_MS,
   DEFAULT_SETTINGS,
+  devLog,
   DOMPURIFY_CONFIG,
   EMPTY_DOC,
   EXPORT_FORMAT_SETTINGS,
@@ -430,6 +440,7 @@ export {
   NODE_BASELINE,
   NOTE_ITEM_DISPLAY_SETTINGS,
   QUICK_ACTIONS,
+  RATE_LIMIT_DEFER_MS,
   SELECTION_ACTIONS,
   SHARED_KATEX_OPTIONS,
   SIDEBAR_ALL_NOTES_LIMIT,

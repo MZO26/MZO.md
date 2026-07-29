@@ -2,31 +2,33 @@ import { Transactions } from "@electron/db/transactions";
 import { parseFilenameToDate } from "@electron/fs/fs-helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
+import { appError, devLog } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
+import { DbContentCodec } from "@shared/schemas/editor-schema";
 import {
+  BoolSchema,
   CreateTransactionSchema,
+  DbBoolCodec,
+  IdsSchema,
   LinksSchema,
   NoteFromDB,
   NoteListItemFromDB,
   OldNoteSchema,
   TagsSchema,
-  ToggleManyPinsSchema,
-  TogglePinSchema,
-  UpdateTransactionSchema,
-  type CreateNotePayload,
+  type BoolDb,
+  type DbCreateArgs,
+  type DbUpdateArgs,
   type Link,
   type LinkRow,
   type Note,
   type NoteListItem,
   type NoteRow,
   type Tag,
-  type TagNameRow,
   type TagRow,
-  type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import {
+  StoreFromDbSchema,
   StoreRowSchema,
-  StoreToRowSchema,
   type AppSettings,
   type StoreRow,
 } from "@shared/schemas/store-schema";
@@ -148,9 +150,9 @@ class AppDB {
       AND created_at < $end 
       LIMIT 1;
       `);
-      console.log(`Database initialized at: ${this.dbPath}`);
+      devLog(`Database initialized at: ${this.dbPath}`);
     } catch (error) {
-      console.error("[AppDB]: Failed to initialize database:", error);
+      appError("[AppDB]: Failed to initialize database:", error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       const msg =
@@ -276,27 +278,37 @@ class AppDB {
   }
 
   public updateSettings(mergedSettings: AppSettings): void {
-    const row = validation(StoreToRowSchema, mergedSettings);
+    const encoded = {
+      ...mergedSettings,
+      spellcheck: DbBoolCodec.encode(mergedSettings.spellcheck),
+      auto_export: DbBoolCodec.encode(mergedSettings.auto_export),
+      toolbar_collapsed: DbBoolCodec.encode(mergedSettings.toolbar_collapsed),
+    };
+    const row = validation(StoreRowSchema, encoded);
     this.updateStoreStmt.run(row);
   }
 
   public getAllSettings(): AppSettings {
     const row = this.getAllSettingsStmt.get() as StoreRow | undefined;
     if (!row) throw new AppBackendError(AppErrorCode.DBError);
-    return validation(StoreRowSchema, row);
+    const decoded = {
+      ...row,
+      spellcheck: DbBoolCodec.decode(row.spellcheck),
+      auto_export: DbBoolCodec.decode(row.auto_export),
+      toolbar_collapsed: DbBoolCodec.decode(row.toolbar_collapsed),
+    };
+    return validation(StoreFromDbSchema, decoded);
   }
 
-  public create(payload: CreateNotePayload): NoteListItem {
+  public create(payload: DbCreateArgs): NoteListItem {
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
-    let { tags, links, content, ...rest } = payload;
-    const stringifiedContent = JSON.stringify(content);
+    let { tags, links, ...rest } = payload;
     const uniqueTags = [...new Set(tags)].slice(0, 5);
     const uniqueLinks = [...new Set(links)];
     const dbPayload = {
       id,
       ...rest,
-      content: stringifiedContent,
       tags: uniqueTags,
       links: uniqueLinks,
       created_at: now,
@@ -308,46 +320,41 @@ class AppDB {
     return result;
   }
 
-  public createMany(payloads: CreateNotePayload[]): NoteListItem[] {
+  public createMany(payloads: DbCreateArgs[]): NoteListItem[] {
     const now = new Date().toISOString();
     const dbContents = [];
     for (const payload of payloads) {
       const id = crypto.randomUUID();
-      const { tags, links, content, ...rest } = payload;
-      const stringifiedContent = JSON.stringify(content);
+      const { tags, links, ...rest } = payload;
       const uniqueTags = [...new Set(tags)].slice(0, 5);
       const uniqueLinks = [...new Set(links)];
       const dbPayload = {
         id,
         ...rest,
-        content: stringifiedContent,
         tags: uniqueTags,
         links: uniqueLinks,
         created_at: now,
         updated_at: now,
       };
-      dbContents.push(validation(CreateTransactionSchema, dbPayload));
+      dbContents.push(dbPayload);
     }
     const result = this.transactions.safeCreateMany(dbContents);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
     return result;
   }
 
-  public update(payload: UpdateNotePayload): NoteListItem {
-    let { tags, links, content, ...rest } = payload;
-    const stringifiedContent = JSON.stringify(content);
+  public update(payload: DbUpdateArgs): NoteListItem {
+    let { tags, links, ...rest } = payload;
     const now = new Date().toISOString();
     const uniqueTags = [...new Set(tags)].slice(0, 5);
     const uniqueLinks = [...new Set(links)];
     const dbPayload = {
       ...rest,
-      content: stringifiedContent,
       tags: uniqueTags,
       links: uniqueLinks,
       updated_at: now,
     };
-    const dbContent = validation(UpdateTransactionSchema, dbPayload);
-    const result = this.transactions.safeUpdate(dbContent);
+    const result = this.transactions.safeUpdate(dbPayload);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
     return result;
   }
@@ -371,6 +378,7 @@ class AppDB {
     for (const row of this.getAllNotesStmt.iterate() as IterableIterator<NoteRow>) {
       const validatedNote = validation(NoteListItemFromDB, {
         ...row,
+        pinned: DbBoolCodec.decode(row.pinned),
         tags: tagMap.get(row.id) ?? [],
         links: linkMap.get(row.id) ?? [],
       });
@@ -386,6 +394,8 @@ class AppDB {
     for (const row of this.getAllBackupStmt.iterate() as IterableIterator<NoteRow>) {
       const validatedNote = validation(NoteFromDB, {
         ...row,
+        content: DbContentCodec.decode(row.content),
+        pinned: DbBoolCodec.decode(row.pinned),
         tags: tagMap.get(row.id) ?? [],
         links: linkMap.get(row.id) ?? [],
       });
@@ -401,6 +411,8 @@ class AppDB {
     }
     return validation(NoteFromDB, {
       ...row,
+      content: DbContentCodec.decode(row.content),
+      pinned: DbBoolCodec.decode(row.pinned),
       tags: this.getTagsById(id) ?? [],
       links: this.getLinksById(id) ?? [],
     });
@@ -416,6 +428,8 @@ class AppDB {
     return rows.map((row) => {
       return validation(NoteFromDB, {
         ...row,
+        content: DbContentCodec.decode(row.content),
+        pinned: DbBoolCodec.decode(row.pinned),
         tags: tagMap.get(row.id) ?? [],
         links: linkMap.get(row.id) ?? [],
       });
@@ -424,11 +438,14 @@ class AppDB {
 
   public togglePin(id: string): boolean {
     const now = new Date().toISOString();
-    const result = this.togglePinStmt.get({ $updated_at: now, $id: id });
+    const result = this.togglePinStmt.get({ $updated_at: now, $id: id }) as
+      | { pinned: BoolDb }
+      | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
-    return validation(TogglePinSchema, result).pinned;
+    const decoded = DbBoolCodec.decode(result.pinned);
+    return validation(BoolSchema, decoded);
   }
 
   public toggleManyPins(ids: string[]): boolean {
@@ -437,19 +454,22 @@ class AppDB {
     const result = this.toggleManyPinStmt.all({
       $updated_at: now,
       $ids: JSON.stringify(ids),
-    });
-    const rows = validation(ToggleManyPinsSchema, result);
+    }) as { id: string }[];
+    const flattened = result.map((r) => r.id);
+    const rows = validation(IdsSchema, flattened);
     return rows.length > 0;
   }
 
-  public getTagsById(id: string): Tag[] {
-    const rows = this.getTagsByIdStmt.all({ $id: id }) as TagNameRow[];
+  public getTagsById(id: string): string[] {
+    const rows = this.getTagsByIdStmt.all({ $id: id }) as {
+      tag_name: string;
+    }[];
     const tagArr = rows.map((row) => row.tag_name);
     return validation(TagsSchema, tagArr);
   }
 
   public getLinksById(id: string): Link[] {
-    const rows = this.getLinksByIdStmt.all({ $id: id }) as LinkRow[];
+    const rows = this.getLinksByIdStmt.all({ $id: id }) as Link[];
     return validation(LinksSchema, rows);
   }
 
@@ -511,10 +531,7 @@ class AppDB {
     try {
       this.db.close();
     } catch (error) {
-      console.error(
-        "[Database Error]: Failed to close database connection:",
-        error,
-      );
+      appError("[Database Error]: Failed to close database connection:", error);
     } finally {
       this.db = undefined;
     }
@@ -544,7 +561,7 @@ class AppDB {
       }
       return this.db;
     } catch (error) {
-      console.error("[Database Error]: Failed to open db", error);
+      appError("[Database Error]: Failed to open db", error);
       db.close();
       this.db = undefined;
       throw error;
@@ -563,14 +580,11 @@ class AppDB {
     try {
       await backup(targetDb, destination, {
         progress: (info) => {
-          console.log(`Backup progress: ${info.remainingPages} pages left.`);
+          devLog(`Backup progress: ${info.remainingPages} pages left.`);
         },
       });
     } catch (error) {
-      console.error(
-        `[Database Error]: Failed to backup to ${destination}`,
-        error,
-      );
+      appError(`[Database Error]: Failed to backup to ${destination}`, error);
       throw new AppBackendError(AppErrorCode.DBError);
     }
   }

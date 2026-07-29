@@ -20,6 +20,7 @@ import { createAsyncHandler } from "@/utils/async";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
+import { appError } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 async function initAppSettings(settings: AppSettings) {
@@ -69,7 +70,7 @@ function applyModalListeners(
         case "open-path":
           const open = await openAppPath();
           if (!open.success) {
-            console.error(
+            appError(
               "[quickActions -> open-path]: Failed to open app path:",
               open.error,
             );
@@ -79,7 +80,7 @@ function applyModalListeners(
         case "backup-db":
           const dbBackup = await databaseBackup();
           if (!dbBackup.success) {
-            console.error(
+            appError(
               "[quickActions -> backup-db]: Failed to backup db:",
               dbBackup.error,
             );
@@ -91,7 +92,7 @@ function applyModalListeners(
         case "backup-db-restore":
           const restore = await databaseBackupRestore();
           if (!restore.success) {
-            console.error(
+            appError(
               "[quickActions -> backup-db-restore]: Failed to restore db:",
               restore.error,
             );

@@ -19,7 +19,9 @@ import {
 import { getAppItem, getUIItems } from "@/utils/registry";
 import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
 import {
+  appError,
   DEBOUNCE_MS,
+  devLog,
   MAX_FILE_DROPS,
   MAX_SEARCH_LENGTH,
 } from "@shared/constants";
@@ -34,7 +36,7 @@ async function handleSearch(searchInput: string) {
   if (nextQuery.length > MAX_SEARCH_LENGTH) return;
   const prevQuery = stateStore.get("searchQuery");
   if (nextQuery === prevQuery) {
-    console.log("Same query. Skipping search");
+    devLog("Same query. Skipping search");
     return;
   }
   stateStore.setState({ searchQuery: nextQuery });
@@ -44,7 +46,7 @@ async function handleSearch(searchInput: string) {
   }
   const result = await search(nextQuery);
   if (!result.success) {
-    console.error("[handleSearch]: Failed to search:", result.error);
+    appError("[handleSearch]: Failed to search:", result.error);
     return;
   }
   const data = result.data.map((row) => {

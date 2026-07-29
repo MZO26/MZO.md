@@ -1,3 +1,5 @@
+import { appError } from "@shared/constants";
+
 type Debounced<T extends (...args: any[]) => void> = ((
   ...args: Parameters<T>
 ) => void) & {
@@ -51,7 +53,7 @@ function createAsyncHandler<T extends Event>(
     try {
       await callback(e);
     } catch (error) {
-      console.error("[createAsyncHandler]: Async Error: ", error);
+      appError("[createAsyncHandler]: Async Error: ", error);
     } finally {
       isProcessing = false;
     }

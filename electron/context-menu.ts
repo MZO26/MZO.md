@@ -1,12 +1,12 @@
 import { isAutoExport } from "@electron/fs/fs-auto-export";
 import { settingsService } from "@electron/handler/settings-handler";
+import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { checkRateLimit, validation } from "@electron/ipc/ipc-validation";
-import { LIMITS } from "@shared/constants";
+import { appError, LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
-import { ExternalUrlSchema } from "@shared/schemas/editor-schema";
+import { ExternalUrlSchema } from "@shared/schemas/electron-schema";
 import { IdSchema, type NoteMenuPayload } from "@shared/schemas/note-schema";
 import { clipboard, ipcMain, Menu, shell, type BrowserWindow } from "electron";
-import { AppBackendError } from "./ipc/ipc-error-handler";
 
 let activeId: string | null = null;
 
@@ -17,7 +17,7 @@ ipcMain.on("note:set-active", (_e, id: unknown) => {
     const validatedId = validation(IdSchema, id);
     activeId = validatedId;
   } catch (error: unknown) {
-    console.error(`[IPC Bridge Error]: ${id} is not a valid UUID`, error);
+    appError(`[IPC Bridge Error]: ${id} is not a valid UUID`, error);
     activeId = null;
   }
 });
@@ -71,7 +71,7 @@ function setUpEditorMenu(win: BrowserWindow) {
               `https://www.google.com/search?q=${query}`,
             );
           } catch (error) {
-            console.error(
+            appError(
               "[setUpEditorMenu]: Failed to open search browser:",
               error,
             );
@@ -85,10 +85,7 @@ function setUpEditorMenu(win: BrowserWindow) {
             try {
               win.webContents.showDefinitionForSelection();
             } catch (error) {
-              console.error(
-                "[setUpEditorMenu]: Failed to lookup selection:",
-                error,
-              );
+              appError("[setUpEditorMenu]: Failed to lookup selection:", error);
             }
           },
         });
@@ -103,7 +100,7 @@ function setUpEditorMenu(win: BrowserWindow) {
             try {
               win.webContents.copyImageAt(params.x, params.y);
             } catch (error) {
-              console.error("[setUpEditorMenu]: Failed to copy image:", error);
+              appError("[setUpEditorMenu]: Failed to copy image:", error);
             }
           },
         });
