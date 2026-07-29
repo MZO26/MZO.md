@@ -1,4 +1,4 @@
-import { appError, DEFAULT_SETTINGS, devLog } from "@shared/constants";
+import { appError, DEFAULT_SETTINGS, DEV, devLog } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 
 interface Store<T> {
@@ -45,17 +45,15 @@ const NOTE_STORE: NoteStore = {
   searchSnippets: {},
 };
 
-const isDev = import.meta.env.DEV;
-
 const STATE_STORE_BASE = createStore(STATE_STORE);
 const NOTE_STORE_BASE = createStore(NOTE_STORE);
 const SETTINGS_STORE_BASE = createStore(DEFAULT_SETTINGS);
 
-const stateStore = isDev ? withLogger(STATE_STORE_BASE) : STATE_STORE_BASE;
+const stateStore = DEV ? withLogger(STATE_STORE_BASE) : STATE_STORE_BASE;
 
-const noteStore = isDev ? withLogger(NOTE_STORE_BASE) : NOTE_STORE_BASE;
+const noteStore = DEV ? withLogger(NOTE_STORE_BASE) : NOTE_STORE_BASE;
 
-const settingsStore = isDev
+const settingsStore = DEV
   ? withLogger(SETTINGS_STORE_BASE)
   : SETTINGS_STORE_BASE;
 

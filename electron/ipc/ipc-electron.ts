@@ -147,13 +147,14 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("theme:set", (e, theme: unknown, focus?: boolean) => {
+  ipcMain.handle("theme:set", (e, theme: unknown, focus?: unknown) => {
     return result(e, async () => {
       if (!checkRateLimit("theme:set", LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validTheme = validation(StoreSchema.shape["theme"], theme);
       const resolvedTheme = initTheme(validTheme);
-      const windowTheme = getTitleBarOverlay(resolvedTheme, focus ?? false);
+      const isFocus = typeof focus === "boolean" && focus === true;
+      const windowTheme = getTitleBarOverlay(resolvedTheme, isFocus);
       for (const window of BrowserWindow.getAllWindows()) {
         window.setBackgroundColor(windowTheme.backgroundColor);
         window.setTitleBarOverlay?.(windowTheme.overlayOptions);

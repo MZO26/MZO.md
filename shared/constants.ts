@@ -102,7 +102,7 @@ const SIDEBAR_ALL_NOTES_LIMIT = 50;
 
 const MAX_SEARCH_LENGTH = 100;
 
-const MAX_WORKER_TIMEOUT_MS = 120_000;
+const MAX_WORKER_TIMEOUT_MS = 180_000;
 
 const IMAGE_MAX_WIDTH = 1000;
 
@@ -388,9 +388,9 @@ const AUTO_EXPORT_SETTINGS: readonly SelectOption<AutoExport>[] = [
   { value: false, label: "Disable" },
 ];
 
-const devLog = import.meta.env.DEV
-  ? console.log.bind(console, "[DEV]")
-  : () => {};
+const DEV = import.meta.env.DEV;
+
+const devLog = DEV ? console.log.bind(console, "[DEV]") : () => {};
 
 const appError = console.error.bind(console, "[ERROR]");
 
@@ -413,6 +413,7 @@ export {
   CONTENT_TYPE_MAP,
   DEBOUNCE_MS,
   DEFAULT_SETTINGS,
+  DEV,
   devLog,
   DOMPURIFY_CONFIG,
   EMPTY_DOC,
