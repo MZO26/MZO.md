@@ -1,5 +1,5 @@
-import { createIconButton } from "@/components/sidebar/sidebar-features";
 import { settingsStore } from "@/state/state";
+import { createIconButton } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import type { Action, ActionMap, ToolbarItem } from "@shared/types";
 import type { Editor } from "@tiptap/core";

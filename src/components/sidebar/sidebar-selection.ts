@@ -5,6 +5,7 @@ import {
   pinMany,
   showNotification,
 } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import {
   setSelectionMode,
@@ -15,7 +16,7 @@ import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
-import { appError, MAX_CHARACTERS } from "@shared/constants";
+import { MAX_CHARACTERS } from "@shared/constants";
 import { generateHTML, generateText } from "@tiptap/core";
 
 async function copyRichTextSelection(selectedIds: string[]) {
@@ -28,7 +29,7 @@ async function copyRichTextSelection(selectedIds: string[]) {
     ? await getAllBackup()
     : await getManyById(selectedIds);
   if (!result.success) {
-    appError(
+    rendererLogger.appError(
       "[copyMarkdownSelection -> getAllBackup | getManyById]: Failed to get notes by id:",
       result.error,
     );
@@ -70,7 +71,10 @@ async function copyRichTextSelection(selectedIds: string[]) {
     await showNotification("Copied to clipboard", "");
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
-    appError("[copyMarkdownSelection]: Failed to copy markdown:", error);
+    rendererLogger.appError(
+      "[copyMarkdownSelection]: Failed to copy markdown:",
+      error,
+    );
   }
 }
 
@@ -84,7 +88,7 @@ async function exportSelection(selectedIds: string[]) {
     ? await getAllBackup()
     : await getManyById(selectedIds);
   if (!exportResult.success) {
-    appError(
+    rendererLogger.appError(
       "[exportSelection -> getAllBackup | getManyById]: Failed to get notes by id:",
       exportResult.error,
     );
@@ -96,7 +100,7 @@ async function exportSelection(selectedIds: string[]) {
     exportFormat,
   );
   if (!exportContent.success) {
-    appError(
+    rendererLogger.appError(
       "[exportSelection -> getBatchExportContent]: Failed to get export format",
       exportContent.error,
     );
@@ -104,7 +108,7 @@ async function exportSelection(selectedIds: string[]) {
   }
   const result = await exportManyNotes(exportContent.data);
   if (!result.success) {
-    appError(
+    rendererLogger.appError(
       "[exportSelection -> exportManyNotes]: Export failed or Operation got cancelled:",
       result.error,
     );
@@ -120,7 +124,10 @@ async function pinSelection(selectedIds: string[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const pinned = await pinMany(selectedIds);
   if (!pinned.success) {
-    appError("[pinSelection -> pinMany]: Failed to toggle pin:", pinned.error);
+    rendererLogger.appError(
+      "[pinSelection -> pinMany]: Failed to toggle pin:",
+      pinned.error,
+    );
     return;
   }
   const selectedIdSet = new Set(selectedIds);

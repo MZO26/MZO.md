@@ -1,5 +1,14 @@
+import { BoolDbSchema, BoolSchema } from "@shared/schemas/note-schema";
 import z from "zod";
-import { BoolDbSchema, BoolSchema } from "./note-schema";
+
+const WindowBoundsSchema = z
+  .object({
+    width: z.number().min(800).catch(800),
+    height: z.number().min(500).catch(500),
+    x: z.number().optional(),
+    y: z.number().optional(),
+  })
+  .catch({ width: 800, height: 500 });
 
 const StoreSchema = z.object({
   theme: z
@@ -16,33 +25,14 @@ const StoreSchema = z.object({
   highlight: z.enum(["context", "insight", "action"]).catch("context"),
   note_item_display: z.enum(["preview", "tags", "minimal"]).catch("preview"),
   toolbar_collapsed: z.boolean().catch(false),
-  window_bounds: z
-    .object({
-      width: z.number().min(800).catch(800),
-      height: z.number().min(500).catch(500),
-      x: z.number().optional(),
-      y: z.number().optional(),
-    })
-    .catch({ width: 800, height: 500 }),
+  window_bounds: WindowBoundsSchema,
   active_tag: z.string().trim().min(1).nullish().catch(null).default(null),
 });
 
-const DBWindowBoundsSchema = z
-  .string()
-  .default('{"width":800,"height":500}')
-  .transform((val, ctx) => {
-    try {
-      return JSON.parse(val);
-    } catch {
-      ctx.issues.push({
-        code: "custom",
-        message: "Invalid window_bounds JSON",
-        input: val,
-      });
-      return z.NEVER;
-    }
-  })
-  .pipe(StoreSchema.shape["window_bounds"]);
+const DbWindowBoundsCodec = z.codec(z.string(), WindowBoundsSchema, {
+  decode: (val) => JSON.parse(val),
+  encode: (val) => JSON.stringify(val),
+});
 
 const StoreFromDbSchema = z.object({
   theme: StoreSchema.shape.theme,
@@ -57,7 +47,7 @@ const StoreFromDbSchema = z.object({
   highlight: StoreSchema.shape.highlight,
   note_item_display: StoreSchema.shape["note_item_display"],
   toolbar_collapsed: BoolSchema,
-  window_bounds: DBWindowBoundsSchema,
+  window_bounds: WindowBoundsSchema,
   active_tag: StoreSchema.shape["active_tag"],
 });
 
@@ -74,9 +64,7 @@ const StoreRowSchema = z.object({
   highlight: StoreSchema.shape.highlight,
   note_item_display: StoreSchema.shape["note_item_display"],
   toolbar_collapsed: BoolDbSchema,
-  window_bounds: StoreSchema.shape["window_bounds"].transform((val) =>
-    JSON.stringify(val),
-  ),
+  window_bounds: z.string(),
   active_tag: StoreSchema.shape["active_tag"],
 });
 
@@ -101,6 +89,7 @@ type StyleKeys = Extract<
 >;
 
 export {
+  DbWindowBoundsCodec,
   StoreFromDbSchema,
   StoreRowSchema,
   StoreSchema,

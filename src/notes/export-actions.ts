@@ -1,15 +1,11 @@
 import { getNoteById } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
+import { titleGenerator } from "@/utils/generators";
 import { getAppItem } from "@/utils/registry";
 import { needsLandscape } from "@/utils/ui";
-import {
-  appError,
-  devLog,
-  DOMPURIFY_CONFIG,
-  NODE_BASELINE,
-} from "@shared/constants";
+import { DOMPURIFY_CONFIG, NODE_BASELINE } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
-import { titleGenerator } from "@shared/generators";
 import type { Note } from "@shared/schemas/note-schema";
 import type {
   ExportContent,
@@ -20,7 +16,7 @@ import { generateHTML, generateText } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
 async function getBatchExportContent(
-  notes: Note[],
+  notes: Readonly<Note[]>,
   extension: ExportContent["extension"],
 ): Promise<Result<ExportContent[]>> {
   try {
@@ -99,7 +95,7 @@ async function getBatchExportContent(
         return { success: false, error: AppErrorCode.InvalidData };
     }
   } catch (error) {
-    appError(
+    rendererLogger.appError(
       `[getBatchExportContent]: Failed batch export for ${extension.toUpperCase()}:`,
       error,
     );
@@ -155,7 +151,7 @@ async function getExportContent(
         typeof noteSize === "number" && noteSize > NODE_BASELINE
           ? false
           : needsLandscape(html);
-      devLog(landscape);
+      rendererLogger.devLog(landscape);
       return {
         success: true,
         data: {
@@ -193,7 +189,10 @@ async function getExportContent(
       };
     }
     default:
-      appError("[getExportContent]: Unsupported export format:", extension);
+      rendererLogger.appError(
+        "[getExportContent]: Unsupported export format:",
+        extension,
+      );
       return {
         success: false,
         error: AppErrorCode.InvalidData,

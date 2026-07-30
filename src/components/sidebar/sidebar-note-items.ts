@@ -26,7 +26,7 @@ function getSafeSnippet(
   contentEl.innerHTML = display === "preview" ? safe : "";
 }
 
-function createNoteItem(note: NoteListItem) {
+function createNoteItem(note: Readonly<NoteListItem>) {
   const item = getNoteItemClone();
   const display = settingsStore.get("note_item_display");
   item.setAttribute("data-id", note.id);

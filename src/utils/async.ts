@@ -1,4 +1,4 @@
-import { appError } from "@shared/constants";
+import { rendererLogger } from "@/app";
 
 type Debounced<T extends (...args: any[]) => void> = ((
   ...args: Parameters<T>
@@ -53,7 +53,7 @@ function createAsyncHandler<T extends Event>(
     try {
       await callback(e);
     } catch (error) {
-      appError("[createAsyncHandler]: Async Error: ", error);
+      rendererLogger.appError("[createAsyncHandler]: Async Error: ", error);
     } finally {
       isProcessing = false;
     }

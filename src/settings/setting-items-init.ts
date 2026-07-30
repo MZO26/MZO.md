@@ -1,4 +1,5 @@
 import { selectAutoExportFolder, updateSettings } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
 import { selectBuilder } from "@/settings/setting-factory";
 import { applyAppTheme, resolveTheme, setCodeTheme } from "@/settings/theme";
@@ -7,7 +8,6 @@ import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import {
-  appError,
   AUTO_EXPORT_SETTINGS,
   CODE_THEME_SETTINGS,
   EXPORT_FORMAT_SETTINGS,
@@ -103,7 +103,10 @@ function initAppearanceSettings(
       if (!target) return;
       const result = await applyAppTheme(target.value as Theme);
       if (!result.success) {
-        appError("[applyAppTheme]: Failed to apply theme", result.error);
+        rendererLogger.appError(
+          "[applyAppTheme]: Failed to apply theme",
+          result.error,
+        );
         return;
       }
       updateSettings({

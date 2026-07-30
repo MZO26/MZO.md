@@ -1,7 +1,7 @@
 import { openExternal } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { promptImageUpload } from "@/extensions/image/image";
 import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
-import { appError } from "@shared/constants";
 import type { LinkAttributes } from "@shared/types";
 import { Extension } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
@@ -107,13 +107,13 @@ export const MasterShortcuts = Extension.create({
           try {
             url = new URL(extractedUrl);
           } catch (error) {
-            appError("[MasterShortcuts]: Invalid URL");
+            rendererLogger.appError("[MasterShortcuts]: Invalid URL");
             return false;
           }
           void openExternal(url.href);
           return true;
         }
-        appError(
+        rendererLogger.appError(
           "[addKeyboardShortcuts -> link-open]: Could not extract a valid URL from the selection.",
         );
         return false;

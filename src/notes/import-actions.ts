@@ -1,15 +1,16 @@
+import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import { stateStore } from "@/state/state";
-import { addActiveTagToDoc } from "@/utils/note";
-import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
-import { appError, DOMPURIFY_CONFIG } from "@shared/constants";
-import { AppErrorCode } from "@shared/errors";
 import {
   getMetadata,
   textConverter,
   titleGenerator,
   wrapAsDoc,
-} from "@shared/generators";
+} from "@/utils/generators";
+import { addActiveTagToDoc } from "@/utils/note";
+import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
+import { DOMPURIFY_CONFIG } from "@shared/constants";
+import { AppErrorCode } from "@shared/errors";
 import { isEditorDoc } from "@shared/schemas/editor-schema";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { ImportContent } from "@shared/schemas/request-schema";
@@ -33,7 +34,10 @@ async function normalizeFileContent(
           const doc = wrapAsDoc(parsed);
           return isEditorDoc(doc) ? doc : undefined;
         } catch (error) {
-          appError("[normalizeFileContent]: JSON Parse failed:", error);
+          rendererLogger.appError(
+            "[normalizeFileContent]: JSON Parse failed:",
+            error,
+          );
           return undefined;
         }
       }
@@ -46,7 +50,7 @@ async function normalizeFileContent(
         try {
           const response = await workOnMarkdownParsing(content);
           if (!response.success) {
-            appError(
+            rendererLogger.appError(
               "[normalizeFileContent]: Worker failed to parse Markdown:",
               response.error,
             );
@@ -55,7 +59,9 @@ async function normalizeFileContent(
           const doc = response.success ? JSON.parse(response.data) : undefined;
           return isEditorDoc(doc) ? doc : undefined;
         } catch (error) {
-          appError("[normalizeFileContent]: Failed to parse JSON");
+          rendererLogger.appError(
+            "[normalizeFileContent]: Failed to parse JSON",
+          );
           return undefined;
         }
       }
@@ -67,7 +73,7 @@ async function normalizeFileContent(
         return undefined;
     }
   } catch (error) {
-    appError(
+    rendererLogger.appError(
       `[normalizeFileContent]: Normalization failed for extension .${extension}:`,
       error,
     );
@@ -102,7 +108,7 @@ async function setImportedContent(
     }
     return { success: true, data: processedPayloads };
   } catch (error) {
-    appError(
+    rendererLogger.appError(
       "[setImportedContent]: Failed to process imported content:",
       error,
     );

@@ -1,8 +1,9 @@
+import { NotesSearch } from "@electron/db/fts";
 import { Transactions } from "@electron/db/transactions";
 import { parseFilenameToDate } from "@electron/fs/fs-helpers";
+import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import { appError, devLog } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { DbContentCodec } from "@shared/schemas/editor-schema";
 import {
@@ -27,16 +28,16 @@ import {
   type TagRow,
 } from "@shared/schemas/note-schema";
 import {
+  DbWindowBoundsCodec,
   StoreFromDbSchema,
   StoreRowSchema,
   type AppSettings,
   type StoreRow,
 } from "@shared/schemas/store-schema";
-import type { Expand } from "@shared/types";
+import type { DeepExpand } from "@shared/types";
 import { app } from "electron";
 import { backup, DatabaseSync, type StatementSync } from "node:sqlite";
 import path from "path";
-import { NotesSearch } from "./fts";
 
 class AppDB {
   private db: DatabaseSync | undefined;
@@ -97,14 +98,14 @@ class AppDB {
       WHERE note_id IN  (SELECT value FROM json_each($ids))
       `);
       this.getManyLinksStmt = this.db.prepare(`
-      SELECT source_id, target_id, 'out' AS dir
+      SELECT target_id AS id, 'out' AS dir
       FROM note_links
       WHERE source_id IN (SELECT value FROM json_each($ids))
       UNION ALL
-      SELECT source_id, target_id, 'in' AS dir
+      SELECT source_id AS id, 'in' AS dir
       FROM note_links
       WHERE target_id IN (SELECT value FROM json_each($ids))
-      `);
+    `);
       this.togglePinStmt = this.db.prepare(`
       UPDATE notes 
       SET pinned = NOT pinned, updated_at = $updated_at
@@ -150,9 +151,9 @@ class AppDB {
       AND created_at < $end 
       LIMIT 1;
       `);
-      devLog(`Database initialized at: ${this.dbPath}`);
+      mainLogger.devLog(`Database initialized at: ${this.dbPath}`);
     } catch (error) {
-      appError("[AppDB]: Failed to initialize database:", error);
+      mainLogger.appError("[AppDB]: Failed to initialize database:", error);
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       const msg =
@@ -265,14 +266,14 @@ class AppDB {
   private getLinkMapMany(ids: string[]): Map<string, Link[]> {
     const allLinks = this.getManyLinksStmt.all({
       $ids: JSON.stringify(ids),
-    }) as Expand<LinkRow & { dir: "in" | "out" }>[];
+    }) as DeepExpand<LinkRow & { dir: "in" | "out" }>[];
     const linkMap = new Map<string, Link[]>();
     for (const { source_id, target_id, dir } of allLinks) {
-      const note_id = dir === "out" ? source_id : target_id;
-      const id = dir === "out" ? target_id : source_id;
-      const links = linkMap.get(note_id) ?? [];
-      links.push({ id, dir });
-      linkMap.set(note_id, links);
+      const ownerId = dir === "out" ? source_id : target_id;
+      const targetId = dir === "out" ? target_id : source_id;
+      const currentLinks = linkMap.get(ownerId) ?? [];
+      currentLinks.push({ id: targetId, dir });
+      linkMap.set(ownerId, currentLinks);
     }
     return linkMap;
   }
@@ -283,6 +284,7 @@ class AppDB {
       spellcheck: DbBoolCodec.encode(mergedSettings.spellcheck),
       auto_export: DbBoolCodec.encode(mergedSettings.auto_export),
       toolbar_collapsed: DbBoolCodec.encode(mergedSettings.toolbar_collapsed),
+      window_bounds: DbWindowBoundsCodec.encode(mergedSettings.window_bounds),
     };
     const row = validation(StoreRowSchema, encoded);
     this.updateStoreStmt.run(row);
@@ -296,6 +298,7 @@ class AppDB {
       spellcheck: DbBoolCodec.decode(row.spellcheck),
       auto_export: DbBoolCodec.decode(row.auto_export),
       toolbar_collapsed: DbBoolCodec.decode(row.toolbar_collapsed),
+      window_bounds: DbWindowBoundsCodec.decode(row.window_bounds),
     };
     return validation(StoreFromDbSchema, decoded);
   }
@@ -491,11 +494,11 @@ class AppDB {
 
   public getOldNotes(
     ids: string[],
-  ): Expand<Pick<Note, "created_at" | "title">>[] {
+  ): DeepExpand<Pick<Note, "created_at" | "title">>[] {
     if (ids.length === 0) return [];
     const rows = this.getOldTitleStmt.all({
       $ids: JSON.stringify(ids),
-    }) as Expand<Pick<Note, "created_at" | "title">>[];
+    }) as DeepExpand<Pick<Note, "created_at" | "title">>[];
     if (rows.length !== ids.length) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -531,7 +534,10 @@ class AppDB {
     try {
       this.db.close();
     } catch (error) {
-      appError("[Database Error]: Failed to close database connection:", error);
+      mainLogger.appError(
+        "[Database Error]: Failed to close database connection:",
+        error,
+      );
     } finally {
       this.db = undefined;
     }
@@ -561,7 +567,7 @@ class AppDB {
       }
       return this.db;
     } catch (error) {
-      appError("[Database Error]: Failed to open db", error);
+      mainLogger.appError("[Database Error]: Failed to open db", error);
       db.close();
       this.db = undefined;
       throw error;
@@ -580,11 +586,16 @@ class AppDB {
     try {
       await backup(targetDb, destination, {
         progress: (info) => {
-          devLog(`Backup progress: ${info.remainingPages} pages left.`);
+          mainLogger.devLog(
+            `Backup progress: ${info.remainingPages} pages left.`,
+          );
         },
       });
     } catch (error) {
-      appError(`[Database Error]: Failed to backup to ${destination}`, error);
+      mainLogger.appError(
+        `[Database Error]: Failed to backup to ${destination}`,
+        error,
+      );
       throw new AppBackendError(AppErrorCode.DBError);
     }
   }

@@ -75,13 +75,13 @@ function initTopToolbar() {
   );
   registerAppEvents(document, {
     "app:set-editor-width": () => setEditorWidth(appContainer),
-    "app:toggle-focus-mode": async () => await initFocusMode(),
-    "app:exit-focus-mode": async () => {
+    "app:toggle-focus-mode": () => initFocusMode(),
+    "app:exit-focus-mode": () => {
       if (appContainer.classList.contains("focus")) {
-        await initFocusMode();
+        initFocusMode();
       }
     },
-    "app:toggle-toolbar": async () => await toggleToolbar(),
+    "app:toggle-toolbar": () => toggleToolbar(),
   });
 }
 

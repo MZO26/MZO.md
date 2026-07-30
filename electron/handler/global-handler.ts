@@ -1,13 +1,13 @@
-import { appError } from "@shared/constants";
+import { mainLogger } from "@electron/handler/permission-handler";
 
 function setupGlobalErrorHandling({ ignore = [] }: { ignore: string[] }) {
   process.on("unhandledRejection", (reason) => {
     const errorMsg = reason instanceof Error ? reason.message : String(reason);
     if (ignore.some((pattern) => errorMsg.includes(pattern))) return;
-    appError("[Unhandled Promise Rejection]:", reason);
+    mainLogger.appError("[Unhandled Promise Rejection]:", reason);
   });
   process.on("uncaughtException", (error) => {
-    appError("[Uncaught Exception]:", error);
+    mainLogger.appError("[Uncaught Exception]:", error);
   });
 }
 

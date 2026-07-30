@@ -1,8 +1,9 @@
+import { rendererLogger } from "@/app";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
-import { appError, DEBOUNCE_MS } from "@shared/constants";
+import { DEBOUNCE_MS } from "@shared/constants";
 import { Editor, type JSONContent } from "@tiptap/core";
 
 function recreateEditorState(editor: Editor, doc: JSONContent) {
@@ -102,7 +103,10 @@ function initEditorSearch(editor: Editor) {
         behavior: "auto",
       });
     } catch (error) {
-      appError("[scrollToSelection]: Failed to scroll to selection:", error);
+      rendererLogger.appError(
+        "[scrollToSelection]: Failed to scroll to selection:",
+        error,
+      );
     }
   }
 
@@ -117,14 +121,18 @@ function initEditorSearch(editor: Editor) {
 
   function goPrev() {
     if (editor.commands.docSearchPrev()) {
-      void scrollToSelection(editor, editorWrapper).catch(appError);
+      void scrollToSelection(editor, editorWrapper).catch(
+        rendererLogger.appError,
+      );
       updateCount();
     }
   }
 
   function goNext() {
     if (editor.commands.docSearchNext()) {
-      void scrollToSelection(editor, editorWrapper).catch(appError);
+      void scrollToSelection(editor, editorWrapper).catch(
+        rendererLogger.appError,
+      );
       updateCount();
     }
   }
@@ -162,14 +170,13 @@ function initEditorSearch(editor: Editor) {
 
   // function syncDocSearch(activeId: string, query: SearchQuery) {
   //   if (stateStore.get("activeId") !== activeId) return;
-  //   if (query.trim() && query.length > 2) {
+  //   if (editor.storage.docSearch.query === query) return;
+  //   if (query.trim().length > MIN_SEARCH_LENGTH) {
   //     open();
   //     editor.commands.docSearchSetQuery(query);
-  //     input.value = query;
   //     updateCount();
   //     updateButtons();
-  //     goNext();
-  //   }
+  //   } else close();
   // }
 
   const debouncedSearch = debounce(() => {
@@ -178,13 +185,6 @@ function initEditorSearch(editor: Editor) {
   }, DEBOUNCE_MS.normal);
 
   input.addEventListener("input", debouncedSearch);
-
-  // globalInput.addEventListener("input", () => {
-  //   const { activeId, searchQuery } = stateStore.getState();
-  //   devLog(activeId);
-  //   if (!activeId) return;
-  //   syncDocSearch(activeId, searchQuery);
-  // });
 
   input.addEventListener("keydown", (event) => {
     if (event.repeat) return;
@@ -223,7 +223,6 @@ function initEditorSearch(editor: Editor) {
       open();
     }
   });
-
   updateButtons();
 }
 

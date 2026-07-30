@@ -29,7 +29,7 @@ import type { ImportStats, Result, TableAction } from "@shared/types";
 
 declare global {
   interface Window {
-    appInfo: Readonly<{ isMac: boolean }>;
+    readonly appInfo: { readonly isMac: boolean; readonly isDev: boolean };
     electronAPI: {
       getPathForFile: (file: File) => string;
       showNotification: (

@@ -10,7 +10,7 @@ import {
   type NoteRow,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
-import type { DeepExpand, Expand } from "@shared/types";
+import type { DeepExpand } from "@shared/types";
 import { DatabaseSync, type StatementSync } from "node:sqlite";
 
 class Transactions {
@@ -107,7 +107,7 @@ class Transactions {
       const safeTags = tags ?? [];
       const safeLinks = links ?? [];
       const result = this.createNoteStmt.get(noteParams) as
-        | Expand<Omit<NoteRow, "content">>
+        | DeepExpand<Omit<NoteRow, "content" | "plain_text">>
         | undefined;
       if (!result) {
         throw new AppBackendError(AppErrorCode.DBError);
@@ -152,7 +152,7 @@ class Transactions {
     safeLinks: string[],
   ) {
     const result = this.createNoteStmt.get(noteParams) as
-      | Expand<Omit<NoteRow, "content" | "plain_text">>
+      | DeepExpand<Omit<NoteRow, "content" | "plain_text">>
       | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
@@ -204,7 +204,7 @@ class Transactions {
     safeLinks: string[],
   ) {
     const result = this.updateNoteStmt.get(noteParams) as
-      | Expand<Omit<NoteRow, "content" | "plain_text">>
+      | DeepExpand<Omit<NoteRow, "content" | "plain_text">>
       | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);

@@ -6,7 +6,10 @@ import {
   registerCustomProtocol,
   setupLocalImageProtocol,
 } from "@electron/handler/navigation-handler";
-import { setPermissions } from "@electron/handler/permission-handler";
+import {
+  mainLogger,
+  setPermissions,
+} from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { registerIpc } from "@electron/ipc/ipc-validation";
 import {
@@ -15,7 +18,7 @@ import {
   onOSThemeChange,
 } from "@electron/titlebar";
 import { saveWindowBounds } from "@electron/win";
-import { appError, DEFAULT_SETTINGS } from "@shared/constants";
+import { DEFAULT_SETTINGS } from "@shared/constants";
 import { type AppSettings } from "@shared/schemas/store-schema";
 import {
   app,
@@ -61,7 +64,7 @@ async function initSettings(): Promise<AppSettings> {
     await settingsService.initialize();
     return settingsService.getSettings();
   } catch (error) {
-    appError(
+    mainLogger.appError(
       "[initSettings]: Couldn't load settings from DB. Using defaults.",
       error,
     );

@@ -4,10 +4,11 @@ import {
   sanitizeExportString,
   writeAtomic,
 } from "@electron/fs/fs-helpers";
+import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { resolveAutoExport } from "@electron/ipc/ipc-helpers";
 import { validation } from "@electron/ipc/ipc-validation";
-import { appError, CONCURRENCY_DELETE, devLog } from "@shared/constants";
+import { CONCURRENCY_DELETE } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import {
@@ -44,18 +45,21 @@ async function isAutoExport(id: Id): Promise<boolean> {
     if (!absoluteFilePath) return false;
     try {
       await fs.access(absoluteFilePath, fs.constants.F_OK);
-      devLog("[isAutoExport]: This note is on the file system.", id);
+      mainLogger.devLog("[isAutoExport]: This note is on the file system.", id);
       return true;
     } catch (error) {
       const err = error as NodeJS.ErrnoException;
       if (err.code === "ENOENT") {
-        devLog("[isAutoExport]: This note is not on the file system yet.", id);
+        mainLogger.devLog(
+          "[isAutoExport]: This note is not on the file system yet.",
+          id,
+        );
         return false;
       }
       throw error;
     }
   } catch (error) {
-    appError(
+    mainLogger.appError(
       "[isAutoExport]: Failed to detect if note is on file system:",
       error,
     );
@@ -102,7 +106,9 @@ async function safeRename(
   } catch (error: unknown) {
     const err = error as NodeJS.ErrnoException;
     if (err.code === "ENOENT") {
-      appError("[writeAutoExportFileLogic -> safeRename]: File not found");
+      mainLogger.appError(
+        "[writeAutoExportFileLogic -> safeRename]: File not found",
+      );
       return;
     } else if (err.code === "EXDEV") {
       // for cross-partition moves
@@ -110,14 +116,14 @@ async function safeRename(
         await fs.copyFile(src, dest);
         await fs.unlink(src);
       } catch (error) {
-        appError(
+        mainLogger.appError(
           "[writeAutoExportFileLogic -> safeRename]: EXDEV  fallback failed",
           error,
         );
         throw new AppBackendError(AppErrorCode.FileWriteError);
       }
     } else {
-      appError(
+      mainLogger.appError(
         "[writeAutoExportFileLogic -> safeRename]: Safe rename failed",
         error,
       );
@@ -159,7 +165,7 @@ async function writeAutoExportFileLogic(
         })
       : undefined;
     if (oldAbsoluteFilePath && oldAbsoluteFilePath !== absoluteFilePath) {
-      devLog(
+      mainLogger.devLog(
         `[writeAutoExportFileLogic] Renaming ${oldAbsoluteFilePath} to ${absoluteFilePath}`,
       );
       await safeRename(oldAbsoluteFilePath, absoluteFilePath);
@@ -182,15 +188,20 @@ async function writeAutoExportFileLogic(
     }
     const normalizedContent = normalizeText(portableContent).trimEnd();
     if (normalizedLocal !== normalizedContent) {
-      devLog(
+      mainLogger.devLog(
         `[writeAutoExportFileLogic] Writing new content to ${absoluteFilePath}`,
       );
       await writeAtomic(absoluteFilePath, portableContent);
     } else {
-      devLog("[writeAutoExportFileLogic] No changes detected. Skipping write.");
+      mainLogger.devLog(
+        "[writeAutoExportFileLogic] No changes detected. Skipping write.",
+      );
     }
   } catch (error: unknown) {
-    appError(`[writeAutoExportFileLogic]: Failed to write file:`, error);
+    mainLogger.appError(
+      `[writeAutoExportFileLogic]: Failed to write file:`,
+      error,
+    );
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }
 }
@@ -218,7 +229,7 @@ async function writeAutoExportFile({
       oldFileName,
     });
   } catch (error) {
-    appError("[writeAutoExportFile]: Failed to write file:", error);
+    mainLogger.appError("[writeAutoExportFile]: Failed to write file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }
 }
@@ -250,7 +261,10 @@ async function deleteAutoExportFile(
       if (err.code === "ENOENT") {
         return;
       }
-      appError("[deleteAutoExportFile]: Failed to delete file:", error);
+      mainLogger.appError(
+        "[deleteAutoExportFile]: Failed to delete file:",
+        error,
+      );
       throw new AppBackendError(AppErrorCode.FileWriteError);
     }
   });

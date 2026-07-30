@@ -1,7 +1,7 @@
 import db from "@electron/db/database";
+import { mainLogger } from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { appError } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { app } from "electron";
 import fs from "fs/promises";
@@ -38,7 +38,7 @@ async function restoreFromBackupPath(backupPath: string) {
   } catch (error) {
     await fs.rm(tmpPath, { force: true }).catch(() => {});
     db.open();
-    appError("[DB-Restore] Error during restore:", error);
+    mainLogger.appError("[DB-Restore] Error during restore:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }
 }

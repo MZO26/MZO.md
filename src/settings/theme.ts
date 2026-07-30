@@ -1,7 +1,8 @@
 import { setTheme } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { appError, CODE_THEME_MAP, THEME_MAP } from "@shared/constants";
+import { CODE_THEME_MAP, THEME_MAP } from "@shared/constants";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import type { ResolvedTheme, Result } from "@shared/types";
 
@@ -23,7 +24,10 @@ async function applyAppTheme(
   );
   const result = await setTheme(preference, focus);
   if (!result.success) {
-    appError("[applyAppTheme]: Failed to apply theme:", result.error);
+    rendererLogger.appError(
+      "[applyAppTheme]: Failed to apply theme:",
+      result.error,
+    );
     return { success: false, error: result.error };
   }
   document.documentElement.dataset["theme"] = result.data;

@@ -1,8 +1,9 @@
 import { isAutoExport } from "@electron/fs/fs-auto-export";
+import { mainLogger } from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { checkRateLimit, validation } from "@electron/ipc/ipc-validation";
-import { appError, LIMITS } from "@shared/constants";
+import { LIMITS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { ExternalUrlSchema } from "@shared/schemas/electron-schema";
 import { IdSchema, type NoteMenuPayload } from "@shared/schemas/note-schema";
@@ -17,7 +18,7 @@ ipcMain.on("note:set-active", (_e, id: unknown) => {
     const validatedId = validation(IdSchema, id);
     activeId = validatedId;
   } catch (error: unknown) {
-    appError(`[IPC Bridge Error]: ${id} is not a valid UUID`, error);
+    mainLogger.appError(`[IPC Bridge Error]: ${id} is not a valid UUID`, error);
     activeId = null;
   }
 });
@@ -71,7 +72,7 @@ function setUpEditorMenu(win: BrowserWindow) {
               `https://www.google.com/search?q=${query}`,
             );
           } catch (error) {
-            appError(
+            mainLogger.appError(
               "[setUpEditorMenu]: Failed to open search browser:",
               error,
             );
@@ -85,7 +86,10 @@ function setUpEditorMenu(win: BrowserWindow) {
             try {
               win.webContents.showDefinitionForSelection();
             } catch (error) {
-              appError("[setUpEditorMenu]: Failed to lookup selection:", error);
+              mainLogger.appError(
+                "[setUpEditorMenu]: Failed to lookup selection:",
+                error,
+              );
             }
           },
         });
@@ -100,7 +104,10 @@ function setUpEditorMenu(win: BrowserWindow) {
             try {
               win.webContents.copyImageAt(params.x, params.y);
             } catch (error) {
-              appError("[setUpEditorMenu]: Failed to copy image:", error);
+              mainLogger.appError(
+                "[setUpEditorMenu]: Failed to copy image:",
+                error,
+              );
             }
           },
         });

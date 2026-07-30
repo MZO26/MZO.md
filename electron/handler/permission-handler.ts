@@ -1,4 +1,7 @@
+import { createLogger } from "@shared/log";
 import { app, session, type WebContents } from "electron";
+
+const IS_DEV_MAIN = !app.isPackaged;
 
 const allowedPermissions = [
   "clipboard-read",
@@ -7,15 +10,15 @@ const allowedPermissions = [
   "notifications",
 ];
 
-const isDev = !app.isPackaged;
+const mainLogger = createLogger(IS_DEV_MAIN);
 
 const csp =
   [
     "default-src 'none'",
-    `script-src 'self' ${isDev ? "http://localhost:5173" : ""}`,
+    `script-src 'self' ${IS_DEV_MAIN ? "http://localhost:5173" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: appimg:",
-    `connect-src 'self' ${isDev ? "http://localhost:5173 ws://localhost:5173" : ""}`,
+    `connect-src 'self' ${IS_DEV_MAIN ? "http://localhost:5173 ws://localhost:5173" : ""}`,
     "font-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
@@ -63,4 +66,4 @@ function setPermissions() {
   );
 }
 
-export { setPermissions };
+export { mainLogger, setPermissions };

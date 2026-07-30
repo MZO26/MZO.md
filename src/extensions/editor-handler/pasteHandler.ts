@@ -1,7 +1,7 @@
+import { rendererLogger } from "@/app";
 import { processAndInsertImages } from "@/extensions/image/image";
 import {
   ALLOWED_TYPES,
-  appError,
   DOMPURIFY_CONFIG,
   MAX_DROP_PASTE_CHARACTERS,
 } from "@shared/constants";
@@ -26,7 +26,10 @@ export const PasteHandler = Extension.create({
               const safeImages = images.slice(0, 20);
               void processAndInsertImages(safeImages, editor).catch(
                 (error: unknown) => {
-                  appError("[PasteHandler]: Image processing failed:", error);
+                  rendererLogger.appError(
+                    "[PasteHandler]: Image processing failed:",
+                    error,
+                  );
                 },
               );
               return true;

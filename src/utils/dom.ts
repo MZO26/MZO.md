@@ -38,7 +38,6 @@ function createIconButton(
   const i = document.createElement("i");
   i.setAttribute("data-lucide", icon);
   btn.appendChild(i);
-  btn.type = "button";
   if (tooltip) btn.setAttribute("data-tippy-content", tooltip);
   if (shortcut) btn.setAttribute("data-shortcut", shortcut);
   return btn;

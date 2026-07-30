@@ -1,11 +1,11 @@
 import { createNote } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { isAutoExportEnabled } from "@/notes/note-actions";
 import { noteStore } from "@/state/state";
 import { getAppItem } from "@/utils/registry";
-import { appError } from "@shared/constants";
 import type { CreateNotePayload, Note } from "@shared/schemas/note-schema";
 
-async function handleDuplicateNote(note: Note) {
+async function handleDuplicateNote(note: Readonly<Note>) {
   const editor = getAppItem("editor");
   const isAutoExport = isAutoExportEnabled();
   const {
@@ -31,7 +31,7 @@ async function handleDuplicateNote(note: Note) {
   // not handleCreateNote because content is already there
   const result = await createNote(data);
   if (!result.success) {
-    appError(
+    rendererLogger.appError(
       "[handleDuplicateNote]: Failed to create duplicate note:",
       result.error,
     );

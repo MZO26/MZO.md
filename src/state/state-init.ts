@@ -1,3 +1,4 @@
+import { rendererLogger } from "@/app";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { refreshSidebar } from "@/components/sidebar/sidebar-note-items";
 import { handleSidebarEmptyState } from "@/components/sidebar/sidebar-ui";
@@ -6,7 +7,6 @@ import { areArraysShallowEqual, getVisibleNotes } from "@/state/state-helpers";
 import { findElement, setActiveItem } from "@/utils/dom";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
-import { appError } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { Result } from "@shared/types";
@@ -18,7 +18,7 @@ function initSettings(
   settingsResult: Result<AppSettings> | null | undefined,
 ): AppSettings {
   if (!settingsResult?.success) {
-    appError(
+    rendererLogger.appError(
       "[initSettings]: Failed to init settings. Using store state.",
       settingsResult?.error,
     );

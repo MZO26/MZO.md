@@ -41,12 +41,10 @@ function subscribe<T extends unknown[]>(
   };
 }
 
-contextBridge.exposeInMainWorld(
-  "appInfo",
-  Object.freeze({
-    isMac: process.platform === "darwin",
-  }),
-);
+contextBridge.exposeInMainWorld("appInfo", {
+  isMac: process.platform === "darwin",
+  isDev: import.meta.env.DEV,
+});
 contextBridge.exposeInMainWorld("electronAPI", {
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
   showNotification: (

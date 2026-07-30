@@ -1,4 +1,4 @@
-import { appError, devLog } from "@shared/constants";
+import { mainLogger } from "@electron/handler/permission-handler";
 import type { UrlDecision } from "@shared/types";
 import { app, net, protocol, shell, type BrowserWindow } from "electron";
 import fs from "fs/promises";
@@ -103,7 +103,7 @@ function processUrl(url: string): UrlDecision {
     );
     return "block";
   } catch {
-    appError(`[processUrl]: Blocked invalid URL: ${url}`);
+    mainLogger.appError(`[processUrl]: Blocked invalid URL: ${url}`);
     return "block";
   }
 }
@@ -158,7 +158,7 @@ function navigationHandler(win: BrowserWindow) {
 
   win.webContents.session.on("will-download", (e, item) => {
     e.preventDefault();
-    devLog(`Blocked attempt to download: ${item.getURL()}`);
+    mainLogger.devLog(`Blocked attempt to download: ${item.getURL()}`);
   });
 
   win.webContents.on("will-attach-webview", (e) => {

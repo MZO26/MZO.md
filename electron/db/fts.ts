@@ -1,5 +1,6 @@
+import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { appError, devLog } from "@shared/constants";
+import { MIN_SEARCH_LENGTH } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import type { SearchQuery, SearchResult } from "@shared/schemas/note-schema";
 import type { DatabaseSync, StatementSync } from "node:sqlite";
@@ -89,7 +90,9 @@ class NotesSearch {
       INSERT INTO notes_fts(notes_fts) VALUES ('rebuild');
       INSERT INTO notes_fts(notes_fts) VALUES ('optimize');
     `);
-    devLog("[FTS5]: Search index rebuilt and optimized successfully.");
+    mainLogger.devLog(
+      "[FTS5]: Search index rebuilt and optimized successfully.",
+    );
   }
 
   public search(query: SearchQuery) {
@@ -102,10 +105,10 @@ class NotesSearch {
       }) as SearchResult[];
     } catch (error) {
       if (this.hasRebuilt) {
-        appError("[FTS5]: Search failed again and is now disabled.");
+        mainLogger.appError("[FTS5]: Search failed again and is now disabled.");
         return [];
       }
-      appError(
+      mainLogger.appError(
         "[FTS5]: Search failed. Desynchronized index. Rebuilding...",
         error,
       );
@@ -113,7 +116,7 @@ class NotesSearch {
       try {
         this.rebuildIndex(this.db);
       } catch (error) {
-        appError("[FTS5]: Error during rebuild process:", error);
+        mainLogger.appError("[FTS5]: Error during rebuild process:", error);
       } finally {
         this.isRebuilding = false;
         this.hasRebuilt = true;
@@ -124,7 +127,7 @@ class NotesSearch {
 
   public normalizeFTSQuery(input: string) {
     const trimmed = input.trim();
-    if (trimmed.length < 2) return "";
+    if (trimmed.length < MIN_SEARCH_LENGTH) return "";
     const safeWords = trimmed
       .split(/\s+/)
       .map((word) => {

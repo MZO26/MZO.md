@@ -8,6 +8,7 @@ import {
   showNotification,
   syncRequest,
 } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote } from "@/notes/note-actions";
@@ -21,7 +22,7 @@ import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { sleep } from "@/utils/async";
 import { findElement, requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { appError, CHAR_BASELINE, YIELD_MS } from "@shared/constants";
+import { CHAR_BASELINE, YIELD_MS } from "@shared/constants";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 import type {
@@ -76,13 +77,19 @@ async function triggerSingleExport(
 ) {
   const result = await getExportContent(id, extension);
   if (!result.success) {
-    appError("[exportTrigger]: Failed to fetch note data:", result.error);
+    rendererLogger.appError(
+      "[exportTrigger]: Failed to fetch note data:",
+      result.error,
+    );
     await showNotification("Export Failed", ERROR_MESSAGES.EXPORT_ERROR);
     return;
   }
   const exported = await exportNote(result.data);
   if (!exported.success) {
-    appError("[exportTrigger]: Failed to write file:", exported.error);
+    rendererLogger.appError(
+      "[exportTrigger]: Failed to write file:",
+      exported.error,
+    );
     if (exported.error === "CANCELLED_OPERATION") return;
     await showNotification("Export Failed", "");
     return;
@@ -116,7 +123,7 @@ async function triggerOpenInDefaultEditor(
 async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
   const result = await getAutoExportPath(syncPayload);
   if (!result.success) {
-    appError(
+    rendererLogger.appError(
       "[onTriggerCopyPath]: Failed to retrieve file path:",
       result.error,
     );
@@ -133,14 +140,17 @@ async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
     await showNotification("Copied to clipboard", "");
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
-    appError("[onTriggerCopyPath]: Failed to copy file path:", error);
+    rendererLogger.appError(
+      "[onTriggerCopyPath]: Failed to copy file path:",
+      error,
+    );
   }
 }
 
 async function triggerCopyRichText(id: string) {
   const result = await getNoteById(id);
   if (!result.success) {
-    appError(
+    rendererLogger.appError(
       "[onTriggerCopyRichText]: Failed to fetch note data:",
       result.error,
     );
@@ -162,7 +172,10 @@ async function triggerCopyRichText(id: string) {
     await showNotification("Copied to clipboard", "");
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
-    appError("[onTriggerCopyMarkdown]: Failed to copy markdown:", error);
+    rendererLogger.appError(
+      "[onTriggerCopyMarkdown]: Failed to copy markdown:",
+      error,
+    );
   }
 }
 
@@ -183,7 +196,10 @@ async function triggerSingleDelete(id: string) {
 async function triggerPin(id: string) {
   const result = await pin(id);
   if (!result.success) {
-    appError("[onTriggerPin]: Failed to toggle pin:", result.error);
+    rendererLogger.appError(
+      "[onTriggerPin]: Failed to toggle pin:",
+      result.error,
+    );
     return;
   }
   noteStore.setState((state) => {
@@ -202,14 +218,14 @@ async function triggerPin(id: string) {
 async function triggerDuplicate(id: string) {
   const result = await getNoteById(id);
   if (!result.success) {
-    appError(
+    rendererLogger.appError(
       "[onTriggerDuplicate]: Failed to fetch note for duplication:",
       result.error,
     );
     return;
   }
   await handleDuplicateNote(result.data).catch((error: Error) =>
-    appError(
+    rendererLogger.appError(
       "[onTriggerDuplicate -> handleDuplicateNote]: Error duplicating Note",
       error,
     ),
@@ -242,7 +258,10 @@ async function triggerSyncCheck(id: string) {
     if (!isSyncVersionCurrent(id, version)) return;
     const result = await getNoteById(id);
     if (!result.success) {
-      appError("[triggerSyncCheck]: Failed to fetch note:", result.error);
+      rendererLogger.appError(
+        "[triggerSyncCheck]: Failed to fetch note:",
+        result.error,
+      );
       return;
     }
     const targetDir = settingsStore.get("auto_export_path");
@@ -258,7 +277,7 @@ async function triggerSyncCheck(id: string) {
     });
     if (!isSyncVersionCurrent(id, version)) return;
     if (!syncResult.success) {
-      appError(
+      rendererLogger.appError(
         "[triggerSyncCheck]: Failed to perform sync check:",
         syncResult.error,
       );

@@ -1,17 +1,17 @@
 import { getFilePath } from "@electron/fs/fs-auto-export";
 import { sanitizeExportString, writeAtomic } from "@electron/fs/fs-helpers";
 import { getPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
+import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { createHiddenPdfWindow } from "@electron/win";
 import {
-  appError,
   CONCURRENCY_EXPORT_NORMAL,
   CONCURRENCY_EXPORT_PDF,
 } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import type { ExportContent } from "@shared/schemas/request-schema";
-import type { Expand, PDFAssets } from "@shared/types";
+import type { DeepExpand, PDFAssets } from "@shared/types";
 import type { BrowserWindow, PrintToPDFOptions } from "electron";
 import { app } from "electron";
 import fs from "fs/promises";
@@ -27,7 +27,7 @@ async function singleExport(filePath: string, data: string) {
     imagesFolder,
   );
   await writeAtomic(filePath, portableContent).catch((error) => {
-    appError("[singleExport]: Error writing file:", error);
+    mainLogger.appError("[singleExport]: Error writing file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   });
 }
@@ -53,7 +53,7 @@ async function batchExport(folder: string, payload: ExportContent[]) {
         await writeAtomic(absoluteFilePath, portableContent);
         return absoluteFilePath;
       } catch (error) {
-        appError("[batchExport]: Error while exporting:", error);
+        mainLogger.appError("[batchExport]: Error while exporting:", error);
         return null;
       }
     },
@@ -82,7 +82,7 @@ async function exportPDFNote(params: {
   // data:text/html tells chrome parse as html and base64 tells chrome to decode before parsing with the exact html bytes. Base64 is required to load the css correctly because chrome expects URL's to have URL-encoded content.
   const pdfBuffer = await win.webContents.printToPDF(pdfOptions);
   await writeAtomic(filePath, pdfBuffer).catch((error) => {
-    appError("[exportPDFNote]: Error writing PDF file:", error);
+    mainLogger.appError("[exportPDFNote]: Error writing PDF file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   });
   return filePath;
@@ -104,7 +104,7 @@ async function singlePDFExport(
       assets,
     });
   } catch (error) {
-    appError("[singlePDFExport]: Error writing PDF file:", error);
+    mainLogger.appError("[singlePDFExport]: Error writing PDF file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   } finally {
     if (hiddenWin && !hiddenWin.isDestroyed()) {
@@ -115,7 +115,7 @@ async function singlePDFExport(
 
 async function batchPDFExport(
   folder: string,
-  payload: Expand<Extract<ExportContent, { extension: "pdf" }>>[],
+  payload: DeepExpand<Extract<ExportContent, { extension: "pdf" }>>[],
 ) {
   await fs.mkdir(folder, { recursive: true });
   const absoluteTargetFolder = path.resolve(folder);
@@ -139,7 +139,7 @@ async function batchPDFExport(
     );
     return exported.filter((item) => item !== null);
   } catch (error) {
-    appError("[batchPDFExport]: Error while exporting:", error);
+    mainLogger.appError("[batchPDFExport]: Error while exporting:", error);
     throw new AppBackendError(AppErrorCode.ExportError);
   } finally {
     if (hiddenWin && !hiddenWin.isDestroyed()) {

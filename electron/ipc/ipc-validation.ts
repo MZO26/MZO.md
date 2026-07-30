@@ -1,3 +1,4 @@
+import { mainLogger } from "@electron/handler/permission-handler";
 import { registerElectronIpc } from "@electron/ipc/ipc-electron";
 import {
   AppBackendError,
@@ -7,7 +8,6 @@ import { registerNoteIpc } from "@electron/ipc/ipc-note";
 import { registerSettingsIpc } from "@electron/ipc/ipc-settings";
 import {
   APP_START_TIME,
-  appError,
   IPC_TIMERS,
   RATE_LIMIT_DEFER_MS,
 } from "@shared/constants";
@@ -37,7 +37,9 @@ async function result<T>(
 
 function validateSender(event: IpcMainInvokeEvent) {
   if (!event.senderFrame) {
-    appError("[IPC Sender Validation]: Blocked: IPC Without valid senderFrame");
+    mainLogger.appError(
+      "[IPC Sender Validation]: Blocked: IPC Without valid senderFrame",
+    );
     throw new AppBackendError(AppErrorCode.SenderError);
   }
   const mainWindow = BrowserWindow.fromWebContents(event.sender);
@@ -55,7 +57,9 @@ function validateSender(event: IpcMainInvokeEvent) {
   if (allowedProtocols.includes(senderUrl.protocol)) {
     return true;
   }
-  appError(`[IPC Sender Validation]: Blocked senderFrame: ${senderUrl.href}`);
+  mainLogger.appError(
+    `[IPC Sender Validation]: Blocked senderFrame: ${senderUrl.href}`,
+  );
   throw new AppBackendError(AppErrorCode.SenderError);
 }
 
@@ -73,7 +77,7 @@ function checkRateLimit(channel: string, cooldownMs: number) {
 function validation<T extends z.ZodType>(schema: T, payload: unknown) {
   const result = schema.safeParse(payload);
   if (!result.success) {
-    appError(
+    mainLogger.appError(
       "[IPC Validation]: Validation failed:",
       z.prettifyError(result.error),
     );

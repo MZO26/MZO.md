@@ -1,4 +1,4 @@
-import { appError } from "@shared/constants";
+import { mainLogger } from "@electron/handler/permission-handler";
 import { AppErrorCode } from "@shared/errors";
 import type { Failure } from "@shared/types";
 import { ZodError } from "zod";
@@ -26,7 +26,7 @@ function handleIpcError(error: unknown): Failure {
       error: AppErrorCode.InvalidData,
     };
   }
-  appError("[IPC Unknown Error]:", error);
+  mainLogger.appError("[IPC Unknown Error]:", error);
   return {
     success: false,
     error: AppErrorCode.UnknownError,

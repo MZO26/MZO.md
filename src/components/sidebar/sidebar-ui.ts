@@ -1,7 +1,6 @@
-import { createIconButton } from "@/components/sidebar/sidebar-features";
-import { createNoteItem } from "@/components/sidebar/sidebar-note-items";
 import { noteStore, stateStore } from "@/state/state";
 import {
+  createIconButton,
   createInfoSpan,
   createTemplateCloner,
   findElement,
@@ -15,6 +14,7 @@ import { getAppItem } from "@/utils/registry";
 import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { FilterMode } from "@shared/types";
+import { createNoteItem } from "./sidebar-note-items";
 
 const getSidebarEmptyStateClone = createTemplateCloner(
   "sidebarEmptyStateTemplate",

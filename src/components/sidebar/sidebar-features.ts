@@ -1,4 +1,5 @@
 import { search, showNotification } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { getTextMetrics } from "@/extensions/text-metrics";
 import { handleImportNote } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
@@ -19,24 +20,23 @@ import {
 import { getAppItem, getUIItems } from "@/utils/registry";
 import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
 import {
-  appError,
   DEBOUNCE_MS,
-  devLog,
   MAX_FILE_DROPS,
   MAX_SEARCH_LENGTH,
 } from "@shared/constants";
+import type { SearchQuery } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import type { ResizeOptions } from "@shared/types";
 import tippy from "tippy.js";
 
 export let allTagsMenu: ReturnType<typeof createAllTagsPopover> | null = null;
 
-async function handleSearch(searchInput: string) {
+async function handleSearch(searchInput: SearchQuery) {
   const nextQuery = searchInput.trim();
   if (nextQuery.length > MAX_SEARCH_LENGTH) return;
   const prevQuery = stateStore.get("searchQuery");
   if (nextQuery === prevQuery) {
-    devLog("Same query. Skipping search");
+    rendererLogger.devLog("Same query. Skipping search");
     return;
   }
   stateStore.setState({ searchQuery: nextQuery });
@@ -46,7 +46,7 @@ async function handleSearch(searchInput: string) {
   }
   const result = await search(nextQuery);
   if (!result.success) {
-    appError("[handleSearch]: Failed to search:", result.error);
+    rendererLogger.appError("[handleSearch]: Failed to search:", result.error);
     return;
   }
   const data = result.data.map((row) => {
@@ -257,7 +257,6 @@ const debouncedSearch = debounce((e: Event) => {
 
 export {
   applyTagView,
-  createIconButton,
   createInfoSpan,
   debouncedSearch,
   renderAllTags,

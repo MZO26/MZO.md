@@ -1,5 +1,4 @@
-import { createIconButton } from "@/components/sidebar/sidebar-features";
-import { requireElement } from "@/utils/dom";
+import { createIconButton, requireElement } from "@/utils/dom";
 import { getUIItem } from "@/utils/registry";
 import { QUICK_ACTIONS } from "@shared/constants";
 import type { SelectOption, SettingsCategory } from "@shared/types";

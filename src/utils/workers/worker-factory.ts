@@ -1,4 +1,4 @@
-import { appError, devLog, MAX_WORKER_TIMEOUT_MS } from "@shared/constants";
+import { MAX_WORKER_TIMEOUT_MS } from "@shared/constants";
 import { WorkerErrorCode } from "@shared/errors";
 import type { WorkerResult } from "@shared/types";
 
@@ -19,7 +19,6 @@ function handleWorkerError(err: unknown): {
   if (err instanceof WorkerTaskError) {
     return { success: false, error: err.code };
   }
-  appError("[Worker Error]:", err);
   return {
     success: false,
     error: WorkerErrorCode.UnknownError,
@@ -37,7 +36,6 @@ function createWorker<WInput, WOutput>(worker: Worker | null) {
         return;
       }
       const id = crypto.randomUUID();
-      const startTime = performance.now();
       let timer: ReturnType<typeof setTimeout>;
       const workerDone = () => {
         clearTimeout(timer);
@@ -50,11 +48,6 @@ function createWorker<WInput, WOutput>(worker: Worker | null) {
         if (event.data.id === id) {
           workerDone();
           if (event.data.success) {
-            const endTime = performance.now();
-            const timeTakenMs = Math.round(endTime - startTime);
-            devLog(
-              `Worker with ID: ${id} took ${timeTakenMs} ms to complete the job`,
-            );
             resolve({ success: true, data: event.data.data });
           } else {
             resolve({

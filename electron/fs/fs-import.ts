@@ -1,10 +1,9 @@
 import db from "@electron/db/database";
 import { sanitizeImportString } from "@electron/fs/fs-helpers";
+import { mainLogger } from "@electron/handler/permission-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import {
-  appError,
   CONCURRENCY_IMPORT,
-  devLog,
   MAX_BYTES_FILE,
   MAX_CHARACTERS,
 } from "@shared/constants";
@@ -41,7 +40,7 @@ async function batchImport(filePaths: string[]) {
         const fileName = path.basename(file, path.extname(file));
         const exists = db.checkExistence(fileName);
         if (exists) {
-          devLog(`${fileName} already exists. Skipping import`);
+          mainLogger.devLog(`${fileName} already exists. Skipping import`);
           ++duplicateCount;
           return null;
         }
@@ -51,7 +50,7 @@ async function batchImport(filePaths: string[]) {
           ++errorCount;
           return null;
         }
-        devLog(`Content length: ${content.length} characters`);
+        mainLogger.devLog(`Content length: ${content.length} characters`);
         const importedFileDir = path.dirname(file);
         const sanitizedContent = await sanitizeImportString(
           content,
@@ -64,7 +63,7 @@ async function batchImport(filePaths: string[]) {
           content: sanitizedContent,
         });
       } catch (error) {
-        appError(
+        mainLogger.appError(
           `[batchImport]: Failed to read/validate file: ${file}:`,
           error,
         );

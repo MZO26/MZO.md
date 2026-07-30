@@ -8,6 +8,7 @@ import {
   showNotification,
   updateNote,
 } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { recreateEditorState } from "@/components/editor/editor-features";
 import { updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/sidebar/sidebar-features";
@@ -21,16 +22,10 @@ import {
   removeRecentNote,
 } from "@/state/state-helpers";
 import { debounce } from "@/utils/async";
+import { getMetadata, titleGenerator } from "@/utils/generators";
 import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
-import {
-  appError,
-  DEBOUNCE_MS,
-  devLog,
-  EMPTY_DOC,
-  UNTITLED,
-} from "@shared/constants";
-import { getMetadata, titleGenerator } from "@shared/generators";
+import { DEBOUNCE_MS, EMPTY_DOC, UNTITLED } from "@shared/constants";
 import {
   type CreateNotePayload,
   type UpdateNotePayload,
@@ -60,7 +55,10 @@ async function handleCreateNote() {
   };
   const result = await createNote(payload);
   if (!result.success) {
-    appError("[handleCreateNote]: Failed to create note:", result.error);
+    rendererLogger.appError(
+      "[handleCreateNote]: Failed to create note:",
+      result.error,
+    );
     return;
   }
   noteStore.setState((state) => ({
@@ -86,7 +84,7 @@ async function handleImportNote(request: FilePathRequest) {
       : { source: "external", filePaths: request.filePaths },
   );
   if (!imported.success) {
-    appError(
+    rendererLogger.appError(
       "[handleImportNote -> importNote]: Failed to import note:",
       imported.error,
     );
@@ -94,7 +92,7 @@ async function handleImportNote(request: FilePathRequest) {
   }
   const processedPayloads = await setImportedContent(imported.data.data);
   if (!processedPayloads.success) {
-    appError(
+    rendererLogger.appError(
       "[handleImportNote -> setImportedContent]: Failed to process import payload:",
       processedPayloads.error,
     );
@@ -102,7 +100,7 @@ async function handleImportNote(request: FilePathRequest) {
   }
   const result = await createManyNotes(processedPayloads.data);
   if (!result.success) {
-    appError(
+    rendererLogger.appError(
       "[handleImportNote]: Failed to create imported notes:",
       result.error,
     );
@@ -137,7 +135,10 @@ async function handleDeleteManyNotes(ids: string[]) {
   }
   const result = await deleteManyNotes(ids);
   if (!result.success) {
-    appError("[handleDeleteManyNotes]: Failed to delete:", result.error);
+    rendererLogger.appError(
+      "[handleDeleteManyNotes]: Failed to delete:",
+      result.error,
+    );
     return;
   }
   noteStore.setState((state) => {
@@ -165,7 +166,10 @@ async function handleDeleteNote(id: string) {
   }
   const result = await deleteNote(id);
   if (!result.success) {
-    appError("[handleDeleteNote]: Failed to delete:", result.error);
+    rendererLogger.appError(
+      "[handleDeleteNote]: Failed to delete:",
+      result.error,
+    );
     return;
   }
   noteStore.setState((state) => {
@@ -207,7 +211,7 @@ async function handleSaveNote(id: string, flush: boolean = false) {
   };
   const result = await updateNote(payload, flush);
   if (!result.success) {
-    appError("[handleSaveNote]: Save failed.", result.error);
+    rendererLogger.appError("[handleSaveNote]: Save failed.", result.error);
     return;
   }
   const isActiveNote = stateStore.get("activeId") === id;
@@ -248,7 +252,7 @@ async function handleSelectNote(id: string) {
   const activeId = stateStore.get("activeId");
   debouncedSaveNote.flush();
   if (activeId === id) {
-    devLog("Already active. Skipping select.");
+    rendererLogger.devLog("Already active. Skipping select.");
     return;
   }
   stateStore.setState({ activeId: id });
@@ -256,14 +260,17 @@ async function handleSelectNote(id: string) {
   const result = await getNoteById(id);
   if (stateStore.get("activeId") !== id) return;
   if (!result.success) {
-    appError("[handleSelectNote]: Failed to fetch note:", result.error);
+    rendererLogger.appError(
+      "[handleSelectNote]: Failed to fetch note:",
+      result.error,
+    );
     return;
   }
   try {
     await checkNoteSize(result.data.content);
     recreateEditorState(editor, result.data.content);
   } catch (error) {
-    appError("Invalid Editor content:", error);
+    rendererLogger.appError("Invalid Editor content:", error);
     editor.setEditable(false, false);
     updateToc([]);
     updateStats();

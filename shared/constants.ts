@@ -102,6 +102,8 @@ const SIDEBAR_ALL_NOTES_LIMIT = 50;
 
 const MAX_SEARCH_LENGTH = 100;
 
+const MIN_SEARCH_LENGTH = 2;
+
 const MAX_WORKER_TIMEOUT_MS = 180_000;
 
 const IMAGE_MAX_WIDTH = 1000;
@@ -388,18 +390,11 @@ const AUTO_EXPORT_SETTINGS: readonly SelectOption<AutoExport>[] = [
   { value: false, label: "Disable" },
 ];
 
-const DEV = import.meta.env.DEV;
-
-const devLog = DEV ? console.log.bind(console, "[DEV]") : () => {};
-
-const appError = console.error.bind(console, "[ERROR]");
-
 export {
   ALLOWED_IMPORT_EXTENSIONS,
   ALLOWED_PROTOCOLS,
   ALLOWED_TYPES,
   APP_START_TIME,
-  appError,
   AUTO_EXPORT_SETTINGS,
   BLOCK_TYPES,
   CHAR_BASELINE,
@@ -413,8 +408,6 @@ export {
   CONTENT_TYPE_MAP,
   DEBOUNCE_MS,
   DEFAULT_SETTINGS,
-  DEV,
-  devLog,
   DOMPURIFY_CONFIG,
   EMPTY_DOC,
   EXPORT_FORMAT_SETTINGS,
@@ -438,6 +431,7 @@ export {
   MAX_SIZE,
   MAX_WORKER_TIMEOUT_MS,
   MIME_TO_EXT,
+  MIN_SEARCH_LENGTH,
   NODE_BASELINE,
   NOTE_ITEM_DISPLAY_SETTINGS,
   QUICK_ACTIONS,

@@ -1,13 +1,16 @@
-import { appError, DEFAULT_SETTINGS, DEV, devLog } from "@shared/constants";
+import { DEFAULT_SETTINGS } from "@shared/constants";
+import { createLogger } from "@shared/log";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 
 interface Store<T> {
   getState: () => Readonly<T>;
   get: <K extends keyof T>(key: K) => Readonly<T[K]>;
-  setState: (newState: Partial<T> | ((state: T) => Partial<T>)) => void;
-  subscribe: (listener: (state: T) => void) => () => void;
+  setState: (
+    newState: Partial<T> | ((state: Readonly<T>) => Partial<T>),
+  ) => void;
+  subscribe: (listener: (state: Readonly<T>) => void) => () => void;
   subscribeSel: <S>(
-    selector: (state: T) => S,
+    selector: (state: Readonly<T>) => S,
     listener: (selected: S) => void,
     isEqual?: (previous: S, next: S) => boolean,
   ) => () => void;
@@ -49,13 +52,22 @@ const STATE_STORE_BASE = createStore(STATE_STORE);
 const NOTE_STORE_BASE = createStore(NOTE_STORE);
 const SETTINGS_STORE_BASE = createStore(DEFAULT_SETTINGS);
 
-const stateStore = DEV ? withLogger(STATE_STORE_BASE) : STATE_STORE_BASE;
+// get dev state from vite since state should be independent of main / renderer for using request extensions from editor
+const isDev = import.meta.env.DEV;
 
-const noteStore = DEV ? withLogger(NOTE_STORE_BASE) : NOTE_STORE_BASE;
+const stateLogger = createLogger(isDev);
 
-const settingsStore = DEV
+const stateStore = isDev ? withLogger(STATE_STORE_BASE) : STATE_STORE_BASE;
+
+const noteStore = isDev ? withLogger(NOTE_STORE_BASE) : NOTE_STORE_BASE;
+
+const settingsStore = isDev
   ? withLogger(SETTINGS_STORE_BASE)
   : SETTINGS_STORE_BASE;
+
+function keysOf<T extends object>(obj: T): (keyof T)[] {
+  return Object.keys(obj) as (keyof T)[];
+}
 
 function createStore<T extends object>(initialState: T): Store<T> {
   let isUpdating = false;
@@ -74,7 +86,7 @@ function createStore<T extends object>(initialState: T): Store<T> {
       try {
         listener(state);
       } catch (error) {
-        appError("[store] listener failed", error);
+        stateLogger.appError("[store] listener failed", error);
       }
     });
   }
@@ -86,14 +98,16 @@ function createStore<T extends object>(initialState: T): Store<T> {
       notify();
     });
   }
-  function setState(newState: Partial<T> | ((state: T) => Partial<T>)) {
+  function setState(
+    newState: Partial<T> | ((state: Readonly<T>) => Partial<T>),
+  ) {
     if (isUpdating) {
       throw new Error("Called setState inside listener");
     }
     const update = typeof newState === "function" ? newState(state) : newState;
     if (!update || Object.keys(update).length === 0) return;
     let hasChanged = false;
-    for (const key of Object.keys(update) as Array<keyof T>) {
+    for (const key of keysOf(update)) {
       if (!Object.is(state[key], update[key])) {
         hasChanged = true;
         break;
@@ -108,12 +122,12 @@ function createStore<T extends object>(initialState: T): Store<T> {
       isUpdating = false;
     }
   }
-  function subscribe(listener: (state: T) => void) {
+  function subscribe(listener: (state: Readonly<T>) => void) {
     listeners.add(listener);
     return () => listeners.delete(listener);
   }
   function subscribeSel<S>(
-    selector: (state: T) => S,
+    selector: (state: Readonly<T>) => S,
     listener: (selected: S) => void,
     isEqual: (previous: S, next: S) => boolean = Object.is,
   ) {
@@ -134,12 +148,20 @@ function withLogger<T extends object>(store: Store<T>): Store<T> {
     const prevState = store.getState();
     const resolvedUpdate =
       typeof newState === "function" ? newState(prevState) : newState;
-    console.groupCollapsed(`[store update]`);
-    devLog("%cUpdate:", "color: #4caf50", resolvedUpdate);
+    stateLogger.groupCollapsed(`[store update]`);
+    stateLogger.stateLog(
+      "color: #4caf50; font-weight: bold",
+      "Update:",
+      resolvedUpdate,
+    );
     originalSetState(resolvedUpdate);
     const nextState = store.getState();
-    devLog("%cNext State:", "color: #2196f3", nextState);
-    console.groupEnd();
+    stateLogger.stateLog(
+      "color: #2196f3; font-weight: bold",
+      "Next State:",
+      nextState,
+    );
+    stateLogger.groupEnd();
   };
   return {
     ...store,

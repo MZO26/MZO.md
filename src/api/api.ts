@@ -1,6 +1,7 @@
+import { rendererLogger } from "@/app";
 import { settingsStore } from "@/state/state";
 import { debounce } from "@/utils/async";
-import { appError, DEBOUNCE_MS, devLog } from "@shared/constants";
+import { DEBOUNCE_MS } from "@shared/constants";
 import { AppErrorCode } from "@shared/errors";
 import type {
   Notification,
@@ -32,7 +33,7 @@ async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
   try {
     return await ipcPromise;
   } catch (err: unknown) {
-    appError("[IPC Bridge Error]: ", err);
+    rendererLogger.appError("[IPC Bridge Error]: ", err);
     return { success: false, error: AppErrorCode.UnknownError };
   }
 }
@@ -209,19 +210,22 @@ async function pinWindow(): Promise<Result<boolean>> {
 let pendingSettings: Partial<AppSettings> = {};
 
 const debouncedSetSettings = debounce(async () => {
-  devLog(pendingSettings);
+  rendererLogger.devLog(pendingSettings);
   const settingsToSave = { ...pendingSettings };
   pendingSettings = {};
   try {
     const result = await setSettings(settingsToSave);
     if (!result.success) {
-      appError("[setSettings]: Failed to update settings:", result.error);
+      rendererLogger.appError(
+        "[setSettings]: Failed to update settings:",
+        result.error,
+      );
       pendingSettings = { ...settingsToSave, ...pendingSettings };
       return;
     }
-    devLog("Saved settings");
+    rendererLogger.devLog("Saved settings");
   } catch (error: unknown) {
-    appError("[setSettings]: Unknown error", error);
+    rendererLogger.appError("[setSettings]: Unknown error", error);
     pendingSettings = { ...settingsToSave, ...pendingSettings };
   }
 }, DEBOUNCE_MS.fast);

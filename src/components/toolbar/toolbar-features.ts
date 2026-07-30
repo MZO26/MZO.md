@@ -1,11 +1,11 @@
 import { pinWindow, updateSettings } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { createDivider } from "@/components/toolbar/toolbar-factory";
 import { toolbarApi } from "@/components/toolbar/toolbar-init";
 import { noteStore, stateStore } from "@/state/state";
 import { createInfoSpan } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
-import { appError } from "@shared/constants";
 import type { Link } from "@shared/schemas/note-schema";
 
 function setEditorWidth(container: HTMLDivElement) {
@@ -20,7 +20,10 @@ function setEditorWidth(container: HTMLDivElement) {
 async function setWindowTop(toggleBtn: HTMLButtonElement) {
   const result = await pinWindow();
   if (!result.success) {
-    appError("[setWindowTop]: Failed to pin window:", result.error);
+    rendererLogger.appError(
+      "[setWindowTop]: Failed to pin window:",
+      result.error,
+    );
     return;
   }
   toggleBtn.classList.toggle("pin", result.data);
@@ -37,7 +40,7 @@ function setToolbarCollapsed(collapsed: boolean) {
   appContainer.classList.toggle("toolbar-collapsed", collapsed);
 }
 
-async function toggleToolbar() {
+function toggleToolbar() {
   const appContainer = getAppItem("appContainer");
   const newState = !appContainer.classList.contains("toolbar-collapsed");
   try {
