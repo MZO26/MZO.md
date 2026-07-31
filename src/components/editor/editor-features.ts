@@ -40,8 +40,6 @@ function initEditorSearch(editor: Editor) {
   );
   const searchCount = requireElement<HTMLSpanElement>(".search-count");
 
-  // const globalInput = getUIItem("searchInput");
-
   chevronBtn.addEventListener("click", () => {
     const isHidden = replaceInputWrapper.classList.toggle("invisible");
     chevronBtn.classList.toggle("open", !isHidden);

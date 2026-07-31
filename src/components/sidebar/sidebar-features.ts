@@ -85,19 +85,15 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   const popover = document.createElement("div");
   const content = document.createElement("div");
   let isOpen = false;
-
   popover.className = "tags-popover";
   content.className = "tags-popover-content";
-
   const header = createInfoSpan("All Tags", "tags-popover-title");
   const untaggedButton = createIconButton("tag-x", "Untagged");
   untaggedButton.type = "button";
   untaggedButton.className = "untagged-btn";
-
   header.appendChild(untaggedButton);
   popover.append(header, content);
   document.body.appendChild(popover);
-
   renderIcons(popover);
 
   function positionPopover() {
@@ -132,19 +128,21 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
       close();
       return;
     }
-    const tagBtn = target.closest<HTMLButtonElement>(".tag-node");
-    const tag = tagBtn?.dataset["tag"];
+    const tagElement = target.closest<HTMLSpanElement>(".tag");
+    const tag = tagElement?.dataset["tag"];
     if (tag) {
       applyTagView(tag);
       close();
     }
   });
+
   document.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
     if (popover.contains(target) || button.contains(target)) return;
     close();
   });
+
   return {
     popover,
     content,
@@ -152,23 +150,19 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
       const uniqueSortedTags = [...new Set(tags)].sort((a, b) =>
         a.localeCompare(b),
       );
-
       if (uniqueSortedTags.length === 0) {
         content.replaceChildren(createInfoSpan("No tags here."));
         return;
       }
-
       const frag = document.createDocumentFragment();
       for (const tag of uniqueSortedTags) {
-        const item = document.createElement("button");
-        item.type = "button";
-        item.className = "tags-popover-item tag-node";
+        const item = document.createElement("span");
+        item.className = "tags-popover-item tag";
         item.dataset["tag"] = tag;
         item.title = `#${tag}`;
         item.textContent = `#${tag}`;
         frag.appendChild(item);
       }
-
       content.replaceChildren(frag);
     },
     toggle,
