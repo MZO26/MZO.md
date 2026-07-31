@@ -1,6 +1,5 @@
 import { createInfoSpan } from "@/components/sidebar/sidebar-features";
 import { findElement, requireElement } from "@/utils/dom";
-import { initTippyDelegate } from "@/utils/ui";
 import type { Editor } from "@tiptap/core";
 
 export interface TocItem {
@@ -31,7 +30,6 @@ function getTableOfContents(editor: Editor | null) {
 
 function initTableOfContents() {
   const container = requireElement<HTMLDivElement>(".toc");
-  initTippyDelegate(container, document.documentElement, "left");
   container.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
@@ -63,7 +61,7 @@ function initTableOfContents() {
       button.textContent = item.text;
       button.className = "toc-button";
       button.setAttribute("data-target-id", item.id);
-      button.setAttribute("data-tippy-content", item.text);
+      button.title = item.text;
       li.appendChild(button);
       ul.appendChild(li);
     }

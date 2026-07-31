@@ -268,12 +268,10 @@ function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
   );
 
   const autoExportPath = settings["auto_export_path"];
-  autoExportSelect.setAttribute("data-tippy-dynamic", "");
-  autoExportSelect.setAttribute(
-    "data-tippy-content",
-    autoExportPath ? `Path: ${autoExportPath}` : "No path selected.",
-  );
-  autoExportSelect.value = settings["auto_export"] ? "true" : "false";
+  ((autoExportSelect.title = autoExportPath
+    ? `Path: ${autoExportPath}`
+    : "No path selected."),
+    (autoExportSelect.value = settings["auto_export"] ? "true" : "false"));
   autoExportSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
@@ -291,16 +289,10 @@ function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
             auto_export: true,
             auto_export_path: result.data,
           });
-          autoExportSelect.setAttribute(
-            "data-tippy-content",
-            `Path: ${result.data}`,
-          );
+          autoExportSelect.title = `Path: ${result.data}`;
         } else {
           updateSettings({ auto_export: false, auto_export_path: null });
-          autoExportSelect.setAttribute(
-            "data-tippy-content",
-            "No path selected.",
-          );
+          autoExportSelect.title = "No path selected.";
         }
       }
     }),

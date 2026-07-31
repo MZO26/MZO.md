@@ -4,11 +4,10 @@ import { listEl, switchDialog } from "@/settings/dialog-init";
 import { noteStore, stateStore } from "@/state/state";
 import { restoreSidebarScope } from "@/state/state-helpers";
 import { getAppItem } from "@/utils/registry";
-import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
+import { createGlobalSpinner } from "@/utils/ui";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 
 function initQuickSwitcher() {
-  initTippyDelegate(switchDialog, switchDialog);
   const editor = getAppItem("editor");
   let activeIndex = 0;
   let currentDisplayNotes: Pick<NoteListItem, "id" | "title">[] = [];

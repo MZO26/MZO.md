@@ -69,7 +69,7 @@ function createTagElement(
   const text = count
     ? `Often used: Appears ${count} time${count === 1 ? "" : "s"} in other note${count === 1 ? "" : "s"}`
     : "Tag in this note";
-  span.setAttribute("data-tippy-content", text);
+  span.title = text;
   span.textContent = `#${tag}`;
   container.appendChild(span);
 }
@@ -129,7 +129,7 @@ function renderLinks(container: HTMLDivElement) {
     const span = document.createElement("span");
     span.classList.add("link", `link-current`);
     span.setAttribute("data-link", activeNote.id);
-    span.setAttribute("data-tippy-content", "Current Note");
+    span.title = "Current Note";
     span.textContent = `[${activeNote.title}]`;
     span.classList.add("active-node");
     container.appendChild(span);
@@ -158,7 +158,7 @@ function renderLinks(container: HTMLDivElement) {
         : item.type === "out"
           ? "Outgoing Link"
           : "Current Note";
-    span.setAttribute("data-tippy-content", text);
+    span.title = text;
     const title =
       item.type === "current"
         ? activeNote.title

@@ -97,7 +97,7 @@ function getNoteEditorExtensions() {
       onClick: async (id) => {
         const noteExists = noteStore.get("noteIndex").has(id);
         if (!noteExists) {
-          rendererLogger.appError("[Wikilink configure]: Note not found.");
+          rendererLogger.devLog("[Wikilink configure]: Note not found.");
           return;
         }
         const loading = createGlobalSpinner();

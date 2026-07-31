@@ -19,7 +19,7 @@ import { stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
-import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
+import { createGlobalSpinner } from "@/utils/ui";
 
 let toolbarApi: { refresh: () => void } | null = null;
 
@@ -55,11 +55,9 @@ function initMetadataToolbar() {
 }
 
 function initToolbar() {
-  const editorContainer = getAppItem("editorContainer");
   const toolbarContainer = requireElement<HTMLDivElement>("#toolbar");
   toolbarApi = buildToolbarMenu(toolbarContainer, TOOLBAR_ACTIONS);
   setupToolbarListeners(toolbarContainer, TOOLBAR_ACTIONS);
-  initTippyDelegate(editorContainer);
 }
 
 function initTopToolbar() {
@@ -68,7 +66,6 @@ function initTopToolbar() {
   const topToolbar = requireElement<HTMLDivElement>(".top-toolbar");
   buildTopToolbarMenu(topToolbar, TOP_TOOLBAR_ACTIONS);
   setupToolbarListeners(topToolbar, TOP_TOOLBAR_ACTIONS);
-  initTippyDelegate(topToolbar, appContainer);
   appPinBtn.addEventListener(
     "click",
     createAsyncHandler(async () => await setWindowTop(appPinBtn)),

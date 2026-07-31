@@ -31,7 +31,7 @@ function createNoteItem(note: Readonly<NoteListItem>) {
   const display = settingsStore.get("note_item_display");
   item.setAttribute("data-id", note.id);
   item.setAttribute("data-pinned", String(!!note.pinned));
-  item.setAttribute("data-tippy-content", note.title);
+  item.title = note.title;
   if (note.pinned) renderIcons(item);
   const titleEl = findElement<HTMLSpanElement>(".note-title", item);
   if (titleEl) titleEl.textContent = note.title.trim() || UNTITLED;
@@ -45,7 +45,6 @@ function createNoteItem(note: Readonly<NoteListItem>) {
       for (const tag of note.tags ?? []) {
         const span = document.createElement("span");
         span.classList.add("tag");
-        span.setAttribute("data-tippy-content", `#${tag}`);
         span.textContent = `#${tag}`;
         tagsContainer.append(span);
       }

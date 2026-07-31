@@ -18,7 +18,7 @@ import {
   isValidExtension,
 } from "@/utils/note";
 import { getAppItem, getUIItems } from "@/utils/registry";
-import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
+import { createGlobalSpinner } from "@/utils/ui";
 import {
   DEBOUNCE_MS,
   MAX_FILE_DROPS,
@@ -27,9 +27,6 @@ import {
 import type { SearchQuery } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import type { ResizeOptions } from "@shared/types";
-import tippy from "tippy.js";
-
-export let allTagsMenu: ReturnType<typeof createAllTagsPopover> | null = null;
 
 async function handleSearch(searchInput: SearchQuery) {
   const nextQuery = searchInput.trim();
@@ -73,64 +70,117 @@ function updateStats() {
   readingTime.textContent = estimateReadingTime(words);
 }
 
-function createAllTagsPopover(button: HTMLButtonElement) {
+type AllTagsMenu = {
+  popover: HTMLDivElement;
+  content: HTMLDivElement;
+  render(tags: string[]): void;
+  toggle(): void;
+  open(): void;
+  close(): void;
+};
+
+let allTagsMenu: AllTagsMenu | null = null;
+
+function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   const popover = document.createElement("div");
-  popover.className = "tags-popover";
   const content = document.createElement("div");
+  let isOpen = false;
+
+  popover.className = "tags-popover";
   content.className = "tags-popover-content";
-  const allTagsSpan = createInfoSpan("All Tags", "tags-popover-title");
+
+  const header = createInfoSpan("All Tags", "tags-popover-title");
   const untaggedButton = createIconButton("tag-x", "Untagged");
+  untaggedButton.type = "button";
   untaggedButton.className = "untagged-btn";
-  allTagsSpan.appendChild(untaggedButton);
-  popover.append(allTagsSpan, content);
+
+  header.appendChild(untaggedButton);
+  popover.append(header, content);
+  document.body.appendChild(popover);
+
   renderIcons(popover);
+
+  function positionPopover() {
+    const rect = button.getBoundingClientRect();
+    popover.style.top = `${rect.bottom + window.scrollY}px`;
+    popover.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
+    popover.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
+  }
+
+  function open() {
+    if (isOpen) return;
+    positionPopover();
+    popover.classList.remove("hidden");
+    isOpen = true;
+  }
+
+  function close() {
+    if (!isOpen) return;
+    popover.classList.add("hidden");
+    isOpen = false;
+  }
+
+  function toggle() {
+    isOpen ? close() : open();
+  }
+
   popover.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
-    const button = target.closest<HTMLButtonElement>(".untagged-btn");
-    if (button) {
+    if (target.closest(".untagged-btn")) {
       applyUntaggedView();
+      close();
       return;
     }
-    const clickedTag = target.closest<HTMLSpanElement>(".tag-node");
-    const tagId = clickedTag?.getAttribute("data-tag");
-    if (clickedTag && tagId) {
-      applyTagView(tagId);
-      return;
+    const tagBtn = target.closest<HTMLButtonElement>(".tag-node");
+    const tag = tagBtn?.dataset["tag"];
+    if (tag) {
+      applyTagView(tag);
+      close();
     }
   });
-  const instance = tippy(button, {
-    content: popover,
-    trigger: "click",
-    interactive: true,
-    theme: "preview-theme",
-    appendTo: () => document.body,
+  document.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+    if (popover.contains(target) || button.contains(target)) return;
+    close();
   });
-  initTippyDelegate(popover, popover, "auto", false);
-  renderIcons(button);
-  return { button, popover, content, tippy: instance };
+  return {
+    popover,
+    content,
+    render(tags) {
+      const uniqueSortedTags = [...new Set(tags)].sort((a, b) =>
+        a.localeCompare(b),
+      );
+
+      if (uniqueSortedTags.length === 0) {
+        content.replaceChildren(createInfoSpan("No tags here."));
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      for (const tag of uniqueSortedTags) {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "tags-popover-item tag-node";
+        item.dataset["tag"] = tag;
+        item.title = `#${tag}`;
+        item.textContent = `#${tag}`;
+        frag.appendChild(item);
+      }
+
+      content.replaceChildren(frag);
+    },
+    toggle,
+    open,
+    close,
+  };
 }
 
-function renderAllTags(button: HTMLButtonElement, tags: string[]) {
+function showAllTagsMenu(button: HTMLButtonElement, tags: string[]) {
   const menu = (allTagsMenu ??= createAllTagsPopover(button));
-  if (tags.length === 0) {
-    const span = createInfoSpan("No tags here.");
-    menu.content.replaceChildren(span);
-    return;
-  }
-  const frag = document.createDocumentFragment();
-  const uniqueSortedTags = [...new Set(tags)].sort((a, b) =>
-    a.localeCompare(b),
-  );
-  for (const tag of uniqueSortedTags) {
-    const item = document.createElement("span");
-    item.className = "tags-popover-item tag-node";
-    item.setAttribute("data-tippy-content", `#${tag}`);
-    item.dataset["tag"] = tag;
-    item.textContent = `#${tag}`;
-    frag.appendChild(item);
-  }
-  menu.content.replaceChildren(frag);
+  menu.render(tags);
+  menu.toggle();
 }
 
 function resizeSidebar(
@@ -259,8 +309,8 @@ export {
   applyTagView,
   createInfoSpan,
   debouncedSearch,
-  renderAllTags,
   resizeSidebar,
   setupSidebarFileDrop,
+  showAllTagsMenu,
   updateStats,
 };

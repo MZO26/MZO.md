@@ -1,142 +1,142 @@
-import { getNoteById } from "@/api/api";
-import { rendererLogger } from "@/app";
-import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
 import { noteStore, stateStore } from "@/state/state";
+import { formatNoteDate } from "@/utils/date";
+import { createInfoSpan } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { DOMPURIFY_CONFIG, KATEX_MACROS } from "@shared/constants";
-import type { Note } from "@shared/schemas/note-schema";
-import { Extension, generateHTML } from "@tiptap/core";
-import DOMPurify from "dompurify";
-import katex from "katex";
-import { delegate, type DelegateInstance, type Instance } from "tippy.js";
+import type { NoteListItem } from "@shared/schemas/note-schema";
+import { Extension } from "@tiptap/core";
 
-function renderMathBlocks(root: ParentNode) {
-  const elements = Array.from(
-    root.querySelectorAll<HTMLElement>(
-      '[data-type="inline-math"], [data-type="block-math"]',
-    ),
-  );
-  if (elements.length === 0) return;
-  for (const el of elements) {
-    const latex = el.getAttribute("data-latex");
-    if (!latex) continue;
-    try {
-      katex.render(latex, el, {
-        throwOnError: false,
-        displayMode: el.getAttribute("data-type") === "block-math",
-        macros: KATEX_MACROS,
-      });
-    } catch {
-      el.textContent = latex;
-    }
-  }
-}
-
-type PreviewInstance = Instance & {
-  state: { isDataFetched?: boolean; isFetching?: boolean };
-};
-
-function buildPreviewCard(content: Note["content"]) {
-  const card = document.createElement("div");
-  card.className = "wikilink-preview";
+function buildPreviewCard(
+  updated_at: NoteListItem["updated_at"],
+  tags: NoteListItem["tags"],
+) {
   const cardContent = document.createElement("div");
   cardContent.className = "wikilink-preview-content";
-  const html = generateHTML(content, getCachedEditorExtensions());
-  const sanitized = DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
-  if (sanitized) {
-    cardContent.innerHTML = sanitized;
-    renderMathBlocks(cardContent);
+  const dateVal = new Date(updated_at).getTime();
+  if (!updated_at || isNaN(dateVal)) {
+    cardContent.appendChild(createInfoSpan("Failed to load note metadata"));
+    return cardContent;
   }
-  const hasText = (cardContent.textContent || "").trim().length > 0;
-  const hasMedia =
-    cardContent.querySelectorAll<HTMLElement>(
-      "img, hr, [data-type='inline-math'], [data-type='block-math']",
-    ).length > 0;
-  if (!hasText && !hasMedia) {
-    cardContent.replaceChildren();
-    cardContent.textContent = "Empty Note";
-    card.classList.add("is-empty");
-  } else card.classList.remove("is-empty");
-  card.append(cardContent);
-  return card;
+  if (Array.isArray(tags) && tags.length > 0) {
+    const tagsContainer = document.createElement("div");
+    tagsContainer.classList.add("note-tags");
+    for (const tag of tags) {
+      const span = document.createElement("span");
+      span.classList.add("tag");
+      span.textContent = `#${tag}`;
+      tagsContainer.appendChild(span);
+    }
+    cardContent.appendChild(tagsContainer);
+  }
+  const isoToDate = formatNoteDate(updated_at);
+  cardContent.appendChild(createInfoSpan(`Last updated: ${isoToDate}`));
+  return cardContent;
 }
+
+type PreviewHandlers = {
+  over: (e: PointerEvent) => void;
+  out: (e: PointerEvent) => void;
+  down: (e: PointerEvent) => void;
+};
 
 export const WikiLinkPreview = Extension.create({
   name: "wikilinkPreview",
 
   addStorage() {
     return {
-      tippyDelegate: null as DelegateInstance | null,
+      wikilink: null as HTMLDivElement | null,
+      timer: undefined as number | undefined,
+      activeId: "",
+      handlers: null as PreviewHandlers | null,
     };
   },
 
   onCreate() {
-    const editorElement = getAppItem("editorWrapper");
-    this.storage.tippyDelegate = delegate(editorElement, {
-      target: "[data-wikilink]",
-      interactive: true,
-      delay: [300, 50],
-      theme: "preview-theme",
-      appendTo: () => document.body,
-      placement: "bottom-start",
-      maxWidth: "none",
-      content: "",
-      onShow: (instance: PreviewInstance) => {
-        if (instance.state.isDataFetched || instance.state.isFetching) {
-          rendererLogger.devLog("Doesn't need re-fetch.");
-          return;
-        }
-        const el = instance.reference as HTMLElement | null;
-        const id = (el?.getAttribute("data-id") || "").trim();
-        if (!id) return false;
-        const targetNote = noteStore.get("noteIndex").get(id);
-        if (!targetNote) return false;
-        const activeId = stateStore.get("activeId");
-        if (targetNote.id === activeId) {
-          instance.setContent("Can't reference the same note.");
-          return;
-        }
-        const notes = noteStore.get("notes");
-        const matchingNotes = notes.filter(
-          (n) => n.title.toLowerCase() === targetNote.title.toLowerCase(),
-        );
-        if (matchingNotes.length > 1) {
-          instance.setContent(
-            `Warning: There are ${matchingNotes.length} notes named "${targetNote.title}".`,
-          );
-          return;
-        }
-        instance.state.isFetching = true;
-        const loadPreviewData = async () => {
-          try {
-            const result = await getNoteById(id);
-            if (instance.state.isDestroyed) return;
-            if (!result.success) {
-              instance.setContent("Note not found");
-              instance.state.isDataFetched = true;
-              return;
-            }
-            const activeId = stateStore.get("activeId");
-            if (result.data.id === activeId) {
-              instance.state.isDataFetched = true;
-              instance.hide();
-              return;
-            }
-            instance.setContent(buildPreviewCard(result.data.content));
-            instance.state.isDataFetched = true;
-          } finally {
-            if (!instance.state.isDestroyed) {
-              instance.state.isFetching = false;
-            }
-          }
-        };
-        loadPreviewData();
+    const editor = getAppItem("editorWrapper");
+    const element = document.createElement("div");
+    element.className = "wikilink-preview hidden";
+    document.body.appendChild(element);
+    this.storage.wikilink = element;
+    const hide = () => {
+      this.storage.activeId = "";
+      element.classList.add("hidden");
+      element.replaceChildren();
+    };
+    const show = (wikilink: HTMLElement) => {
+      const id = wikilink.dataset["id"];
+      if (
+        !id ||
+        id === stateStore.get("activeId") ||
+        this.storage.activeId === id
+      )
         return;
+      const targetNote = noteStore.get("noteIndex").get(id);
+      if (!targetNote) {
+        element.textContent = "Note not found";
+      } else {
+        const duplicates = noteStore
+          .get("notes")
+          .filter(
+            (n) => n.title.toLowerCase() === targetNote.title.toLowerCase(),
+          );
+        if (duplicates.length > 1) {
+          element.textContent = `Warning: ${duplicates.length} notes named "${targetNote.title}".`;
+        } else {
+          element.replaceChildren(
+            buildPreviewCard(targetNote.updated_at, targetNote.tags),
+          );
+        }
+      }
+      this.storage.activeId = id;
+      const rect = wikilink.getBoundingClientRect();
+      Object.assign(element.style, {
+        left: `${rect.left + window.scrollX}px`,
+        top: `${rect.bottom + window.scrollY + 8}px`,
+      });
+      element.classList.remove("hidden");
+    };
+    const handlers: PreviewHandlers = {
+      over: (e: PointerEvent) => {
+        window.clearTimeout(this.storage.timer);
+        const linkEl = (e.target as HTMLElement)?.closest<HTMLElement>(
+          "[data-wikilink]",
+        );
+        if (linkEl && this.storage.activeId !== linkEl.dataset["id"]) {
+          this.storage.timer = window.setTimeout(() => show(linkEl), 300);
+        }
       },
-    });
+      out: (e: PointerEvent) => {
+        const next = e.relatedTarget as HTMLElement | null;
+        if (next && (element.contains(next) || next.closest("[data-wikilink]")))
+          return;
+        window.clearTimeout(this.storage.timer);
+        this.storage.timer = window.setTimeout(hide, 200);
+      },
+      down: () => {
+        window.clearTimeout(this.storage.timer);
+        hide();
+      },
+    };
+    this.storage.handlers = handlers;
+    editor.addEventListener("pointerover", handlers.over);
+    editor.addEventListener("pointerout", handlers.out);
+    editor.addEventListener("pointerdown", handlers.down);
+    element.addEventListener("pointerover", handlers.over);
+    element.addEventListener("pointerout", handlers.out);
   },
+
   onDestroy() {
-    this.storage.tippyDelegate?.destroy();
-    this.storage.tippyDelegate = null;
+    const editor = getAppItem("editorWrapper");
+    const { wikilink, timer, handlers } = this.storage;
+    window.clearTimeout(timer);
+    if (handlers) {
+      editor.removeEventListener("pointerover", handlers.over);
+      editor.removeEventListener("pointerout", handlers.out);
+      editor.removeEventListener("pointerdown", handlers.down);
+      if (wikilink) {
+        wikilink.removeEventListener("pointerover", handlers.over);
+        wikilink.removeEventListener("pointerout", handlers.out);
+      }
+    }
+    wikilink?.remove();
   },
 });

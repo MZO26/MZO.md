@@ -206,11 +206,18 @@ type QuickActionConfig = {
   label: string;
 };
 
+type AllTagsMenu = {
+  button: HTMLButtonElement;
+  popover: HTMLDivElement;
+  content: HTMLDivElement;
+};
+
 type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
 
 export type {
   Action,
   ActionMap,
+  AllTagsMenu,
   AppRegistry,
   Code,
   ContentType,

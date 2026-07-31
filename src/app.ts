@@ -65,10 +65,3 @@ async function initApp() {
   rendererLogger.devLog("App started successfully");
 }
 initApp();
-
-if (import.meta.hot) {
-  import.meta.hot.accept(() => {
-    initApp();
-    rendererLogger.devLog("Hot updated app.ts");
-  });
-}

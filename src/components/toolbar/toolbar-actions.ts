@@ -68,7 +68,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
       const container = openMetadataContainer();
       renderLinks(container);
     },
-    icon: "git-compare-arrows",
+    icon: "arrow-left-right",
     shortcut: "[[Title]]",
   },
   divider1: { type: "divider" },

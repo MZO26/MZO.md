@@ -498,9 +498,19 @@
 }
 
 .tags-popover {
+  margin: 8px 0 0 0;
+  position: absolute;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--shadow);
+  background-color: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  border: 1px solid var(--border-color);
+  width: fit-content;
   max-width: 300px;
+  border-radius: 15px;
+  transform: translateX(-50%);
 }
 
 .tags-popover-title {
@@ -532,7 +542,6 @@
 .tags-popover-content {
   display: flex;
   flex-wrap: wrap;
-  align-content: start;
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 220px;
@@ -542,6 +551,7 @@
 
 .tags-popover-item {
   padding: 5px 7px;
+  width: max-content;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -1067,32 +1077,37 @@ svg.empty-state-icon {
 }
 
 .wikilink-preview {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: min(40vw, 80ch);
-  height: min(40vh, 300px);
-}
-
-.wikilink-preview > .wikilink-preview-content {
-  overflow-y: scroll;
-  overflow-x: hidden;
-}
-
-.wikilink-preview.is-empty {
-  width: 16rem;
-  height: 4rem;
-}
-
-.wikilink-preview-content {
+  position: absolute;
   overflow: auto;
-  white-space: pre-wrap;
-  overscroll-behavior: contain;
-  padding: 15px;
-  font-size: 0.9rem;
-  line-height: 1.6;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  pointer-events: auto;
+  z-index: 9999;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 10px;
+  max-height: 100px;
+  width: fit-content;
+  max-width: 80ch;
+  background-color: var(--tooltip-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.wikilink-preview-content > * {
+  padding: 8px 0;
+}
+
+.wikilink-preview-content > .note-tags {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+}
+
+.wikilink-preview.hidden {
+  display: none;
 }
 
 .wikilink-preview-content::selection {

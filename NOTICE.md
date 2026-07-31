@@ -11,7 +11,6 @@ The following components are provided under the MIT License:
 - Electron (Copyright (c) Electron contributors)
 - Tiptap (Copyright (c) 2026, Tiptap GmbH)
 - lowlight (Copyright (c) Titus Wormer)
-- tippy.js (Copyright (c) atomiks)
 - zod (Copyright (c) Colin McDonnell)
 - vite (Copyright (c) Evan You)
 - electron-vite (Copyright (c) Alex Wei)

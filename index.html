@@ -17,7 +17,7 @@
         <div class="frame-left"></div>
         <div class="frame-right">
           <div class="frame-info">
-            <button class="app-pin-btn">
+            <button class="app-pin-btn" title="Pin Window">
               <i data-lucide="pin"></i>
             </button>
             <time id="datetime-display"></time>
@@ -38,38 +38,26 @@
                 class="search-input"
                 spellcheck="false"
                 placeholder="Search Notes..."
-                data-tippy-content="Global Search"
-                data-shortcut="Mod+G"
+                title="Global Search"
               />
             </div>
-            <button class="all-tags-btn">
+            <button class="all-tags-btn" title="All tags">
               <i data-lucide="tag"></i>
             </button>
-            <button class="import-btn" data-tippy-content="Import File">
+            <button class="import-btn" title="Import File">
               <i data-lucide="file-up"></i>
             </button>
-            <button
-              class="add-note-btn"
-              data-tippy-content="New Note"
-              data-shortcut="Mod+N"
-            >
+            <button class="add-note-btn" title="New Note">
               <i data-lucide="plus"></i>
             </button>
           </div>
           <div class="notes-container"></div>
           <div class="sidebar-selection-footer collapsed"></div>
           <div class="sidebar-footer">
-            <button
-              class="settings-btn"
-              data-tippy-content="Settings"
-              data-shortcut="Mod+,"
-            >
+            <button class="settings-btn" title="Settings">
               <i data-lucide="sliders-horizontal"></i>
             </button>
-            <span
-              class="info-span note-count"
-              data-tippy-content="Total Notes"
-            ></span>
+            <span class="info-span note-count" title="Total Notes"></span>
           </div>
         </div>
         <div class="resizer-sidebar"></div>
@@ -90,28 +78,15 @@
               class="search-input-editor"
               spellcheck="false"
               placeholder="Search Note"
-              data-tippy-content="Search Note Content"
-              data-shortcut="Mod+F"
+              title="Search Note Content"
             />
-            <button
-              type="button"
-              class="search-prev"
-              data-tippy-content="Previous"
-              data-shortcut="Shift+Enter"
-            >
+            <button type="button" class="search-prev" title="Previous">
               <i data-lucide="chevron-up"></i>
             </button>
-            <button
-              type="button"
-              class="search-next"
-              data-tippy-content="Next"
-              data-shortcut="Enter"
-            >
+            <button type="button" class="search-next" title="Next">
               <i data-lucide="chevron-down"></i>
             </button>
-            <span
-              class="info-span search-count"
-              data-tippy-content="Match count"
+            <span class="info-span search-count" title="Match count"
               >0 of 0</span
             >
           </div>
@@ -121,20 +96,10 @@
               class="replace-input-editor"
               placeholder="Replace"
             />
-            <button
-              type="button"
-              class="replace-one"
-              data-tippy-content="Replace"
-              data-shortcut="Enter"
-            >
+            <button type="button" class="replace-one" title="Replace">
               <i data-lucide="replace"></i>
             </button>
-            <button
-              type="button"
-              class="replace-all"
-              data-tippy-content="Replace All"
-              data-shortcut="Mod+Alt+Enter"
-            >
+            <button type="button" class="replace-all" title="Replace All">
               <i data-lucide="replace-all"></i>
             </button>
           </div>
@@ -274,7 +239,7 @@
       <div class="note-item">
         <div class="note-header">
           <div class="icon-div">
-            <i data-lucide="pin" data-tippy-content="Pinned" class="pin"></i>
+            <i data-lucide="pin" title="Pinned" class="pin"></i>
           </div>
           <span class="note-title"></span>
           <button class="menu-btn">

@@ -21,7 +21,6 @@ function initSelectionFooter() {
     const button = createIconButton(action.icon);
     button.className = `${action.id}-btn`;
     button.setAttribute("data-action", action.id);
-    button.setAttribute("data-tippy-dynamic", "");
     frag.appendChild(button);
   }
   selectionFooter.appendChild(frag);
@@ -57,7 +56,7 @@ function updateSelectionFooter() {
     );
     if (!button) continue;
     const label = getActionLabel(action.id, selectedCount);
-    button.setAttribute("data-tippy-content", label);
+    button.title = label;
     button.disabled = selectedCount === 0 && action.id !== "cancel";
   }
 }

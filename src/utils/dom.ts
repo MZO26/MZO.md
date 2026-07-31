@@ -1,5 +1,6 @@
 import { getTemplateItem } from "@/utils/registry";
 import type { TemplateRegistry } from "@shared/types";
+import { createTooltipContent } from "./ui";
 
 function requireElement<T extends HTMLElement>(
   selector: string,
@@ -28,18 +29,13 @@ function setActiveItem(element: HTMLElement | null, parent: HTMLElement) {
   element.classList.add("is-active");
 }
 
-function createIconButton(
-  icon: string,
-  tooltip?: string,
-  shortcut?: string,
-): HTMLButtonElement {
+function createIconButton(icon: string, tooltip?: string): HTMLButtonElement {
   const btn = document.createElement("button");
   btn.type = "button";
   const i = document.createElement("i");
   i.setAttribute("data-lucide", icon);
   btn.appendChild(i);
-  if (tooltip) btn.setAttribute("data-tippy-content", tooltip);
-  if (shortcut) btn.setAttribute("data-shortcut", shortcut);
+  if (tooltip) btn.title = createTooltipContent(tooltip);
   return btn;
 }
 

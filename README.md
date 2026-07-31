@@ -26,7 +26,6 @@ Built with Electron, TypeScript, SQLite, and TipTap / ProseMirror.
 - DOMPurify
 - Zod
 - Lucide
-- Tippy.js
 
 ## Install
 

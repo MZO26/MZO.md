@@ -4,10 +4,10 @@ import { getAppItem } from "@/utils/registry";
 import type { Action, ActionMap, ToolbarItem } from "@shared/types";
 import type { Editor } from "@tiptap/core";
 
-let cachedActions: ReturnType<typeof getActions> | null = null;
+let cachedActions: [string, Action][] | null = null;
 
 function createButton(key: string, item: Action) {
-  const btn = createIconButton(item.icon, key, item.shortcut);
+  const btn = createIconButton(item.icon, key);
   btn.classList.add(`${key}-btn`);
   btn.setAttribute("data-action", key);
   return btn;

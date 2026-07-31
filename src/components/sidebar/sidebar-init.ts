@@ -1,10 +1,9 @@
 import {
-  allTagsMenu,
   applyTagView,
   debouncedSearch,
-  renderAllTags,
   resizeSidebar,
   setupSidebarFileDrop,
+  showAllTagsMenu,
 } from "@/components/sidebar/sidebar-features";
 import {
   copyRichTextSelection,
@@ -27,18 +26,14 @@ import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItems, getUIItems, registerAppEvents } from "@/utils/registry";
 import { isSelectionActive } from "@/utils/shortcuts";
-import { createGlobalSpinner, initTippyDelegate } from "@/utils/ui";
+import { createGlobalSpinner } from "@/utils/ui";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 
 // sidebar
 
 function initNotesSidebar() {
   const activeTag = settingsStore.get("active_tag");
-  const { appContainer, sidebar, sidebarContainer } = getAppItems([
-    "appContainer",
-    "sidebar",
-    "sidebarContainer",
-  ]);
+  const { appContainer, sidebar } = getAppItems(["appContainer", "sidebar"]);
   const { searchInput, selectionFooter, sidebarHeader } = getUIItems([
     "searchInput",
     "selectionFooter",
@@ -55,7 +50,6 @@ function initNotesSidebar() {
   ) {
     applyTagView(activeTag);
   }
-  initTippyDelegate(sidebarContainer);
   applySidebarListeners(sidebar, sidebarHeader, searchInput, selectionFooter);
   setupSidebarFileDrop(sidebar);
   registerAppEvents(document, {
@@ -92,8 +86,7 @@ function applySidebarListeners(
       const tagBtn = target.closest<HTMLButtonElement>(".all-tags-btn");
       if (tagBtn) {
         const tags = noteStore.get("notes").flatMap((n) => n.tags);
-        renderAllTags(tagBtn, tags);
-        allTagsMenu?.tippy.show();
+        showAllTagsMenu(tagBtn, tags);
         return;
       }
       const importBtn = target.closest<HTMLButtonElement>(".import-btn");
