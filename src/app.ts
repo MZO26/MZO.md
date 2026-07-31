@@ -25,48 +25,50 @@ import {
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { createLogger } from "@shared/log";
 
-const notesPromise = getAll();
-const settingsPromise = getAllSettings();
-const isDev = window.appInfo.isDev;
-export const rendererLogger = createLogger(isDev);
-rendererLogger.time("dom-loaded");
-document.addEventListener(
-  "DOMContentLoaded",
-  async () => {
-    const notesResult = await notesPromise;
-    const settingsResult = await settingsPromise;
-    if (!notesResult.success) {
-      rendererLogger.appError(
-        "[getAll]: Failed to fetch all notes:",
-        notesResult.error,
-      );
-      throw new Error(notesResult.error);
-    }
-    const settings = initSettings(settingsResult);
-    initializeCoreRegistry(settings);
-    initializeTemplateRegistry();
-    initializeUIRegistry();
-    const editor = getAppItem("editor");
-    const editorWrapper = getAppItem("editorWrapper");
-    setupEditorListeners(editorWrapper, editor);
-    await initAppSettings(settings);
-    initListeners();
-    initToolbar();
-    initTopToolbar();
-    initMetadataToolbar();
-    renderIcons();
-    startAppClock();
-    initGlobalShortcuts();
-    syncNoteStore(notesResult.data);
-    initNotesSidebar();
-    initQuickSwitcher();
-    handleSidebarEmptyState();
-    handleEditorEmptyState(stateStore.get("activeId"));
-    if (settings["toolbar_collapsed"] === true) {
-      setToolbarCollapsed(true);
-    }
-    rendererLogger.timeEnd("dom-loaded");
-    rendererLogger.devLog("App started successfully");
-  },
-  // { once: true },
-);
+export const rendererLogger = createLogger(import.meta.env.DEV);
+
+async function initApp() {
+  const notesResult = await getAll();
+  const settingsResult = await getAllSettings();
+  rendererLogger.time("DOM Loading Time");
+  if (!notesResult.success) {
+    rendererLogger.appError(
+      "[getAll]: Failed to fetch all notes:",
+      notesResult.error,
+    );
+    throw new Error(notesResult.error);
+  }
+  const settings = initSettings(settingsResult);
+  initializeCoreRegistry(settings);
+  initializeTemplateRegistry();
+  initializeUIRegistry();
+  const editor = getAppItem("editor");
+  const editorWrapper = getAppItem("editorWrapper");
+  setupEditorListeners(editorWrapper, editor);
+  await initAppSettings(settings);
+  initListeners();
+  initToolbar();
+  initTopToolbar();
+  initMetadataToolbar();
+  renderIcons();
+  startAppClock();
+  initGlobalShortcuts();
+  syncNoteStore(notesResult.data);
+  initNotesSidebar();
+  initQuickSwitcher();
+  handleSidebarEmptyState();
+  handleEditorEmptyState(stateStore.get("activeId"));
+  if (settings["toolbar_collapsed"] === true) {
+    setToolbarCollapsed(true);
+  }
+  rendererLogger.timeEnd("DOM Loading Time");
+  rendererLogger.devLog("App started successfully");
+}
+initApp();
+
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    initApp();
+    rendererLogger.devLog("Hot updated app.ts");
+  });
+}

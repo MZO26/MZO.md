@@ -1,4 +1,4 @@
-import { mainLogger } from "@electron/handler/permission-handler";
+import { IS_DEV_MAIN, mainLogger } from "@electron/handler/permission-handler";
 import { registerElectronIpc } from "@electron/ipc/ipc-electron";
 import {
   AppBackendError,
@@ -69,7 +69,7 @@ function checkRateLimit(channel: string, cooldownMs: number) {
     return true;
   }
   const lastCall = IPC_TIMERS.get(channel) || 0;
-  if (now - lastCall < cooldownMs) return false;
+  if (!IS_DEV_MAIN && now - lastCall < cooldownMs) return false;
   IPC_TIMERS.set(channel, now);
   return true;
 }

@@ -1,7 +1,8 @@
 import { createLogger } from "@shared/log";
 import { app, session, type WebContents } from "electron";
 
-const IS_DEV_MAIN = !app.isPackaged;
+export const IS_DEV_MAIN =
+  !app.isPackaged && !!process.env["ELECTRON_RENDERER_URL"];
 
 const allowedPermissions = [
   "clipboard-read",
@@ -15,11 +16,11 @@ const mainLogger = createLogger(IS_DEV_MAIN);
 const csp =
   [
     "default-src 'none'",
-    `script-src 'self' ${IS_DEV_MAIN ? "http://localhost:5173" : ""}`,
+    `script-src 'self' ${IS_DEV_MAIN ? "http://localhost:5173 'unsafe-inline' 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: appimg:",
     `connect-src 'self' ${IS_DEV_MAIN ? "http://localhost:5173 ws://localhost:5173" : ""}`,
-    "font-src 'self'",
+    "font-src 'self' data:",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'none'",

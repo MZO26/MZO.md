@@ -6,7 +6,9 @@
   "scripts": {
     "clean": "rm -rf node_modules package-lock.json",
     "typecheck": "npx tsc --noEmit",
-    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "dev": "electron-vite dev --watch",
+    "dev:renderer": "electron-vite dev --rendererOnly",
     "build": "electron-vite build",
     "pack:mac": "npm run build && electron-builder --mac",
     "pack:win": "npm run build && electron-builder --win",

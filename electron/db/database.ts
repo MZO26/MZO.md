@@ -98,14 +98,11 @@ class AppDB {
       WHERE note_id IN  (SELECT value FROM json_each($ids))
       `);
       this.getManyLinksStmt = this.db.prepare(`
-      SELECT target_id AS id, 'out' AS dir
+      SELECT source_id, target_id
       FROM note_links
       WHERE source_id IN (SELECT value FROM json_each($ids))
-      UNION ALL
-      SELECT source_id AS id, 'in' AS dir
-      FROM note_links
-      WHERE target_id IN (SELECT value FROM json_each($ids))
-    `);
+      OR target_id IN (SELECT value FROM json_each($ids))
+      `);
       this.togglePinStmt = this.db.prepare(`
       UPDATE notes 
       SET pinned = NOT pinned, updated_at = $updated_at
@@ -266,14 +263,20 @@ class AppDB {
   private getLinkMapMany(ids: string[]): Map<string, Link[]> {
     const allLinks = this.getManyLinksStmt.all({
       $ids: JSON.stringify(ids),
-    }) as DeepExpand<LinkRow & { dir: "in" | "out" }>[];
+    }) as LinkRow[];
+    const requestedIds = new Set(ids);
     const linkMap = new Map<string, Link[]>();
-    for (const { source_id, target_id, dir } of allLinks) {
-      const ownerId = dir === "out" ? source_id : target_id;
-      const targetId = dir === "out" ? target_id : source_id;
-      const currentLinks = linkMap.get(ownerId) ?? [];
-      currentLinks.push({ id: targetId, dir });
-      linkMap.set(ownerId, currentLinks);
+    for (const { source_id, target_id } of allLinks) {
+      if (requestedIds.has(source_id)) {
+        const sourceLinks = linkMap.get(source_id) ?? [];
+        sourceLinks.push({ id: target_id, dir: "out" });
+        linkMap.set(source_id, sourceLinks);
+      }
+      if (requestedIds.has(target_id)) {
+        const targetLinks = linkMap.get(target_id) ?? [];
+        targetLinks.push({ id: source_id, dir: "in" });
+        linkMap.set(target_id, targetLinks);
+      }
     }
     return linkMap;
   }
