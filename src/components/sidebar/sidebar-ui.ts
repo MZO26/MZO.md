@@ -102,14 +102,11 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
 }
 
 function handleSidebarChange(sidebarParams: SidebarParams) {
-  const safeQuery =
-    typeof sidebarParams.query === "string" ? sidebarParams.query.trim() : "";
-  const nextParams = { ...sidebarParams, query: safeQuery };
   if (sidebarParams.visibleNotes.length === 0) {
-    renderSidebarEmptyState(nextParams);
+    renderSidebarEmptyState(sidebarParams);
     return;
   }
-  renderNoteList(nextParams);
+  renderNoteList(sidebarParams);
 }
 
 function renderNoteList(sidebarParams: SidebarParams) {

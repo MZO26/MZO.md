@@ -1,18 +1,10 @@
 import { rendererLogger } from "@/app";
-import { stateStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
-import { DEBOUNCE_MS, MIN_SEARCH_LENGTH } from "@shared/constants";
+import { DEBOUNCE_MS } from "@shared/constants";
 import { Editor, type JSONContent } from "@tiptap/core";
-
-export let docSearchApi: ReturnType<typeof initEditorSearch> | null = null;
-
-function initDocSearch() {
-  const editor = getAppItem("editor");
-  docSearchApi = initEditorSearch(editor);
-}
 
 function recreateEditorState(editor: Editor, doc: JSONContent) {
   editor
@@ -48,12 +40,6 @@ function initEditorSearch(editor: Editor) {
   );
   const searchCount = requireElement<HTMLSpanElement>(".search-count");
 
-  chevronBtn.addEventListener("click", () => {
-    const isHidden = replaceInputWrapper.classList.toggle("invisible");
-    chevronBtn.classList.toggle("open", !isHidden);
-    if (!isHidden) replaceInput.focus();
-  });
-
   function updateButtons() {
     const disabled = input.value.trim() === "" || !hasSearchMatch(editor);
     const buttons = inputWrapper.querySelectorAll<HTMLButtonElement>(
@@ -65,17 +51,15 @@ function initEditorSearch(editor: Editor) {
   }
 
   function syncQuery() {
-    editor.commands.docSearchSetQuery("");
+    editor.commands.docSearchClear();
     editor.commands.docSearchSetQuery(input.value);
     updateCount();
   }
 
-  function open(focus: boolean = true) {
+  function open() {
     inputWrapper.classList.remove("invisible");
-    if (focus) {
-      input.focus();
-      input.select();
-    }
+    input.focus();
+    input.select();
     updateButtons();
   }
 
@@ -177,35 +161,11 @@ function initEditorSearch(editor: Editor) {
     }
   });
 
-  function syncDocSearch() {
-    const activeId = stateStore.get("activeId");
-    const query = stateStore.get("searchQuery").trim();
-    const currentQuery = editor.storage.docSearch.query ?? "";
-    const reset = () => {
-      if (currentQuery) {
-        editor.commands.docSearchSetQuery("");
-      }
-      close();
-    };
-    if (!activeId) {
-      close();
-      return;
-    }
-    if (!query || query.length <= MIN_SEARCH_LENGTH) {
-      reset();
-      return;
-    }
-    input.value = query;
-    debouncedSearch();
-    open(false);
-  }
-
-  const debouncedSearch = debounce(() => {
-    syncQuery();
-    updateButtons();
-  }, DEBOUNCE_MS.normal);
-
-  input.addEventListener("input", debouncedSearch);
+  chevronBtn.addEventListener("click", () => {
+    const isHidden = replaceInputWrapper.classList.toggle("invisible");
+    chevronBtn.classList.toggle("open", !isHidden);
+    if (!isHidden) replaceInput.focus();
+  });
 
   input.addEventListener("keydown", (event) => {
     if (event.repeat) return;
@@ -244,12 +204,13 @@ function initEditorSearch(editor: Editor) {
       open();
     }
   });
-  updateButtons();
-  return {
-    syncDocSearch,
-    open,
-    close,
-  };
+
+  const debouncedSearch = debounce(() => {
+    syncQuery();
+    updateButtons();
+  }, DEBOUNCE_MS.normal);
+
+  input.addEventListener("input", debouncedSearch);
 }
 
-export { initDocSearch, initEditorSearch, recreateEditorState };
+export { initEditorSearch, recreateEditorState };

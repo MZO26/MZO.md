@@ -1,4 +1,5 @@
 import { rendererLogger } from "@/app";
+import { initEditorSearch } from "@/components/editor/editor-features";
 import { applyTagView } from "@/components/sidebar/sidebar-features";
 import { ActiveCodeHighlight } from "@/extensions/codeblock-highlight";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
@@ -227,6 +228,7 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
     },
     true,
   );
+  initEditorSearch(editor);
 }
 
 export { editor, getNoteEditorExtensions, initEditor, setupEditorListeners };

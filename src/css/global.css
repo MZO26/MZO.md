@@ -273,6 +273,11 @@ label {
   text-overflow: ellipsis;
 }
 
+input::selection {
+  background-color: var(--selection-bg);
+  color: var(--text-main);
+}
+
 .lucide {
   width: 18px;
   height: 18px;

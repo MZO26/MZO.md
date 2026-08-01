@@ -1,13 +1,7 @@
 import { rendererLogger } from "@/app";
-import { docSearchApi } from "@/components/editor/editor-features";
-
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
-import {
-  areArraysShallowEqual,
-  getVisibleNotes,
-  sidebarListener,
-} from "@/state/state-helpers";
+import { getVisibleNotes, sidebarListener } from "@/state/state-helpers";
 import { findElement, setActiveItem } from "@/utils/dom";
 import { compareNotes } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
@@ -50,27 +44,9 @@ stateStore.subscribeSel(
       sidebar,
     );
     if (noteElement) setActiveItem(noteElement, sidebar);
-    docSearchApi?.syncDocSearch();
   },
 );
 
-stateStore.subscribeSel(
-  (state) => ({ tag: state.activeTag, query: state.searchQuery }),
-  (current, prev) => {
-    sidebarListener();
-    if (current.query !== prev.query && stateStore.get("activeId")) {
-      docSearchApi?.syncDocSearch();
-    }
-  },
-  (a, b) => a.tag === b.tag && a.query === b.query,
-);
-
-noteStore.subscribeSel(
-  getVisibleNotes,
-  () => {
-    sidebarListener();
-  },
-  areArraysShallowEqual,
-);
+noteStore.subscribeSel(getVisibleNotes, () => sidebarListener());
 
 export { initSettings, syncNoteStore };

@@ -99,39 +99,29 @@ function areArraysShallowEqual<T>(previous: T[], next: T[]) {
   );
 }
 
-function getVisibleNotes(state: NoteStore) {
-  return state.visibleIds
-    .map((id) => state.noteIndex.get(id))
-    .filter((note): note is NoteListItem => !!note);
+function getVisibleNotes(state: NoteStore): NoteListItem[] {
+  const visibleNotes: NoteListItem[] = [];
+  for (const id of state.visibleIds) {
+    if (!id) continue;
+    const note = state.noteIndex.get(id);
+    if (note) visibleNotes.push(note);
+  }
+  return visibleNotes;
 }
 
 function getSidebarParams(): SidebarParams {
   const { searchQuery, activeTag } = stateStore.getState();
+  const noteState = noteStore.getState();
   return {
-    visibleNotes: getVisibleNotes(noteStore.getState()),
+    visibleNotes: getVisibleNotes(noteState),
     query: typeof searchQuery === "string" ? searchQuery.trim() : "",
     activeTag: activeTag ?? null,
   };
 }
 
-function areSameSidebarParams(
-  a: SidebarParams | null,
-  b: SidebarParams,
-): boolean {
-  if (!a) return false;
-  return (
-    a.query === b.query &&
-    a.activeTag === b.activeTag &&
-    areArraysShallowEqual(a.visibleNotes, b.visibleNotes)
-  );
-}
-
 function createSidebarListener() {
-  let prevSidebarParams: SidebarParams | null = null;
   return () => {
     const next = getSidebarParams();
-    if (areSameSidebarParams(prevSidebarParams, next)) return;
-    prevSidebarParams = next;
     updateNoteCount(next.visibleNotes.length);
     handleSidebarChange(next);
   };
@@ -146,6 +136,7 @@ export {
   applyView,
   areArraysShallowEqual,
   clearActiveTagView,
+  createSidebarListener,
   getSidebarParams,
   getVisibleNotes,
   markNoteAsRecent,

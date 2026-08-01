@@ -1,6 +1,5 @@
 import { getAll, getAllSettings } from "@/api/api";
 import { initListeners } from "@/api/callbacks";
-import { initDocSearch } from "@/components/editor/editor-features";
 import { setupEditorListeners } from "@/components/editor/editor-init";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { initQuickSwitcher } from "@/components/quick-switch/quick-switch";
@@ -58,7 +57,6 @@ async function initApp() {
   syncNoteStore(notesResult.data);
   initNotesSidebar();
   initQuickSwitcher();
-  initDocSearch();
   handleSidebarChange(getSidebarParams());
   handleEditorEmptyState(stateStore.get("activeId"));
   if (settings["toolbar_collapsed"] === true) {

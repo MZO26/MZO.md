@@ -71,31 +71,24 @@ function keysOf<T extends object>(obj: T): (keyof T)[] {
 
 function createStore<T extends object>(initialState: T): Store<T> {
   let isUpdating = false;
-  let pendingNotify = false;
   let state = { ...initialState };
-  const listeners = new Set<(state: T) => void>();
+  const listeners = new Set<
+    (state: Readonly<T>, prevState: Readonly<T>) => void
+  >();
   function getState(): Readonly<T> {
     return state;
   }
   function get<K extends keyof T>(key: K): Readonly<T[K]> {
     return state[key];
   }
-  function notify() {
+  function notify(prevState: Readonly<T>) {
     const snapshot = [...listeners];
     snapshot.forEach((listener) => {
       try {
-        listener(state);
+        listener(state, prevState);
       } catch (error) {
         stateLogger.appError("[store] listener failed", error);
       }
-    });
-  }
-  function scheduleNotify() {
-    if (pendingNotify) return;
-    pendingNotify = true;
-    queueMicrotask(() => {
-      pendingNotify = false;
-      notify();
     });
   }
   function setState(
@@ -114,15 +107,18 @@ function createStore<T extends object>(initialState: T): Store<T> {
       }
     }
     if (!hasChanged) return;
+    const prevState = state;
+    state = { ...state, ...update };
     isUpdating = true;
     try {
-      state = { ...state, ...update };
-      scheduleNotify();
+      notify(prevState);
     } finally {
       isUpdating = false;
     }
   }
-  function subscribe(listener: (state: Readonly<T>) => void) {
+  function subscribe(
+    listener: (state: Readonly<T>, prevState: Readonly<T>) => void,
+  ) {
     listeners.add(listener);
     return () => listeners.delete(listener);
   }
@@ -140,6 +136,7 @@ function createStore<T extends object>(initialState: T): Store<T> {
       listener(nextSelected, prev);
     });
   }
+
   return { getState, get, setState, subscribe, subscribeSel };
 }
 
