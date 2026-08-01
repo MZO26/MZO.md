@@ -1,4 +1,6 @@
 import { rendererLogger } from "@/app";
+import { docSearchApi } from "@/components/editor/editor-features";
+
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
@@ -79,6 +81,7 @@ stateStore.subscribe((state) => {
       sidebar,
     );
     if (noteElement) setActiveItem(noteElement, sidebar);
+    docSearchApi?.syncDocSearch();
   }
   const tagChanged = state.activeTag !== prevTag;
   const queryChanged = state.searchQuery !== prevQuery;
@@ -86,6 +89,7 @@ stateStore.subscribe((state) => {
     prevTag = state.activeTag;
     prevQuery = state.searchQuery;
     syncSidebar();
+    if (queryChanged) docSearchApi?.syncDocSearch();
   }
 });
 

@@ -1,6 +1,6 @@
 import { getTemplateItem } from "@/utils/registry";
+import { createTooltipContent } from "@/utils/ui";
 import type { TemplateRegistry } from "@shared/types";
-import { createTooltipContent } from "./ui";
 
 function requireElement<T extends HTMLElement>(
   selector: string,

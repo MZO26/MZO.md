@@ -1,10 +1,18 @@
 import { rendererLogger } from "@/app";
+import { stateStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
-import { DEBOUNCE_MS } from "@shared/constants";
+import { DEBOUNCE_MS, MIN_SEARCH_LENGTH } from "@shared/constants";
 import { Editor, type JSONContent } from "@tiptap/core";
+
+export let docSearchApi: ReturnType<typeof initEditorSearch> | null = null;
+
+function initDocSearch() {
+  const editor = getAppItem("editor");
+  docSearchApi = initEditorSearch(editor);
+}
 
 function recreateEditorState(editor: Editor, doc: JSONContent) {
   editor
@@ -57,14 +65,17 @@ function initEditorSearch(editor: Editor) {
   }
 
   function syncQuery() {
+    editor.commands.docSearchSetQuery("");
     editor.commands.docSearchSetQuery(input.value);
     updateCount();
   }
 
-  function open() {
+  function open(focus: boolean = true) {
     inputWrapper.classList.remove("invisible");
-    input.focus();
-    input.select();
+    if (focus) {
+      input.focus();
+      input.select();
+    }
     updateButtons();
   }
 
@@ -166,16 +177,28 @@ function initEditorSearch(editor: Editor) {
     }
   });
 
-  // function syncDocSearch(activeId: string, query: SearchQuery) {
-  //   if (stateStore.get("activeId") !== activeId) return;
-  //   if (editor.storage.docSearch.query === query) return;
-  //   if (query.trim().length > MIN_SEARCH_LENGTH) {
-  //     open();
-  //     editor.commands.docSearchSetQuery(query);
-  //     updateCount();
-  //     updateButtons();
-  //   } else close();
-  // }
+  function syncDocSearch() {
+    const activeId = stateStore.get("activeId");
+    const query = stateStore.get("searchQuery").trim();
+    const currentQuery = editor.storage.docSearch.query ?? "";
+    const reset = () => {
+      if (currentQuery) {
+        editor.commands.docSearchSetQuery("");
+      }
+      close();
+    };
+    if (!activeId) {
+      close();
+      return;
+    }
+    if (!query || query.length <= MIN_SEARCH_LENGTH) {
+      reset();
+      return;
+    }
+    input.value = query;
+    debouncedSearch();
+    open(false);
+  }
 
   const debouncedSearch = debounce(() => {
     syncQuery();
@@ -222,6 +245,11 @@ function initEditorSearch(editor: Editor) {
     }
   });
   updateButtons();
+  return {
+    syncDocSearch,
+    open,
+    close,
+  };
 }
 
-export { initEditorSearch, recreateEditorState };
+export { initDocSearch, initEditorSearch, recreateEditorState };
