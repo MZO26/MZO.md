@@ -11,7 +11,7 @@ interface Store<T> {
   subscribe: (listener: (state: Readonly<T>) => void) => () => void;
   subscribeSel: <S>(
     selector: (state: Readonly<T>) => S,
-    listener: (selected: S) => void,
+    listener: (selected: S, previous: S) => void,
     isEqual?: (previous: S, next: S) => boolean,
   ) => () => void;
 }
@@ -128,15 +128,16 @@ function createStore<T extends object>(initialState: T): Store<T> {
   }
   function subscribeSel<S>(
     selector: (state: Readonly<T>) => S,
-    listener: (selected: S) => void,
+    listener: (selected: S, previous: S) => void,
     isEqual: (previous: S, next: S) => boolean = Object.is,
   ) {
     let previousSelected = selector(state);
     return subscribe((state) => {
       const nextSelected = selector(state);
       if (isEqual(previousSelected, nextSelected)) return;
+      const prev = previousSelected;
       previousSelected = nextSelected;
-      listener(nextSelected);
+      listener(nextSelected, prev);
     });
   }
   return { getState, get, setState, subscribe, subscribeSel };

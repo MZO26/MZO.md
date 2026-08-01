@@ -26,7 +26,9 @@ import {
 } from "@shared/constants";
 import type { SearchQuery } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
-import type { ResizeOptions } from "@shared/types";
+import type { AllTagsMenu, ResizeOptions } from "@shared/types";
+
+let allTagsMenu: AllTagsMenu | null = null;
 
 async function handleSearch(searchInput: SearchQuery) {
   const nextQuery = searchInput.trim();
@@ -69,17 +71,6 @@ function updateStats() {
   wordCountEl.textContent = words === 1 ? "1 word" : `${words} words`;
   readingTime.textContent = estimateReadingTime(words);
 }
-
-type AllTagsMenu = {
-  popover: HTMLDivElement;
-  content: HTMLDivElement;
-  render(tags: string[]): void;
-  toggle(): void;
-  open(): void;
-  close(): void;
-};
-
-let allTagsMenu: AllTagsMenu | null = null;
 
 function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   const popover = document.createElement("div");

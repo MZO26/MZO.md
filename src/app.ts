@@ -14,11 +14,8 @@ import {
 } from "@/components/toolbar/toolbar-init";
 import { initAppSettings } from "@/settings/setting-init";
 import { stateStore } from "@/state/state";
-import {
-  getSidebarParams,
-  initSettings,
-  syncNoteStore,
-} from "@/state/state-init";
+import { getSidebarParams } from "@/state/state-helpers";
+import { initSettings, syncNoteStore } from "@/state/state-init";
 import { startAppClock } from "@/utils/date";
 import { renderIcons } from "@/utils/icons";
 import {

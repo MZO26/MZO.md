@@ -1,8 +1,11 @@
 import { updateSettings } from "@/api/api";
+import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { noteStore, stateStore, type NoteStore } from "@/state/state";
+import { updateNoteCount } from "@/utils/note";
 import { getUIItem } from "@/utils/registry";
 import { UNTAGGED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { SidebarParams } from "@shared/types";
 
 function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
   if (activeTag === null) return true;
@@ -38,31 +41,20 @@ function clearActiveTagView() {
 }
 
 function applySearch(
-  matches: {
-    snippet: string;
-    id: string;
-    title: string;
-    rank: number;
-  }[],
+  matches: { snippet: string; id: string; title: string; rank: number }[],
 ) {
-  const matchedIdSet = new Set(matches.map((match) => match.id));
   const searchSnippets: Record<string, string> = {};
+  const visibleIds: string[] = [];
+  const activeTag = stateStore.get("activeTag");
+  const noteIndex = noteStore.get("noteIndex");
   for (const match of matches) {
     searchSnippets[match.id] = match.snippet;
+    const note = noteIndex.get(match.id);
+    if (note && matchesActiveTag(note, activeTag)) {
+      visibleIds.push(match.id);
+    }
   }
-  const activeTag = stateStore.get("activeTag");
-  const notes = noteStore.get("notes");
-  const visibleIds = notes
-    .filter((note) => {
-      const isMatch = matchedIdSet.has(note.id);
-      const matchesScope = matchesActiveTag(note, activeTag);
-      return isMatch && matchesScope;
-    })
-    .map((note) => note.id);
-  noteStore.setState({
-    visibleIds,
-    searchSnippets,
-  });
+  noteStore.setState({ visibleIds, searchSnippets });
 }
 
 function restoreSidebarScope() {
@@ -113,6 +105,40 @@ function getVisibleNotes(state: NoteStore) {
     .filter((note): note is NoteListItem => !!note);
 }
 
+function getSidebarParams(): SidebarParams {
+  const { searchQuery, activeTag } = stateStore.getState();
+  return {
+    visibleNotes: getVisibleNotes(noteStore.getState()),
+    query: typeof searchQuery === "string" ? searchQuery.trim() : "",
+    activeTag: activeTag ?? null,
+  };
+}
+
+function areSameSidebarParams(
+  a: SidebarParams | null,
+  b: SidebarParams,
+): boolean {
+  if (!a) return false;
+  return (
+    a.query === b.query &&
+    a.activeTag === b.activeTag &&
+    areArraysShallowEqual(a.visibleNotes, b.visibleNotes)
+  );
+}
+
+function createSidebarListener() {
+  let prevSidebarParams: SidebarParams | null = null;
+  return () => {
+    const next = getSidebarParams();
+    if (areSameSidebarParams(prevSidebarParams, next)) return;
+    prevSidebarParams = next;
+    updateNoteCount(next.visibleNotes.length);
+    handleSidebarChange(next);
+  };
+}
+
+const sidebarListener = createSidebarListener();
+
 export {
   applySearch,
   applyTagView,
@@ -120,10 +146,12 @@ export {
   applyView,
   areArraysShallowEqual,
   clearActiveTagView,
+  getSidebarParams,
   getVisibleNotes,
   markNoteAsRecent,
   matchesActiveTag,
   pruneRecentNotes,
   removeRecentNote,
   restoreSidebarScope,
+  sidebarListener,
 };

@@ -88,18 +88,16 @@ export const WikiLinkPreview = Extension.create({
       }
       this.storage.activeId = id;
       const rect = wikilink.getBoundingClientRect();
-      Object.assign(element.style, {
-        left: `${rect.left + window.scrollX}px`,
-        top: `${rect.bottom + window.scrollY + 8}px`,
-      });
+      element.style.left = `${rect.left + window.scrollX}px`;
+      element.style.top = `${rect.bottom + window.scrollY + 8}px`;
       element.classList.remove("hidden");
     };
     const handlers: PreviewHandlers = {
       over: (e: PointerEvent) => {
         window.clearTimeout(this.storage.timer);
-        const linkEl = (e.target as HTMLElement)?.closest<HTMLElement>(
-          "[data-wikilink]",
-        );
+        const target = e.target as HTMLElement | null;
+        if (!target) return;
+        const linkEl = target.closest<HTMLElement>("[data-wikilink]");
         if (linkEl && this.storage.activeId !== linkEl.dataset["id"]) {
           this.storage.timer = window.setTimeout(() => show(linkEl), 300);
         }

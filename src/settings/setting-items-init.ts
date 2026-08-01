@@ -3,8 +3,7 @@ import { rendererLogger } from "@/app";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { selectBuilder } from "@/settings/setting-factory";
 import { applyAppTheme, resolveTheme, setCodeTheme } from "@/settings/theme";
-import { noteStore, stateStore } from "@/state/state";
-import { getVisibleNotes } from "@/state/state-helpers";
+import { getSidebarParams } from "@/state/state-helpers";
 import { createAsyncHandler } from "@/utils/async";
 import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
@@ -142,9 +141,8 @@ function initAppearanceSettings(
         note_item_display: target.value as NoteItemDisplay,
       });
       sidebar.setAttribute("data-noteItem", target.value);
-      const visibleNotes = getVisibleNotes(noteStore.getState());
-      const { searchQuery, activeTag } = stateStore.getState();
-      handleSidebarChange({ visibleNotes, query: searchQuery, activeTag });
+      const sidebarParams = getSidebarParams();
+      handleSidebarChange(sidebarParams);
     }),
   );
 }

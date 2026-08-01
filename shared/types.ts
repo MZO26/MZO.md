@@ -3,9 +3,9 @@ import type {
   SIDEBAR_FILTER_MODES,
 } from "@shared/constants";
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
+import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { ExportFormat, Theme } from "@shared/schemas/store-schema";
 import type { Editor, SetContentOptions } from "@tiptap/core";
-import type { NoteListItem } from "./schemas/note-schema";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -189,6 +189,15 @@ type SidebarParams = {
   activeTag?: string | null;
 };
 
+type AllTagsMenu = {
+  popover: HTMLDivElement;
+  content: HTMLDivElement;
+  render(tags: string[]): void;
+  toggle(): void;
+  open(): void;
+  close(): void;
+};
+
 type SelectionAction =
   | "cancel"
   | "pin"
@@ -211,12 +220,6 @@ type QuickActionConfig = {
   id: QuickAction;
   icon: string;
   label: string;
-};
-
-type AllTagsMenu = {
-  button: HTMLButtonElement;
-  popover: HTMLDivElement;
-  content: HTMLDivElement;
 };
 
 type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
