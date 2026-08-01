@@ -1,9 +1,10 @@
 import { rendererLogger } from "@/app";
+import { stateStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
-import { DEBOUNCE_MS } from "@shared/constants";
+import { DEBOUNCE_MS, MIN_SEARCH_LENGTH } from "@shared/constants";
 import { Editor, type JSONContent } from "@tiptap/core";
 
 function recreateEditorState(editor: Editor, doc: JSONContent) {
@@ -60,6 +61,12 @@ function initEditorSearch(editor: Editor) {
     inputWrapper.classList.remove("invisible");
     input.focus();
     input.select();
+    const globalQuery = stateStore.get("searchQuery");
+    if (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH) {
+      input.value = globalQuery;
+      editor.commands.docSearchSetQuery(globalQuery);
+      updateCount();
+    }
     updateButtons();
   }
 
@@ -202,6 +209,14 @@ function initEditorSearch(editor: Editor) {
     if (event.key === "f" || event.key === "F") {
       event.preventDefault();
       open();
+    }
+  });
+
+  editorWrapper.addEventListener("click", (event) => {
+    if (!inputWrapper.classList.contains("invisible")) {
+      event.preventDefault();
+      close();
+      return;
     }
   });
 

@@ -90,15 +90,6 @@ function pruneRecentNotes() {
   }));
 }
 
-function areArraysShallowEqual<T>(previous: T[], next: T[]) {
-  return (
-    previous.length === next.length &&
-    previous.every(
-      (previousItem, itemIndex) => previousItem === next[itemIndex],
-    )
-  );
-}
-
 function getVisibleNotes(state: NoteStore): NoteListItem[] {
   const visibleNotes: NoteListItem[] = [];
   for (const id of state.visibleIds) {
@@ -134,7 +125,6 @@ export {
   applyTagView,
   applyUntaggedView,
   applyView,
-  areArraysShallowEqual,
   clearActiveTagView,
   createSidebarListener,
   getSidebarParams,
