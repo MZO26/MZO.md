@@ -145,7 +145,7 @@ async function pinSelection(selectedIds: string[]) {
       noteIndex: noteIndex,
     };
   });
-  updateSelectionUI();
+  updateSelectionUI(selectedIdSet, stateStore.get("selectionMode"));
 }
 
 async function deleteSelection() {
@@ -166,7 +166,7 @@ async function deleteSelection() {
   if (nextSelectedIds.size === 0) {
     setSelectionMode(false);
   } else {
-    updateSelectionUI();
+    updateSelectionUI(nextSelectedIds, stateStore.get("selectionMode"));
   }
 }
 

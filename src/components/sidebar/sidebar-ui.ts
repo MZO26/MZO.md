@@ -1,9 +1,9 @@
-import { noteStore, stateStore } from "@/state/state";
+import { createNoteItem } from "@/components/sidebar/sidebar-note-items";
+import { stateStore } from "@/state/state";
 import {
   createIconButton,
   createInfoSpan,
   createTemplateCloner,
-  findElement,
   isDiv,
   requireElement,
   setActiveItem,
@@ -12,73 +12,7 @@ import { renderIcons } from "@/utils/icons";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@shared/constants";
-import type { NoteListItem } from "@shared/schemas/note-schema";
-import type { FilterMode } from "@shared/types";
-import { createNoteItem } from "./sidebar-note-items";
-
-const getSidebarEmptyStateClone = createTemplateCloner(
-  "sidebarEmptyStateTemplate",
-  isDiv,
-);
-
-function setSidebarState(element: HTMLDivElement, collapsed: boolean) {
-  const isCollapsed = element.classList.contains("collapsed");
-  if (isCollapsed === collapsed) return;
-  element.classList.toggle("collapsed", collapsed);
-}
-
-function handleSidebarEmptyState() {
-  const sidebar = getAppItem("sidebar");
-  const visibleIds = noteStore.get("visibleIds");
-  let shouldShowEmptyState = false;
-  if (visibleIds.length === 0) shouldShowEmptyState = true;
-  const existingEmptyState = findElement<HTMLDivElement>(
-    ".sidebar-empty-state",
-    sidebar,
-  );
-  if (shouldShowEmptyState) {
-    if (!existingEmptyState) {
-      const newEmptyState = getSidebarEmptyStateClone();
-      updateSidebarEmptyState(newEmptyState);
-      sidebar.appendChild(newEmptyState);
-    } else {
-      updateSidebarEmptyState(existingEmptyState);
-    }
-  } else {
-    if (existingEmptyState) {
-      existingEmptyState.remove();
-    }
-  }
-}
-
-function updateSidebarEmptyState(emptyState: HTMLDivElement) {
-  const searchQuery = stateStore.get("searchQuery");
-  const isSearch = !!searchQuery?.trim();
-  const titleEl = requireElement<HTMLHeadingElement>(
-    ".empty-state-title",
-    emptyState,
-  );
-  const descEl = requireElement<HTMLParagraphElement>(
-    ".empty-state-description",
-    emptyState,
-  );
-  const iconEl = requireElement<HTMLElement>("#sidebar-empty-icon", emptyState);
-  const newIcon = document.createElement("i");
-  if (isSearch) {
-    newIcon.setAttribute("data-lucide", "search-x");
-    titleEl.textContent = "No results found";
-    const strongEl = document.createElement("strong");
-    strongEl.textContent = `"${searchQuery}"`;
-    descEl.replaceChildren("No notes matching ", strongEl);
-  } else {
-    newIcon.setAttribute("data-lucide", "library");
-    titleEl.textContent = "No notes here";
-  }
-  iconEl.replaceChildren(newIcon);
-  renderIcons(emptyState);
-}
-
-// note list
+import type { FilterMode, SidebarParams } from "@shared/types";
 
 function getTagDisplayLabel(tag: string): string {
   if (tag === UNTAGGED) return "Untagged";
@@ -123,9 +57,65 @@ function handleHeaderChange(change: FilterMode, activeTag?: string) {
   }
 }
 
-function renderNoteList(notes: Readonly<NoteListItem[]>) {
+const getSidebarEmptyStateClone = createTemplateCloner(
+  "sidebarEmptyStateTemplate",
+  isDiv,
+);
+
+function setSidebarState(element: HTMLDivElement, collapsed: boolean) {
+  const isCollapsed = element.classList.contains("collapsed");
+  if (isCollapsed === collapsed) return;
+  element.classList.toggle("collapsed", collapsed);
+}
+
+function renderSidebarEmptyState(sidebarParams: SidebarParams) {
   const sidebar = getAppItem("sidebar");
-  const { activeId, activeTag, searchQuery } = stateStore.getState();
+  const emptyState = getSidebarEmptyStateClone();
+  updateSidebarEmptyState(emptyState, sidebarParams.query);
+  sidebar.replaceChildren(emptyState);
+}
+
+function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
+  const isSearch = !!query;
+  const titleEl = requireElement<HTMLHeadingElement>(
+    ".empty-state-title",
+    emptyState,
+  );
+  const descEl = requireElement<HTMLParagraphElement>(
+    ".empty-state-description",
+    emptyState,
+  );
+  const iconEl = requireElement<HTMLElement>("#sidebar-empty-icon", emptyState);
+  const newIcon = document.createElement("i");
+  if (isSearch) {
+    newIcon.setAttribute("data-lucide", "search-x");
+    titleEl.textContent = "No results found";
+    const strongEl = document.createElement("strong");
+    strongEl.textContent = `"${query}"`;
+    descEl.replaceChildren("No notes matching ", strongEl);
+  } else {
+    newIcon.setAttribute("data-lucide", "library");
+    titleEl.textContent = "No notes here";
+  }
+  iconEl.replaceChildren(newIcon);
+  renderIcons(emptyState);
+}
+
+function handleSidebarChange(sidebarParams: SidebarParams) {
+  const safeQuery =
+    typeof sidebarParams.query === "string" ? sidebarParams.query.trim() : "";
+  const nextParams = { ...sidebarParams, query: safeQuery };
+  if (sidebarParams.visibleNotes.length === 0) {
+    renderSidebarEmptyState(nextParams);
+    return;
+  }
+  renderNoteList(nextParams);
+}
+
+function renderNoteList(sidebarParams: SidebarParams) {
+  const sidebar = getAppItem("sidebar");
+  const activeId = stateStore.get("activeId");
+  const { visibleNotes: notes, query: searchQuery, activeTag } = sidebarParams;
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
   let currentMode: FilterMode = "recent";
@@ -166,7 +156,7 @@ function renderNoteList(notes: Readonly<NoteListItem[]>) {
 }
 
 export {
-  handleSidebarEmptyState,
+  handleSidebarChange,
   renderNoteList,
   setSidebarState,
   updateNoteCount,

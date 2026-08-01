@@ -188,13 +188,19 @@ function applySidebarListeners(
       const id = noteItem?.getAttribute("data-id");
       if (!id) return;
       if (stateStore.get("selectionMode") === true) {
-        const selectedIds = stateStore.get("selectedIds");
-        if (selectedIds.has(id)) {
-          selectedIds.delete(id);
+        const prevSelectedIds = stateStore.get("selectedIds");
+        const nextSelectedIds = new Set(prevSelectedIds);
+        if (nextSelectedIds.has(id)) {
+          nextSelectedIds.delete(id);
         } else {
-          selectedIds.add(id);
+          nextSelectedIds.add(id);
         }
-        updateSelectionUI();
+        const selectionMode = nextSelectedIds.size > 0;
+        stateStore.setState({
+          selectedIds: nextSelectedIds,
+          selectionMode,
+        });
+        updateSelectionUI(nextSelectedIds, selectionMode);
         return;
       }
       const loading = createGlobalSpinner();

@@ -1,7 +1,3 @@
-import {
-  handleSidebarEmptyState,
-  renderNoteList,
-} from "@/components/sidebar/sidebar-ui";
 import { noteStore, settingsStore } from "@/state/state";
 import { formatNoteDate } from "@/utils/date";
 import { createTemplateCloner, findElement, isDiv } from "@/utils/dom";
@@ -31,18 +27,23 @@ function createNoteItem(note: Readonly<NoteListItem>) {
   const display = settingsStore.get("note_item_display");
   item.setAttribute("data-id", note.id);
   item.setAttribute("data-pinned", String(!!note.pinned));
-  item.title = note.title;
+  const safeTitle = note.title.trim() || UNTITLED;
+  item.title = safeTitle;
   if (note.pinned) renderIcons(item);
   const titleEl = findElement<HTMLSpanElement>(".note-title", item);
-  if (titleEl) titleEl.textContent = note.title.trim() || UNTITLED;
+  if (titleEl) titleEl.textContent = safeTitle;
   const dateEl = findElement<HTMLDivElement>(".note-date", item);
   if (dateEl) dateEl.textContent = formatNoteDate(note.updated_at);
   getSafeSnippet(item, note, display);
   const tagsContainer = findElement<HTMLDivElement>(".note-tags", item);
   if (tagsContainer) {
     tagsContainer.replaceChildren();
-    if (display === "tags") {
-      for (const tag of note.tags ?? []) {
+    if (
+      display === "tags" &&
+      Array.isArray(note.tags) &&
+      note.tags.length > 0
+    ) {
+      for (const tag of note.tags) {
         const span = document.createElement("span");
         span.classList.add("tag");
         span.textContent = `#${tag}`;
@@ -53,9 +54,4 @@ function createNoteItem(note: Readonly<NoteListItem>) {
   return item;
 }
 
-function refreshSidebar(notes: Readonly<NoteListItem[]>) {
-  renderNoteList(notes);
-  handleSidebarEmptyState();
-}
-
-export { createNoteItem, refreshSidebar };
+export { createNoteItem };

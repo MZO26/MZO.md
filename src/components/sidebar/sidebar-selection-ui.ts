@@ -6,11 +6,13 @@ import { SELECTION_ACTIONS } from "@shared/constants";
 
 function selectAllVisibleNotes() {
   const visibleIds = noteStore.get("visibleIds") ?? [];
+  const selectedIds = new Set(visibleIds);
+  const selectionMode = true;
   stateStore.setState({
-    selectedIds: new Set(visibleIds),
-    selectionMode: true,
+    selectedIds,
+    selectionMode,
   });
-  updateSelectionUI();
+  updateSelectionUI(selectedIds, selectionMode);
 }
 
 function initSelectionFooter() {
@@ -44,9 +46,11 @@ function getActionLabel(actionId: string, selectedCount: number): string {
   }
 }
 
-function updateSelectionFooter() {
-  const selectionMode = stateStore.get("selectionMode");
-  const selectedCount = stateStore.get("selectedIds").size;
+function updateSelectionFooter(
+  selectedIds: Set<string>,
+  selectionMode: boolean,
+) {
+  const selectedCount = selectedIds.size;
   const selectionFooter = getUIItem("selectionFooter");
   selectionFooter.classList.toggle("collapsed", !selectionMode);
   for (const action of SELECTION_ACTIONS) {
@@ -62,21 +66,24 @@ function updateSelectionFooter() {
 }
 
 function setSelectionMode(enabled: boolean) {
+  const prevSelectedIds = stateStore.get("selectedIds");
+  const nextSelectedIds = enabled
+    ? new Set<string>(prevSelectedIds)
+    : new Set<string>();
   stateStore.setState({
     selectionMode: enabled,
-    selectedIds: enabled ? stateStore.get("selectedIds") : new Set(),
+    selectedIds: nextSelectedIds,
   });
-  updateSelectionUI();
+  updateSelectionUI(nextSelectedIds, enabled);
 }
 
-function updateSelectionUI() {
-  const { selectedIds, selectionMode } = stateStore.getState();
+function updateSelectionUI(selectedIds: Set<string>, selectionMode: boolean) {
   const sidebar = getAppItem("sidebar");
   sidebar.classList.toggle("selection-mode", selectionMode);
-  const noteItems = [...sidebar.querySelectorAll<HTMLDivElement>(".note-item")];
+  const noteItems = sidebar.querySelectorAll<HTMLDivElement>(".note-item");
   for (const item of noteItems) {
-    const id = item?.getAttribute("data-id");
-    const isSelected = !!id && selectedIds.has(id);
+    const id = item.getAttribute("data-id");
+    const isSelected = selectionMode && !!id && selectedIds.has(id);
     item.classList.toggle("selected", isSelected);
     const checkbox = findElement<HTMLInputElement>(".select-checkbox", item);
     if (checkbox) {
@@ -84,7 +91,7 @@ function updateSelectionUI() {
     }
   }
   initSelectionFooter();
-  updateSelectionFooter();
+  updateSelectionFooter(selectedIds, selectionMode);
 }
 
 export { selectAllVisibleNotes, setSelectionMode, updateSelectionUI };

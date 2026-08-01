@@ -551,7 +551,7 @@
 
 .tags-popover-item {
   padding: 5px 7px;
-  font-size: 11px;
+  font-size: 0.7rem;
   width: max-content;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -1089,7 +1089,9 @@ svg.empty-state-icon {
   max-height: 100px;
   width: fit-content;
   max-width: 80ch;
+  font-size: 0.9em;
   background-color: var(--tooltip-bg);
+  color: var(--text-muted);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -1099,12 +1101,16 @@ svg.empty-state-icon {
   padding: 8px 0;
 }
 
-.wikilink-preview-content > .note-tags {
+.wikilink-preview-content .note-tags {
   display: flex;
   width: 100%;
   align-items: center;
   gap: 5px;
   overflow: hidden;
+}
+
+.wikilink-preview-content .note-tags .tag {
+  font-size: 0.8em;
 }
 
 .wikilink-preview.hidden {

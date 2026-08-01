@@ -67,7 +67,7 @@ function triggerNoteItemMenu(payload: NoteMenuPayload) {
   );
   if (!noteElement) return;
   if (payload.pinned !== undefined) {
-    noteElement.dataset["pinned"] = String(payload.pinned);
+    noteElement.dataset["pinned"] = String(!!payload.pinned);
   }
 }
 

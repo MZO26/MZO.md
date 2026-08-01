@@ -5,6 +5,7 @@ import type {
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
 import type { ExportFormat, Theme } from "@shared/schemas/store-schema";
 import type { Editor, SetContentOptions } from "@tiptap/core";
+import type { NoteListItem } from "./schemas/note-schema";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -182,6 +183,12 @@ type ResizeOptions = {
   cssVariable?: string;
 };
 
+type SidebarParams = {
+  visibleNotes: NoteListItem[];
+  query: string;
+  activeTag?: string | null;
+};
+
 type SelectionAction =
   | "cancel"
   | "pin"
@@ -244,6 +251,7 @@ export type {
   SelectionActionConfig,
   SelectOption,
   SettingsCategory,
+  SidebarParams,
   Success,
   TableAction,
   TemplateRegistry,

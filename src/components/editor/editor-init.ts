@@ -21,13 +21,11 @@ import { CustomHeading } from "@/extensions/overrides/headings";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { Placeholder } from "@/extensions/placeholder";
 import { DocSearch } from "@/extensions/search-replace";
-import { NoteTag } from "@/extensions/tag/tag";
 import { NoteTagHandler } from "@/extensions/tag/tag-handler";
 import { TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
 import { WikilinkHandler } from "@/extensions/wikilink/wikilink-handler";
 import { WikiLinkPreview } from "@/extensions/wikilink/wikilink-preview";
-import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { restoreSidebarScope } from "@/state/state-helpers";
@@ -202,37 +200,6 @@ function getNoteEditorExtensions() {
   ];
 }
 
-function getRequestExtensions() {
-  return [
-    ListKit.configure({
-      taskItem: { nested: true },
-    }),
-    CustomUnderline,
-    Highlight,
-    WikiLink,
-    Image,
-    Table,
-    TableRow,
-    TableCell,
-    TableHeader,
-    NoteTag,
-    CustomHeading.configure({
-      levels: [1, 2, 3, 4, 5, 6],
-    }),
-    StarterKit.configure({
-      heading: false,
-      listItem: false,
-      listKeymap: false,
-      orderedList: false,
-      bulletList: false,
-      underline: false,
-      trailingNode: false,
-    }),
-    CustomBlockMath,
-    CustomInlineMath,
-  ];
-}
-
 function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   editorWrapper.addEventListener("contextmenu", (e: MouseEvent) => {
     const target = e.target as HTMLElement | null;
@@ -263,10 +230,4 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   initEditorSearch(editor);
 }
 
-export {
-  editor,
-  getNoteEditorExtensions,
-  getRequestExtensions,
-  initEditor,
-  setupEditorListeners,
-};
+export { editor, getNoteEditorExtensions, initEditor, setupEditorListeners };
