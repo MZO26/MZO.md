@@ -5,7 +5,7 @@ import { win } from "@electron/main";
 import { ZOOMS } from "@shared/constants";
 import type { ZoomAction } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
-import { BrowserWindow } from "electron";
+import { BrowserWindow, screen } from "electron";
 
 function nextZoom(current: number, action: ZoomAction) {
   if (action === "get") return current;
@@ -19,6 +19,15 @@ function nextZoom(current: number, action: ZoomAction) {
     targetIndex = Math.max(safeIndex - 1, 0);
   }
   return ZOOMS[targetIndex] ?? 1;
+}
+
+function isWindowVisible(x: number, y: number): boolean {
+  return screen
+    .getAllDisplays()
+    .some(
+      ({ bounds: d }) =>
+        x >= d.x && y >= d.y && x < d.x + d.width && y < d.y + d.height,
+    );
 }
 
 function saveWindowBounds() {
@@ -70,4 +79,4 @@ const createHiddenPdfWindow = () => {
   return hiddenWin;
 };
 
-export { createHiddenPdfWindow, nextZoom, saveWindowBounds };
+export { createHiddenPdfWindow, isWindowVisible, nextZoom, saveWindowBounds };

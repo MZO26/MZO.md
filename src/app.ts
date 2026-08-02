@@ -26,7 +26,7 @@ import {
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { createLogger } from "@shared/log";
 
-export const rendererLogger = createLogger(import.meta.env.DEV);
+export const rendererLogger = createLogger(true);
 
 async function initApp() {
   const notesResult = await getAll();
@@ -65,4 +65,4 @@ async function initApp() {
   rendererLogger.timeEnd("DOM Loading Time");
   rendererLogger.devLog("App started successfully");
 }
-initApp();
+await initApp();

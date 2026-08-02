@@ -42,9 +42,6 @@ function subscribe<T extends unknown[]>(
 }
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld("appInfo", {
-      isMac: process.platform === "darwin",
-    });
     contextBridge.exposeInMainWorld("electronAPI", {
       getPathForFile: (file: File) => webUtils.getPathForFile(file),
       showNotification: (
@@ -158,5 +155,6 @@ if (process.contextIsolated) {
     });
   } catch (error) {
     console.error("[PRELOAD]: Failed to load preload:", error);
+    throw error;
   }
 }

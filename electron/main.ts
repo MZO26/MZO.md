@@ -17,7 +17,7 @@ import {
   initTheme,
   onOSThemeChange,
 } from "@electron/titlebar";
-import { saveWindowBounds } from "@electron/win";
+import { isWindowVisible, saveWindowBounds } from "@electron/win";
 import { DEFAULT_SETTINGS } from "@shared/constants";
 import { type AppSettings } from "@shared/schemas/store-schema";
 import {
@@ -80,8 +80,8 @@ async function createWindow() {
   const bounds = settings["window_bounds"];
   const windowConfig: BrowserWindowConstructorOptions = {
     show: false,
-    width: Math.max(1100, bounds?.width ?? 1100),
-    height: Math.max(800, bounds?.height ?? 800),
+    width: Math.max(800, bounds?.width ?? 1100),
+    height: Math.max(500, bounds?.height ?? 800),
     minWidth: 800,
     minHeight: 500,
     titleBarStyle: "hidden",
@@ -105,7 +105,11 @@ async function createWindow() {
       spellcheck: true,
     },
   };
-  if (bounds?.x !== undefined && bounds?.y !== undefined) {
+  if (
+    bounds?.x !== undefined &&
+    bounds?.y !== undefined &&
+    isWindowVisible(bounds.x, bounds.y)
+  ) {
     windowConfig.x = bounds.x;
     windowConfig.y = bounds.y;
   } else {
@@ -114,6 +118,9 @@ async function createWindow() {
   win = new BrowserWindow(windowConfig);
   navigationHandler(win);
   win.setMenuBarVisibility(false);
+  win.webContents.once("dom-ready", () => {
+    win?.show();
+  });
   if (!app.isPackaged && process.env["ELECTRON_RENDERER_URL"]) {
     win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
     win.webContents.openDevTools();

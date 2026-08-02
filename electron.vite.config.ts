@@ -52,6 +52,7 @@ export default defineConfig({
       },
     },
     root: resolve(__dirname, "."),
+    base: "./",
     build: {
       outDir: "dist",
       emptyOutDir: true,
@@ -65,7 +66,7 @@ export default defineConfig({
       port: 5173,
       strictPort: true,
       watch: {
-        ignored: ["**/dist/**", "**/node_modules/**"],
+        ignored: ["/dist/**", "/node_modules/**"],
       },
     },
   },
