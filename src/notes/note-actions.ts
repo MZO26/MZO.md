@@ -11,7 +11,7 @@ import {
 import { rendererLogger } from "@/app";
 import { recreateEditorState } from "@/components/editor/editor-features";
 import { updateToc } from "@/components/editor/editor-init";
-import { updateStats } from "@/components/sidebar/sidebar-features";
+import { updateStats } from "@/components/editor/editor-ui";
 import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
@@ -32,13 +32,9 @@ import {
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 
-// helpers
-
 function isAutoExportEnabled() {
   return settingsStore.get("auto_export") ?? false;
 }
-
-// create
 
 async function handleCreateNote() {
   const editor = getAppItem("editor");
@@ -74,8 +70,6 @@ async function handleCreateNote() {
   updateStats();
   markNoteAsRecent(result.data.id);
 }
-
-// import + create many
 
 async function handleImportNote(request: FilePathRequest) {
   const imported = await importNote(
@@ -123,8 +117,6 @@ async function handleImportNote(request: FilePathRequest) {
     ]),
   }));
 }
-
-// delete
 
 async function handleDeleteManyNotes(ids: string[]) {
   const activeId = stateStore.get("activeId");
@@ -187,8 +179,6 @@ async function handleDeleteNote(id: string) {
   removeRecentNote(id);
 }
 
-// update
-
 async function handleSaveNote(id: string, flush: boolean = false) {
   const activeId = stateStore.get("activeId");
   if (activeId !== id) return;
@@ -244,8 +234,6 @@ async function handleSaveNote(id: string, flush: boolean = false) {
 }
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
-
-// getById
 
 async function handleSelectNote(id: string) {
   const editor = getAppItem("editor");

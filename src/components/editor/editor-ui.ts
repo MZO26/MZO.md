@@ -1,6 +1,8 @@
+import { getTextMetrics } from "@/extensions/text-metrics";
 import { createTemplateCloner, findElement, isDiv } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { getAppItem, getTemplateItem } from "@/utils/registry";
+import { estimateReadingTime } from "@/utils/note";
+import { getAppItem, getTemplateItem, getUIItems } from "@/utils/registry";
 
 const getEditorEmptyStateClone = createTemplateCloner(
   "editorEmptyStateTemplate",
@@ -29,4 +31,18 @@ function handleEditorEmptyState(activeId: string | null) {
   }
 }
 
-export { handleEditorEmptyState };
+function updateStats() {
+  const editor = getAppItem("editor");
+  const { wordCountEl, charCountEl, readingTime } = getUIItems([
+    "wordCountEl",
+    "charCountEl",
+    "readingTime",
+  ]);
+  const { characters, words } = getTextMetrics(editor);
+  charCountEl.textContent =
+    characters === 1 ? "1 character" : `${characters} characters`;
+  wordCountEl.textContent = words === 1 ? "1 word" : `${words} words`;
+  readingTime.textContent = estimateReadingTime(words);
+}
+
+export { handleEditorEmptyState, updateStats };

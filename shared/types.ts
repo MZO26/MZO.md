@@ -177,12 +177,6 @@ interface TemplateRegistry {
   noteItemTemplate: HTMLTemplateElement;
 }
 
-type ResizeOptions = {
-  minWidth?: number;
-  maxWidth?: number;
-  cssVariable?: string;
-};
-
 type SidebarParams = {
   visibleNotes: NoteListItem[];
   query: string;
@@ -247,7 +241,6 @@ export type {
   NativeWindowColors,
   PDFAssets,
   QuickActionConfig,
-  ResizeOptions,
   ResolvedTheme,
   Result,
   SelectionAction,

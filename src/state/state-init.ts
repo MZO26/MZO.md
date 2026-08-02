@@ -1,7 +1,11 @@
 import { rendererLogger } from "@/app";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
-import { getVisibleNotes, sidebarListener } from "@/state/state-helpers";
+import {
+  areArraysShallowEqual,
+  getVisibleNotes,
+  sidebarListener,
+} from "@/state/state-helpers";
 import { findElement, setActiveItem } from "@/utils/dom";
 import { compareNotes } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
@@ -47,6 +51,6 @@ stateStore.subscribeSel(
   },
 );
 
-noteStore.subscribeSel(getVisibleNotes, () => sidebarListener());
+noteStore.subscribeSel(getVisibleNotes, sidebarListener, areArraysShallowEqual);
 
 export { initSettings, syncNoteStore };

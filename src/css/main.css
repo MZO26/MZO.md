@@ -509,6 +509,7 @@
   border: 1px solid var(--border-color);
   width: fit-content;
   max-width: 250px;
+  padding: 5px;
   border-radius: 15px;
   transform: translateX(-50%);
 }

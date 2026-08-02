@@ -1,6 +1,5 @@
 import { search, showNotification } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getTextMetrics } from "@/extensions/text-metrics";
 import { handleImportNote } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
 import {
@@ -12,12 +11,7 @@ import {
 import { debounce } from "@/utils/async";
 import { createIconButton, createInfoSpan, requireElement } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import {
-  estimateReadingTime,
-  getExtension,
-  isValidExtension,
-} from "@/utils/note";
-import { getAppItem, getUIItems } from "@/utils/registry";
+import { getExtension, isValidExtension } from "@/utils/note";
 import { createGlobalSpinner } from "@/utils/ui";
 import {
   DEBOUNCE_MS,
@@ -26,7 +20,7 @@ import {
 } from "@shared/constants";
 import type { SearchQuery } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
-import type { AllTagsMenu, ResizeOptions } from "@shared/types";
+import type { AllTagsMenu } from "@shared/types";
 
 let allTagsMenu: AllTagsMenu | null = null;
 
@@ -58,20 +52,6 @@ async function handleSearch(searchInput: SearchQuery) {
   applySearch(data);
 }
 
-function updateStats() {
-  const editor = getAppItem("editor");
-  const { wordCountEl, charCountEl, readingTime } = getUIItems([
-    "wordCountEl",
-    "charCountEl",
-    "readingTime",
-  ]);
-  const { characters, words } = getTextMetrics(editor);
-  charCountEl.textContent =
-    characters === 1 ? "1 character" : `${characters} characters`;
-  wordCountEl.textContent = words === 1 ? "1 word" : `${words} words`;
-  readingTime.textContent = estimateReadingTime(words);
-}
-
 function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   const popover = document.createElement("div");
   const content = document.createElement("div");
@@ -80,7 +60,6 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   content.className = "tags-popover-content";
   const header = createInfoSpan("All Tags", "tags-popover-title");
   const untaggedButton = createIconButton("tag-x", "Untagged");
-  untaggedButton.type = "button";
   untaggedButton.className = "untagged-btn";
   header.appendChild(untaggedButton);
   popover.append(header, content);
@@ -111,6 +90,26 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
     isOpen ? close() : open();
   }
 
+  function render(tags: string[]) {
+    const uniqueSortedTags = [...new Set(tags)].sort((a, b) =>
+      a.localeCompare(b),
+    );
+    if (uniqueSortedTags.length === 0) {
+      content.replaceChildren(createInfoSpan("No tags here."));
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    for (const tag of uniqueSortedTags) {
+      const item = document.createElement("span");
+      item.className = "tags-popover-item tag";
+      item.dataset["tag"] = tag;
+      item.title = `#${tag}`;
+      item.textContent = `#${tag}`;
+      frag.appendChild(item);
+    }
+    content.replaceChildren(frag);
+  }
+
   popover.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
@@ -137,25 +136,7 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   return {
     popover,
     content,
-    render(tags) {
-      const uniqueSortedTags = [...new Set(tags)].sort((a, b) =>
-        a.localeCompare(b),
-      );
-      if (uniqueSortedTags.length === 0) {
-        content.replaceChildren(createInfoSpan("No tags here."));
-        return;
-      }
-      const frag = document.createDocumentFragment();
-      for (const tag of uniqueSortedTags) {
-        const item = document.createElement("span");
-        item.className = "tags-popover-item tag";
-        item.dataset["tag"] = tag;
-        item.title = `#${tag}`;
-        item.textContent = `#${tag}`;
-        frag.appendChild(item);
-      }
-      content.replaceChildren(frag);
-    },
+    render,
     toggle,
     open,
     close,
@@ -168,16 +149,9 @@ function showAllTagsMenu(button: HTMLButtonElement, tags: string[]) {
   menu.toggle();
 }
 
-function resizeSidebar(
-  resizerSelector: string,
-  sidebarSelector: string,
-  options: ResizeOptions = {},
-) {
-  const {
-    minWidth = 0,
-    maxWidth = 420,
-    cssVariable = "--sidebar-width",
-  } = options;
+function resizeSidebar(resizerSelector: string, sidebarSelector: string) {
+  const minWidth = 0;
+  const maxWidth = 420;
   const resizer = requireElement<HTMLDivElement>(resizerSelector);
   const sidebar = requireElement<HTMLDivElement>(sidebarSelector);
   let isResizing = false;
@@ -200,8 +174,10 @@ function resizeSidebar(
       const deltaX = e.clientX - startX;
       const adjustedWidth = startWidth + deltaX;
       const newWidth = Math.max(minWidth, Math.min(adjustedWidth, maxWidth));
-
-      document.documentElement.style.setProperty(cssVariable, `${newWidth}px`);
+      document.documentElement.style.setProperty(
+        "--sidebar-width",
+        `${newWidth}px`,
+      );
       isUpdatePending = false;
     });
   });
@@ -219,14 +195,15 @@ function resizeSidebar(
 }
 
 function setupSidebarFileDrop(sidebar: HTMLDivElement) {
-  const setActive = (active: boolean) => {
+  function setActive(active: boolean) {
     sidebar.classList.toggle("is-drop-target", active);
-  };
+  }
 
-  const hasFiles = (event: DragEvent) =>
-    event.dataTransfer?.types.includes("Files") ?? false;
+  function hasFiles(event: DragEvent) {
+    return event.dataTransfer?.types.includes("Files") ?? false;
+  }
 
-  const handleDragOver = (event: DragEvent) => {
+  function handleDragOver(event: DragEvent) {
     if (!hasFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -234,9 +211,9 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
       event.dataTransfer.dropEffect = "copy";
     }
     setActive(true);
-  };
+  }
 
-  const handleDragLeave = (event: DragEvent) => {
+  function handleDragLeave(event: DragEvent) {
     if (!hasFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -244,9 +221,9 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
     if (!sidebar.contains(relatedTarget)) {
       setActive(false);
     }
-  };
+  }
 
-  const handleDrop = async (event: DragEvent) => {
+  async function handleDrop(event: DragEvent) {
     if (!hasFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -274,14 +251,12 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
     await loading.wrap(async () => {
       await handleImportNote(request);
     });
-  };
+  }
 
   sidebar.addEventListener("dragover", handleDragOver);
   sidebar.addEventListener("drop", handleDrop);
   sidebar.addEventListener("dragleave", handleDragLeave);
 }
-
-// debounced functions
 
 const debouncedSearch = debounce((e: Event) => {
   const target = e.target as HTMLInputElement | null;
@@ -297,5 +272,4 @@ export {
   resizeSidebar,
   setupSidebarFileDrop,
   showAllTagsMenu,
-  updateStats,
 };

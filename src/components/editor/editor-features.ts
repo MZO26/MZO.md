@@ -212,8 +212,11 @@ function initEditorSearch(editor: Editor) {
     }
   });
 
-  editorWrapper.addEventListener("click", (event) => {
+  document.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement | null;
     if (!inputWrapper.classList.contains("invisible")) {
+      if (inputWrapper.contains(target) || replaceInputWrapper.contains(target))
+        return;
       event.preventDefault();
       close();
       return;
@@ -223,7 +226,7 @@ function initEditorSearch(editor: Editor) {
   const debouncedSearch = debounce(() => {
     syncQuery();
     updateButtons();
-  }, DEBOUNCE_MS.normal);
+  }, DEBOUNCE_MS.fast);
 
   input.addEventListener("input", debouncedSearch);
 }

@@ -1,4 +1,5 @@
 import { updateSettings } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { noteStore, stateStore, type NoteStore } from "@/state/state";
 import { updateNoteCount } from "@/utils/note";
@@ -6,6 +7,8 @@ import { getUIItem } from "@/utils/registry";
 import { UNTAGGED } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { SidebarParams } from "@shared/types";
+
+let sidebarUpdatePending = false;
 
 function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
   if (activeTag === null) return true;
@@ -90,14 +93,40 @@ function pruneRecentNotes() {
   }));
 }
 
-function getVisibleNotes(state: NoteStore): NoteListItem[] {
-  const visibleNotes: NoteListItem[] = [];
-  for (const id of state.visibleIds) {
-    if (!id) continue;
-    const note = state.noteIndex.get(id);
-    if (note) visibleNotes.push(note);
-  }
-  return visibleNotes;
+function memoize<T extends any[], R>(fn: (...args: T) => R) {
+  let lastArgs: T | null = null;
+  let lastResult: R;
+  return (...args: T): R => {
+    const prevArgs = lastArgs;
+    if (prevArgs && args.every((val, i) => val === prevArgs[i])) {
+      rendererLogger.devLog("Returning old result");
+      return lastResult;
+    }
+    lastArgs = args;
+    lastResult = fn(...args);
+    return lastResult;
+  };
+}
+
+const computeVisibleNotes = memoize(
+  (visibleIds: string[], noteIndex: Map<string, NoteListItem>) => {
+    return visibleIds
+      .map((id) => noteIndex.get(id))
+      .filter((note): note is NoteListItem => !!note);
+  },
+);
+
+function getVisibleNotes(state: NoteStore) {
+  return computeVisibleNotes(state.visibleIds, state.noteIndex);
+}
+
+function areArraysShallowEqual<T>(previous: T[], next: T[]) {
+  return (
+    previous.length === next.length &&
+    previous.every(
+      (previousItem, itemIndex) => previousItem === next[itemIndex],
+    )
+  );
 }
 
 function getSidebarParams(): SidebarParams {
@@ -105,28 +134,29 @@ function getSidebarParams(): SidebarParams {
   const noteState = noteStore.getState();
   return {
     visibleNotes: getVisibleNotes(noteState),
-    query: typeof searchQuery === "string" ? searchQuery.trim() : "",
+    query: searchQuery?.trim() || "",
     activeTag: activeTag ?? null,
   };
 }
 
-function createSidebarListener() {
-  return () => {
+function sidebarListener() {
+  if (sidebarUpdatePending) return;
+  sidebarUpdatePending = true;
+  queueMicrotask(() => {
+    sidebarUpdatePending = false;
     const next = getSidebarParams();
     updateNoteCount(next.visibleNotes.length);
     handleSidebarChange(next);
-  };
+  });
 }
-
-const sidebarListener = createSidebarListener();
 
 export {
   applySearch,
   applyTagView,
   applyUntaggedView,
   applyView,
+  areArraysShallowEqual,
   clearActiveTagView,
-  createSidebarListener,
   getSidebarParams,
   getVisibleNotes,
   markNoteAsRecent,
