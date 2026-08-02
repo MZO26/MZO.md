@@ -26,7 +26,7 @@ import {
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { createLogger } from "@shared/log";
 
-export const rendererLogger = createLogger(true);
+export const rendererLogger = createLogger(import.meta.env.DEV);
 
 async function initApp() {
   const notesResult = await getAll();
