@@ -45,7 +45,7 @@ function createSettingsMenu() {
   return container;
 }
 
-function initQuickActionContainer() {
+function createQuickActionContainer() {
   const quickActionContainer = getUIItem("quickActionContainer");
   const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
   const row = document.createElement("div");
@@ -64,4 +64,4 @@ function initQuickActionContainer() {
   return quickActionContainer;
 }
 
-export { createSettingsMenu, initQuickActionContainer, selectBuilder };
+export { createQuickActionContainer, createSettingsMenu, selectBuilder };

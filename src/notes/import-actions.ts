@@ -1,5 +1,5 @@
 import { rendererLogger } from "@/app";
-import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
+import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import { stateStore } from "@/state/state";
 import {
   getMetadata,

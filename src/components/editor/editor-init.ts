@@ -1,6 +1,9 @@
 import { rendererLogger } from "@/app";
-import { initEditorSearch } from "@/components/editor/editor-features";
-import { applyTagView } from "@/components/sidebar/sidebar-features";
+import { initEditorSearch } from "@/components/editor/editor-search";
+import {
+  applyTagView,
+  restoreSidebarScope,
+} from "@/components/sidebar/sidebar-views";
 import { ActiveCodeHighlight } from "@/extensions/codeblock-highlight";
 import { DropHandler } from "@/extensions/editor-handler/dropHandler";
 import {
@@ -28,8 +31,8 @@ import { WikilinkHandler } from "@/extensions/wikilink/wikilink-handler";
 import { WikiLinkPreview } from "@/extensions/wikilink/wikilink-preview";
 import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { restoreSidebarScope } from "@/state/state-helpers";
 import { requireElement } from "@/utils/dom";
+import { getAppItem } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
 import {
   ALLOWED_PROTOCOLS,
@@ -51,13 +54,11 @@ import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import "katex/dist/katex.min.css";
 
-let editor: Editor | null = null;
-
 export const updateToc = initTableOfContents();
 
 function initEditor(settings: Partial<AppSettings>): Editor {
   const editorWrapper = requireElement<HTMLDivElement>("#editor");
-  editor ??= new Editor({
+  const editor = new Editor({
     element: editorWrapper,
     extensions: getNoteEditorExtensions(),
     editorProps: {
@@ -164,6 +165,7 @@ function getNoteEditorExtensions() {
         openOnClick: false,
         defaultProtocol: "https",
         shouldAutoLink: () => {
+          const editor = getAppItem("editor");
           if (!editor) return true;
           return editor.state.doc.childCount <= NODE_BASELINE;
         },
@@ -231,4 +233,4 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   initEditorSearch(editor);
 }
 
-export { editor, getNoteEditorExtensions, initEditor, setupEditorListeners };
+export { getNoteEditorExtensions, initEditor, setupEditorListeners };

@@ -1,6 +1,5 @@
 import { handleZoom } from "@/api/api";
 import { stateStore } from "@/state/state";
-import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 
 function isFocusActive() {
@@ -97,7 +96,8 @@ function initGlobalShortcuts() {
     }
     if (key === "Escape") {
       const target = e.target as HTMLElement | null;
-      const openDialog = findElement("dialog[open]");
+      const openDialog =
+        document.querySelector<HTMLDialogElement>("dialog[open]");
       if (target?.closest("dialog") || openDialog) {
         return;
       }

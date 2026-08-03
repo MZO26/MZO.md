@@ -100,7 +100,6 @@ type Action = {
   isActive?: (args: Editor) => boolean;
   isDisabled?: (args: Editor) => boolean;
   icon: string;
-  shortcut: string;
 };
 
 type Divider = {
@@ -183,6 +182,11 @@ type SidebarParams = {
   activeTag?: string | null;
 };
 
+type SelectionParams = {
+  selectionMode: boolean;
+  selectedIds: Set<string>;
+};
+
 type AllTagsMenu = {
   popover: HTMLDivElement;
   content: HTMLDivElement;
@@ -240,11 +244,13 @@ export type {
   Metadata,
   NativeWindowColors,
   PDFAssets,
+  QuickAction,
   QuickActionConfig,
   ResolvedTheme,
   Result,
   SelectionAction,
   SelectionActionConfig,
+  SelectionParams,
   SelectOption,
   SettingsCategory,
   SidebarParams,

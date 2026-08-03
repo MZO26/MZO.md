@@ -1,6 +1,6 @@
 import { getNoteById } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
+import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import { titleGenerator } from "@/utils/generators";
 import { getAppItem } from "@/utils/registry";
 import { needsLandscape } from "@/utils/ui";

@@ -9,18 +9,18 @@ import {
   updateNote,
 } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { recreateEditorState } from "@/components/editor/editor-features";
+import { recreateEditorState } from "@/components/editor/editor-actions";
 import { updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
+import {
+  markNoteAsRecent,
+  pruneRecentNotes,
+  removeRecentNote,
+} from "@/components/quick-switch/quick-switch-actions";
+import { matchesActiveTag } from "@/components/sidebar/sidebar-views";
 import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
-import {
-  markNoteAsRecent,
-  matchesActiveTag,
-  pruneRecentNotes,
-  removeRecentNote,
-} from "@/state/state-helpers";
 import { debounce } from "@/utils/async";
 import { getMetadata, titleGenerator } from "@/utils/generators";
 import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
@@ -28,6 +28,7 @@ import { getAppItem } from "@/utils/registry";
 import { DEBOUNCE_MS, EMPTY_DOC, UNTITLED } from "@shared/constants";
 import {
   type CreateNotePayload,
+  type Note,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
@@ -273,11 +274,51 @@ async function handleSelectNote(id: string) {
   markNoteAsRecent(id);
 }
 
+async function handleDuplicateNote(note: Readonly<Note>) {
+  const editor = getAppItem("editor");
+  const isAutoExport = isAutoExportEnabled();
+  const {
+    id: originalId,
+    links: originalLinks,
+    created_at,
+    updated_at,
+    ...rest
+  } = note;
+  // does not duplicate incoming links because other notes would be forced to point to this new duplicate
+  const outgoingLinkIds = originalLinks
+    .filter((link) => link.dir === "out")
+    .map((link) => link.id);
+  const markdown = isAutoExport
+    ? editor.markdown?.serialize(note.content)
+    : undefined;
+  const data: CreateNotePayload = {
+    ...rest,
+    ...(isAutoExport && markdown !== undefined ? { markdown } : {}),
+    links: outgoingLinkIds,
+    pinned: false,
+  };
+  // not handleCreateNote because content is already there
+  const result = await createNote(data);
+  if (!result.success) {
+    rendererLogger.appError(
+      "[handleDuplicateNote]: Failed to create duplicate note:",
+      result.error,
+    );
+    return;
+  }
+  noteStore.setState((state) => ({
+    notes: [result.data, ...state.notes],
+    visibleIds: [result.data.id, ...state.visibleIds],
+    noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
+  }));
+}
+
 export {
   debouncedSaveNote,
   handleCreateNote,
   handleDeleteManyNotes,
   handleDeleteNote,
+  handleDuplicateNote,
   handleImportNote,
   handleSaveNote,
   handleSelectNote,

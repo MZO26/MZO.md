@@ -1,22 +1,15 @@
 import { rendererLogger } from "@/app";
 import { sleep } from "@/utils/async";
-import { findElement } from "@/utils/dom";
 import { getUIItem } from "@/utils/registry";
-import {
-  ALLOWED_IMPORT_EXTENSIONS,
-  NODE_BASELINE,
-  UNTAGGED,
-  YIELD_MS,
-} from "@shared/constants";
+import { NODE_BASELINE, UNTAGGED, YIELD_MS } from "@shared/constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
-import type { ImportExtension } from "@shared/types";
 import type { JSONContent } from "@tiptap/core";
 
 function createNoteUpdater() {
   let element: HTMLDivElement | null = null;
   return function updateNoteCount(count: number) {
     const sidebarFooter = getUIItem("sidebarFooter");
-    element ??= findElement<HTMLDivElement>(".note-count", sidebarFooter);
+    element ??= sidebarFooter.querySelector<HTMLDivElement>(".note-count");
     if (!element) return;
     element.textContent = `${count} ${count === 1 ? "note" : "notes"}`;
   };
@@ -122,10 +115,6 @@ function getExtension(name: string) {
   return index > 0 ? name.slice(index + 1).toLowerCase() : "";
 }
 
-function isValidExtension(extension: string): extension is ImportExtension {
-  return ALLOWED_IMPORT_EXTENSIONS.some((e) => e === extension);
-}
-
 async function checkNoteSize(doc: JSONContent) {
   rendererLogger.devLog(`Node amount: ${doc.content?.length}`);
   if (doc.content && doc.content.length > NODE_BASELINE) {
@@ -140,6 +129,5 @@ export {
   estimateReadingTime,
   getExtension,
   hasNoteTag,
-  isValidExtension,
   updateNoteCount,
 };

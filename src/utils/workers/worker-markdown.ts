@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { getMarkdownManager } from "@/components/editor/editor-requests";
+import { getMarkdownManager } from "@/components/editor/editor-actions";
 import { handleWorkerError } from "@/utils/workers/worker-factory";
 import { WorkerErrorCode } from "@shared/errors";
 import type { Expand, WorkerRequest } from "@shared/types";

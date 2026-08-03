@@ -1,48 +1,45 @@
+import { setupSidebarFileDrop } from "@/components/sidebar/sidebar-file-drop";
+import { debouncedSearch } from "@/components/sidebar/sidebar-search";
+import {
+  addToSelection,
+  deleteSelection,
+  getSelectionAction,
+  selectAllVisibleNotes,
+  setSelectionMode,
+} from "@/components/sidebar/sidebar-selection";
+import {
+  resizeSidebar,
+  showAllTagsMenu,
+  toggleSidebar,
+} from "@/components/sidebar/sidebar-ui";
 import {
   applyTagView,
-  debouncedSearch,
-  resizeSidebar,
-  setupSidebarFileDrop,
-  showAllTagsMenu,
-} from "@/components/sidebar/sidebar-features";
-import {
-  copyRichTextSelection,
-  deleteSelection,
-  exportSelection,
-  pinSelection,
-  setSelectionMode,
-  updateSelectionUI,
-} from "@/components/sidebar/sidebar-selection";
-import { selectAllVisibleNotes } from "@/components/sidebar/sidebar-selection-ui";
-import { setSidebarState } from "@/components/sidebar/sidebar-ui";
+  clearActiveTagView,
+} from "@/components/sidebar/sidebar-views";
 import {
   handleCreateNote,
   handleImportNote,
   handleSelectNote,
 } from "@/notes/note-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
-import { clearActiveTagView } from "@/state/state-helpers";
 import { createAsyncHandler } from "@/utils/async";
-import { findElement } from "@/utils/dom";
-import { getAppItems, getUIItems, registerAppEvents } from "@/utils/registry";
+import { getAppItem, getUIItems, registerAppEvents } from "@/utils/registry";
 import { isSelectionActive } from "@/utils/shortcuts";
 import { createGlobalSpinner } from "@/utils/ui";
+import { SELECTION_ACTIONS } from "@shared/constants";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
-
-// sidebar
+import type { SelectionAction } from "@shared/types";
 
 function initNotesSidebar() {
   const activeTag = settingsStore.get("active_tag");
-  const { appContainer, sidebar } = getAppItems(["appContainer", "sidebar"]);
+  const sidebar = getAppItem("sidebar");
   const { searchInput, selectionFooter, sidebarHeader } = getUIItems([
     "searchInput",
     "selectionFooter",
     "sidebarHeader",
   ]);
-  const deleteBtn = findElement<HTMLButtonElement>(
-    ".delete-btn",
-    selectionFooter,
-  );
+  const deleteBtn =
+    selectionFooter.querySelector<HTMLButtonElement>(".delete-btn");
   if (deleteBtn) deleteBtn.disabled = stateStore.get("selectedIds").size === 0;
   if (
     activeTag &&
@@ -53,10 +50,7 @@ function initNotesSidebar() {
   applySidebarListeners(sidebar, sidebarHeader, searchInput, selectionFooter);
   setupSidebarFileDrop(sidebar);
   registerAppEvents(document, {
-    "app:toggle-sidebar": () => {
-      const collapsed = appContainer.classList.contains("collapsed");
-      setSidebarState(appContainer, !collapsed);
-    },
+    "app:toggle-sidebar": () => toggleSidebar(),
     "app:create-new-note": () => handleCreateNote(),
     "app:open-global-search": () => searchInput.focus(),
     "app:set-selection-mode": () => setSelectionMode(!isSelectionActive()),
@@ -64,6 +58,10 @@ function initNotesSidebar() {
     "app:delete-selected": () => deleteSelection(),
     "app:select-all-visible": () => selectAllVisibleNotes(),
   });
+}
+
+function isValidAction(action: string | null): action is SelectionAction {
+  return action !== null && action in SELECTION_ACTIONS;
 }
 
 function applySidebarListeners(
@@ -110,27 +108,9 @@ function applySidebarListeners(
       if (!button) return;
       const selectedIds = stateStore.get("selectedIds");
       const action = button.getAttribute("data-action");
+      if (!isValidAction(action)) return;
       if (action !== "cancel" && selectedIds.size === 0) return;
-      switch (action) {
-        case "cancel":
-          setSelectionMode(false);
-          break;
-        case "pin":
-          await pinSelection([...selectedIds]);
-          break;
-        case "export":
-          const loading = createGlobalSpinner();
-          await loading.wrap(async () => {
-            await exportSelection([...selectedIds]);
-          });
-          break;
-        case "copy-rich-text":
-          await copyRichTextSelection([...selectedIds]);
-          break;
-        case "delete":
-          await deleteSelection();
-          break;
-      }
+      await getSelectionAction(action, selectedIds);
     }),
   );
   sidebar.addEventListener("contextmenu", (e) => {
@@ -147,8 +127,8 @@ function applySidebarListeners(
     e.preventDefault();
     const noteElement = target.closest<HTMLDivElement>(".note-item");
     const id = noteElement?.getAttribute("data-id");
-    if (!id) return;
-    const isPinned = noteElement?.getAttribute("data-pinned") === "true";
+    if (!id || !noteElement) return;
+    const isPinned = noteElement.getAttribute("data-pinned") === "true";
     window.electronAPI.showContextMenu("note", {
       id,
       pinned: isPinned,
@@ -188,19 +168,7 @@ function applySidebarListeners(
       const id = noteItem?.getAttribute("data-id");
       if (!id) return;
       if (stateStore.get("selectionMode") === true) {
-        const prevSelectedIds = stateStore.get("selectedIds");
-        const nextSelectedIds = new Set(prevSelectedIds);
-        if (nextSelectedIds.has(id)) {
-          nextSelectedIds.delete(id);
-        } else {
-          nextSelectedIds.add(id);
-        }
-        const selectionMode = nextSelectedIds.size > 0;
-        stateStore.setState({
-          selectedIds: nextSelectedIds,
-          selectionMode,
-        });
-        updateSelectionUI(nextSelectedIds, selectionMode);
+        addToSelection(id);
         return;
       }
       const loading = createGlobalSpinner();

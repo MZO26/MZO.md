@@ -2,7 +2,7 @@ import { getAll, getAllSettings } from "@/api/api";
 import { initListeners } from "@/api/callbacks";
 import { setupEditorListeners } from "@/components/editor/editor-init";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
-import { initQuickSwitcher } from "@/components/quick-switch/quick-switch";
+import { initQuickSwitcher } from "@/components/quick-switch/quick-switch-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { setToolbarCollapsed } from "@/components/toolbar/toolbar-features";
@@ -13,8 +13,12 @@ import {
 } from "@/components/toolbar/toolbar-init";
 import { initAppSettings } from "@/settings/setting-init";
 import { stateStore } from "@/state/state";
-import { getSidebarParams } from "@/state/state-helpers";
-import { initSettings, syncNoteStore } from "@/state/state-init";
+import {
+  getSidebarParams,
+  syncNoteStore,
+  syncSettingsStore,
+} from "@/state/state-actions";
+import "@/state/state-init";
 import { startAppClock } from "@/utils/date";
 import { renderIcons } from "@/utils/icons";
 import {
@@ -39,7 +43,8 @@ async function initApp() {
     );
     throw new Error(notesResult.error);
   }
-  const settings = initSettings(settingsResult);
+  const settings = syncSettingsStore(settingsResult);
+  syncNoteStore(notesResult.data);
   initializeCoreRegistry(settings);
   initializeTemplateRegistry();
   initializeUIRegistry();
@@ -54,7 +59,6 @@ async function initApp() {
   renderIcons();
   startAppClock();
   initGlobalShortcuts();
-  syncNoteStore(notesResult.data);
   initNotesSidebar();
   initQuickSwitcher();
   handleSidebarChange(getSidebarParams());

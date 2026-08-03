@@ -2,10 +2,13 @@ import { selectAutoExportFolder, updateSettings } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { selectBuilder } from "@/settings/setting-factory";
-import { applyAppTheme, resolveTheme, setCodeTheme } from "@/settings/theme";
-import { getSidebarParams } from "@/state/state-helpers";
+import {
+  applyAppTheme,
+  resolveTheme,
+  setCodeTheme,
+} from "@/settings/theme-actions";
+import { getSidebarParams } from "@/state/state-actions";
 import { createAsyncHandler } from "@/utils/async";
-import { findElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import {
   AUTO_EXPORT_SETTINGS,
@@ -67,19 +70,13 @@ function initAppearanceSettings(
   settings: AppSettings,
   container: HTMLDivElement,
 ) {
-  const themeSelect = findElement<HTMLSelectElement>("#theme", container);
-  const codeThemeSelect = findElement<HTMLSelectElement>(
-    "#code-theme",
-    container,
-  );
-  const highlightSelect = findElement<HTMLSelectElement>(
-    "#highlight-theme",
-    container,
-  );
-  const noteItemSelect = findElement<HTMLSelectElement>(
-    "#note-item-display",
-    container,
-  );
+  const themeSelect = container.querySelector<HTMLSelectElement>("#theme");
+  const codeThemeSelect =
+    container.querySelector<HTMLSelectElement>("#code-theme");
+  const highlightSelect =
+    container.querySelector<HTMLSelectElement>("#highlight-theme");
+  const noteItemSelect =
+    container.querySelector<HTMLSelectElement>("#note-item-display");
   const sidebar = getAppItem("sidebar");
   if (!codeThemeSelect || !themeSelect || !highlightSelect || !noteItemSelect) {
     return;
@@ -149,22 +146,14 @@ function initAppearanceSettings(
 
 function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
   const editorWrapper = getAppItem("editorWrapper");
-  const fontFamilySelect = findElement<HTMLSelectElement>(
-    "#font-family",
-    container,
-  );
-  const fontSizeSelect = findElement<HTMLSelectElement>(
-    "#font-size",
-    container,
-  );
-  const lineHeightSelect = findElement<HTMLSelectElement>(
-    "#line-height",
-    container,
-  );
-  const spellcheckSelect = findElement<HTMLSelectElement>(
-    "#spellcheck",
-    container,
-  );
+  const fontFamilySelect =
+    container.querySelector<HTMLSelectElement>("#font-family");
+  const fontSizeSelect =
+    container.querySelector<HTMLSelectElement>("#font-size");
+  const lineHeightSelect =
+    container.querySelector<HTMLSelectElement>("#line-height");
+  const spellcheckSelect =
+    container.querySelector<HTMLSelectElement>("#spellcheck");
   if (
     !fontFamilySelect ||
     !fontSizeSelect ||
@@ -176,7 +165,11 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
   const applyFont = (val: string) => {
     const current = val || "system";
     editorWrapper.style.setProperty("--editor-font-family", current);
-    if (findElement(`option[value="${current}"]`, fontFamilySelect)) {
+    if (
+      fontFamilySelect.querySelector<HTMLOptionElement>(
+        `option[value="${CSS.escape(current)}"]`,
+      )
+    ) {
       editorWrapper.setAttribute("data-font-family", current);
       fontFamilySelect.value = current;
     }
@@ -196,7 +189,11 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
     current = Math.max(16, Math.min(current, 20));
     const strCurrent = String(current);
     editorWrapper.style.setProperty("--editor-font-size", `${strCurrent}px`);
-    if (findElement(`option[value="${strCurrent}"]`, fontSizeSelect)) {
+    if (
+      fontSizeSelect.querySelector<HTMLOptionElement>(
+        `option[value="${CSS.escape(strCurrent)}"]`,
+      )
+    ) {
       editorWrapper.setAttribute("data-font-size", strCurrent);
       fontSizeSelect.value = strCurrent;
     }
@@ -216,7 +213,11 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
     current = Math.max(1.4, Math.min(current, 1.6));
     const strCurrent = String(current);
     editorWrapper.style.setProperty("--editor-line-height", strCurrent);
-    if (findElement(`option[value="${strCurrent}"]`, lineHeightSelect)) {
+    if (
+      lineHeightSelect.querySelector<HTMLOptionElement>(
+        `option[value="${CSS.escape(strCurrent)}"]`,
+      )
+    ) {
       editorWrapper.setAttribute("data-line-height", strCurrent);
       lineHeightSelect.value = strCurrent;
     }
@@ -247,14 +248,10 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
 }
 
 function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
-  const exportFormatSelect = findElement<HTMLSelectElement>(
-    "#export-format",
-    container,
-  );
-  const autoExportSelect = findElement<HTMLSelectElement>(
-    "#auto-export",
-    container,
-  );
+  const exportFormatSelect =
+    container.querySelector<HTMLSelectElement>("#export-format");
+  const autoExportSelect =
+    container.querySelector<HTMLSelectElement>("#auto-export");
   if (!exportFormatSelect || !autoExportSelect) return;
   exportFormatSelect.value = settings["export_format"];
   exportFormatSelect.addEventListener(

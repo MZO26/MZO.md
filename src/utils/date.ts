@@ -1,5 +1,3 @@
-import { findElement } from "@/utils/dom";
-
 const dateFormatter = new Intl.DateTimeFormat("de-DE", {
   year: "numeric",
   month: "2-digit",
@@ -14,7 +12,8 @@ const timeFormatter = new Intl.DateTimeFormat("de-DE", {
 function createDateTimeUpdater() {
   let displayElement: HTMLDivElement | null = null;
   return function updateDateTime() {
-    displayElement ??= findElement<HTMLDivElement>("#datetime-display");
+    displayElement ??=
+      document.querySelector<HTMLDivElement>("#datetime-display");
     if (!displayElement) return;
     const now = new Date();
     displayElement.textContent = `${dateFormatter.format(now)} - ${timeFormatter.format(now)}`;

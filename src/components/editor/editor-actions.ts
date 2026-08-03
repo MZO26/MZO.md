@@ -5,6 +5,7 @@ import {
 } from "@/extensions/mathematics/mathematics";
 import { NoteTag } from "@/extensions/tag/tag";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
+import type { Editor, JSONContent } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
 import {
@@ -18,6 +19,19 @@ import StarterKit from "@tiptap/starter-kit";
 
 let editorExtensions: ReturnType<typeof getRequestExtensions> | undefined;
 let markdownManager: MarkdownManager | undefined;
+
+function recreateEditorState(editor: Editor, doc: JSONContent) {
+  editor
+    .chain()
+    .setMeta("addToHistory", false)
+    .setContent(doc, {
+      emitUpdate: false,
+      errorOnInvalidContent: false,
+      contentType: "json",
+    })
+    .focus("start")
+    .run();
+}
 
 function getCachedEditorExtensions() {
   return (editorExtensions ??= getRequestExtensions());
@@ -56,4 +70,4 @@ function getRequestExtensions() {
   ];
 }
 
-export { getCachedEditorExtensions, getMarkdownManager };
+export { getCachedEditorExtensions, getMarkdownManager, recreateEditorState };

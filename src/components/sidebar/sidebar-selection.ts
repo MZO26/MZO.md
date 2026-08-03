@@ -6,18 +6,79 @@ import {
   showNotification,
 } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
-import {
-  setSelectionMode,
-  updateSelectionUI,
-} from "@/components/sidebar/sidebar-selection-ui";
+import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
+import { updateSelectionUI } from "@/components/sidebar/sidebar-selection-ui";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
+import { createGlobalSpinner } from "@/utils/ui";
 import { MAX_CHARACTERS } from "@shared/constants";
+import type { SelectionAction } from "@shared/types";
 import { generateHTML, generateText } from "@tiptap/core";
+
+function setSelectionMode(enabled: boolean) {
+  const prevSelectedIds = stateStore.get("selectedIds");
+  const nextSelectedIds = enabled
+    ? new Set<string>(prevSelectedIds)
+    : new Set<string>();
+  stateStore.setState({
+    selectionMode: enabled,
+    selectedIds: nextSelectedIds,
+  });
+}
+
+function selectAllVisibleNotes() {
+  const visibleIds = noteStore.get("visibleIds") ?? [];
+  const selectedIds = new Set(visibleIds);
+  const selectionMode = true;
+  stateStore.setState({
+    selectedIds,
+    selectionMode,
+  });
+}
+
+function addToSelection(id: string) {
+  const prevSelectedIds = stateStore.get("selectedIds");
+  const nextSelectedIds = new Set(prevSelectedIds);
+  if (nextSelectedIds.has(id)) {
+    nextSelectedIds.delete(id);
+  } else {
+    nextSelectedIds.add(id);
+  }
+  const selectionMode = nextSelectedIds.size > 0;
+  stateStore.setState({
+    selectedIds: nextSelectedIds,
+    selectionMode,
+  });
+}
+
+async function getSelectionAction(
+  action: SelectionAction,
+  selectedIds: Set<string>,
+) {
+  switch (action) {
+    case "cancel":
+      setSelectionMode(false);
+      break;
+    case "pin":
+      await pinSelection([...selectedIds]);
+      break;
+    case "export":
+      const loading = createGlobalSpinner();
+      await loading.wrap(async () => {
+        await exportSelection([...selectedIds]);
+      });
+      break;
+    case "copy-rich-text":
+      await copyRichTextSelection([...selectedIds]);
+      break;
+    case "delete":
+      await deleteSelection();
+      break;
+  }
+}
 
 async function copyRichTextSelection(selectedIds: string[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
@@ -145,7 +206,10 @@ async function pinSelection(selectedIds: string[]) {
       noteIndex: noteIndex,
     };
   });
-  updateSelectionUI(selectedIdSet, stateStore.get("selectionMode"));
+  updateSelectionUI({
+    selectedIds: selectedIdSet,
+    selectionMode: stateStore.get("selectionMode"),
+  });
 }
 
 async function deleteSelection() {
@@ -162,19 +226,20 @@ async function deleteSelection() {
   const nextSelectedIds = new Set(
     [...stateStore.get("selectedIds")].filter((id) => !ids.includes(id)),
   );
-  stateStore.setState({ selectedIds: nextSelectedIds });
-  if (nextSelectedIds.size === 0) {
-    setSelectionMode(false);
-  } else {
-    updateSelectionUI(nextSelectedIds, stateStore.get("selectionMode"));
-  }
+  const nextSelectionMode = nextSelectedIds.size === 0 ? false : true;
+  stateStore.setState({
+    selectedIds: nextSelectedIds,
+    selectionMode: nextSelectionMode,
+  });
 }
 
 export {
+  addToSelection,
   copyRichTextSelection,
   deleteSelection,
   exportSelection,
+  getSelectionAction,
   pinSelection,
+  selectAllVisibleNotes,
   setSelectionMode,
-  updateSelectionUI,
 };

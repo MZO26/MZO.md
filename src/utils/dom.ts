@@ -13,13 +13,6 @@ function requireElement<T extends HTMLElement>(
   return element;
 }
 
-function findElement<T extends HTMLElement>(
-  selector: string,
-  parent: Document | HTMLElement = document,
-): T | null {
-  return parent.querySelector<T>(selector);
-}
-
 function setActiveItem(element: HTMLElement | null, parent: HTMLElement) {
   if (!element) return;
   const currentlyActive = parent.querySelector(".is-active");
@@ -82,7 +75,6 @@ export {
   createIconButton,
   createInfoSpan,
   createTemplateCloner,
-  findElement,
   isDiv,
   requireElement,
   setActiveItem,

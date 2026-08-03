@@ -1,27 +1,20 @@
-import {
-  databaseBackup,
-  databaseBackupRestore,
-  openAppPath,
-  showNotification,
-} from "@/api/api";
-import { rendererLogger } from "@/app";
-import { exportSelection } from "@/components/sidebar/sidebar-selection";
 import { settingsContainer, settingsDialog } from "@/settings/dialog-init";
+import { getQuickAction } from "@/settings/quick-actions";
 import {
+  createQuickActionContainer,
   createSettingsMenu,
-  initQuickActionContainer,
 } from "@/settings/setting-factory";
 import {
   buildSelects,
   setSelectListeners,
 } from "@/settings/setting-items-init";
-import { applyAppTheme } from "@/settings/theme";
-import { noteStore } from "@/state/state";
+import { applyAppTheme } from "@/settings/theme-actions";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
-import { createGlobalSpinner } from "@/utils/ui";
+import { QUICK_ACTIONS } from "@shared/constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
+import type { QuickAction } from "@shared/types";
 
 async function initAppSettings(settings: AppSettings) {
   const buttonsContainer = createSettingsMenu();
@@ -33,7 +26,7 @@ async function initAppSettings(settings: AppSettings) {
     "button:first-child",
     buttonsContainer,
   );
-  const quickActionContainer = initQuickActionContainer();
+  const quickActionContainer = createQuickActionContainer();
   if (firstActiveBtn) setActiveItem(firstActiveBtn, buttonsContainer);
   await applyAppTheme(settings["theme"]);
   applyModalListeners(
@@ -46,6 +39,10 @@ async function initAppSettings(settings: AppSettings) {
   registerAppEvents(document, {
     "app:open-settings": () => settingsDialog.showModal(),
   });
+}
+
+function isValidQuickAction(action: string | null): action is QuickAction {
+  return action !== null && action in QUICK_ACTIONS;
 }
 
 function applyModalListeners(
@@ -66,50 +63,8 @@ function applyModalListeners(
       const button = target.closest<HTMLButtonElement>("button[data-action]");
       if (!button) return;
       const action = button.getAttribute("data-action");
-      switch (action) {
-        case "open-path":
-          const open = await openAppPath();
-          if (!open.success) {
-            rendererLogger.appError(
-              "[quickActions -> open-path]: Failed to open app path:",
-              open.error,
-            );
-            return;
-          }
-          break;
-        case "backup-db":
-          const dbBackup = await databaseBackup();
-          if (!dbBackup.success) {
-            rendererLogger.appError(
-              "[quickActions -> backup-db]: Failed to backup db:",
-              dbBackup.error,
-            );
-            await showNotification("Failed to save Backup", "");
-            return;
-          }
-          await showNotification("Backup saved", "");
-          return;
-        case "backup-db-restore":
-          const restore = await databaseBackupRestore();
-          if (!restore.success) {
-            rendererLogger.appError(
-              "[quickActions -> backup-db-restore]: Failed to restore db:",
-              restore.error,
-            );
-            await showNotification("Failed to restore Backup", "");
-            return;
-          }
-          await showNotification("Backup restored", "");
-          return;
-        case "backup-notes":
-          const allIds = noteStore.get("notes").map((n) => n.id);
-          if (!Array.isArray(allIds) || allIds.length === 0) return;
-          const loading = createGlobalSpinner();
-          await loading.wrap(async () => {
-            await exportSelection(allIds);
-          });
-          break;
-      }
+      if (!isValidQuickAction(action)) return;
+      await getQuickAction(action);
     }),
   );
   buttonsContainer.addEventListener("click", (e) => {

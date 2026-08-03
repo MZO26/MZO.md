@@ -74,7 +74,7 @@ function createTagElement(
   container.appendChild(span);
 }
 
-function renderTags(container: HTMLDivElement) {
+function renderTagsToolbar(container: HTMLDivElement) {
   const activeId = stateStore.get("activeId");
   if (!activeId) return;
   const activeTags = noteStore.get("noteIndex").get(activeId)?.tags;
@@ -109,7 +109,7 @@ function renderTags(container: HTMLDivElement) {
   }
 }
 
-function renderLinks(container: HTMLDivElement) {
+function renderLinksToolbar(container: HTMLDivElement) {
   const activeId = stateStore.get("activeId");
   if (!activeId) return;
   const activeNote = noteStore.get("noteIndex").get(activeId);
@@ -183,8 +183,8 @@ function renderLinks(container: HTMLDivElement) {
 export {
   initFocusMode,
   openMetadataContainer,
-  renderLinks,
-  renderTags,
+  renderLinksToolbar,
+  renderTagsToolbar,
   setEditorWidth,
   setToolbarCollapsed,
   setWindowTop,

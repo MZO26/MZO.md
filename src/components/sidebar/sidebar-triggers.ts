@@ -9,10 +9,9 @@ import {
   syncRequest,
 } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getCachedEditorExtensions } from "@/components/editor/editor-requests";
+import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import { getExportContent } from "@/notes/export-actions";
-import { handleDeleteNote } from "@/notes/note-actions";
-import { handleDuplicateNote } from "@/notes/note-duplicate";
+import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
 import {
   confirmWithDialog,
   deleteDialog,
@@ -20,7 +19,7 @@ import {
 } from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { sleep } from "@/utils/async";
-import { findElement, requireElement } from "@/utils/dom";
+import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { CHAR_BASELINE, YIELD_MS } from "@shared/constants";
 import { ERROR_MESSAGES } from "@shared/errors";
@@ -61,9 +60,9 @@ function triggerTableMenu(action: TableAction) {
 }
 
 function triggerNoteItemMenu(payload: NoteMenuPayload) {
-  const noteElement = findElement<HTMLDivElement>(
+  const sidebar = getAppItem("sidebar");
+  const noteElement = sidebar.querySelector<HTMLDivElement>(
     `.note-item[data-id="${payload.id}"]`,
-    getAppItem("sidebar"),
   );
   if (!noteElement) return;
   if (payload.pinned !== undefined) {

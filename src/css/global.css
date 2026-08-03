@@ -298,20 +298,15 @@ input::selection {
 }
 
 ::-webkit-scrollbar-thumb {
-  color: var(--accent-primary);
+  background-color: var(--border-color);
   border: 3px solid transparent;
   background-clip: content-box;
   border-radius: 30px;
   box-shadow: inset 0 0 0 1px var(--border-color);
-  cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  opacity: 1;
-  visibility: visible;
+  cursor: pointer;
   background-color: var(--ui-resizer);
   box-shadow: inset 0 0 0 1px var(--shadow);
 }

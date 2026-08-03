@@ -1,5 +1,5 @@
 import { getTextMetrics } from "@/extensions/text-metrics";
-import { createTemplateCloner, findElement, isDiv } from "@/utils/dom";
+import { createTemplateCloner, isDiv } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { estimateReadingTime } from "@/utils/note";
 import { getAppItem, getTemplateItem, getUIItems } from "@/utils/registry";
@@ -12,10 +12,11 @@ const getEditorEmptyStateClone = createTemplateCloner(
 function handleEditorEmptyState(activeId: string | null) {
   const editorContainer = getAppItem("editorContainer");
   const editorView = getTemplateItem("editorView");
-  const topToolbar = findElement<HTMLDivElement>(".toolbar-hover-zone");
-  const existingEmptyState = findElement<HTMLDivElement>(
+  const topToolbar = editorContainer.querySelector<HTMLDivElement>(
+    ".toolbar-hover-zone",
+  );
+  const existingEmptyState = editorContainer.querySelector<HTMLDivElement>(
     ".editor-empty-state",
-    editorContainer,
   );
   const showEmptyState = !activeId;
   editorView.classList.toggle("hidden", showEmptyState);

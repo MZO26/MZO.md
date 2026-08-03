@@ -1,8 +1,8 @@
-import { applyTagView } from "@/components/sidebar/sidebar-features";
+import { applyTagView } from "@/components/sidebar/sidebar-views";
 import {
   TOOLBAR_ACTIONS,
   TOP_TOOLBAR_ACTIONS,
-} from "@/components/toolbar/toolbar-actions";
+} from "@/components/toolbar/toolbar-actions-init";
 import {
   buildToolbarMenu,
   buildTopToolbarMenu,

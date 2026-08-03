@@ -1,3 +1,4 @@
+import { renderTags } from "@/components/sidebar/sidebar-note-items";
 import { noteStore, stateStore } from "@/state/state";
 import { formatNoteDate } from "@/utils/date";
 import { createInfoSpan } from "@/utils/dom";
@@ -19,12 +20,7 @@ function buildPreviewCard(
   if (Array.isArray(tags) && tags.length > 0) {
     const tagsContainer = document.createElement("div");
     tagsContainer.classList.add("note-tags");
-    for (const tag of tags) {
-      const span = document.createElement("span");
-      span.classList.add("tag");
-      span.textContent = `#${tag}`;
-      tagsContainer.appendChild(span);
-    }
+    renderTags(tags, tagsContainer);
     cardContent.appendChild(tagsContainer);
   }
   const isoToDate = formatNoteDate(updated_at);

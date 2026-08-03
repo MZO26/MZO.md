@@ -1,4 +1,3 @@
-import { setSelectionMode } from "@/components/sidebar/sidebar-selection";
 import {
   triggerCopyFilePath,
   triggerCopyRichText,
@@ -85,9 +84,14 @@ function initListeners() {
   });
 
   window.noteAPI.onTriggerSelect((id: string) => {
-    const { selectionMode, selectedIds } = stateStore.getState();
-    selectedIds.add(id);
-    setSelectionMode(!selectionMode);
+    stateStore.setState((state) => {
+      const nextSelectedIds = new Set(state.selectedIds);
+      nextSelectedIds.add(id);
+      return {
+        selectionMode: true,
+        selectedIds: nextSelectedIds,
+      };
+    });
   });
 
   window.noteAPI.onTriggerDuplicate(async (id: string) => {

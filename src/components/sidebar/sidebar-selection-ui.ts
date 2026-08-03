@@ -1,33 +1,9 @@
-import { noteStore, stateStore } from "@/state/state";
-import { createIconButton, findElement } from "@/utils/dom";
+import { rendererLogger } from "@/app";
+import { createIconButton } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
 import { SELECTION_ACTIONS } from "@shared/constants";
-
-function selectAllVisibleNotes() {
-  const visibleIds = noteStore.get("visibleIds") ?? [];
-  const selectedIds = new Set(visibleIds);
-  const selectionMode = true;
-  stateStore.setState({
-    selectedIds,
-    selectionMode,
-  });
-  updateSelectionUI(selectedIds, selectionMode);
-}
-
-function initSelectionFooter() {
-  const selectionFooter = getUIItem("selectionFooter");
-  if (selectionFooter.childElementCount > 0) return;
-  const frag = document.createDocumentFragment();
-  for (const action of SELECTION_ACTIONS) {
-    const button = createIconButton(action.icon);
-    button.className = `${action.id}-btn`;
-    button.setAttribute("data-action", action.id);
-    frag.appendChild(button);
-  }
-  selectionFooter.appendChild(frag);
-  renderIcons(selectionFooter);
-}
+import type { SelectionParams } from "@shared/types";
 
 function getActionLabel(actionId: string, selectedCount: number): string {
   switch (actionId) {
@@ -46,6 +22,24 @@ function getActionLabel(actionId: string, selectedCount: number): string {
   }
 }
 
+function initSelectionFooter() {
+  const selectionFooter = getUIItem("selectionFooter");
+  if (selectionFooter.dataset["initialized"] === "true") {
+    rendererLogger.devLog("No rebuild of selection footer");
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  for (const action of SELECTION_ACTIONS) {
+    const button = createIconButton(action.icon);
+    button.className = `${action.id}-btn`;
+    button.dataset["action"] = action.id;
+    frag.appendChild(button);
+  }
+  selectionFooter.appendChild(frag);
+  renderIcons(selectionFooter);
+  selectionFooter.dataset["initialized"] = "true";
+}
+
 function updateSelectionFooter(
   selectedIds: Set<string>,
   selectionMode: boolean,
@@ -54,9 +48,8 @@ function updateSelectionFooter(
   const selectionFooter = getUIItem("selectionFooter");
   selectionFooter.classList.toggle("collapsed", !selectionMode);
   for (const action of SELECTION_ACTIONS) {
-    const button = findElement<HTMLButtonElement>(
-      `.${action.id}-btn`,
-      selectionFooter,
+    const button = selectionFooter.querySelector<HTMLButtonElement>(
+      `.${CSS.escape(`${action.id}-btn`)}`,
     );
     if (!button) continue;
     const label = getActionLabel(action.id, selectedCount);
@@ -65,19 +58,8 @@ function updateSelectionFooter(
   }
 }
 
-function setSelectionMode(enabled: boolean) {
-  const prevSelectedIds = stateStore.get("selectedIds");
-  const nextSelectedIds = enabled
-    ? new Set<string>(prevSelectedIds)
-    : new Set<string>();
-  stateStore.setState({
-    selectionMode: enabled,
-    selectedIds: nextSelectedIds,
-  });
-  updateSelectionUI(nextSelectedIds, enabled);
-}
-
-function updateSelectionUI(selectedIds: Set<string>, selectionMode: boolean) {
+function updateSelectionUI(selectionParams: SelectionParams) {
+  const { selectionMode, selectedIds } = selectionParams;
   const sidebar = getAppItem("sidebar");
   sidebar.classList.toggle("selection-mode", selectionMode);
   const noteItems = sidebar.querySelectorAll<HTMLDivElement>(".note-item");
@@ -85,13 +67,12 @@ function updateSelectionUI(selectedIds: Set<string>, selectionMode: boolean) {
     const id = item.getAttribute("data-id");
     const isSelected = selectionMode && !!id && selectedIds.has(id);
     item.classList.toggle("selected", isSelected);
-    const checkbox = findElement<HTMLInputElement>(".select-checkbox", item);
+    const checkbox = item.querySelector<HTMLInputElement>(".select-checkbox");
     if (checkbox) {
       checkbox.checked = isSelected;
     }
   }
-  initSelectionFooter();
   updateSelectionFooter(selectedIds, selectionMode);
 }
 
-export { selectAllVisibleNotes, setSelectionMode, updateSelectionUI };
+export { initSelectionFooter, updateSelectionUI };

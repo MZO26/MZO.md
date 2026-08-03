@@ -1,5 +1,4 @@
-import { createInfoSpan } from "@/components/sidebar/sidebar-features";
-import { findElement, requireElement } from "@/utils/dom";
+import { createInfoSpan, requireElement } from "@/utils/dom";
 import type { Editor } from "@tiptap/core";
 
 export interface TocItem {
@@ -30,6 +29,7 @@ function getTableOfContents(editor: Editor | null) {
 
 function initTableOfContents() {
   const container = requireElement<HTMLDivElement>(".toc");
+  const editorWrapper = document.querySelector<HTMLDivElement>("#editor");
   container.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
@@ -37,7 +37,9 @@ function initTableOfContents() {
     if (!button) return;
     const targetId = button.getAttribute("data-target-id");
     if (targetId) {
-      const heading = findElement<HTMLHeadingElement>(`[id="${targetId}"]`);
+      const heading = editorWrapper?.querySelector<HTMLHeadingElement>(
+        `[id="${CSS.escape(targetId)}"]`,
+      );
       if (!heading) return;
       heading.scrollIntoView({
         behavior: "auto",

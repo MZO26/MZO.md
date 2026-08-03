@@ -2,23 +2,10 @@ import { rendererLogger } from "@/app";
 import { stateStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
-import { getAppItem } from "@/utils/registry";
+import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
 import { DEBOUNCE_MS, MIN_SEARCH_LENGTH } from "@shared/constants";
-import { Editor, type JSONContent } from "@tiptap/core";
-
-function recreateEditorState(editor: Editor, doc: JSONContent) {
-  editor
-    .chain()
-    .setMeta("addToHistory", false)
-    .setContent(doc, {
-      emitUpdate: false,
-      errorOnInvalidContent: false,
-      contentType: "json",
-    })
-    .focus("start")
-    .run();
-}
+import { Editor } from "@tiptap/core";
 
 function hasSearchMatch(editor: Editor): boolean {
   const search = editor.storage.docSearch;
@@ -79,6 +66,15 @@ function initEditorSearch(editor: Editor) {
     editor.commands.docSearchClear();
     updateButtons();
     updateCount();
+  }
+
+  function toggle() {
+    const isClosed = inputWrapper.classList.contains("invisible");
+    if (isClosed) {
+      open();
+    } else {
+      close();
+    }
   }
 
   async function scrollToSelection(editor: Editor, container: HTMLDivElement) {
@@ -205,18 +201,25 @@ function initEditorSearch(editor: Editor) {
   });
 
   editorWrapper.addEventListener("keydown", (event) => {
-    if (!event.ctrlKey && !event.metaKey) return;
-    if (event.key === "f" || event.key === "F") {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f") {
       event.preventDefault();
       open();
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
     }
   });
 
   document.addEventListener("click", (event) => {
     const target = event.target as HTMLElement | null;
     if (!inputWrapper.classList.contains("invisible")) {
-      if (inputWrapper.contains(target) || replaceInputWrapper.contains(target))
+      const clickedInput = inputWrapper.contains(target);
+      const clickedReplace = replaceInputWrapper.contains(target);
+      const clickedToolbar = target?.closest("#toolbar");
+      if (clickedInput || clickedReplace || clickedToolbar) {
         return;
+      }
       event.preventDefault();
       close();
       return;
@@ -229,6 +232,10 @@ function initEditorSearch(editor: Editor) {
   }, DEBOUNCE_MS.fast);
 
   input.addEventListener("input", debouncedSearch);
+
+  registerAppEvents(document, {
+    "app:toggle-editor-search": () => toggle(),
+  });
 }
 
-export { initEditorSearch, recreateEditorState };
+export { initEditorSearch };
