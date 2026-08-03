@@ -2,7 +2,10 @@ import { showNotification } from "@/api/api";
 import { handleImportNote } from "@/notes/note-actions";
 import { getExtension } from "@/utils/note";
 import { createGlobalSpinner } from "@/utils/ui";
-import { ALLOWED_IMPORT_EXTENSIONS, MAX_FILE_DROPS } from "@shared/constants";
+import {
+  ALLOWED_IMPORT_EXTENSIONS,
+  MAX_FILE_DROPS,
+} from "@shared/constants/renderer-constants";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import type { ImportExtension } from "@shared/types";
 

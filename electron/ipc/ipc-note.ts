@@ -28,7 +28,7 @@ import {
   result,
   validation,
 } from "@electron/ipc/ipc-validation";
-import { LIMITS } from "@shared/constants";
+import { LIMITS } from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import { DbContentCodec } from "@shared/schemas/editor-schema";
 import {

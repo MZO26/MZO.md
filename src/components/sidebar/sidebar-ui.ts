@@ -15,7 +15,10 @@ import {
 import { renderIcons } from "@/utils/icons";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
-import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@shared/constants";
+import {
+  SIDEBAR_ALL_NOTES_LIMIT,
+  UNTAGGED,
+} from "@shared/constants/renderer-constants";
 import type { AllTagsMenu, FilterMode, SidebarParams } from "@shared/types";
 
 let allTagsMenu: AllTagsMenu | null = null;

@@ -3,7 +3,7 @@ import { mainLogger } from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { checkRateLimit, validation } from "@electron/ipc/ipc-validation";
-import { LIMITS } from "@shared/constants";
+import { LIMITS } from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import { ExternalUrlSchema } from "@shared/schemas/electron-schema";
 import { IdSchema, type NoteMenuPayload } from "@shared/schemas/note-schema";

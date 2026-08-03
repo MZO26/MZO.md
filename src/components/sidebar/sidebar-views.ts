@@ -1,7 +1,7 @@
 import { updateSettings } from "@/api/api";
 import { noteStore, stateStore } from "@/state/state";
 import { getUIItem } from "@/utils/registry";
-import { UNTAGGED } from "@shared/constants";
+import { UNTAGGED } from "@shared/constants/renderer-constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 
 function matchesActiveTag(note: NoteListItem, activeTag: string | null) {

@@ -1,10 +1,11 @@
 import { rendererLogger } from "@/app";
 import { processAndInsertImages } from "@/extensions/image/image";
+import { DOMPURIFY_CONFIG } from "@shared/constants/config-constants";
 import {
   ALLOWED_TYPES,
-  DOMPURIFY_CONFIG,
+  MAX_DROP_LENGTH,
   MAX_DROP_PASTE_CHARACTERS,
-} from "@shared/constants";
+} from "@shared/constants/renderer-constants";
 import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";
@@ -23,7 +24,7 @@ export const PasteHandler = Extension.create({
             const images = files.filter((f) => ALLOWED_TYPES.includes(f.type));
             if (images.length > 0) {
               event.preventDefault();
-              const safeImages = images.slice(0, 20);
+              const safeImages = images.slice(0, MAX_DROP_LENGTH);
               void processAndInsertImages(safeImages, editor).catch(
                 (error: unknown) => {
                   rendererLogger.appError(

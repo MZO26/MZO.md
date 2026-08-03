@@ -25,7 +25,11 @@ import { debounce } from "@/utils/async";
 import { getMetadata, titleGenerator } from "@/utils/generators";
 import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
-import { DEBOUNCE_MS, EMPTY_DOC, UNTITLED } from "@shared/constants";
+import {
+  EMPTY_DOC,
+  UNTITLED,
+  DEBOUNCE_MS,
+} from "@shared/constants/renderer-constants";
 import {
   type CreateNotePayload,
   type Note,

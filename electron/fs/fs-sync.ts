@@ -5,7 +5,8 @@ import {
 import { getFilePath } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { MAX_BYTES_FILE, SYNC_BUFFER } from "@shared/constants";
+import { SYNC_BUFFER } from "@shared/constants/main-constants";
+import { MAX_BYTES_FILE } from "@shared/constants/renderer-constants";
 import { AppErrorCode } from "@shared/errors";
 import type { AutoExportWritePayload, Note } from "@shared/schemas/note-schema";
 import type { SyncResult } from "@shared/schemas/request-schema";

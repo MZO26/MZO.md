@@ -1,7 +1,11 @@
 import { rendererLogger } from "@/app";
 import { sleep } from "@/utils/async";
 import { getUIItem } from "@/utils/registry";
-import { NODE_BASELINE, UNTAGGED, YIELD_MS } from "@shared/constants";
+import {
+  UNTAGGED,
+  NODE_BASELINE,
+  YIELD_MS,
+} from "@shared/constants/renderer-constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
 

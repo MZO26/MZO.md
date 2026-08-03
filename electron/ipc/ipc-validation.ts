@@ -8,9 +8,9 @@ import { registerNoteIpc } from "@electron/ipc/ipc-note";
 import { registerSettingsIpc } from "@electron/ipc/ipc-settings";
 import {
   APP_START_TIME,
-  IPC_TIMERS,
   RATE_LIMIT_DEFER_MS,
-} from "@shared/constants";
+  IPC_TIMERS,
+} from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import type { Result } from "@shared/types";
 import { BrowserWindow, app, type IpcMainInvokeEvent } from "electron";

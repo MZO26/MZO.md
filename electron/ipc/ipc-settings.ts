@@ -6,7 +6,7 @@ import {
   validation,
 } from "@electron/ipc/ipc-validation";
 import { nextZoom } from "@electron/win";
-import { LIMITS } from "@shared/constants";
+import { LIMITS } from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import { ZoomActionSchema } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";

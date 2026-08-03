@@ -1,7 +1,10 @@
 import { setTheme } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { getAppItem } from "@/utils/registry";
-import { CODE_THEME_MAP, THEME_MAP } from "@shared/constants";
+import {
+  THEME_MAP,
+  CODE_THEME_MAP,
+} from "@shared/constants/renderer-constants";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import type { ResolvedTheme, Result } from "@shared/types";
 

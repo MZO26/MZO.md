@@ -2,7 +2,7 @@ import { mainLogger } from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { win } from "@electron/main";
-import { ZOOMS } from "@shared/constants";
+import { ZOOMS } from "@shared/constants/main-constants";
 import type { ZoomAction } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
 import { BrowserWindow, screen } from "electron";

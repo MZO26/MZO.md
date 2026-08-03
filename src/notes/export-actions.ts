@@ -4,7 +4,8 @@ import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import { titleGenerator } from "@/utils/generators";
 import { getAppItem } from "@/utils/registry";
 import { needsLandscape } from "@/utils/ui";
-import { DOMPURIFY_CONFIG, NODE_BASELINE } from "@shared/constants";
+import { DOMPURIFY_CONFIG } from "@shared/constants/config-constants";
+import { NODE_BASELINE } from "@shared/constants/renderer-constants";
 import { AppErrorCode } from "@shared/errors";
 import type { Note } from "@shared/schemas/note-schema";
 import type {

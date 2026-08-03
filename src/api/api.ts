@@ -1,7 +1,7 @@
 import { rendererLogger } from "@/app";
 import { settingsStore } from "@/state/state";
 import { debounce } from "@/utils/async";
-import { DEBOUNCE_MS } from "@shared/constants";
+import { DEBOUNCE_MS } from "@shared/constants/renderer-constants";
 import { AppErrorCode } from "@shared/errors";
 import type {
   Notification,

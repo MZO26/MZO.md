@@ -1,6 +1,18 @@
 import { createIconButton, requireElement } from "@/utils/dom";
 import { getUIItem } from "@/utils/registry";
-import { QUICK_ACTIONS } from "@shared/constants";
+import { QUICK_ACTIONS } from "@shared/constants/renderer-constants";
+import {
+  AUTO_EXPORT_SETTINGS,
+  CODE_THEME_SETTINGS,
+  EXPORT_FORMAT_SETTINGS,
+  FONT_FAMILY_SETTINGS,
+  FONT_SIZE_SETTINGS,
+  HIGHLIGHT_THEME_SETTINGS,
+  LINE_HEIGHT_SETTINGS,
+  NOTE_ITEM_DISPLAY_SETTINGS,
+  SPELLCHECK_SETTINGS,
+  THEME_SETTINGS,
+} from "@shared/constants/setting-constants";
 import type { SelectOption, SettingsCategory } from "@shared/types";
 
 // blueprint for select items and their options for specified categories
@@ -64,4 +76,37 @@ function createQuickActionContainer() {
   return quickActionContainer;
 }
 
-export { createQuickActionContainer, createSettingsMenu, selectBuilder };
+function buildSelects() {
+  selectBuilder("theme", THEME_SETTINGS, "Appearance", "App-Theme");
+  selectBuilder("code-theme", CODE_THEME_SETTINGS, "Appearance", "Code-Theme");
+  selectBuilder(
+    "highlight-theme",
+    HIGHLIGHT_THEME_SETTINGS,
+    "Appearance",
+    "Highlight-Theme",
+  );
+  selectBuilder(
+    "note-item-display",
+    NOTE_ITEM_DISPLAY_SETTINGS,
+    "Appearance",
+    "Note-Item-Display",
+  );
+  selectBuilder("font-family", FONT_FAMILY_SETTINGS, "Editor", "Font-Family");
+  selectBuilder("font-size", FONT_SIZE_SETTINGS, "Editor", "Font-Size");
+  (selectBuilder("line-height", LINE_HEIGHT_SETTINGS, "Editor", "Line-Height"),
+    selectBuilder("spellcheck", SPELLCHECK_SETTINGS, "Editor", "Spellcheck"),
+    selectBuilder(
+      "export-format",
+      EXPORT_FORMAT_SETTINGS,
+      "General",
+      "Bulk Export-Format",
+    ),
+    selectBuilder(
+      "auto-export",
+      AUTO_EXPORT_SETTINGS,
+      "General",
+      "Auto-Export (.md)",
+    ));
+}
+
+export { buildSelects, createQuickActionContainer, createSettingsMenu };

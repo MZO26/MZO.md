@@ -7,7 +7,7 @@ import { createHiddenPdfWindow } from "@electron/win";
 import {
   CONCURRENCY_EXPORT_NORMAL,
   CONCURRENCY_EXPORT_PDF,
-} from "@shared/constants";
+} from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import type { ExportContent } from "@shared/schemas/request-schema";

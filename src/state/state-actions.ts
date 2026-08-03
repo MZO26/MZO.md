@@ -42,7 +42,7 @@ function getVisibleNotes(state: NoteStore) {
   return computeVisibleNotes(state.visibleIds, state.noteIndex);
 }
 
-function areArraysShallowEqual<T>(previous: T[], next: T[]) {
+function shallowEq<T>(previous: T[], next: T[]) {
   return (
     previous.length === next.length &&
     previous.every(
@@ -111,9 +111,10 @@ function syncNoteStore(notes: Readonly<NoteListItem[]>) {
 }
 
 export {
-  areArraysShallowEqual,
   getSidebarParams,
   getVisibleNotes,
+  memoize,
+  shallowEq,
   sidebarListener,
   syncNoteStore,
   syncSettingsStore,

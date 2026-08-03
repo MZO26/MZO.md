@@ -18,7 +18,7 @@ import {
   onOSThemeChange,
 } from "@electron/titlebar";
 import { isWindowVisible, saveWindowBounds } from "@electron/win";
-import { DEFAULT_SETTINGS } from "@shared/constants";
+import { DEFAULT_SETTINGS } from "@shared/constants/setting-constants";
 import { type AppSettings } from "@shared/schemas/store-schema";
 import {
   app,

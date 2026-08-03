@@ -1,11 +1,15 @@
 import type {
   ALLOWED_IMPORT_EXTENSIONS,
+  CODE_THEMES,
+  QUICK_ACTIONS,
+  SELECTION_ACTIONS,
   SIDEBAR_FILTER_MODES,
-} from "@shared/constants";
+} from "@shared/constants/renderer-constants";
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { ExportFormat, Theme } from "@shared/schemas/store-schema";
 import type { Editor, SetContentOptions } from "@tiptap/core";
+import type { SETTINGS_CATEGORIES } from "./constants/setting-constants";
 
 type NativeWindowColors = {
   backgroundColor: string;
@@ -43,12 +47,7 @@ type ResolvedTheme = Extract<Theme, "light" | "dark">;
 
 type SelectOption<T extends string | boolean> = { value: T; label: string };
 
-type Code =
-  | "github-light"
-  | "github-dark"
-  | "atom-one-light"
-  | "atom-one-dark"
-  | "colorless";
+type Code = (typeof CODE_THEMES)[number];
 
 type TableAction =
   | "addRowBefore"
@@ -137,7 +136,7 @@ type ContentType = ImportExtension;
 
 type EditorContentType = NonNullable<SetContentOptions["contentType"]>;
 
-type SettingsCategory = "Appearance" | "Editor" | "General";
+type SettingsCategory = (typeof SETTINGS_CATEGORIES)[number];
 
 interface AppRegistry {
   ui: Partial<UIRegistry>;
@@ -196,23 +195,9 @@ type AllTagsMenu = {
   close(): void;
 };
 
-type SelectionAction =
-  | "cancel"
-  | "pin"
-  | "export"
-  | "copy-rich-text"
-  | "delete";
+type SelectionAction = (typeof SELECTION_ACTIONS)[number]["id"];
 
-type SelectionActionConfig = {
-  id: SelectionAction;
-  icon: string;
-};
-
-type QuickAction =
-  | "open-path"
-  | "backup-db"
-  | "backup-db-restore"
-  | "backup-notes";
+type QuickAction = (typeof QUICK_ACTIONS)[number]["id"];
 
 type QuickActionConfig = {
   id: QuickAction;
@@ -249,7 +234,6 @@ export type {
   ResolvedTheme,
   Result,
   SelectionAction,
-  SelectionActionConfig,
   SelectionParams,
   SelectOption,
   SettingsCategory,

@@ -2,7 +2,7 @@ import { rendererLogger } from "@/app";
 import { createIconButton } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
-import { SELECTION_ACTIONS } from "@shared/constants";
+import { SELECTION_ACTIONS } from "@shared/constants/renderer-constants";
 import type { SelectionParams } from "@shared/types";
 
 function getActionLabel(actionId: string, selectedCount: number): string {

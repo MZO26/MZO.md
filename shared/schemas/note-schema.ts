@@ -1,4 +1,7 @@
-import { MAX_SEARCH_LENGTH, UNTITLED } from "@shared/constants";
+import {
+  UNTITLED,
+  MAX_SEARCH_LENGTH,
+} from "@shared/constants/renderer-constants";
 import { EditorDocSchema } from "@shared/schemas/editor-schema";
 import { z } from "zod";
 

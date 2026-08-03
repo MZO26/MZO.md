@@ -13,7 +13,7 @@ import {
   validation,
 } from "@electron/ipc/ipc-validation";
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
-import { LIMITS } from "@shared/constants";
+import { LIMITS } from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import {
   ExternalUrlSchema,

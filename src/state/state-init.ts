@@ -2,8 +2,8 @@ import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { initSelectionFooter } from "@/components/sidebar/sidebar-selection-ui";
 import { noteStore, stateStore } from "@/state/state";
 import {
-  areArraysShallowEqual,
   getVisibleNotes,
+  shallowEq,
   sidebarListener,
   updateSelection,
 } from "@/state/state-actions";
@@ -36,4 +36,4 @@ stateStore.subscribeSel(
 
 stateStore.subscribeSel((state) => state.selectedIds, updateSelection);
 
-noteStore.subscribeSel(getVisibleNotes, sidebarListener, areArraysShallowEqual);
+noteStore.subscribeSel(getVisibleNotes, sidebarListener, shallowEq);

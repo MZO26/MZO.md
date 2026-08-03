@@ -21,7 +21,7 @@ import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { sleep } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { CHAR_BASELINE, YIELD_MS } from "@shared/constants";
+import { CHAR_BASELINE, YIELD_MS } from "@shared/constants/renderer-constants";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 import type {
@@ -62,7 +62,7 @@ function triggerTableMenu(action: TableAction) {
 function triggerNoteItemMenu(payload: NoteMenuPayload) {
   const sidebar = getAppItem("sidebar");
   const noteElement = sidebar.querySelector<HTMLDivElement>(
-    `.note-item[data-id="${payload.id}"]`,
+    `.note-item[data-id="${CSS.escape(payload.id)}"]`,
   );
   if (!noteElement) return;
   if (payload.pinned !== undefined) {

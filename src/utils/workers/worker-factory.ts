@@ -1,4 +1,4 @@
-import { MAX_WORKER_TIMEOUT_MS } from "@shared/constants";
+import { MAX_WORKER_TIMEOUT_MS } from "@shared/constants/renderer-constants";
 import { WorkerErrorCode } from "@shared/errors";
 import type { WorkerResult } from "@shared/types";
 
@@ -25,11 +25,11 @@ function handleWorkerError(err: unknown): {
   };
 }
 
-function createWorker<WInput, WOutput>(worker: Worker | null) {
+function createWorker<T, R>(worker: Worker | null) {
   return function work(
-    payload: WInput,
+    payload: T,
     transferables: Transferable[] = [],
-  ): Promise<WorkerResult<WOutput>> {
+  ): Promise<WorkerResult<R>> {
     return new Promise((resolve) => {
       if (!worker) {
         resolve({ success: false, error: WorkerErrorCode.InitializeError });
@@ -43,7 +43,7 @@ function createWorker<WInput, WOutput>(worker: Worker | null) {
         worker.removeEventListener("error", handleError);
       };
       const handleMessage = (
-        event: MessageEvent<{ id: string } & WorkerResult<WOutput>>,
+        event: MessageEvent<{ id: string } & WorkerResult<R>>,
       ) => {
         if (event.data.id === id) {
           workerDone();

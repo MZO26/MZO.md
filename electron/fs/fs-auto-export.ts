@@ -8,7 +8,7 @@ import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { resolveAutoExport } from "@electron/ipc/ipc-helpers";
 import { validation } from "@electron/ipc/ipc-validation";
-import { CONCURRENCY_DELETE } from "@shared/constants";
+import { CONCURRENCY_DELETE } from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import {

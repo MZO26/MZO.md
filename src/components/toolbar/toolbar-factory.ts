@@ -1,6 +1,6 @@
 import { settingsStore } from "@/state/state";
 import { createIconButton } from "@/utils/dom";
-import { getAppItem } from "@/utils/registry";
+import { getAppItem, registerAppEvents } from "@/utils/registry";
 import type { Action, ActionMap, ToolbarItem } from "@shared/types";
 import type { Editor } from "@tiptap/core";
 
@@ -79,7 +79,9 @@ function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
     if (!transaction.docChanged && !transaction.selectionSet) return;
     refresh();
   });
-  return { refresh };
+  registerAppEvents(document, {
+    "app:refresh-toolbar": () => refresh(),
+  });
 }
 
 function buildTopToolbarMenu(container: HTMLDivElement, actions: ActionMap) {

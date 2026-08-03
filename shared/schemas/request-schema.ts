@@ -1,4 +1,5 @@
-import { MAX_IPC_PAYLOAD_SIZE, UNTITLED } from "@shared/constants";
+import { MAX_IPC_PAYLOAD_SIZE } from "@shared/constants/main-constants";
+import { UNTITLED } from "@shared/constants/renderer-constants";
 import {
   AutoExportWritePayloadSchema,
   DateSchema,

@@ -34,12 +34,12 @@ import { noteStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
+import { SHARED_KATEX_OPTIONS } from "@shared/constants/config-constants";
 import {
   ALLOWED_PROTOCOLS,
   MAX_CHARACTERS,
   NODE_BASELINE,
-  SHARED_KATEX_OPTIONS,
-} from "@shared/constants";
+} from "@shared/constants/renderer-constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { Editor } from "@tiptap/core";
 import Image from "@tiptap/extension-image";

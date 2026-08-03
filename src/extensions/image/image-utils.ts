@@ -1,5 +1,8 @@
 import { WorkerTaskError } from "@/utils/workers/worker-factory";
-import { IMAGE_MAX_WIDTH, IMAGE_QUALITY } from "@shared/constants";
+import {
+  IMAGE_MAX_WIDTH,
+  IMAGE_QUALITY,
+} from "@shared/constants/renderer-constants";
 import { WorkerErrorCode } from "@shared/errors";
 
 function getScaledSize(

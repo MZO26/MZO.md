@@ -14,7 +14,7 @@ import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { createGlobalSpinner } from "@/utils/ui";
-import { MAX_CHARACTERS } from "@shared/constants";
+import { MAX_CHARACTERS } from "@shared/constants/renderer-constants";
 import type { SelectionAction } from "@shared/types";
 import { generateHTML, generateText } from "@tiptap/core";
 

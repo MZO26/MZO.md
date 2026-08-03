@@ -9,7 +9,7 @@ import {
 } from "@/utils/generators";
 import { addActiveTagToDoc } from "@/utils/note";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
-import { DOMPURIFY_CONFIG } from "@shared/constants";
+import { DOMPURIFY_CONFIG } from "@shared/constants/config-constants";
 import { AppErrorCode } from "@shared/errors";
 import { isEditorDoc } from "@shared/schemas/editor-schema";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";

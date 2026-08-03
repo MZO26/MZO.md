@@ -1,4 +1,4 @@
-import { EMPTY_DOC } from "@shared/constants";
+import { EMPTY_DOC } from "@shared/constants/renderer-constants";
 import type { JSONContent } from "@tiptap/core";
 import type { Url } from "url";
 import z from "zod";

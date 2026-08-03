@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS } from "@shared/constants";
+import { DEFAULT_SETTINGS } from "@shared/constants/setting-constants";
 import { createLogger } from "@shared/log";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 

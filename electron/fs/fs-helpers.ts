@@ -1,7 +1,7 @@
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import { CONCURRENCY_IMAGE } from "@shared/constants";
+import { CONCURRENCY_IMAGE } from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import { FileNameSchema } from "@shared/schemas/request-schema";

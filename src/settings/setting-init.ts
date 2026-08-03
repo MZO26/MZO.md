@@ -1,18 +1,17 @@
+import { rendererLogger } from "@/app";
 import { settingsContainer, settingsDialog } from "@/settings/dialog-init";
 import { getQuickAction } from "@/settings/quick-actions";
 import {
+  buildSelects,
   createQuickActionContainer,
   createSettingsMenu,
 } from "@/settings/setting-factory";
-import {
-  buildSelects,
-  setSelectListeners,
-} from "@/settings/setting-items-init";
+import { setSelectListeners } from "@/settings/setting-items-init";
 import { applyAppTheme } from "@/settings/theme-actions";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
-import { QUICK_ACTIONS } from "@shared/constants";
+import { QUICK_ACTIONS } from "@shared/constants/renderer-constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { QuickAction } from "@shared/types";
 
@@ -41,8 +40,8 @@ async function initAppSettings(settings: AppSettings) {
   });
 }
 
-function isValidQuickAction(action: string | null): action is QuickAction {
-  return action !== null && action in QUICK_ACTIONS;
+function isValidQuickAction(action: string): action is QuickAction {
+  return QUICK_ACTIONS.some((a) => a.id === action);
 }
 
 function applyModalListeners(
@@ -63,7 +62,11 @@ function applyModalListeners(
       const button = target.closest<HTMLButtonElement>("button[data-action]");
       if (!button) return;
       const action = button.getAttribute("data-action");
-      if (!isValidQuickAction(action)) return;
+      if (!action) return;
+      if (!isValidQuickAction(action)) {
+        rendererLogger.devLog(`${action} is not a valid action`);
+        return;
+      }
       await getQuickAction(action);
     }),
   );

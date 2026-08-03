@@ -4,7 +4,10 @@ import { debounce } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
-import { DEBOUNCE_MS, MIN_SEARCH_LENGTH } from "@shared/constants";
+import {
+  MIN_SEARCH_LENGTH,
+  DEBOUNCE_MS,
+} from "@shared/constants/renderer-constants";
 import { Editor } from "@tiptap/core";
 
 function hasSearchMatch(editor: Editor): boolean {

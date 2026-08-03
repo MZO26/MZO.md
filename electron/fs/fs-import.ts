@@ -2,11 +2,11 @@ import db from "@electron/db/database";
 import { sanitizeImportString } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { validation } from "@electron/ipc/ipc-validation";
+import { CONCURRENCY_IMPORT } from "@shared/constants/main-constants";
 import {
-  CONCURRENCY_IMPORT,
   MAX_BYTES_FILE,
   MAX_CHARACTERS,
-} from "@shared/constants";
+} from "@shared/constants/renderer-constants";
 import { processWithLimit } from "@shared/limiter";
 import {
   ImportRequestSchema,

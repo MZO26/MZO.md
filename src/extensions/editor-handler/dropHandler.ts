@@ -8,7 +8,7 @@ import {
   MAX_BYTES_FILE,
   MAX_DROP_LENGTH,
   MAX_DROP_PASTE_CHARACTERS,
-} from "@shared/constants";
+} from "@shared/constants/renderer-constants";
 import { Editor, Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 

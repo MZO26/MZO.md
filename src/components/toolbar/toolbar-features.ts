@@ -1,8 +1,7 @@
 import { pinWindow, updateSettings } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { createDivider } from "@/components/toolbar/toolbar-factory";
-import { toolbarApi } from "@/components/toolbar/toolbar-init";
-import { noteStore, stateStore } from "@/state/state";
+import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { createInfoSpan } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
@@ -41,12 +40,12 @@ function setToolbarCollapsed(collapsed: boolean) {
 }
 
 function toggleToolbar() {
-  const appContainer = getAppItem("appContainer");
-  const newState = !appContainer.classList.contains("toolbar-collapsed");
+  const newState = !settingsStore.get("toolbar_collapsed");
   try {
     setToolbarCollapsed(newState);
   } finally {
-    toolbarApi?.refresh();
+    document.dispatchEvent(new CustomEvent("app:refresh-toolbar"));
+    rendererLogger.devLog("Dispatched toolbar refresh");
   }
   updateSettings({ toolbar_collapsed: newState });
 }

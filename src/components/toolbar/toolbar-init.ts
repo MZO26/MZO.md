@@ -21,8 +21,6 @@ import { requireElement } from "@/utils/dom";
 import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
 
-let toolbarApi: { refresh: () => void } | null = null;
-
 function initMetadataToolbar() {
   const metadataContainer = getUIItem("metadataContainer");
   metadataContainer.addEventListener(
@@ -56,7 +54,7 @@ function initMetadataToolbar() {
 
 function initToolbar() {
   const toolbarContainer = requireElement<HTMLDivElement>("#toolbar");
-  toolbarApi = buildToolbarMenu(toolbarContainer, TOOLBAR_ACTIONS);
+  buildToolbarMenu(toolbarContainer, TOOLBAR_ACTIONS);
   setupToolbarListeners(toolbarContainer, TOOLBAR_ACTIONS);
 }
 
@@ -82,4 +80,4 @@ function initTopToolbar() {
   });
 }
 
-export { initMetadataToolbar, initToolbar, initTopToolbar, toolbarApi };
+export { initMetadataToolbar, initToolbar, initTopToolbar };

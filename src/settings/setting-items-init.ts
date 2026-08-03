@@ -1,7 +1,6 @@
 import { selectAutoExportFolder, updateSettings } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
-import { selectBuilder } from "@/settings/setting-factory";
 import {
   applyAppTheme,
   resolveTheme,
@@ -10,18 +9,6 @@ import {
 import { getSidebarParams } from "@/state/state-actions";
 import { createAsyncHandler } from "@/utils/async";
 import { getAppItem } from "@/utils/registry";
-import {
-  AUTO_EXPORT_SETTINGS,
-  CODE_THEME_SETTINGS,
-  EXPORT_FORMAT_SETTINGS,
-  FONT_FAMILY_SETTINGS,
-  FONT_SIZE_SETTINGS,
-  HIGHLIGHT_THEME_SETTINGS,
-  LINE_HEIGHT_SETTINGS,
-  NOTE_ITEM_DISPLAY_SETTINGS,
-  SPELLCHECK_SETTINGS,
-  THEME_SETTINGS,
-} from "@shared/constants";
 import type {
   AppSettings,
   FontFamily,
@@ -32,39 +19,6 @@ import type {
   Theme,
 } from "@shared/schemas/store-schema";
 import type { ExportFormat } from "@shared/types";
-
-function buildSelects() {
-  selectBuilder("theme", THEME_SETTINGS, "Appearance", "App-Theme");
-  selectBuilder("code-theme", CODE_THEME_SETTINGS, "Appearance", "Code-Theme");
-  selectBuilder(
-    "highlight-theme",
-    HIGHLIGHT_THEME_SETTINGS,
-    "Appearance",
-    "Highlight-Theme",
-  );
-  selectBuilder(
-    "note-item-display",
-    NOTE_ITEM_DISPLAY_SETTINGS,
-    "Appearance",
-    "Note-Item-Display",
-  );
-  selectBuilder("font-family", FONT_FAMILY_SETTINGS, "Editor", "Font-Family");
-  selectBuilder("font-size", FONT_SIZE_SETTINGS, "Editor", "Font-Size");
-  (selectBuilder("line-height", LINE_HEIGHT_SETTINGS, "Editor", "Line-Height"),
-    selectBuilder("spellcheck", SPELLCHECK_SETTINGS, "Editor", "Spellcheck"),
-    selectBuilder(
-      "export-format",
-      EXPORT_FORMAT_SETTINGS,
-      "General",
-      "Bulk Export-Format",
-    ),
-    selectBuilder(
-      "auto-export",
-      AUTO_EXPORT_SETTINGS,
-      "General",
-      "Auto-Export (.md)",
-    ));
-}
 
 function initAppearanceSettings(
   settings: AppSettings,
@@ -302,4 +256,4 @@ function setSelectListeners(settings: AppSettings, container: HTMLDivElement) {
   initGeneralSettings(settings, container);
 }
 
-export { buildSelects, setSelectListeners };
+export { setSelectListeners };

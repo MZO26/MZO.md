@@ -1,5 +1,5 @@
 import { lowlight } from "@/extensions/lowlight";
-import { MAX_CODE_BLOCK_HIGHLIGHT_LENGTH } from "@shared/constants";
+import { MAX_CODE_BLOCK_HIGHLIGHT_LENGTH } from "@shared/constants/renderer-constants";
 import { Extension } from "@tiptap/core";
 import {
   Plugin,

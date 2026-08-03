@@ -1,5 +1,8 @@
 import { createWorker } from "@/utils/workers/worker-factory";
-import { IMAGE_MAX_WIDTH, IMAGE_QUALITY } from "@shared/constants";
+import {
+  IMAGE_MAX_WIDTH,
+  IMAGE_QUALITY,
+} from "@shared/constants/renderer-constants";
 import type { ImageCompressionPayload, WorkerResult } from "@shared/types";
 
 const imageWorker =

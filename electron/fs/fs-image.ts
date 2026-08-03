@@ -1,5 +1,5 @@
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { CONCURRENCY_IMAGE } from "@shared/constants";
+import { CONCURRENCY_IMAGE } from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import { processWithLimit } from "@shared/limiter";
 import type { ImagePayload } from "@shared/schemas/image-schema";

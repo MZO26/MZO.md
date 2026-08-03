@@ -1,3 +1,4 @@
+import { rendererLogger } from "@/app";
 import { setupSidebarFileDrop } from "@/components/sidebar/sidebar-file-drop";
 import { debouncedSearch } from "@/components/sidebar/sidebar-search";
 import {
@@ -26,7 +27,7 @@ import { createAsyncHandler } from "@/utils/async";
 import { getAppItem, getUIItems, registerAppEvents } from "@/utils/registry";
 import { isSelectionActive } from "@/utils/shortcuts";
 import { createGlobalSpinner } from "@/utils/ui";
-import { SELECTION_ACTIONS } from "@shared/constants";
+import { SELECTION_ACTIONS } from "@shared/constants/renderer-constants";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import type { SelectionAction } from "@shared/types";
 
@@ -60,8 +61,8 @@ function initNotesSidebar() {
   });
 }
 
-function isValidAction(action: string | null): action is SelectionAction {
-  return action !== null && action in SELECTION_ACTIONS;
+function isValidAction(action: string): action is SelectionAction {
+  return SELECTION_ACTIONS.some((a) => a.id === action);
 }
 
 function applySidebarListeners(
@@ -108,7 +109,11 @@ function applySidebarListeners(
       if (!button) return;
       const selectedIds = stateStore.get("selectedIds");
       const action = button.getAttribute("data-action");
-      if (!isValidAction(action)) return;
+      if (!action) return;
+      if (!isValidAction(action)) {
+        rendererLogger.devLog(`${action} is not a valid action`);
+        return;
+      }
       if (action !== "cancel" && selectedIds.size === 0) return;
       await getSelectionAction(action, selectedIds);
     }),

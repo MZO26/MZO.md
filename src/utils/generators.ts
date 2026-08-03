@@ -1,4 +1,4 @@
-import { BLOCK_TYPES, UNTITLED } from "@shared/constants";
+import { BLOCK_TYPES, UNTITLED } from "@shared/constants/renderer-constants";
 import type { Metadata } from "@shared/types";
 import { type JSONContent } from "@tiptap/core";
 
