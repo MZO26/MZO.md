@@ -55,12 +55,14 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   function open() {
     if (isOpen) return;
     positionPopover();
+    filterInput.value = "";
     popover.classList.remove("hidden");
     isOpen = true;
   }
 
   function close() {
     if (!isOpen) return;
+    filterInput.value = "";
     popover.classList.add("hidden");
     isOpen = false;
   }
