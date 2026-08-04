@@ -16,10 +16,12 @@ class NotesSearch {
     WITH matched_notes AS (
         SELECT
         rowid,
-        bm25(notes_fts, 10.0, 1.0) AS rank,
-        snippet(notes_fts, -1, '<mark class="active-search-highlight">', '</mark>', '...', 8) AS search_match
+        rank,
+        snippet(notes_fts, 1, '<mark class="active-search-highlight">', '</mark>', '...', 8) AS search_match
         FROM notes_fts
         WHERE notes_fts MATCH $ftsQuery
+        ORDER BY rank
+        LIMIT 20
     )
     SELECT
         n.id,
@@ -28,8 +30,7 @@ class NotesSearch {
         m.rank
     FROM matched_notes m
     JOIN notes n ON n.rowid = m.rowid
-    ORDER BY m.rank ASC, n.updated_at DESC
-    LIMIT 20
+    ORDER BY m.rank
     `);
   }
 
@@ -43,7 +44,7 @@ class NotesSearch {
         "SQLite FTS5 extension not available. Ensure your SQLite build includes FTS5.";
       throw new AppBackendError(AppErrorCode.DBError, msg);
     }
-
+    mainLogger.devLog("[FTS5]: Creating Virtual Table");
     db.exec(`
       CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
         title,
@@ -56,6 +57,7 @@ class NotesSearch {
   }
 
   public buildIndex(db: DatabaseSync) {
+    mainLogger.devLog("[FTS5]: Building Index");
     db.exec(`
     CREATE TRIGGER IF NOT EXISTS trg_notes_ai
       AFTER INSERT ON notes
@@ -128,14 +130,17 @@ class NotesSearch {
   public normalizeFTSQuery(input: string) {
     const trimmed = input.trim();
     if (trimmed.length < MIN_SEARCH_LENGTH) return "";
-    const safeWords = trimmed
-      .split(/\s+/)
-      .map((word) => {
-        const cleanWord = word.replace(/"/g, "");
-        return cleanWord ? `"${cleanWord}"*` : "";
-      })
-      .filter((clean) => !!clean);
-    return safeWords.join(" AND ");
+    const words: string[] = [];
+    for (const raw of trimmed.split(/\s+/)) {
+      const clean = raw.replace(/"/g, "");
+      if (clean) words.push(clean);
+    }
+    if (words.length === 0) return "";
+    return words
+      .map((word, index) =>
+        index === words.length - 1 ? `"${word}"*` : `"${word}"`,
+      )
+      .join(" AND ");
   }
 }
 

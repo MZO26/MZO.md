@@ -68,7 +68,15 @@ function applySearchResults(matches: MappedMatches) {
     noteStore.get("noteIndex"),
     stateStore.get("activeTag"),
   );
-  noteStore.setState(next);
+  noteStore.setState((state) => {
+    if (
+      state.visibleIds === next.visibleIds &&
+      state.searchSnippets === next.searchSnippets
+    ) {
+      return state;
+    }
+    return next;
+  });
 }
 
 const debouncedSearch = debounce((e: Event) => {

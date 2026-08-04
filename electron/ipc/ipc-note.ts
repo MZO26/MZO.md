@@ -70,7 +70,8 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit("note:search", LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(QuerySchema, query);
-      return db.search.search(validatedData);
+      const result = db.search.search(validatedData);
+      return result;
     });
   });
 
