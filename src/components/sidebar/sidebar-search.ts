@@ -5,13 +5,14 @@ import {
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
-import { memoize } from "@/state/state-actions";
+import { memoize, shallowObjectEq } from "@/state/state-actions";
 import { debounce } from "@/utils/async";
 import {
-  MAX_SEARCH_LENGTH,
   DEBOUNCE_MS,
+  MAX_SEARCH_LENGTH,
 } from "@shared/constants/renderer-constants";
 import type { NoteListItem, SearchQuery } from "@shared/schemas/note-schema";
+import type { MappedMatches } from "@shared/types";
 
 async function handleSearch(searchInput: SearchQuery) {
   const nextQuery = searchInput.trim();
@@ -43,7 +44,7 @@ async function handleSearch(searchInput: SearchQuery) {
 
 const computeSearchResult = memoize(
   (
-    matches: { snippet: string; id: string; title: string; rank: number }[],
+    matches: MappedMatches,
     noteIndex: Map<string, NoteListItem>,
     activeTag: string | null,
   ) => {
@@ -58,11 +59,10 @@ const computeSearchResult = memoize(
     }
     return { visibleIds, searchSnippets };
   },
+  shallowObjectEq,
 );
 
-function applySearchResults(
-  matches: { snippet: string; id: string; title: string; rank: number }[],
-) {
+function applySearchResults(matches: MappedMatches) {
   const next = computeSearchResult(
     matches,
     noteStore.get("noteIndex"),

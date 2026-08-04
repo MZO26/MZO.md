@@ -183,9 +183,7 @@ async function getExportContent(
           created_at: note.created_at,
           extension,
           fileName: titleGenerator(note.content),
-          content: generateText(note.content, getCachedEditorExtensions(), {
-            blockSeparator: "\n",
-          }),
+          content: note.plain_text,
         },
       };
     }

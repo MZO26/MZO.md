@@ -190,9 +190,7 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
   if (isSearch) {
     newIcon.setAttribute("data-lucide", "search-x");
     titleEl.textContent = "No results found";
-    const strongEl = document.createElement("strong");
-    strongEl.textContent = `"${query}"`;
-    descEl.replaceChildren("No notes matching ", strongEl);
+    descEl.replaceChildren("No matching notes found");
   } else {
     newIcon.setAttribute("data-lucide", "library");
     titleEl.textContent = "No notes here";

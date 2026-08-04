@@ -36,4 +36,13 @@ stateStore.subscribeSel(
 
 stateStore.subscribeSel((state) => state.selectedIds, updateSelection);
 
-noteStore.subscribeSel(getVisibleNotes, sidebarListener, shallowEq);
+noteStore.subscribeSel(
+  getVisibleNotes,
+  () => {
+    sidebarListener();
+    const { selectionMode, selectedIds } = stateStore.getState();
+    if (!selectionMode || selectedIds.size === 0) return;
+    updateSelection();
+  },
+  shallowEq,
+);

@@ -6,7 +6,7 @@ import type {
   SIDEBAR_FILTER_MODES,
 } from "@shared/constants/renderer-constants";
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
-import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { NoteListItem, SearchResult } from "@shared/schemas/note-schema";
 import type { ExportFormat, Theme } from "@shared/schemas/store-schema";
 import type { Editor, SetContentOptions } from "@tiptap/core";
 import type { SETTINGS_CATEGORIES } from "./constants/setting-constants";
@@ -207,6 +207,10 @@ type QuickActionConfig = {
 
 type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
 
+type MappedMatches = Expand<
+  Omit<SearchResult, "search_match"> & { snippet: string }
+>[];
+
 export type {
   Action,
   ActionMap,
@@ -225,6 +229,7 @@ export type {
   ImportExtension,
   ImportStats,
   LinkAttributes,
+  MappedMatches,
   MathOptions,
   Metadata,
   NativeWindowColors,

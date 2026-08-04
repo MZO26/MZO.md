@@ -29,7 +29,7 @@ import type {
   OpenAutoExportPathRequest,
 } from "@shared/schemas/request-schema";
 import type { TableAction } from "@shared/types";
-import { generateHTML, generateText } from "@tiptap/core";
+import { generateHTML } from "@tiptap/core";
 
 function triggerTableMenu(action: TableAction) {
   const editor = getAppItem("editor");
@@ -157,9 +157,7 @@ async function triggerCopyRichText(id: string) {
     return;
   }
   const html = generateHTML(result.data.content, getCachedEditorExtensions());
-  const plain = generateText(result.data.content, getCachedEditorExtensions(), {
-    blockSeparator: "\n",
-  });
+  const plain = result.data.plain_text;
   if (!html || !plain) return;
   try {
     await navigator.clipboard.write([
@@ -202,7 +200,7 @@ async function triggerPin(id: string) {
     return;
   }
   noteStore.setState((state) => {
-    const existingNote = state.notes.find((n) => n.id === id);
+    const existingNote = state.noteIndex.get(id);
     if (!existingNote) return state;
     const updatedNote = { ...existingNote, pinned: result.data };
     const nextNoteIndex = new Map(state.noteIndex);

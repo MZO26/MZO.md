@@ -207,34 +207,37 @@ async function pinWindow(): Promise<Result<boolean>> {
 
 // debounced calls
 
-let pendingSettings: Partial<AppSettings> = {};
-
-const debouncedSetSettings = debounce(async () => {
-  rendererLogger.devLog(pendingSettings);
-  const settingsToSave = { ...pendingSettings };
-  pendingSettings = {};
-  try {
-    const result = await setSettings(settingsToSave);
-    if (!result.success) {
-      rendererLogger.appError(
-        "[setSettings]: Failed to update settings:",
-        result.error,
-      );
+function createSettingsSync() {
+  let pendingSettings: Partial<AppSettings> = {};
+  const debouncedSetSettings = debounce(async () => {
+    rendererLogger.devLog(pendingSettings);
+    const settingsToSave = { ...pendingSettings };
+    pendingSettings = {};
+    try {
+      const result = await setSettings(settingsToSave);
+      if (!result.success) {
+        rendererLogger.appError(
+          "[setSettings]: Failed to update settings:",
+          result.error,
+        );
+        pendingSettings = { ...settingsToSave, ...pendingSettings };
+        return;
+      }
+      rendererLogger.devLog("Saved settings");
+    } catch (error: unknown) {
+      rendererLogger.appError("[setSettings]: Unknown error", error);
       pendingSettings = { ...settingsToSave, ...pendingSettings };
-      return;
     }
-    rendererLogger.devLog("Saved settings");
-  } catch (error: unknown) {
-    rendererLogger.appError("[setSettings]: Unknown error", error);
-    pendingSettings = { ...settingsToSave, ...pendingSettings };
-  }
-}, DEBOUNCE_MS.fast);
+  }, DEBOUNCE_MS.fast);
 
-const updateSettings = (settings: Partial<AppSettings>) => {
-  settingsStore.setState(settings);
-  pendingSettings = { ...pendingSettings, ...settings };
-  debouncedSetSettings();
-};
+  return function updateSettings(settings: Partial<AppSettings>) {
+    settingsStore.setState(settings);
+    pendingSettings = { ...pendingSettings, ...settings };
+    debouncedSetSettings();
+  };
+}
+
+const updateSettings = createSettingsSync();
 
 export {
   createManyNotes,
