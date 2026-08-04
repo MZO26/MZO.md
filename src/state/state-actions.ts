@@ -54,26 +54,6 @@ function shallowEq<T>(previous: T[], next: T[]) {
   );
 }
 
-function shallowObjectEq<T extends object>(previous: T, next: T): boolean {
-  if (Object.is(previous, next)) return true;
-  if (
-    typeof previous !== "object" ||
-    previous === null ||
-    typeof next !== "object" ||
-    next === null
-  )
-    return false;
-  const prevKeys = Object.keys(previous) as (keyof T)[];
-  const nextKeys = Object.keys(next) as (keyof T)[];
-  if (prevKeys.length !== nextKeys.length) return false;
-  return prevKeys.every(
-    (key) =>
-      // check if key exists in both
-      Object.prototype.hasOwnProperty.call(next, key) &&
-      Object.is(previous[key], next[key]),
-  );
-}
-
 function getSidebarParams(): SidebarParams {
   const { searchQuery, activeTag } = stateStore.getState();
   const noteState = noteStore.getState();
@@ -138,7 +118,6 @@ export {
   getVisibleNotes,
   memoize,
   shallowEq,
-  shallowObjectEq,
   sidebarListener,
   syncNoteStore,
   syncSettingsStore,
