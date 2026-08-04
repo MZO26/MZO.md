@@ -28,6 +28,7 @@ import { getAppItem } from "@/utils/registry";
 import {
   DEBOUNCE_MS,
   EMPTY_DOC,
+  UNTAGGED,
   UNTITLED,
 } from "@shared/constants/renderer-constants";
 import {
@@ -218,7 +219,15 @@ async function handleSaveNote(id: string, flush: boolean = false) {
   );
   // see if new note update did delete active tag
   const tagStillExists =
-    activeTag === null || updatedNotes.some((n) => n.tags?.includes(activeTag));
+    activeTag === null ||
+    updatedNotes.some((n) =>
+      activeTag === UNTAGGED
+        ? // if active tag is untagged view, check if note has no tags
+          !n.tags?.length
+        : // else check if active tag is still included
+          n.tags?.includes(activeTag),
+    );
+  console.log(tagStillExists);
   // first update store to updated notes
   noteStore.setState((state) => {
     const noteIndex = new Map(state.noteIndex);

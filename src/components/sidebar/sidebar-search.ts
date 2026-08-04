@@ -5,7 +5,7 @@ import {
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
-import { shallowEq, shallowObjectEq } from "@/state/state-actions";
+import { shallowEq } from "@/state/state-actions";
 import { debounce } from "@/utils/async";
 import {
   DEBOUNCE_MS,
@@ -69,9 +69,7 @@ function applySearchResults(matches: MappedMatches) {
     visibleIds: shallowEq(state.visibleIds, next.visibleIds)
       ? state.visibleIds
       : next.visibleIds,
-    searchSnippets: shallowObjectEq(state.searchSnippets, next.searchSnippets)
-      ? state.searchSnippets
-      : next.searchSnippets,
+    searchSnippets: next.searchSnippets,
   }));
 }
 
