@@ -13,10 +13,7 @@ import {
   showAllTagsMenu,
   toggleSidebar,
 } from "@/components/sidebar/sidebar-ui";
-import {
-  applyTagView,
-  clearActiveTagView,
-} from "@/components/sidebar/sidebar-views";
+import { applyView } from "@/components/sidebar/sidebar-views";
 import {
   handleCreateNote,
   handleImportNote,
@@ -46,7 +43,8 @@ function initNotesSidebar() {
     activeTag &&
     noteStore.get("notes").some((note) => note.tags.includes(activeTag))
   ) {
-    applyTagView(activeTag);
+    const normalizedTag = activeTag?.trim().toLowerCase();
+    if (normalizedTag) applyView(normalizedTag);
   }
   applySidebarListeners(sidebar, sidebarHeader, searchInput, selectionFooter);
   setupSidebarFileDrop(sidebar);
@@ -165,7 +163,7 @@ function applySidebarListeners(
       if (clearBtn) {
         const action = clearBtn.getAttribute("data-action");
         if (action === "clear-active-tag") {
-          clearActiveTagView();
+          applyView(null);
           return;
         }
       }

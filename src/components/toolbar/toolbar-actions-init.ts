@@ -2,7 +2,6 @@ import {
   initFocusMode,
   openMetadataContainer,
   renderLinksToolbar,
-  renderTagsToolbar,
   setEditorWidth,
   toggleToolbar,
 } from "@/components/toolbar/toolbar-features";
@@ -48,13 +47,6 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().redo().run(),
     isDisabled: (editor) => !editor.can().redo(),
     icon: "redo2",
-  },
-  tags: {
-    run: () => {
-      const container = openMetadataContainer();
-      renderTagsToolbar(container);
-    },
-    icon: "tag",
   },
   wikilinks: {
     run: () => {

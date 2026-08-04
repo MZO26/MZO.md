@@ -325,8 +325,7 @@ body.is-dragging * {
   font-weight: 500;
 }
 
-.search-input::-webkit-search-cancel-button,
-.search-input-editor::-webkit-search-cancel-button {
+input::-webkit-search-cancel-button {
   margin: 0 5px;
   appearance: none;
   height: 12px;
@@ -345,25 +344,6 @@ body.is-dragging * {
       transparent 40%,
       var(--text-muted) 40%,
       var(--text-muted) 60%,
-      transparent 60%
-    );
-}
-
-.search-input::-webkit-search-cancel-button:hover,
-.search-input-editor::-webkit-search-cancel-button:hover {
-  background:
-    linear-gradient(
-      45deg,
-      transparent 40%,
-      var(--text-main) 40%,
-      var(--text-main) 60%,
-      transparent 60%
-    ),
-    linear-gradient(
-      -45deg,
-      transparent 40%,
-      var(--text-main) 40%,
-      var(--text-main) 60%,
       transparent 60%
     );
 }

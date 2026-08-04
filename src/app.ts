@@ -4,7 +4,6 @@ import { setupEditorListeners } from "@/components/editor/editor-init";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { initQuickSwitcher } from "@/components/quick-switch/quick-switch-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
-import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { setToolbarCollapsed } from "@/components/toolbar/toolbar-features";
 import {
   initMetadataToolbar,
@@ -13,11 +12,7 @@ import {
 } from "@/components/toolbar/toolbar-init";
 import { initAppSettings } from "@/settings/setting-init";
 import { stateStore } from "@/state/state";
-import {
-  getSidebarParams,
-  syncNoteStore,
-  syncSettingsStore,
-} from "@/state/state-actions";
+import { syncNoteStore, syncSettingsStore } from "@/state/state-actions";
 import "@/state/state-init";
 import { startAppClock } from "@/utils/date";
 import { renderIcons } from "@/utils/icons";
@@ -61,7 +56,6 @@ async function initApp() {
   initGlobalShortcuts();
   initNotesSidebar();
   initQuickSwitcher();
-  handleSidebarChange(getSidebarParams());
   handleEditorEmptyState(stateStore.get("activeId"));
   if (settings["toolbar_collapsed"] === true) {
     setToolbarCollapsed(true);

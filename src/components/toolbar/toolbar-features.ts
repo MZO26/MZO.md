@@ -1,10 +1,9 @@
 import { pinWindow, updateSettings } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { createDivider } from "@/components/toolbar/toolbar-factory";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
-import { createInfoSpan } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
+import { UNTITLED } from "@shared/constants/renderer-constants";
 import type { Link } from "@shared/schemas/note-schema";
 
 function setEditorWidth(container: HTMLDivElement) {
@@ -57,61 +56,11 @@ function openMetadataContainer() {
   return metadataContainer;
 }
 
-function createTagElement(
-  container: HTMLDivElement,
-  tag: string,
-  count?: number,
-) {
-  const span = document.createElement("span");
-  span.className = "tag-node";
-  span.setAttribute("data-tag", tag);
-  const text = count
-    ? `Often used: Appears ${count} time${count === 1 ? "" : "s"} in other note${count === 1 ? "" : "s"}`
-    : "Tag in this note";
-  span.title = text;
-  span.textContent = `#${tag}`;
-  container.appendChild(span);
-}
-
-function renderTagsToolbar(container: HTMLDivElement) {
-  const activeId = stateStore.get("activeId");
-  if (!activeId) return;
-  const activeTags = noteStore.get("noteIndex").get(activeId)?.tags;
-  if (!activeTags) return;
-  container.replaceChildren();
-  const tagMap = new Map<string, number>();
-  const notes = noteStore.get("notes");
-  for (const note of notes) {
-    if (note.id === activeId) continue;
-    const tags = note.tags ?? [];
-    for (const tag of tags) {
-      tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
-    }
-  }
-  const sortedTags = [...tagMap.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
-
-  if (activeTags && activeTags.length > 0) {
-    for (const tag of activeTags) createTagElement(container, tag);
-    container.appendChild(createDivider());
-  }
-  if ((!activeTags || activeTags.length === 0) && sortedTags.length === 0) {
-    const span = createInfoSpan(
-      "No tags here. Create your first tag by writing #tag + Space",
-    );
-    container.appendChild(span);
-    return;
-  }
-  for (const [item, count] of sortedTags) {
-    createTagElement(container, item, count);
-  }
-}
-
 function renderLinksToolbar(container: HTMLDivElement) {
   const activeId = stateStore.get("activeId");
   if (!activeId) return;
-  const activeNote = noteStore.get("noteIndex").get(activeId);
+  const noteIndex = noteStore.get("noteIndex");
+  const activeNote = noteIndex.get(activeId);
   container.replaceChildren();
   if (!activeNote) return;
   const backlinks: Link[] = [];
@@ -140,12 +89,10 @@ function renderLinksToolbar(container: HTMLDivElement) {
     ...outgoingLinks.map((l) => ({ id: l.id, type: "out" })),
   ];
   const relatedIds = new Set([...backlinks, ...outgoingLinks].map((n) => n.id));
-  const relatedNotes = noteStore
-    .get("notes")
-    .filter((n) => relatedIds.has(n.id));
   const linkMap = new Map<string, string>();
-  for (const note of relatedNotes) {
-    linkMap.set(note.id, note.title.trim());
+  for (const id of relatedIds) {
+    const note = noteIndex.get(id);
+    if (note) linkMap.set(note.id, note.title.trim() || UNTITLED);
   }
   for (const [index, item] of displaySequence.entries()) {
     const span = document.createElement("span");
@@ -183,7 +130,6 @@ export {
   initFocusMode,
   openMetadataContainer,
   renderLinksToolbar,
-  renderTagsToolbar,
   setEditorWidth,
   setToolbarCollapsed,
   setWindowTop,

@@ -1,9 +1,8 @@
+import { rendererLogger } from "@/app";
 import { createNoteItem } from "@/components/sidebar/sidebar-note-items";
-import {
-  applyTagView,
-  applyUntaggedView,
-} from "@/components/sidebar/sidebar-views";
-import { stateStore } from "@/state/state";
+import { applyView } from "@/components/sidebar/sidebar-views";
+import { noteStore, stateStore } from "@/state/state";
+import { debounce } from "@/utils/async";
 import {
   createIconButton,
   createInfoSpan,
@@ -16,6 +15,7 @@ import { renderIcons } from "@/utils/icons";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import {
+  DEBOUNCE_MS,
   SIDEBAR_ALL_NOTES_LIMIT,
   UNTAGGED,
 } from "@shared/constants/renderer-constants";
@@ -33,7 +33,15 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   const untaggedButton = createIconButton("tag-x", "Untagged");
   untaggedButton.className = "untagged-btn";
   header.appendChild(untaggedButton);
-  popover.append(header, content);
+  const inputWrapper = document.createElement("div");
+  inputWrapper.className = "input-wrapper";
+  const filterInput = document.createElement("input");
+  filterInput.type = "search";
+  filterInput.placeholder = "Filter tags...";
+  filterInput.title = "Filter tags";
+  filterInput.className = "search-input";
+  inputWrapper.appendChild(filterInput);
+  popover.append(header, inputWrapper, content);
   document.body.appendChild(popover);
   renderIcons(popover);
 
@@ -81,18 +89,42 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
     content.replaceChildren(frag);
   }
 
+  function filter(query: string) {
+    const notes = noteStore.get("notes");
+    const allTags = notes.flatMap((n) => n.tags ?? []);
+    if (!query) {
+      render(allTags);
+      return;
+    }
+    const normalizedQuery = query.toLowerCase();
+    const matches = allTags.filter((tag) =>
+      tag.toLowerCase().includes(normalizedQuery),
+    );
+    render(matches);
+  }
+
+  const debouncedFilter = debounce((e: Event) => {
+    const target = e.target as HTMLInputElement | null;
+    if (!target) return;
+    const value = (target.value ?? "").trim();
+    filter(value);
+  }, DEBOUNCE_MS.very_fast);
+
+  filterInput.addEventListener("input", debouncedFilter);
+
   popover.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
     if (target.closest(".untagged-btn")) {
-      applyUntaggedView();
+      applyView(UNTAGGED);
       close();
       return;
     }
     const tagElement = target.closest<HTMLSpanElement>(".tag");
     const tag = tagElement?.dataset["tag"];
     if (tag) {
-      applyTagView(tag);
+      const normalizedTag = tag?.trim().toLowerCase();
+      if (normalizedTag) applyView(tag);
       close();
     }
   });
@@ -223,6 +255,7 @@ function renderNoteList(sidebarParams: SidebarParams) {
   const sidebar = getAppItem("sidebar");
   const activeId = stateStore.get("activeId");
   const { visibleNotes: notes, query: searchQuery, activeTag } = sidebarParams;
+  rendererLogger.devLog("Sidebar rerender");
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
   let currentMode: FilterMode = "recent";

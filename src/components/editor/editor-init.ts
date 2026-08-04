@@ -1,7 +1,7 @@
 import { rendererLogger } from "@/app";
 import { initEditorSearch } from "@/components/editor/editor-search";
 import {
-  applyTagView,
+  applyView,
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { ActiveCodeHighlight } from "@/extensions/codeblock-highlight";
@@ -125,7 +125,8 @@ function getNoteEditorExtensions() {
     }),
     NoteTagHandler.configure({
       onClick: (id: string) => {
-        applyTagView(id);
+        const normalizedTag = id?.trim().toLowerCase();
+        if (normalizedTag) applyView(normalizedTag);
       },
     }),
     Table.configure({

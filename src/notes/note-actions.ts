@@ -17,7 +17,7 @@ import {
   pruneRecentNotes,
   removeRecentNote,
 } from "@/components/quick-switch/quick-switch-actions";
-import { matchesActiveTag } from "@/components/sidebar/sidebar-views";
+import { applyView } from "@/components/sidebar/sidebar-views";
 import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
@@ -26,9 +26,9 @@ import { getMetadata, titleGenerator } from "@/utils/generators";
 import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import {
+  DEBOUNCE_MS,
   EMPTY_DOC,
   UNTITLED,
-  DEBOUNCE_MS,
 } from "@shared/constants/renderer-constants";
 import {
   type CreateNotePayload,
@@ -211,26 +211,27 @@ async function handleSaveNote(id: string, flush: boolean = false) {
   }
   const isActiveNote = stateStore.get("activeId") === id;
   const activeTag = stateStore.get("activeTag");
+  const priorNotes = noteStore.get("notes");
+  // take snapshot of updated notes to derive update from
+  const updatedNotes = priorNotes.map((n) =>
+    n.id === result.data.id ? result.data : n,
+  );
+  // see if new note update did delete active tag
+  const tagStillExists =
+    activeTag === null || updatedNotes.some((n) => n.tags?.includes(activeTag));
+  // first update store to updated notes
   noteStore.setState((state) => {
     const noteIndex = new Map(state.noteIndex);
     noteIndex.set(result.data.id, result.data);
-    const matchesTag = matchesActiveTag(result.data, activeTag);
-    const alreadyVisible = state.visibleIds.includes(result.data.id);
-    let visibleIds = state.visibleIds;
-    if (alreadyVisible && !matchesTag) {
-      visibleIds = state.visibleIds.filter((vid) => vid !== result.data.id);
-    } else if (!alreadyVisible && matchesTag) {
-      visibleIds = [result.data.id, ...state.visibleIds];
-    }
-    const notes = state.notes.map((n) =>
-      n.id === result.data.id ? result.data : n,
-    );
     return {
-      notes,
-      visibleIds,
+      notes: updatedNotes,
       noteIndex,
     };
   });
+  // check if update changed view and if so, recompute visible ids in apply view and set active tag to null. Else visible ids don't change
+  if (!tagStillExists) {
+    applyView(null, updatedNotes);
+  }
   if (isActiveNote) {
     updateStats();
     const currentHeadings = getTableOfContents(editor);

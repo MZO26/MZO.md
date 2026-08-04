@@ -5,7 +5,7 @@ import {
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
-import { memoize, shallowObjectEq } from "@/state/state-actions";
+import { shallowEq, shallowObjectEq } from "@/state/state-actions";
 import { debounce } from "@/utils/async";
 import {
   DEBOUNCE_MS,
@@ -42,25 +42,22 @@ async function handleSearch(searchInput: SearchQuery) {
   applySearchResults(data);
 }
 
-const computeSearchResult = memoize(
-  (
-    matches: MappedMatches,
-    noteIndex: Map<string, NoteListItem>,
-    activeTag: string | null,
-  ) => {
-    const searchSnippets: Record<string, string> = {};
-    const visibleIds: string[] = [];
-    for (const match of matches) {
-      searchSnippets[match.id] = match.snippet;
-      const note = noteIndex.get(match.id);
-      if (note && matchesActiveTag(note, activeTag)) {
-        visibleIds.push(match.id);
-      }
+function computeSearchResult(
+  matches: MappedMatches,
+  noteIndex: Map<string, NoteListItem>,
+  activeTag: string | null,
+) {
+  const searchSnippets: Record<string, string> = {};
+  const visibleIds: string[] = [];
+  for (const match of matches) {
+    searchSnippets[match.id] = match.snippet;
+    const note = noteIndex.get(match.id);
+    if (note && matchesActiveTag(note, activeTag)) {
+      visibleIds.push(match.id);
     }
-    return { visibleIds, searchSnippets };
-  },
-  shallowObjectEq,
-);
+  }
+  return { visibleIds, searchSnippets };
+}
 
 function applySearchResults(matches: MappedMatches) {
   const next = computeSearchResult(
@@ -68,15 +65,14 @@ function applySearchResults(matches: MappedMatches) {
     noteStore.get("noteIndex"),
     stateStore.get("activeTag"),
   );
-  noteStore.setState((state) => {
-    if (
-      state.visibleIds === next.visibleIds &&
-      state.searchSnippets === next.searchSnippets
-    ) {
-      return state;
-    }
-    return next;
-  });
+  noteStore.setState((state) => ({
+    visibleIds: shallowEq(state.visibleIds, next.visibleIds)
+      ? state.visibleIds
+      : next.visibleIds,
+    searchSnippets: shallowObjectEq(state.searchSnippets, next.searchSnippets)
+      ? state.searchSnippets
+      : next.searchSnippets,
+  }));
 }
 
 const debouncedSearch = debounce((e: Event) => {

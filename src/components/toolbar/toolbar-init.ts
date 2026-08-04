@@ -1,4 +1,4 @@
-import { applyTagView } from "@/components/sidebar/sidebar-views";
+import { applyView } from "@/components/sidebar/sidebar-views";
 import {
   TOOLBAR_ACTIONS,
   TOP_TOOLBAR_ACTIONS,
@@ -41,7 +41,8 @@ function initMetadataToolbar() {
       const clickedTag = target.closest<HTMLSpanElement>(".tag-node");
       const tagId = clickedTag?.getAttribute("data-tag");
       if (clickedTag && tagId) {
-        applyTagView(tagId);
+        const normalizedTag = tagId?.trim().toLowerCase();
+        if (normalizedTag) applyView(tagId);
         return;
       }
     }),
