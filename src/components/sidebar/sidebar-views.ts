@@ -28,7 +28,6 @@ async function applyView(
   const { activeId, activeTag } = stateStore.getState();
   if (activeId && !updatedNotes) {
     // updated notes state from saving if an active tag gets deleted while note is open and tag view is applied
-    // doc changed to see if there are any unsaved changes before commiting to the view
     rendererLogger.devLog("Saving in progress. Flushing note");
     await flushSave(activeId);
   }

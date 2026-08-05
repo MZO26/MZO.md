@@ -98,7 +98,7 @@ function processUrl(url: string): UrlDecision {
     ) {
       return "allow";
     }
-    console.warn(
+    mainLogger.devLog(
       `[processUrl]: Blocked dangerous protocol: ${parsedUrl.protocol}`,
     );
     return "block";

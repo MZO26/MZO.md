@@ -48,6 +48,9 @@ function initSubscriptions() {
 
   stateStore.subscribeSel((state) => state.focus, setFocusMode);
 
+  // subscribe to currently visible notes derived from visible ids and search snippets from fts5.
+  // visible ids get mapped to the matching note. Sidebar listener then checks against active tag
+  // as a guard. Search and active tag filtering also compute visible ids to then trigger a sidebar rerender
   noteStore.subscribeSel(
     (state) => ({
       visibleNotes: getVisibleNotes(state),
@@ -82,6 +85,7 @@ function initSubscriptions() {
       }
     },
     shallowEq,
+    // get matching background for collapsed toolbar state on app startup
     { fireImmediately: true },
   );
 }

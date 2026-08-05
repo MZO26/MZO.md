@@ -130,7 +130,7 @@ async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
     return;
   }
   if (!result.data) {
-    console.warn("[onTriggerCopyPath]: File path was empty.");
+    rendererLogger.devLog("[onTriggerCopyPath]: File path was empty.");
     await showNotification("No file path to copy", "");
     return;
   }

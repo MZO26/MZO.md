@@ -1,9 +1,9 @@
 import { setTheme } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getAppItem } from "@/utils/registry";
+import { isFocusActive } from "@/utils/shortcuts";
 import {
-  THEME_MAP,
   CODE_THEME_MAP,
+  THEME_MAP,
 } from "@shared/constants/renderer-constants";
 import type { CodeTheme, Theme } from "@shared/schemas/store-schema";
 import type { ResolvedTheme, Result } from "@shared/types";
@@ -21,8 +21,7 @@ async function applyAppTheme(
   preference: Theme,
 ): Promise<Result<{ theme: Theme; codeTheme: CodeTheme }>> {
   const codePreference = setCodeTheme(resolveTheme(preference));
-  const focus = getAppItem("appContainer").matches(".focus");
-  const result = await setTheme(preference, focus);
+  const result = await setTheme(preference, isFocusActive());
   if (!result.success) {
     rendererLogger.appError(
       "[applyAppTheme]: Failed to apply theme:",

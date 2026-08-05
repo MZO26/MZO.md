@@ -18,6 +18,7 @@ import { settingsStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
+import { isFocusActive } from "@/utils/shortcuts";
 import { createGlobalSpinner } from "@/utils/ui";
 
 function initMetadataToolbar() {
@@ -71,7 +72,7 @@ function initTopToolbar() {
   registerAppEvents(document, {
     "app:set-editor-width": () => setEditorWidth(appContainer),
     "app:toggle-focus-mode": () => {
-      const newState = !stateStore.get("focus");
+      const newState = !isFocusActive();
       stateStore.setState({ focus: newState });
     },
     "app:toggle-toolbar": () => {

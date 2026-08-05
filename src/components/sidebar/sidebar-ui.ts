@@ -192,7 +192,7 @@ function handleHeaderChange(change: FilterMode, activeTag?: string) {
   switch (change) {
     case "tag":
       if (!activeTag) {
-        console.warn("[handleHeaderChange]: No active tag found:");
+        rendererLogger.devLog("[handleHeaderChange]: No active tag found:");
         return;
       }
       return createActiveTagHeader(activeTag);

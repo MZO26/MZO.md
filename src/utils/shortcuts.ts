@@ -1,9 +1,8 @@
 import { handleZoom } from "@/api/api";
 import { stateStore } from "@/state/state";
-import { getAppItem } from "@/utils/registry";
 
 function isFocusActive() {
-  return getAppItem("appContainer").classList.contains("focus");
+  return stateStore.get("focus") === true;
 }
 
 function isSelectionActive() {
@@ -115,4 +114,4 @@ function initGlobalShortcuts() {
   });
 }
 
-export { initGlobalShortcuts, isSelectionActive };
+export { initGlobalShortcuts, isFocusActive, isSelectionActive };

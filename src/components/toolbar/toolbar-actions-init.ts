@@ -1,7 +1,6 @@
 import {
   renderLinksToolbar,
   setEditorWidth,
-  setFocusMode,
   toggleMetadataContainer,
 } from "@/components/toolbar/toolbar-features";
 import { promptImageUpload } from "@/extensions/image/image";
@@ -22,7 +21,7 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
   },
   focus: {
     type: "action",
-    run: () => setFocusMode(),
+    run: () => document.dispatchEvent(new CustomEvent("app:toggle-focus-mode")),
     icon: "focus",
   },
   toggleToolbar: {
