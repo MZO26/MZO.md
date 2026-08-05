@@ -19,7 +19,7 @@ import {
   handleImportNote,
   handleSelectNote,
 } from "@/notes/note-actions";
-import { noteStore, settingsStore, stateStore } from "@/state/state";
+import { noteStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { getAppItem, getUIItems, registerAppEvents } from "@/utils/registry";
 import { isSelectionActive } from "@/utils/shortcuts";
@@ -29,23 +29,12 @@ import type { FilePathRequest } from "@shared/schemas/request-schema";
 import type { SelectionAction } from "@shared/types";
 
 function initNotesSidebar() {
-  const activeTag = settingsStore.get("active_tag");
   const sidebar = getAppItem("sidebar");
   const { searchInput, selectionFooter, sidebarHeader } = getUIItems([
     "searchInput",
     "selectionFooter",
     "sidebarHeader",
   ]);
-  const deleteBtn =
-    selectionFooter.querySelector<HTMLButtonElement>(".delete-btn");
-  if (deleteBtn) deleteBtn.disabled = stateStore.get("selectedIds").size === 0;
-  if (
-    activeTag &&
-    noteStore.get("notes").some((note) => note.tags.includes(activeTag))
-  ) {
-    const normalizedTag = activeTag?.trim().toLowerCase();
-    if (normalizedTag) applyView(normalizedTag);
-  }
   applySidebarListeners(sidebar, sidebarHeader, searchInput, selectionFooter);
   setupSidebarFileDrop(sidebar);
   registerAppEvents(document, {
@@ -120,9 +109,7 @@ function applySidebarListeners(
     if (stateStore.get("selectionMode") === true) return;
     const target = e.target as HTMLElement | null;
     if (!target) return;
-    const isEmptySidebar =
-      sidebar.childElementCount === 1 &&
-      sidebar.firstElementChild?.classList.contains("sidebar-empty-state");
+    const isEmptySidebar = noteStore.get("visibleIds").length === 0;
     if (target === sidebar || isEmptySidebar) {
       e.preventDefault();
       return;
@@ -163,7 +150,7 @@ function applySidebarListeners(
       if (clearBtn) {
         const action = clearBtn.getAttribute("data-action");
         if (action === "clear-active-tag") {
-          applyView(null);
+          await applyView(null);
           return;
         }
       }

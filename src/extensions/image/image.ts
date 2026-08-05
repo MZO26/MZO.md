@@ -7,6 +7,7 @@ import {
   MIME_TO_EXT,
 } from "@shared/constants/renderer-constants";
 import type { ImagePayload } from "@shared/schemas/image-schema";
+import type { ImageContent } from "@shared/types";
 import type { Editor } from "@tiptap/core";
 
 async function processAndInsertImages(files: File[], editor: Editor | null) {
@@ -47,10 +48,10 @@ async function processAndInsertImages(files: File[], editor: Editor | null) {
       );
       return;
     }
-    const content = result.data.flatMap((src) => [
-      { type: "image", attrs: { src } },
-      { type: "paragraph" },
-    ]);
+    const content: ImageContent = [];
+    for (const src of result.data) {
+      content.push({ type: "image", attrs: { src } }, { type: "paragraph" });
+    }
     editor
       .chain()
       .focus()

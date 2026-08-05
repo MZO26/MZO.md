@@ -1,12 +1,10 @@
 import { selectAutoExportFolder, updateSettings } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import {
   applyAppTheme,
   resolveTheme,
   setCodeTheme,
 } from "@/settings/theme-actions";
-import { getSidebarParams } from "@/state/state-actions";
 import { createAsyncHandler } from "@/utils/async";
 import { getAppItem } from "@/utils/registry";
 import type {
@@ -92,8 +90,6 @@ function initAppearanceSettings(
         note_item_display: target.value as NoteItemDisplay,
       });
       sidebar.setAttribute("data-noteItem", target.value);
-      const sidebarParams = getSidebarParams();
-      handleSidebarChange(sidebarParams);
     }),
   );
 }

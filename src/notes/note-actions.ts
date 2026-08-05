@@ -12,11 +12,6 @@ import { rendererLogger } from "@/app";
 import { recreateEditorState } from "@/components/editor/editor-actions";
 import { updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
-import {
-  markNoteAsRecent,
-  pruneRecentNotes,
-  removeRecentNote,
-} from "@/components/quick-switch/quick-switch-actions";
 import { applyView } from "@/components/sidebar/sidebar-views";
 import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
@@ -63,18 +58,23 @@ async function handleCreateNote() {
     );
     return;
   }
-  noteStore.setState((state) => ({
-    notes: [result.data, ...state.notes],
-    visibleIds: [result.data.id, ...state.visibleIds],
-    noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
-  }));
+  noteStore.setState((state) => {
+    const recentNotes = state.recentNotes.filter(
+      (noteId) => noteId !== result.data.id && state.noteIndex.has(noteId),
+    );
+    return {
+      notes: [result.data, ...state.notes],
+      visibleIds: [result.data.id, ...state.visibleIds],
+      noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
+      recentNotes: [result.data.id, ...recentNotes].slice(0, 5),
+    };
+  });
   stateStore.setState({ activeId: result.data.id });
   recreateEditorState(editor, editorContent);
   editor.commands.focus();
   const headings = getTableOfContents(editor);
   updateToc(headings);
   updateStats();
-  markNoteAsRecent(result.data.id);
 }
 
 async function handleImportNote(request: FilePathRequest) {
@@ -148,12 +148,12 @@ async function handleDeleteManyNotes(ids: string[]) {
       notes: state.notes.filter((note) => !deletedIds.has(note.id)),
       visibleIds: state.visibleIds.filter((noteId) => !deletedIds.has(noteId)),
       noteIndex,
+      recentNotes: state.recentNotes.filter((id) => state.noteIndex.has(id)),
     };
   });
   if (isActiveDeleted) {
     stateStore.setState({ activeId: null });
   }
-  pruneRecentNotes();
 }
 
 async function handleDeleteNote(id: string) {
@@ -177,12 +177,12 @@ async function handleDeleteNote(id: string) {
       notes: state.notes.filter((note) => note.id !== id),
       visibleIds: state.visibleIds.filter((noteId) => noteId !== id),
       noteIndex,
+      recentNotes: state.recentNotes.filter((noteId) => noteId !== id),
     };
   });
   if (isActiveDeletedId) {
     stateStore.setState({ activeId: null });
   }
-  removeRecentNote(id);
 }
 
 async function handleSaveNote(id: string, flush: boolean = false) {
@@ -210,11 +210,11 @@ async function handleSaveNote(id: string, flush: boolean = false) {
     rendererLogger.appError("[handleSaveNote]: Save failed.", result.error);
     return;
   }
-  const isActiveNote = stateStore.get("activeId") === id;
   const activeTag = stateStore.get("activeTag");
-  const priorNotes = noteStore.get("notes");
+  const isActiveNote = stateStore.get("activeId") === id;
+  const notes = noteStore.get("notes");
   // take snapshot of updated notes to derive update from
-  const updatedNotes = priorNotes.map((n) =>
+  const updatedNotes = notes.map((n) =>
     n.id === result.data.id ? result.data : n,
   );
   // see if new note update did delete active tag
@@ -227,7 +227,6 @@ async function handleSaveNote(id: string, flush: boolean = false) {
         : // else check if active tag is still included
           n.tags?.includes(activeTag),
     );
-  console.log(tagStillExists);
   // first update store to updated notes
   noteStore.setState((state) => {
     const noteIndex = new Map(state.noteIndex);
@@ -239,7 +238,7 @@ async function handleSaveNote(id: string, flush: boolean = false) {
   });
   // check if update changed view and if so, recompute visible ids in apply view and set active tag to null. Else visible ids don't change
   if (!tagStillExists) {
-    applyView(null, updatedNotes);
+    await applyView(null, updatedNotes);
   }
   if (isActiveNote) {
     updateStats();
@@ -249,6 +248,17 @@ async function handleSaveNote(id: string, flush: boolean = false) {
 }
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
+
+async function flushSave(id: string) {
+  debouncedSaveNote.cancel();
+  try {
+    await handleSaveNote(id, true);
+    return true;
+  } catch (error) {
+    rendererLogger.appError("[flushSave]: Error during save:", error);
+    return false;
+  }
+}
 
 async function handleSelectNote(id: string) {
   const editor = getAppItem("editor");
@@ -285,7 +295,14 @@ async function handleSelectNote(id: string) {
   updateToc(headings);
   updateStats();
   editor.setEditable(true, false);
-  markNoteAsRecent(id);
+  noteStore.setState((state) => {
+    const recentNotes = state.recentNotes.filter(
+      (noteId) => noteId !== result.data.id && state.noteIndex.has(noteId),
+    );
+    return {
+      recentNotes: [result.data.id, ...recentNotes].slice(0, 5),
+    };
+  });
 }
 
 async function handleDuplicateNote(note: Readonly<Note>) {
@@ -329,6 +346,7 @@ async function handleDuplicateNote(note: Readonly<Note>) {
 
 export {
   debouncedSaveNote,
+  flushSave,
   handleCreateNote,
   handleDeleteManyNotes,
   handleDeleteNote,

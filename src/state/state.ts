@@ -8,11 +8,14 @@ interface Store<T> {
   setState: (
     newState: Partial<T> | ((state: Readonly<T>) => Partial<T>),
   ) => void;
-  subscribe: (listener: (state: Readonly<T>) => void) => () => void;
+  subscribe: (
+    listener: (state: Readonly<T>, prevState: Readonly<T>) => void,
+  ) => () => void;
   subscribeSel: <S>(
     selector: (state: Readonly<T>) => S,
     listener: (selected: S, previous: S) => void,
     isEqual?: (previous: S, next: S) => boolean,
+    options?: { fireImmediately?: boolean },
   ) => () => void;
 }
 
@@ -22,6 +25,7 @@ interface AppState {
   selectionMode: boolean;
   selectedIds: Set<string>;
   activeTag: string | null;
+  focus: boolean;
 }
 
 const STATE_STORE: AppState = {
@@ -30,6 +34,7 @@ const STATE_STORE: AppState = {
   selectionMode: false,
   selectedIds: new Set<string>(),
   activeTag: null,
+  focus: false,
 };
 
 interface NoteStore {
@@ -126,8 +131,12 @@ function createStore<T extends object>(initialState: T): Store<T> {
     selector: (state: Readonly<T>) => S,
     listener: (selected: S, previous: S) => void,
     isEqual: (previous: S, next: S) => boolean = Object.is,
+    options?: { fireImmediately?: boolean },
   ) {
     let previousSelected = selector(state);
+    if (options?.fireImmediately) {
+      listener(previousSelected, previousSelected);
+    }
     return subscribe((state) => {
       const nextSelected = selector(state);
       if (isEqual(previousSelected, nextSelected)) return;

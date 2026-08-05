@@ -1,6 +1,7 @@
 import { rendererLogger } from "@/app";
 import { updateSelectionUI } from "@/components/sidebar/sidebar-selection-ui";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
+import { matchesActiveTag } from "@/components/sidebar/sidebar-views";
 import {
   noteStore,
   settingsStore,
@@ -10,7 +11,7 @@ import {
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import type { Result, SelectionParams, SidebarParams } from "@shared/types";
+import type { Result, SidebarParams } from "@shared/types";
 
 let sidebarUpdatePending = false;
 let selectionUpdatePending = false;
@@ -41,32 +42,64 @@ const computeVisibleNotes = memoize(
   },
 );
 
-function getVisibleNotes(state: NoteStore) {
-  return computeVisibleNotes(state.visibleIds, state.noteIndex);
+function getVisibleNotes(noteState: NoteStore) {
+  return computeVisibleNotes(noteState.visibleIds, noteState.noteIndex);
 }
 
-function shallowEq<T>(previous: T[], next: T[]) {
-  return (
-    previous.length === next.length &&
-    previous.every(
-      (previousItem, itemIndex) => previousItem === next[itemIndex],
-    )
-  );
+function shallowEq<T>(a: T, b: T): boolean {
+  if (Object.is(a, b)) return true;
+  if (a instanceof Map && b instanceof Map) {
+    if (a.size !== b.size) return false;
+    for (const [key, value] of a) {
+      if (!b.has(key) || !Object.is(value, b.get(key))) return false;
+    }
+    return true;
+  }
+  if (a instanceof Set && b instanceof Set) {
+    if (a.size !== b.size) return false;
+    for (const value of a) {
+      if (!b.has(value)) return false;
+    }
+    return true;
+  }
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  if (
+    typeof a !== "object" ||
+    a === null ||
+    typeof b !== "object" ||
+    b === null
+  ) {
+    return false;
+  }
+  const keysA = Object.keys(a) as Array<keyof T>;
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  for (const key of keysA) {
+    if (
+      !Object.prototype.hasOwnProperty.call(b, key) ||
+      !Object.is(a[key], b[key])
+    ) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function getSidebarParams(): SidebarParams {
-  const { searchQuery, activeTag } = stateStore.getState();
+  const { searchQuery, activeTag, activeId } = stateStore.getState();
   const noteState = noteStore.getState();
+  const display = settingsStore.get("note_item_display");
+  const visibleNotes = getVisibleNotes(noteState).filter((n) =>
+    matchesActiveTag(n, activeTag),
+  );
   return {
-    visibleNotes: getVisibleNotes(noteState),
+    visibleNotes,
+    searchSnippets: noteState.searchSnippets,
     query: searchQuery?.trim() || "",
-    activeTag: activeTag ?? null,
+    activeTag,
+    activeId,
+    display,
   };
-}
-
-function getSelectionParams(): SelectionParams {
-  const { selectionMode, selectedIds } = stateStore.getState();
-  return { selectionMode, selectedIds };
 }
 
 function sidebarListener() {
@@ -85,8 +118,7 @@ function updateSelection() {
   selectionUpdatePending = true;
   queueMicrotask(() => {
     selectionUpdatePending = false;
-    const next = getSelectionParams();
-    updateSelectionUI(next);
+    updateSelectionUI(stateStore.getState());
   });
 }
 
@@ -95,7 +127,7 @@ function syncSettingsStore(
 ): AppSettings {
   if (!settingsResult?.success) {
     rendererLogger.appError(
-      "[initSettings]: Failed to sync settings. Using store state.",
+      "[syncSettingStore]: Failed to sync settings. Using defaults.",
       settingsResult?.error,
     );
     return settingsStore.getState();
@@ -111,6 +143,23 @@ function syncNoteStore(notes: Readonly<NoteListItem[]>) {
     visibleIds: sortedNotes.map((n) => n.id),
     noteIndex: new Map(sortedNotes.map((n) => [n.id, n] as const)),
   });
+  return sortedNotes;
+}
+
+function syncStateStore(
+  settingsResult: Result<AppSettings> | null | undefined,
+) {
+  if (!settingsResult?.success) {
+    rendererLogger.appError(
+      "[syncStateStore]: Failed to sync state. Using defaults.",
+      settingsResult?.error,
+    );
+    return stateStore.getState();
+  }
+  stateStore.setState({
+    activeTag: settingsResult.data.active_tag,
+  });
+  return stateStore.getState();
 }
 
 export {
@@ -121,5 +170,6 @@ export {
   sidebarListener,
   syncNoteStore,
   syncSettingsStore,
+  syncStateStore,
   updateSelection,
 };

@@ -124,9 +124,9 @@ function getNoteEditorExtensions() {
       HTMLAttributes: { loading: "lazy" },
     }),
     NoteTagHandler.configure({
-      onClick: (id: string) => {
+      onClick: async (id: string) => {
         const normalizedTag = id?.trim().toLowerCase();
-        if (normalizedTag) applyView(normalizedTag);
+        if (normalizedTag) await applyView(normalizedTag);
       },
     }),
     Table.configure({

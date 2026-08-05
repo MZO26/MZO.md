@@ -1,9 +1,7 @@
-import { WorkerTaskError } from "@/utils/workers/worker-factory";
 import {
   IMAGE_MAX_WIDTH,
   IMAGE_QUALITY,
 } from "@shared/constants/renderer-constants";
-import { WorkerErrorCode } from "@shared/errors";
 
 function getScaledSize(
   width: number,
@@ -23,23 +21,20 @@ async function compressImage(
   maxWidth = IMAGE_MAX_WIDTH,
   quality = IMAGE_QUALITY,
 ): Promise<Uint8Array> {
-  const bitmap = await createImageBitmap(blob).catch(() => {
-    throw new WorkerTaskError(WorkerErrorCode.InvalidImageError);
-  });
+  const bitmap = await createImageBitmap(blob);
   let { width, height } = getScaledSize(bitmap.width, bitmap.height, maxWidth);
   const canvas = new OffscreenCanvas(width, height);
   const ctx = canvas.getContext("2d");
   if (!ctx) {
     bitmap.close();
-    throw new WorkerTaskError(WorkerErrorCode.CompressionError);
+    throw new Error("Couldn't get canvas context");
   }
   ctx.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
-  const outputBlob = await canvas
-    .convertToBlob({ type: "image/webp", quality })
-    .catch(() => {
-      throw new WorkerTaskError(WorkerErrorCode.CompressionError);
-    });
+  const outputBlob = await canvas.convertToBlob({
+    type: "image/webp",
+    quality,
+  });
   const buffer = await outputBlob.arrayBuffer();
   canvas.width = 0;
   canvas.height = 0;

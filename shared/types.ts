@@ -6,8 +6,16 @@ import type {
   SIDEBAR_FILTER_MODES,
 } from "@shared/constants/renderer-constants";
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
-import type { NoteListItem, SearchResult } from "@shared/schemas/note-schema";
-import type { ExportFormat, Theme } from "@shared/schemas/store-schema";
+import type {
+  Link,
+  NoteListItem,
+  SearchResult,
+} from "@shared/schemas/note-schema";
+import type {
+  AppSettings,
+  ExportFormat,
+  Theme,
+} from "@shared/schemas/store-schema";
 import type { Editor, SetContentOptions } from "@tiptap/core";
 import type { SETTINGS_CATEGORIES } from "./constants/setting-constants";
 
@@ -177,8 +185,18 @@ interface TemplateRegistry {
 
 type SidebarParams = {
   visibleNotes: NoteListItem[];
+  searchSnippets: Record<string, string>;
   query: string;
+  activeId: string | null;
   activeTag?: string | null;
+  display: AppSettings["note_item_display"];
+};
+
+type SnippetGenParams = {
+  item: HTMLDivElement;
+  note: NoteListItem;
+  snippets: Record<string, string>;
+  display: AppSettings["note_item_display"];
 };
 
 type SelectionParams = {
@@ -211,6 +229,30 @@ type MappedMatches = Expand<
   Omit<SearchResult, "search_match"> & { snippet: string }
 >[];
 
+type ImageContent = (
+  | {
+      type: string;
+      attrs: {
+        src: {
+          imageSrc: string;
+        };
+      };
+    }
+  | {
+      type: string;
+      attrs?: never;
+    }
+)[];
+
+type LinkDisplaySequence = { id: string; type: "in" | "out" | "current" };
+
+type DisplaySequenceParams = {
+  activeNote: NoteListItem;
+  noteIndex: Map<string, NoteListItem>;
+  backlinks: Link[];
+  outgoingLinks: Link[];
+};
+
 export type {
   Action,
   ActionMap,
@@ -220,15 +262,18 @@ export type {
   ContentType,
   CoreRegistry,
   DeepExpand,
+  DisplaySequenceParams,
   EditorContentType,
   Expand,
   ExportFormat,
   Failure,
   FilterMode,
   ImageCompressionPayload,
+  ImageContent,
   ImportExtension,
   ImportStats,
   LinkAttributes,
+  LinkDisplaySequence,
   MappedMatches,
   MathOptions,
   Metadata,
@@ -243,6 +288,7 @@ export type {
   SelectOption,
   SettingsCategory,
   SidebarParams,
+  SnippetGenParams,
   Success,
   TableAction,
   TemplateRegistry,

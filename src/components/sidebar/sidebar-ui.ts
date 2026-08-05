@@ -1,8 +1,11 @@
 import { rendererLogger } from "@/app";
-import { createNoteItem } from "@/components/sidebar/sidebar-note-items";
+import {
+  createNoteItem,
+  getSafeSnippet,
+} from "@/components/sidebar/sidebar-note-items";
 import { applyView } from "@/components/sidebar/sidebar-views";
-import { noteStore, stateStore } from "@/state/state";
-import { debounce } from "@/utils/async";
+import { noteStore } from "@/state/state";
+import { createAsyncHandler, debounce } from "@/utils/async";
 import {
   createIconButton,
   createInfoSpan,
@@ -114,22 +117,25 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
 
   filterInput.addEventListener("input", debouncedFilter);
 
-  popover.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
-    if (target.closest(".untagged-btn")) {
-      applyView(UNTAGGED);
-      close();
-      return;
-    }
-    const tagElement = target.closest<HTMLSpanElement>(".tag");
-    const tag = tagElement?.dataset["tag"];
-    if (tag) {
-      const normalizedTag = tag?.trim().toLowerCase();
-      if (normalizedTag) applyView(tag);
-      close();
-    }
-  });
+  popover.addEventListener(
+    "click",
+    createAsyncHandler(async (e) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (target.closest(".untagged-btn")) {
+        await applyView(UNTAGGED);
+        close();
+        return;
+      }
+      const tagElement = target.closest<HTMLSpanElement>(".tag");
+      const tag = tagElement?.dataset["tag"];
+      if (tag) {
+        const normalizedTag = tag?.trim().toLowerCase();
+        if (normalizedTag) await applyView(tag);
+        close();
+      }
+    }),
+  );
 
   document.addEventListener("click", (e) => {
     const target = e.target as HTMLElement | null;
@@ -255,8 +261,14 @@ function handleSidebarChange(sidebarParams: SidebarParams) {
 
 function renderNoteList(sidebarParams: SidebarParams) {
   const sidebar = getAppItem("sidebar");
-  const activeId = stateStore.get("activeId");
-  const { visibleNotes: notes, query: searchQuery, activeTag } = sidebarParams;
+  const {
+    visibleNotes: notes,
+    query: searchQuery,
+    searchSnippets,
+    activeTag,
+    activeId,
+    display,
+  } = sidebarParams;
   rendererLogger.devLog("Sidebar rerender");
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
@@ -277,11 +289,12 @@ function renderNoteList(sidebarParams: SidebarParams) {
     ? sortedNotes
     : sortedNotes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
   for (const note of displayNotes) {
-    const element = createNoteItem(note);
+    const item = createNoteItem(note, display);
+    getSafeSnippet({ item, note, snippets: searchSnippets, display });
     if (note.id === activeId) {
-      activeElement = element;
+      activeElement = item;
     }
-    fragment.appendChild(element);
+    fragment.appendChild(item);
   }
   if (isLimited) {
     fragment.appendChild(

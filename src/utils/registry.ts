@@ -109,7 +109,7 @@ function registerAppEvents(
   }
 }
 
-function initializeCoreRegistry(settings: AppSettings) {
+function initCoreRegistry(settings: AppSettings) {
   setAppItems({
     appContainer: requireElement<HTMLDivElement>(".app-container"),
     sidebar: requireElement<HTMLDivElement>(".notes-container"),
@@ -120,7 +120,7 @@ function initializeCoreRegistry(settings: AppSettings) {
   });
 }
 
-function initializeUIRegistry() {
+function initUIRegistry() {
   setUIItems({
     wordCountEl: requireElement<HTMLSpanElement>("#word-count"),
     charCountEl: requireElement<HTMLSpanElement>("#char-count"),
@@ -138,7 +138,7 @@ function initializeUIRegistry() {
   });
 }
 
-function initializeTemplateRegistry() {
+function initTemplateRegistry() {
   setTemplateItems({
     editorEmptyStateTemplate: requireElement<HTMLTemplateElement>(
       "#editor-empty-state-template",
@@ -160,9 +160,9 @@ export {
   getTemplateItems,
   getUIItem,
   getUIItems,
-  initializeCoreRegistry,
-  initializeTemplateRegistry,
-  initializeUIRegistry,
+  initCoreRegistry,
+  initTemplateRegistry,
+  initUIRegistry,
   registerAppEvents,
   setAppItems,
   setUIItems,

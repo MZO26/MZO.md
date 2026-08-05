@@ -5,7 +5,6 @@ import {
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
-import { shallowEq } from "@/state/state-actions";
 import { debounce } from "@/utils/async";
 import {
   DEBOUNCE_MS,
@@ -17,16 +16,16 @@ import type { MappedMatches } from "@shared/types";
 async function handleSearch(searchInput: SearchQuery) {
   const nextQuery = searchInput.trim();
   if (nextQuery.length > MAX_SEARCH_LENGTH) return;
-  const prevQuery = stateStore.get("searchQuery");
-  if (nextQuery === prevQuery) {
+  const { searchQuery, activeTag } = stateStore.getState();
+  if (nextQuery === searchQuery) {
     rendererLogger.devLog("Same query. Skipping search");
     return;
   }
-  stateStore.setState({ searchQuery: nextQuery });
   if (!nextQuery) {
     restoreSidebarScope();
     return;
   }
+  stateStore.setState({ searchQuery: nextQuery });
   const result = await search(nextQuery);
   if (!result.success) {
     rendererLogger.appError("[handleSearch]: Failed to search:", result.error);
@@ -39,7 +38,7 @@ async function handleSearch(searchInput: SearchQuery) {
       snippet: row.search_match,
     };
   });
-  applySearchResults(data);
+  computeSearchResult(data, noteStore.get("noteIndex"), activeTag);
 }
 
 function computeSearchResult(
@@ -56,21 +55,10 @@ function computeSearchResult(
       visibleIds.push(match.id);
     }
   }
-  return { visibleIds, searchSnippets };
-}
-
-function applySearchResults(matches: MappedMatches) {
-  const next = computeSearchResult(
-    matches,
-    noteStore.get("noteIndex"),
-    stateStore.get("activeTag"),
-  );
-  noteStore.setState((state) => ({
-    visibleIds: shallowEq(state.visibleIds, next.visibleIds)
-      ? state.visibleIds
-      : next.visibleIds,
-    searchSnippets: next.searchSnippets,
-  }));
+  noteStore.setState({
+    visibleIds,
+    searchSnippets,
+  });
 }
 
 const debouncedSearch = debounce((e: Event) => {

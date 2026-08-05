@@ -1,10 +1,10 @@
-import { pinWindow, updateSettings } from "@/api/api";
+import { pinWindow } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
 import { UNTITLED } from "@shared/constants/renderer-constants";
-import type { Link } from "@shared/schemas/note-schema";
+import type { Link, NoteListItem } from "@shared/schemas/note-schema";
+import type { DisplaySequenceParams, LinkDisplaySequence } from "@shared/types";
 
 function setEditorWidth(container: HTMLDivElement) {
   const widths = ["comfortable", "normal", "wide"];
@@ -27,7 +27,7 @@ async function setWindowTop(toggleBtn: HTMLButtonElement) {
   toggleBtn.classList.toggle("pin", result.data);
 }
 
-function initFocusMode() {
+function setFocusMode() {
   const appContainer = getAppItem("appContainer");
   const newState = !appContainer.classList.contains("focus");
   appContainer.classList.toggle("focus", newState);
@@ -38,31 +38,15 @@ function setToolbarCollapsed(collapsed: boolean) {
   appContainer.classList.toggle("toolbar-collapsed", collapsed);
 }
 
-function toggleToolbar() {
-  const newState = !settingsStore.get("toolbar_collapsed");
-  try {
-    setToolbarCollapsed(newState);
-  } finally {
-    document.dispatchEvent(new CustomEvent("app:refresh-toolbar"));
-    rendererLogger.devLog("Dispatched toolbar refresh");
-  }
-  updateSettings({ toolbar_collapsed: newState });
-}
-
-function openMetadataContainer() {
+function toggleMetadataContainer() {
   const metadataContainer = getUIItem("metadataContainer");
   const collapsed = metadataContainer.classList.contains("collapsed");
-  if (collapsed) metadataContainer.classList.remove("collapsed");
+  const newState = !collapsed;
+  metadataContainer.classList.toggle("collapsed", newState);
   return metadataContainer;
 }
 
-function renderLinksToolbar(container: HTMLDivElement) {
-  const activeId = stateStore.get("activeId");
-  if (!activeId) return;
-  const noteIndex = noteStore.get("noteIndex");
-  const activeNote = noteIndex.get(activeId);
-  container.replaceChildren();
-  if (!activeNote) return;
+function computeActiveNoteLinks(activeNote: NoteListItem) {
   const backlinks: Link[] = [];
   const outgoingLinks: Link[] = [];
   for (const link of activeNote.links) {
@@ -73,20 +57,15 @@ function renderLinksToolbar(container: HTMLDivElement) {
       outgoingLinks.push(link);
     }
   }
-  if (backlinks.length === 0 && outgoingLinks.length === 0) {
-    const span = document.createElement("span");
-    span.classList.add("link", `link-current`);
-    span.setAttribute("data-link", activeNote.id);
-    span.title = "Current Note";
-    span.textContent = `[${activeNote.title}]`;
-    span.classList.add("active-node");
-    container.appendChild(span);
-    return;
-  }
+  return { backlinks, outgoingLinks };
+}
+
+function getDisplaySequence(params: DisplaySequenceParams) {
+  const { activeNote, noteIndex, backlinks, outgoingLinks } = params;
   const displaySequence = [
-    ...backlinks.map((b) => ({ id: b.id, type: "in" })),
-    { id: activeNote.id, type: "current" },
-    ...outgoingLinks.map((l) => ({ id: l.id, type: "out" })),
+    ...backlinks.map((b) => ({ id: b.id, type: "in" as const })),
+    { id: activeNote.id, type: "current" as const },
+    ...outgoingLinks.map((l) => ({ id: l.id, type: "out" as const })),
   ];
   const relatedIds = new Set([...backlinks, ...outgoingLinks].map((n) => n.id));
   const linkMap = new Map<string, string>();
@@ -94,27 +73,70 @@ function renderLinksToolbar(container: HTMLDivElement) {
     const note = noteIndex.get(id);
     if (note) linkMap.set(note.id, note.title.trim() || UNTITLED);
   }
+  return { displaySequence, linkMap };
+}
+
+function renderCurrentNoteLink(
+  container: HTMLDivElement,
+  activeNote: NoteListItem,
+) {
+  const span = document.createElement("span");
+  span.classList.add("link", `link-current`);
+  span.setAttribute("data-link", activeNote.id);
+  span.title = "Current Note";
+  span.textContent = `[${activeNote.title}]`;
+  span.classList.add("active-node");
+  container.appendChild(span);
+  return;
+}
+
+function renderLinkElement(
+  activeNote: NoteListItem,
+  linkMap: Map<string, string>,
+  item: LinkDisplaySequence,
+) {
+  const span = document.createElement("span");
+  span.classList.add("link", `link-${item.type}`);
+  span.setAttribute("data-link", item.id);
+  const text =
+    item.type === "in"
+      ? "Incoming Link"
+      : item.type === "out"
+        ? "Outgoing Link"
+        : "Current Note";
+  span.title = text;
+  const title =
+    item.type === "current"
+      ? activeNote.title
+      : (linkMap.get(item.id) ?? item.id);
+  if (item.type === "current") {
+    span.textContent = `[${title}]`;
+    span.classList.add("active-node");
+  } else {
+    span.textContent = title;
+  }
+  return span;
+}
+
+function renderLinksToolbar(
+  activeNote: NoteListItem,
+  noteIndex: Map<string, NoteListItem>,
+  container: HTMLDivElement,
+) {
+  const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote);
+  container.replaceChildren();
+  if (backlinks.length === 0 && outgoingLinks.length === 0) {
+    renderCurrentNoteLink(container, activeNote);
+    return;
+  }
+  const { displaySequence, linkMap } = getDisplaySequence({
+    activeNote,
+    noteIndex,
+    backlinks,
+    outgoingLinks,
+  });
   for (const [index, item] of displaySequence.entries()) {
-    const span = document.createElement("span");
-    span.classList.add("link", `link-${item.type}`);
-    span.setAttribute("data-link", item.id);
-    const text =
-      item.type === "in"
-        ? "Incoming Link"
-        : item.type === "out"
-          ? "Outgoing Link"
-          : "Current Note";
-    span.title = text;
-    const title =
-      item.type === "current"
-        ? activeNote.title
-        : (linkMap.get(item.id) ?? item.id);
-    if (item.type === "current") {
-      span.textContent = `[${title}]`;
-      span.classList.add("active-node");
-    } else {
-      span.textContent = title;
-    }
+    const span = renderLinkElement(activeNote, linkMap, item);
     container.appendChild(span);
     if (index < displaySequence.length - 1) {
       const icon = document.createElement("i");
@@ -127,11 +149,10 @@ function renderLinksToolbar(container: HTMLDivElement) {
 }
 
 export {
-  initFocusMode,
-  openMetadataContainer,
   renderLinksToolbar,
   setEditorWidth,
+  setFocusMode,
   setToolbarCollapsed,
   setWindowTop,
-  toggleToolbar,
+  toggleMetadataContainer,
 };

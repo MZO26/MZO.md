@@ -1,12 +1,13 @@
 import {
-  initFocusMode,
-  openMetadataContainer,
   renderLinksToolbar,
   setEditorWidth,
-  toggleToolbar,
+  setFocusMode,
+  toggleMetadataContainer,
 } from "@/components/toolbar/toolbar-features";
 import { promptImageUpload } from "@/extensions/image/image";
 import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
+import { flushSave } from "@/notes/note-actions";
+import { noteStore, stateStore } from "@/state/state";
 import { getAppItem } from "@/utils/registry";
 import type { ActionMap } from "@shared/types";
 
@@ -21,12 +22,12 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
   },
   focus: {
     type: "action",
-    run: () => initFocusMode(),
+    run: () => setFocusMode(),
     icon: "focus",
   },
   toggleToolbar: {
     type: "action",
-    run: () => toggleToolbar(),
+    run: () => document.dispatchEvent(new CustomEvent("app:toggle-toolbar")),
     icon: "arrow-down-from-line",
   },
 };
@@ -49,9 +50,15 @@ const TOOLBAR_ACTIONS: ActionMap = {
     icon: "redo2",
   },
   wikilinks: {
-    run: () => {
-      const container = openMetadataContainer();
-      renderLinksToolbar(container);
+    run: async () => {
+      const activeId = stateStore.get("activeId");
+      if (!activeId) return;
+      const noteIndex = noteStore.get("noteIndex");
+      const activeNote = noteIndex.get(activeId);
+      if (!activeNote) return;
+      const container = toggleMetadataContainer();
+      await flushSave(activeId);
+      renderLinksToolbar(activeNote, noteIndex, container);
     },
     icon: "arrow-left-right",
   },

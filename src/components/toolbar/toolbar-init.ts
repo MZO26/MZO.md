@@ -1,3 +1,4 @@
+import { updateSettings } from "@/api/api";
 import { applyView } from "@/components/sidebar/sidebar-views";
 import {
   TOOLBAR_ACTIONS,
@@ -9,13 +10,11 @@ import {
   setupToolbarListeners,
 } from "@/components/toolbar/toolbar-factory";
 import {
-  initFocusMode,
   setEditorWidth,
   setWindowTop,
-  toggleToolbar,
 } from "@/components/toolbar/toolbar-features";
 import { handleSelectNote } from "@/notes/note-actions";
-import { stateStore } from "@/state/state";
+import { settingsStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
@@ -23,6 +22,7 @@ import { createGlobalSpinner } from "@/utils/ui";
 
 function initMetadataToolbar() {
   const metadataContainer = getUIItem("metadataContainer");
+  const editorWrapper = getAppItem("editorWrapper");
   metadataContainer.addEventListener(
     "click",
     createAsyncHandler(async (e) => {
@@ -42,12 +42,11 @@ function initMetadataToolbar() {
       const tagId = clickedTag?.getAttribute("data-tag");
       if (clickedTag && tagId) {
         const normalizedTag = tagId?.trim().toLowerCase();
-        if (normalizedTag) applyView(tagId);
+        if (normalizedTag) await applyView(tagId);
         return;
       }
     }),
   );
-  const editorWrapper = getAppItem("editorWrapper");
   editorWrapper.addEventListener("focusin", () => {
     metadataContainer.classList.add("collapsed");
   });
@@ -71,13 +70,14 @@ function initTopToolbar() {
   );
   registerAppEvents(document, {
     "app:set-editor-width": () => setEditorWidth(appContainer),
-    "app:toggle-focus-mode": () => initFocusMode(),
-    "app:exit-focus-mode": () => {
-      if (appContainer.classList.contains("focus")) {
-        initFocusMode();
-      }
+    "app:toggle-focus-mode": () => {
+      const newState = !stateStore.get("focus");
+      stateStore.setState({ focus: newState });
     },
-    "app:toggle-toolbar": () => toggleToolbar(),
+    "app:toggle-toolbar": () => {
+      const newState = !settingsStore.get("toolbar_collapsed");
+      updateSettings({ toolbar_collapsed: newState });
+    },
   });
 }
 
