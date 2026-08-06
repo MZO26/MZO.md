@@ -1,6 +1,6 @@
 import {
-  UNTITLED,
   MAX_SEARCH_LENGTH,
+  UNTITLED,
 } from "@shared/constants/renderer-constants";
 import { EditorDocSchema } from "@shared/schemas/editor-schema";
 import { z } from "zod";
@@ -93,7 +93,7 @@ const NoteFromDB = NoteSchema.extend({
 const NoteListItemFromDB = NoteFromDB.omit({
   content: true,
   plain_text: true,
-});
+}).readonly();
 
 // Payload Evaluation: Expects content to be stringified and converts booleans to 0 or 1 for DB
 const NoteToDBSchema = NoteSchema.extend({

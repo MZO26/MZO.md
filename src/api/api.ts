@@ -41,11 +41,11 @@ async function search(query: SearchQuery): Promise<Result<SearchResult[]>> {
   return invoke(window.noteAPI.search(query));
 }
 
-async function getAll(): Promise<Result<NoteListItem[]>> {
+async function getAll(): Promise<Result<readonly NoteListItem[]>> {
   return invoke(window.noteAPI.getAll());
 }
 
-async function getAllBackup(): Promise<Result<Note[]>> {
+async function getAllBackup(): Promise<Result<readonly Note[]>> {
   return invoke(window.noteAPI.getAllBackup());
 }
 
@@ -57,7 +57,7 @@ async function createNote(
 
 async function createManyNotes(
   payload: CreateNotePayload[],
-): Promise<Result<NoteListItem[]>> {
+): Promise<Result<readonly NoteListItem[]>> {
   return invoke(window.noteAPI.createMany(payload));
 }
 
@@ -80,7 +80,7 @@ async function getNoteById(id: string): Promise<Result<Note>> {
   return invoke(window.noteAPI.getById(id));
 }
 
-async function getManyById(ids: string[]): Promise<Result<Note[]>> {
+async function getManyById(ids: string[]): Promise<Result<readonly Note[]>> {
   return invoke(window.noteAPI.getManyById(ids));
 }
 

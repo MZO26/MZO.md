@@ -17,7 +17,7 @@ import { generateHTML, generateText } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
 async function getBatchExportContent(
-  notes: Readonly<Note[]>,
+  notes: readonly Note[],
   extension: ExportContent["extension"],
 ): Promise<Result<ExportContent[]>> {
   try {

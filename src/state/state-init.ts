@@ -7,7 +7,6 @@ import {
 } from "@/components/toolbar/toolbar-features";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import {
-  getVisibleNotes,
   shallowEq,
   sidebarListener,
   updateSelection,
@@ -53,15 +52,23 @@ function initSubscriptions() {
     },
   );
 
-  // subscribe to currently visible notes derived from visible ids
-  // and search snippets from fts5.
-  // visible ids get mapped to the matching note.
-  // sidebar listener then checks against active tag
-  // as a guard. Search and active tag filtering also compute
-  // visible ids to then trigger a sidebar rerender
+  stateStore.subscribeSel(
+    (state) => ({
+      activeTag: state.activeTag,
+    }),
+    () => {
+      sidebarListener();
+    },
+    shallowEq,
+  );
+
+  // note item keys that should trigger rerender
+  const SIDEBAR_KEYS = ["title", "snippet", "pinned", "tags"] as const;
+
   noteStore.subscribeSel(
     (state) => ({
-      visibleNotes: getVisibleNotes(state),
+      visibleIds: state.visibleIds,
+      noteIndex: state.noteIndex,
       searchSnippets: state.searchSnippets,
     }),
     () => {
@@ -70,7 +77,20 @@ function initSubscriptions() {
       if (!selectionMode || selectedIds.size === 0) return;
       updateSelection();
     },
-    shallowEq,
+    (prev, next) => {
+      if (!shallowEq(prev.visibleIds, next.visibleIds)) return false;
+      if (!shallowEq(prev.searchSnippets, next.searchSnippets)) return false;
+      for (const id of next.visibleIds) {
+        const prevNote = prev.noteIndex.get(id);
+        const nextNote = next.noteIndex.get(id);
+        if (!prevNote || !nextNote) return false;
+        const hasChanged = SIDEBAR_KEYS.some(
+          (key) => !shallowEq(prevNote[key], nextNote[key]),
+        );
+        if (hasChanged) return false;
+      }
+      return true;
+    },
   );
 
   settingsStore.subscribeSel(

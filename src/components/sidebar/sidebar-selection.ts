@@ -115,12 +115,12 @@ async function copyRichTextSelection(selectedIds: string[]) {
   try {
     const html = clipboardCandidates
       .map((item) => item.html)
-      .filter(Boolean)
+      .filter((t): t is string => !!t)
       .join("\n<hr>\n");
 
     const plain = clipboardCandidates
       .map((item) => item.text)
-      .filter(Boolean)
+      .filter((t): t is string => !!t)
       .join("\n\n");
 
     await navigator.clipboard.write([

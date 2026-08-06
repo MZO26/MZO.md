@@ -63,6 +63,23 @@ const SIDEBAR_FILTER_MODES = ["recent", "search", "tag"] as const;
 
 const ALLOWED_PROTOCOLS = ["https:", "http:", "appimg:", "file:"];
 
+const APP_EVENTS = [
+  "app:toggle-editor-search",
+  "app:toggle-quick-switch",
+  "app:toggle-sidebar",
+  "app:create-new-note",
+  "app:open-global-search",
+  "app:set-selection-mode",
+  "app:exit-selection-mode",
+  "app:delete-selected",
+  "app:select-all-visible",
+  "app:refresh-toolbar",
+  "app:set-editor-width",
+  "app:toggle-focus-mode",
+  "app:toggle-toolbar",
+  "app:open-settings",
+] as const;
+
 const SELECTION_ACTIONS = [
   { id: "cancel", icon: "x" },
   { id: "pin", icon: "pin" },
@@ -146,6 +163,7 @@ export {
   ALLOWED_IMPORT_EXTENSIONS,
   ALLOWED_PROTOCOLS,
   ALLOWED_TYPES,
+  APP_EVENTS,
   BLOCK_TYPES,
   CHAR_BASELINE,
   CODE_THEME_MAP,

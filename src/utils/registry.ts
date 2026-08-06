@@ -2,6 +2,7 @@ import { initEditor } from "@/components/editor/editor-init";
 import { requireElement } from "@/utils/dom";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type {
+  AppEvents,
   AppRegistry,
   CoreRegistry,
   TemplateRegistry,
@@ -100,10 +101,12 @@ const getUIItems = <K extends keyof UIRegistry>(
 
 function registerAppEvents(
   target: EventTarget,
-  events: Record<string, EventListener>,
+  events: Partial<Record<AppEvents, EventListener>>,
 ) {
+  // ts only infers string from for in loop / object.keys (structural typing)
+  // so cast as AppEvents is necessary
   for (const eventName in events) {
-    const handler = events[eventName];
+    const handler = events[eventName as AppEvents];
     if (!handler) continue;
     target.addEventListener(eventName, handler);
   }

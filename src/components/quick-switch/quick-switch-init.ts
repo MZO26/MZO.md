@@ -6,16 +6,12 @@ import { createInfoSpan } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Link, NoteListItem } from "@shared/schemas/note-schema";
-import type { Expand } from "@shared/types";
+import type { QuickSwitchDisplayNote } from "@shared/types";
 
 function initQuickSwitcher() {
   const editor = getAppItem("editor");
   let activeIndex = 0;
-  let currentDisplayNotes: Expand<
-    Pick<NoteListItem, "id" | "title"> & {
-      section: "recent" | "backlink" | "outgoing";
-    }
-  >[] = [];
+  let currentDisplayNotes: QuickSwitchDisplayNote[] = [];
   async function toggleSwitcher() {
     if (switchDialog.open) {
       switchDialog.close();
@@ -31,11 +27,7 @@ function initQuickSwitcher() {
     // recomputed and manually put together
     const backlinkIds = new Set<string>();
     const outgoingIds = new Set<string>();
-    const displayNotes: Expand<
-      Pick<NoteListItem, "id" | "title"> & {
-        section: "recent" | "backlink" | "outgoing";
-      }
-    >[] = [];
+    const displayNotes: QuickSwitchDisplayNote[] = [];
     for (const id of recentNotes) {
       const note = noteIndex.get(id);
       if (!note || !recentIds.has(id)) continue;

@@ -2,8 +2,8 @@ import { rendererLogger } from "@/app";
 import { sleep } from "@/utils/async";
 import { getUIItem } from "@/utils/registry";
 import {
-  UNTAGGED,
   NODE_BASELINE,
+  UNTAGGED,
   YIELD_MS,
 } from "@shared/constants/renderer-constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
@@ -26,12 +26,22 @@ function getNotePriority(note: NoteListItem) {
   return 1; // normal
 }
 
-// this function returns a number by which note items are being displayed in the sidebar. If it returns a negative number, a comes first, then b
+// this function returns a number by which note items
+//  are being displayed in the sidebar. If it returns
+//  a negative number, a comes first, then b
 function compareNotes(a: NoteListItem, b: NoteListItem) {
   const priorityDiff = getNotePriority(a) - getNotePriority(b);
   if (priorityDiff !== 0) return priorityDiff;
-  // if priorities are equal, they get sorted by updated_at
-  return String(b.updated_at).localeCompare(String(a.updated_at));
+  // if priorities are equal, they get sorted by title
+  return a.title.localeCompare(b.title, undefined, {
+    sensitivity: "accent",
+    numeric: true,
+  });
+  // passing undefined for locale args to use defaults
+  // set sensitivity to accent for edge cases on
+  // accented characters or caps vs no caps
+  // numeric true recognizes numbers and correctly
+  // sorts them in the title
 }
 
 function addActiveTagToDoc(

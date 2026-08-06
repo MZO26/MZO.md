@@ -31,7 +31,7 @@ function renderTags(tags: NoteListItem["tags"], container: HTMLDivElement) {
 }
 
 function createNoteItem(
-  note: Readonly<NoteListItem>,
+  note: NoteListItem,
   display: AppSettings["note_item_display"],
 ) {
   const item = getNoteItemClone();

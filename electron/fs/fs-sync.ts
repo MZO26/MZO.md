@@ -15,7 +15,9 @@ import fs from "fs/promises";
 
 async function checkSyncState(
   targetDir: string,
-  payload: DeepExpand<AutoExportWritePayload & Pick<Note, "updated_at">>,
+  payload: DeepExpand<
+    AutoExportWritePayload & Pick<Readonly<Note>, "updated_at">
+  >,
 ): Promise<SyncResult> {
   const autoExportPath = resolveAutoExportPath(targetDir);
   const absoluteFilePath = getFilePath(autoExportPath, {

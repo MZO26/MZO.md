@@ -109,6 +109,7 @@ function sidebarListener() {
     sidebarUpdatePending = false;
     const next = getSidebarParams();
     updateNoteCount(next.visibleNotes.length);
+    rendererLogger.devLog("Sidebar change");
     handleSidebarChange(next);
   });
 }
@@ -137,7 +138,7 @@ function syncSettingsStore(
   return settingsStore.getState();
 }
 
-function syncNoteStore(notes: Readonly<NoteListItem[]>) {
+function syncNoteStore(notes: readonly NoteListItem[]) {
   const sortedNotes = [...notes].sort(compareNotes);
   noteStore.setState({
     notes: sortedNotes,

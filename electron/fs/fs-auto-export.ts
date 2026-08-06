@@ -23,6 +23,7 @@ import {
   type DeleteAutoExportRequest,
   type WriteAutoExportRequest,
 } from "@shared/schemas/request-schema";
+import type { Expand } from "@shared/types";
 import { app, shell } from "electron";
 import { constants } from "fs";
 import fs from "fs/promises";
@@ -246,7 +247,7 @@ async function deleteAutoExportFileLogic(
 
 async function deleteAutoExportFile(
   targetDir: string,
-  oldNotes: Pick<Note, "created_at" | "title">[],
+  oldNotes: Expand<Pick<Readonly<Note>, "created_at" | "title">>[],
 ) {
   await processWithLimit(oldNotes, CONCURRENCY_DELETE, async (note) => {
     const validatedFileData = validation(DeleteAutoExportRequestSchema, {

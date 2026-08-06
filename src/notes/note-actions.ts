@@ -337,24 +337,26 @@ async function handleDuplicateNote(note: Readonly<Note>) {
 }
 
 async function waitForFlush(id: string | null) {
-  if (!id || stateStore.get("activeId") !== id) return;
+  if (!id || stateStore.get("activeId") !== id) return false;
   const noteIndex = noteStore.get("noteIndex");
   if (!noteIndex.has(id)) {
     return;
   }
   debouncedSaveNote.cancel();
   await handleSaveNote(id, true);
-  return noteStore.get("noteIndex").get(id);
+  return stateStore.get("activeId") === id;
 }
 
 async function ensureNoteSaved(id: string) {
   const savedNote = await waitForFlush(id);
   if (!savedNote) return;
+  const note = noteStore.get("noteIndex").get(id);
+  if (!note) return;
   return {
-    created_at: savedNote.created_at,
-    fileName: savedNote.title,
+    created_at: note.created_at,
+    fileName: note.title,
     extension: "md" as const,
-    updated_at: savedNote.updated_at,
+    updated_at: note.updated_at,
   };
 }
 

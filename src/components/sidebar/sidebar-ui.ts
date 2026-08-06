@@ -266,7 +266,6 @@ function renderNoteList(sidebarParams: SidebarParams) {
     activeId,
     display,
   } = sidebarParams;
-  rendererLogger.devLog("Sidebar rerender");
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
   let currentMode: FilterMode = "recent";

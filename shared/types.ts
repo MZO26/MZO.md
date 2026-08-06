@@ -1,16 +1,13 @@
 import type {
   ALLOWED_IMPORT_EXTENSIONS,
+  APP_EVENTS,
   CODE_THEMES,
   QUICK_ACTIONS,
   SELECTION_ACTIONS,
   SIDEBAR_FILTER_MODES,
 } from "@shared/constants/renderer-constants";
 import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
-import type {
-  Link,
-  NoteListItem,
-  SearchResult,
-} from "@shared/schemas/note-schema";
+import type { NoteListItem, SearchResult } from "@shared/schemas/note-schema";
 import type {
   AppSettings,
   ExportFormat,
@@ -183,7 +180,7 @@ interface TemplateRegistry {
 }
 
 type SidebarParams = {
-  visibleNotes: NoteListItem[];
+  visibleNotes: readonly NoteListItem[];
   searchSnippets: Record<string, string>;
   query: string;
   activeId: string | null;
@@ -202,6 +199,12 @@ type SelectionParams = {
   selectionMode: boolean;
   selectedIds: Set<string>;
 };
+
+type QuickSwitchDisplayNote = Expand<
+  Pick<NoteListItem, "id" | "title"> & {
+    section: "recent" | "backlink" | "outgoing";
+  }
+>;
 
 type AllTagsMenu = {
   popover: HTMLDivElement;
@@ -224,6 +227,8 @@ type QuickActionConfig = {
 
 type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
 
+type AppEvents = (typeof APP_EVENTS)[number];
+
 type MappedMatches = Expand<
   Omit<SearchResult, "search_match"> & { snippet: string }
 >[];
@@ -243,25 +248,16 @@ type ImageContent = (
     }
 )[];
 
-type LinkDisplaySequence = { id: string; type: "in" | "out" | "current" };
-
-type DisplaySequenceParams = {
-  activeNote: NoteListItem;
-  noteIndex: Map<string, NoteListItem>;
-  backlinks: Link[];
-  outgoingLinks: Link[];
-};
-
 export type {
   Action,
   ActionMap,
   AllTagsMenu,
+  AppEvents,
   AppRegistry,
   Code,
   ContentType,
   CoreRegistry,
   DeepExpand,
-  DisplaySequenceParams,
   EditorContentType,
   Expand,
   ExportFormat,
@@ -272,7 +268,6 @@ export type {
   ImportExtension,
   ImportStats,
   LinkAttributes,
-  LinkDisplaySequence,
   MappedMatches,
   MathOptions,
   Metadata,
@@ -280,6 +275,7 @@ export type {
   PDFAssets,
   QuickAction,
   QuickActionConfig,
+  QuickSwitchDisplayNote,
   ResolvedTheme,
   Result,
   SelectionAction,

@@ -1,5 +1,4 @@
 import { rendererLogger } from "@/app";
-import { waitForFlush } from "@/notes/note-actions";
 import { handleUpdateSettings } from "@/settings/setting-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { getUIItem } from "@/utils/registry";
@@ -13,7 +12,7 @@ function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
 }
 
 function computeIdsForTagView(
-  notes: Readonly<NoteListItem[]>,
+  notes: readonly NoteListItem[],
   tag: string | null,
 ) {
   return notes
@@ -23,16 +22,9 @@ function computeIdsForTagView(
 
 async function applyView(
   nextTag: string | null,
-  newState?: NoteListItem[],
-  id?: string,
+  newState?: readonly NoteListItem[],
 ) {
-  const { activeId, activeTag } = stateStore.getState();
-  if (activeId && id && id === activeId && !newState) {
-    // updated notes state from saving if an active tag gets deleted while note is open and tag view is applied
-    rendererLogger.devLog("Saving in progress. Flushing note");
-    // brittle as of now
-    await waitForFlush(id);
-  }
+  const activeTag = stateStore.get("activeTag");
   if (activeTag === nextTag) {
     rendererLogger.devLog(
       "[applyView]: Same tag. Early return guard activated",

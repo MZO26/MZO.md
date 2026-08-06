@@ -38,7 +38,7 @@ const STATE_STORE: AppState = {
 };
 
 interface NoteStore {
-  notes: NoteListItem[];
+  notes: readonly NoteListItem[];
   visibleIds: string[];
   noteIndex: Map<string, NoteListItem>;
   recentNotes: string[];

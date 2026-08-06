@@ -29,7 +29,11 @@ import { TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
 import { WikilinkHandler } from "@/extensions/wikilink/wikilink-handler";
 import { WikiLinkPreview } from "@/extensions/wikilink/wikilink-preview";
-import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
+import {
+  debouncedSaveNote,
+  handleSelectNote,
+  waitForFlush,
+} from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
@@ -126,7 +130,11 @@ function getNoteEditorExtensions() {
     NoteTagHandler.configure({
       onClick: async (id: string) => {
         const normalizedTag = id?.trim().toLowerCase();
-        if (normalizedTag) await applyView(normalizedTag);
+        const activeId = stateStore.get("activeId");
+        if (!normalizedTag || !activeId) return;
+        const saved = await waitForFlush(activeId);
+        if (!saved) return;
+        await applyView(normalizedTag);
       },
     }),
     Table.configure({

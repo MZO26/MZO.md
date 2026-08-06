@@ -68,14 +68,14 @@ declare global {
     };
     noteAPI: {
       search: (query: SearchQuery) => Promise<Result<SearchResult[]>>;
-      getAll: () => Promise<Result<NoteListItem[]>>;
-      getAllBackup: () => Promise<Result<Note[]>>;
-      getById: (id: Id) => Promise<Result<Note>>;
-      getManyById: (ids: Ids) => Promise<Result<Note[]>>;
+      getAll: () => Promise<Result<readonly NoteListItem[]>>;
+      getAllBackup: () => Promise<Result<readonly Note[]>>;
+      getById: (id: Id) => Promise<Result<Readonly<Note>>>;
+      getManyById: (ids: Ids) => Promise<Result<readonly Note[]>>;
       create: (payload: CreateNotePayload) => Promise<Result<NoteListItem>>;
       createMany: (
         payload: CreateNotePayload[],
-      ) => Promise<Result<NoteListItem[]>>;
+      ) => Promise<Result<readonly NoteListItem[]>>;
       update: (
         payload: UpdateNotePayload,
         flush: boolean,
