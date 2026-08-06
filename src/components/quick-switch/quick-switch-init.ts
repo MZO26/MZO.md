@@ -1,30 +1,72 @@
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
-import { handleSelectNote } from "@/notes/note-actions";
+import { handleSelectNote, waitForFlush } from "@/notes/note-actions";
 import { listEl, switchDialog } from "@/settings/dialog-init";
 import { noteStore, stateStore } from "@/state/state";
 import { createInfoSpan } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
-import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { Link, NoteListItem } from "@shared/schemas/note-schema";
+import type { Expand } from "@shared/types";
 
 function initQuickSwitcher() {
   const editor = getAppItem("editor");
   let activeIndex = 0;
-  let currentDisplayNotes: Pick<NoteListItem, "id" | "title">[] = [];
-  function toggleSwitcher() {
+  let currentDisplayNotes: Expand<
+    Pick<NoteListItem, "id" | "title"> & {
+      section: "recent" | "backlink" | "outgoing";
+    }
+  >[] = [];
+  async function toggleSwitcher() {
     if (switchDialog.open) {
       switchDialog.close();
       return;
     }
+    const activeId = stateStore.get("activeId");
+    await waitForFlush(activeId);
     const { recentNotes, noteIndex } = noteStore.getState();
-    const displayNotes: Pick<NoteListItem, "id" | "title">[] = [];
+    const activeNote = activeId ? noteIndex.get(activeId) : undefined;
+    // recent ids are already computed
+    const recentIds = new Set(recentNotes);
+    // backlinks and outgoing ones do need to be
+    // recomputed and manually put together
+    const backlinkIds = new Set<string>();
+    const outgoingIds = new Set<string>();
+    const displayNotes: Expand<
+      Pick<NoteListItem, "id" | "title"> & {
+        section: "recent" | "backlink" | "outgoing";
+      }
+    >[] = [];
     for (const id of recentNotes) {
       const note = noteIndex.get(id);
-      if (!note) continue;
+      if (!note || !recentIds.has(id)) continue;
       displayNotes.push({
         id: note.id,
         title: note.title,
+        section: "recent",
       });
+    }
+    if (activeNote) {
+      const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote);
+      for (const link of backlinks) {
+        const linkedNote = noteIndex.get(link.id);
+        if (!linkedNote || backlinkIds.has(linkedNote.id)) continue;
+        backlinkIds.add(linkedNote.id);
+        displayNotes.push({
+          id: linkedNote.id,
+          title: linkedNote.title,
+          section: "backlink",
+        });
+      }
+      for (const link of outgoingLinks) {
+        const linkedNote = noteIndex.get(link.id);
+        if (!linkedNote || outgoingIds.has(link.id)) continue;
+        outgoingIds.add(link.id);
+        displayNotes.push({
+          id: linkedNote.id,
+          title: linkedNote.title,
+          section: "outgoing",
+        });
+      }
     }
     currentDisplayNotes = displayNotes;
     activeIndex = 0;
@@ -35,14 +77,36 @@ function initQuickSwitcher() {
     renderTitleList();
   }
 
+  function computeActiveNoteLinks(activeNote: NoteListItem) {
+    const backlinks: Link[] = [];
+    const outgoingLinks: Link[] = [];
+    for (const link of activeNote.links) {
+      if (link.id === activeNote.id) continue;
+      if (link.dir === "in") {
+        backlinks.push(link);
+      } else if (link.dir === "out") {
+        outgoingLinks.push(link);
+      }
+    }
+    return { backlinks, outgoingLinks };
+  }
+
   function renderTitleList() {
     listEl.replaceChildren();
     if (currentDisplayNotes.length === 0) {
-      const span = createInfoSpan("No recent notes.", "quick-switch-empty");
+      const span = createInfoSpan("No notes to display.", "quick-switch-empty");
       listEl.appendChild(span);
       return;
     }
+    let lastSection: string | null = null;
     for (const [index, note] of currentDisplayNotes.entries()) {
+      if (note.section !== lastSection) {
+        const header = document.createElement("div");
+        header.className = "quick-switch-section-header";
+        header.textContent = getSectionLabel(note.section);
+        listEl.appendChild(header);
+        lastSection = note.section;
+      }
       const optionEl = document.createElement("div");
       optionEl.className =
         index === activeIndex
@@ -60,7 +124,27 @@ function initQuickSwitcher() {
       ...listEl.querySelectorAll<HTMLDivElement>(".quick-switch-item"),
     ];
     for (const [index, item] of items.entries()) {
-      item?.classList.toggle("active", index === activeIndex);
+      const isActive = index === activeIndex;
+      item.classList.toggle("active", isActive);
+      if (isActive) {
+        item.scrollIntoView({
+          block: "nearest",
+          behavior: "auto",
+        });
+      }
+    }
+  }
+
+  function getSectionLabel(section: string) {
+    switch (section) {
+      case "recent":
+        return "Recent";
+      case "backlink":
+        return "Backlinks";
+      case "outgoing":
+        return "Links";
+      default:
+        return "";
     }
   }
 
@@ -129,9 +213,8 @@ function initQuickSwitcher() {
 
   function handleListClick(event: MouseEvent) {
     if (!switchDialog.open) return;
-    const target = event.target as HTMLElement | null;
-    if (!target) return;
-    const optionEl = target.closest<HTMLDivElement>("[data-index]");
+    if (!(event.target instanceof Element)) return;
+    const optionEl = event.target.closest<HTMLDivElement>("[data-index]");
     if (!optionEl?.dataset["index"]) return;
     activeIndex = Number(optionEl.dataset["index"]);
     selectActive();

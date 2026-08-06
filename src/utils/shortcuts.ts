@@ -10,17 +10,17 @@ function isSelectionActive() {
 }
 
 function isEditorFocused(target: EventTarget | null) {
-  const el = target as HTMLElement | null;
-  return !!el?.closest(".ProseMirror");
+  if (!(target instanceof HTMLElement)) return;
+  return !!target.closest(".ProseMirror");
 }
 
 function initGlobalShortcuts() {
   window.addEventListener("keydown", (e) => {
-    const target = e.target as HTMLElement;
+    if (!(e.target instanceof HTMLElement)) return;
     if (
-      target.tagName === "INPUT" ||
-      target.tagName === "TEXTAREA" ||
-      target.isContentEditable
+      e.target.tagName === "INPUT" ||
+      e.target.tagName === "TEXTAREA" ||
+      e.target.isContentEditable
     ) {
       return;
     }
@@ -94,10 +94,10 @@ function initGlobalShortcuts() {
       return;
     }
     if (key === "Escape") {
-      const target = e.target as HTMLElement | null;
+      if (!(e.target instanceof HTMLElement)) return;
       const openDialog =
         document.querySelector<HTMLDialogElement>("dialog[open]");
-      if (target?.closest("dialog") || openDialog) {
+      if (e.target.closest("dialog") || openDialog) {
         return;
       }
       if (isSelectionActive()) {

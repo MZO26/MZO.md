@@ -62,9 +62,8 @@ function computeSearchResult(
 }
 
 const debouncedSearch = debounce((e: Event) => {
-  const target = e.target as HTMLInputElement | null;
-  if (!target) return;
-  const value = (target.value ?? "").trim();
+  if (!(e.target instanceof HTMLInputElement)) return;
+  const value = (e.target.value ?? "").trim();
   handleSearch(value);
 }, DEBOUNCE_MS.fast);
 

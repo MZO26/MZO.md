@@ -205,21 +205,19 @@ function getNoteEditorExtensions() {
 }
 
 function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
-  editorWrapper.addEventListener("contextmenu", (e: MouseEvent) => {
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
-    if (target.closest(".selectedCell")) {
-      e.preventDefault();
+  editorWrapper.addEventListener("contextmenu", (event: MouseEvent) => {
+    if (!(event.target instanceof HTMLImageElement)) return;
+    if (event.target.closest(".selectedCell")) {
+      event.preventDefault();
       window.electronAPI.showContextMenu("table");
     }
   });
   editorWrapper.addEventListener(
     "error",
     (event: ErrorEvent) => {
-      const target = event.target as HTMLImageElement | null;
-      if (!target) return;
-      if (target.tagName === "IMG") {
-        const pos = editor.view.posAtDOM(target, 0);
+      if (!(event.target instanceof HTMLImageElement)) return;
+      if (event.target.tagName === "IMG") {
+        const pos = editor.view.posAtDOM(event.target, 0);
         if (pos !== null) {
           editor
             .chain()

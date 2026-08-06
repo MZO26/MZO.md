@@ -1,5 +1,3 @@
-import { updateSettings } from "@/api/api";
-import { applyView } from "@/components/sidebar/sidebar-views";
 import {
   TOOLBAR_ACTIONS,
   TOP_TOOLBAR_ACTIONS,
@@ -13,45 +11,12 @@ import {
   setEditorWidth,
   setWindowTop,
 } from "@/components/toolbar/toolbar-features";
-import { handleSelectNote } from "@/notes/note-actions";
+import { handleUpdateSettings } from "@/settings/setting-actions";
 import { settingsStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
-import { getAppItem, getUIItem, registerAppEvents } from "@/utils/registry";
+import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { isFocusActive } from "@/utils/shortcuts";
-import { createGlobalSpinner } from "@/utils/ui";
-
-function initMetadataToolbar() {
-  const metadataContainer = getUIItem("metadataContainer");
-  const editorWrapper = getAppItem("editorWrapper");
-  metadataContainer.addEventListener(
-    "click",
-    createAsyncHandler(async (e) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const clickedLink = target.closest<HTMLSpanElement>(".link");
-      const linkId = clickedLink?.getAttribute("data-link");
-      if (linkId === stateStore.get("activeId")) return;
-      if (clickedLink && linkId) {
-        const loading = createGlobalSpinner();
-        await loading.wrap(async () => {
-          await handleSelectNote(linkId);
-        });
-        return;
-      }
-      const clickedTag = target.closest<HTMLSpanElement>(".tag-node");
-      const tagId = clickedTag?.getAttribute("data-tag");
-      if (clickedTag && tagId) {
-        const normalizedTag = tagId?.trim().toLowerCase();
-        if (normalizedTag) await applyView(tagId);
-        return;
-      }
-    }),
-  );
-  editorWrapper.addEventListener("focusin", () => {
-    metadataContainer.classList.add("collapsed");
-  });
-}
 
 function initToolbar() {
   const toolbarContainer = requireElement<HTMLDivElement>("#toolbar");
@@ -75,11 +40,11 @@ function initTopToolbar() {
       const newState = !isFocusActive();
       stateStore.setState({ focus: newState });
     },
-    "app:toggle-toolbar": () => {
+    "app:toggle-toolbar": async () => {
       const newState = !settingsStore.get("toolbar_collapsed");
-      updateSettings({ toolbar_collapsed: newState });
+      await handleUpdateSettings({ toolbar_collapsed: newState });
     },
   });
 }
 
-export { initMetadataToolbar, initToolbar, initTopToolbar };
+export { initToolbar, initTopToolbar };

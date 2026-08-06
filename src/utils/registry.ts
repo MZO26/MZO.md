@@ -125,7 +125,6 @@ function initUIRegistry() {
     wordCountEl: requireElement<HTMLSpanElement>("#word-count"),
     charCountEl: requireElement<HTMLSpanElement>("#char-count"),
     readingTime: requireElement<HTMLSpanElement>("#reading-time"),
-    metadataContainer: requireElement<HTMLDivElement>(".metadata-container"),
     searchInput: requireElement<HTMLInputElement>(".search-input"),
     sidebarHeader: requireElement<HTMLDivElement>(".sidebar-header"),
     sidebarFooter: requireElement<HTMLDivElement>(".sidebar-footer"),

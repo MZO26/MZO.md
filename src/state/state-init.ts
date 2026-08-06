@@ -46,11 +46,19 @@ function initSubscriptions() {
 
   stateStore.subscribeSel((state) => state.selectedIds, updateSelection);
 
-  stateStore.subscribeSel((state) => state.focus, setFocusMode);
+  stateStore.subscribeSel(
+    (state) => state.focus,
+    (focus) => {
+      if (typeof focus === "boolean") setFocusMode(focus);
+    },
+  );
 
-  // subscribe to currently visible notes derived from visible ids and search snippets from fts5.
-  // visible ids get mapped to the matching note. Sidebar listener then checks against active tag
-  // as a guard. Search and active tag filtering also compute visible ids to then trigger a sidebar rerender
+  // subscribe to currently visible notes derived from visible ids
+  // and search snippets from fts5.
+  // visible ids get mapped to the matching note.
+  // sidebar listener then checks against active tag
+  // as a guard. Search and active tag filtering also compute
+  // visible ids to then trigger a sidebar rerender
   noteStore.subscribeSel(
     (state) => ({
       visibleNotes: getVisibleNotes(state),

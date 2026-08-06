@@ -95,7 +95,7 @@ function getSidebarParams(): SidebarParams {
   return {
     visibleNotes,
     searchSnippets: noteState.searchSnippets,
-    query: searchQuery?.trim() || "",
+    query: searchQuery,
     activeTag,
     activeId,
     display,
@@ -118,7 +118,8 @@ function updateSelection() {
   selectionUpdatePending = true;
   queueMicrotask(() => {
     selectionUpdatePending = false;
-    updateSelectionUI(stateStore.getState());
+    const next = stateStore.getState();
+    updateSelectionUI(next);
   });
 }
 

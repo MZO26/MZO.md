@@ -1,7 +1,4 @@
 import { rendererLogger } from "@/app";
-import { settingsStore } from "@/state/state";
-import { debounce } from "@/utils/async";
-import { DEBOUNCE_MS } from "@shared/constants/renderer-constants";
 import { AppErrorCode } from "@shared/errors";
 import type {
   Notification,
@@ -205,40 +202,6 @@ async function pinWindow(): Promise<Result<boolean>> {
   return invoke(window.electronAPI.windowPin());
 }
 
-// debounced calls
-
-function createSettingsSync() {
-  let pendingSettings: Partial<AppSettings> = {};
-  const debouncedSetSettings = debounce(async () => {
-    rendererLogger.devLog(pendingSettings);
-    const settingsToSave = { ...pendingSettings };
-    pendingSettings = {};
-    try {
-      const result = await setSettings(settingsToSave);
-      if (!result.success) {
-        rendererLogger.appError(
-          "[setSettings]: Failed to update settings:",
-          result.error,
-        );
-        pendingSettings = { ...settingsToSave, ...pendingSettings };
-        return;
-      }
-      rendererLogger.devLog("Saved settings");
-    } catch (error: unknown) {
-      rendererLogger.appError("[setSettings]: Unknown error", error);
-      pendingSettings = { ...settingsToSave, ...pendingSettings };
-    }
-  }, DEBOUNCE_MS.fast);
-
-  return function updateSettings(settings: Partial<AppSettings>) {
-    settingsStore.setState(settings);
-    pendingSettings = { ...pendingSettings, ...settings };
-    debouncedSetSettings();
-  };
-}
-
-const updateSettings = createSettingsSync();
-
 export {
   createManyNotes,
   createNote,
@@ -267,9 +230,9 @@ export {
   pinWindow,
   search,
   selectAutoExportFolder,
+  setSettings,
   setTheme,
   showNotification,
   syncRequest,
   updateNote,
-  updateSettings,
 };

@@ -1,22 +1,28 @@
-import { selectAutoExportFolder, updateSettings } from "@/api/api";
+import { selectAutoExportFolder } from "@/api/api";
 import { rendererLogger } from "@/app";
 import {
   applyAppTheme,
+  applyFontFamily,
+  applyFontSize,
+  applyLineHeight,
+  handleUpdateSettings,
   resolveTheme,
-  setCodeTheme,
-} from "@/settings/theme-actions";
+} from "@/settings/setting-actions";
+import { settingsStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { getAppItem } from "@/utils/registry";
-import type {
-  AppSettings,
-  FontFamily,
-  FontSize,
-  HighlightTheme,
-  LineHeight,
-  NoteItemDisplay,
-  Theme,
-} from "@shared/schemas/store-schema";
-import type { ExportFormat } from "@shared/types";
+import { CODE_THEME_MAP } from "@shared/constants/renderer-constants";
+import {
+  CODE_THEME_SETTINGS,
+  EXPORT_FORMAT_SETTINGS,
+  FONT_FAMILY_SETTINGS,
+  FONT_SIZE_SETTINGS,
+  HIGHLIGHT_THEME_SETTINGS,
+  LINE_HEIGHT_SETTINGS,
+  NOTE_ITEM_DISPLAY_SETTINGS,
+  THEME_SETTINGS,
+} from "@shared/constants/setting-constants";
+import type { AppSettings } from "@shared/schemas/store-schema";
 
 function initAppearanceSettings(
   settings: AppSettings,
@@ -39,18 +45,29 @@ function initAppearanceSettings(
     settings["code_theme"],
   );
   codeThemeSelect.value = settings["code_theme"];
-  codeThemeSelect.addEventListener("change", () => {
-    const baseTheme = resolveTheme(themeSelect.value as Theme);
-    const codePref = setCodeTheme(baseTheme);
-    updateSettings({ code_theme: codePref });
-  });
+  codeThemeSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e) => {
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const newCodeTheme = e.target.value;
+      const match = CODE_THEME_SETTINGS.find((s) => s.value === newCodeTheme);
+      if (!match) return;
+      const resolvedTheme = resolveTheme(settingsStore.get("theme"));
+      rendererLogger.devLog(resolvedTheme);
+      const mappedCodeTheme = CODE_THEME_MAP[match.value][resolvedTheme];
+      document.documentElement.dataset["codetheme"] = mappedCodeTheme;
+      await handleUpdateSettings({ code_theme: match.value });
+    }),
+  );
   themeSelect.value = settings["theme"];
   themeSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
-      const target = e.target as HTMLSelectElement | null;
-      if (!target) return;
-      const result = await applyAppTheme(target.value as Theme);
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const newTheme = e.target.value;
+      const match = THEME_SETTINGS.find((s) => s.value === newTheme);
+      if (!match) return;
+      const result = await applyAppTheme(match.value);
       if (!result.success) {
         rendererLogger.appError(
           "[applyAppTheme]: Failed to apply theme",
@@ -58,7 +75,7 @@ function initAppearanceSettings(
         );
         return;
       }
-      updateSettings({
+      await handleUpdateSettings({
         theme: result.data.theme,
         code_theme: result.data.codeTheme,
       });
@@ -70,26 +87,37 @@ function initAppearanceSettings(
     settings["highlight"],
   );
   highlightSelect.value = settings["highlight"];
-  highlightSelect.addEventListener("change", (e) => {
-    const target = e.target as HTMLSelectElement | null;
-    if (!target) return;
-    document.documentElement.setAttribute("data-highlight", target.value);
-    updateSettings({
-      highlight: target.value as HighlightTheme,
-    });
-  });
+  highlightSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e) => {
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const newDisplay = e.target.value;
+      const match = HIGHLIGHT_THEME_SETTINGS.find(
+        (s) => s.value === newDisplay,
+      );
+      if (!match) return;
+      document.documentElement.setAttribute("data-highlight", match.value);
+      await handleUpdateSettings({
+        highlight: match.value,
+      });
+    }),
+  );
 
   sidebar.setAttribute("data-noteItem", settings["note_item_display"]);
   noteItemSelect.value = settings["note_item_display"];
   noteItemSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
-      const target = e.target as HTMLSelectElement | null;
-      if (!target) return;
-      updateSettings({
-        note_item_display: target.value as NoteItemDisplay,
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const newDisplay = e.target.value;
+      const match = NOTE_ITEM_DISPLAY_SETTINGS.find(
+        (s) => s.value === newDisplay,
+      );
+      if (!match) return;
+      await handleUpdateSettings({
+        note_item_display: match.value,
       });
-      sidebar.setAttribute("data-noteItem", target.value);
+      sidebar.setAttribute("data-noteItem", match.value);
     }),
   );
 }
@@ -112,89 +140,59 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
   )
     return;
 
-  const applyFont = (val: string) => {
-    const current = val || "system";
-    editorWrapper.style.setProperty("--editor-font-family", current);
-    if (
-      fontFamilySelect.querySelector<HTMLOptionElement>(
-        `option[value="${CSS.escape(current)}"]`,
-      )
-    ) {
-      editorWrapper.setAttribute("data-font-family", current);
-      fontFamilySelect.value = current;
-    }
-  };
+  applyFontFamily(editorWrapper, fontFamilySelect, settings["font_family"]);
+  fontFamilySelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e) => {
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const newFont = e.target.value;
+      const match = FONT_FAMILY_SETTINGS.find((s) => s.value === newFont);
+      if (!match) return;
+      applyFontFamily(editorWrapper, fontFamilySelect, match.value);
+      await handleUpdateSettings({ font_family: match.value });
+    }),
+  );
 
-  applyFont(settings["font_family"]);
-  fontFamilySelect.addEventListener("change", (e) => {
-    const target = e.target as HTMLSelectElement | null;
-    if (!target) return;
-    const newFont = target.value;
-    applyFont(newFont);
-    updateSettings({ font_family: newFont as FontFamily });
-  });
+  applyFontSize(editorWrapper, fontSizeSelect, settings["font_size"]);
+  fontSizeSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e) => {
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const newSize = e.target.value;
+      const match = FONT_SIZE_SETTINGS.find((s) => s.value === newSize);
+      if (!match) return;
+      applyFontSize(editorWrapper, fontSizeSelect, match.value);
+      await handleUpdateSettings({ font_size: match.value });
+    }),
+  );
 
-  const applySize = (val: string | number) => {
-    let current = Number(val) || 18;
-    current = Math.max(16, Math.min(current, 20));
-    const strCurrent = String(current);
-    editorWrapper.style.setProperty("--editor-font-size", `${strCurrent}px`);
-    if (
-      fontSizeSelect.querySelector<HTMLOptionElement>(
-        `option[value="${CSS.escape(strCurrent)}"]`,
-      )
-    ) {
-      editorWrapper.setAttribute("data-font-size", strCurrent);
-      fontSizeSelect.value = strCurrent;
-    }
-  };
-
-  applySize(settings["font_size"]);
-  fontSizeSelect.addEventListener("change", (e) => {
-    const target = e.target as HTMLSelectElement | null;
-    if (!target) return;
-    const newSize = target.value;
-    applySize(newSize);
-    updateSettings({ font_size: String(newSize) as FontSize });
-  });
-
-  const applyLineHeight = (val: string | number) => {
-    let current = Number(val) || 1.5;
-    current = Math.max(1.4, Math.min(current, 1.6));
-    const strCurrent = String(current);
-    editorWrapper.style.setProperty("--editor-line-height", strCurrent);
-    if (
-      lineHeightSelect.querySelector<HTMLOptionElement>(
-        `option[value="${CSS.escape(strCurrent)}"]`,
-      )
-    ) {
-      editorWrapper.setAttribute("data-line-height", strCurrent);
-      lineHeightSelect.value = strCurrent;
-    }
-  };
-
-  applyLineHeight(settings["line_height"]);
-  lineHeightSelect.addEventListener("change", (e) => {
-    const target = e.target as HTMLSelectElement | null;
-    if (!target) return;
-    const newHeight = target.value;
-    applyLineHeight(newHeight);
-    updateSettings({ line_height: String(newHeight) as LineHeight });
-  });
+  applyLineHeight(editorWrapper, lineHeightSelect, settings["line_height"]);
+  lineHeightSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e) => {
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const newHeight = e.target.value;
+      const match = LINE_HEIGHT_SETTINGS.find((s) => s.value === newHeight);
+      if (!match) return;
+      applyLineHeight(editorWrapper, lineHeightSelect, match.value);
+      await handleUpdateSettings({ line_height: match.value });
+    }),
+  );
 
   const enabled = settings["spellcheck"] === true;
   const editor = getAppItem("editor");
   editor.view.dom.spellcheck = enabled;
   spellcheckSelect.value = enabled ? "true" : "false";
-  spellcheckSelect.addEventListener("change", (e) => {
-    const editor = getAppItem("editor");
-    const target = e.target as HTMLSelectElement | null;
-    if (!target) return;
-    const enabled = target.value === "true";
-    editor.view.dom.spellcheck = enabled;
-    editor.commands.focus();
-    updateSettings({ spellcheck: enabled });
-  });
+  spellcheckSelect.addEventListener(
+    "change",
+    createAsyncHandler(async (e) => {
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const enabled = e.target.value === "true";
+      editor.view.dom.spellcheck = enabled;
+      editor.commands.focus();
+      await handleUpdateSettings({ spellcheck: enabled });
+    }),
+  );
 }
 
 function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
@@ -207,10 +205,13 @@ function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
   exportFormatSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
-      const target = e.target as HTMLSelectElement | null;
-      if (!target) return;
-      const selectedExtension = target.value as ExportFormat;
-      updateSettings({ export_format: selectedExtension });
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const selectedExtension = e.target.value;
+      const match = EXPORT_FORMAT_SETTINGS.find(
+        (s) => s.value === selectedExtension,
+      );
+      if (!match) return;
+      await handleUpdateSettings({ export_format: match.value });
     }),
   );
 
@@ -222,25 +223,25 @@ function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
   autoExportSelect.addEventListener(
     "change",
     createAsyncHandler(async (e) => {
-      const target = e.target as HTMLSelectElement | null;
-      if (!target) return;
-      if (target.value) {
-        const enabled = target.value === "true";
-        if (enabled) {
-          const result = await selectAutoExportFolder();
-          if (!result.success) {
-            target.value = "false";
-            return;
-          }
-          updateSettings({
-            auto_export: true,
-            auto_export_path: result.data,
-          });
-          autoExportSelect.title = `Path: ${result.data}`;
-        } else {
-          updateSettings({ auto_export: false, auto_export_path: null });
-          autoExportSelect.title = "No path selected.";
+      if (!(e.target instanceof HTMLSelectElement)) return;
+      const enabled = e.target.value === "true";
+      if (enabled) {
+        const result = await selectAutoExportFolder();
+        if (!result.success) {
+          e.target.value = "false";
+          return;
         }
+        await handleUpdateSettings({
+          auto_export: true,
+          auto_export_path: result.data,
+        });
+        autoExportSelect.title = `Path: ${result.data}`;
+      } else {
+        await handleUpdateSettings({
+          auto_export: false,
+          auto_export_path: null,
+        });
+        autoExportSelect.title = "No path selected.";
       }
     }),
   );

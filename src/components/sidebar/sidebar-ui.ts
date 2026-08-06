@@ -109,9 +109,8 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   }
 
   const debouncedFilter = debounce((e: Event) => {
-    const target = e.target as HTMLInputElement | null;
-    if (!target) return;
-    const value = (target.value ?? "").trim();
+    if (!(e.target instanceof HTMLInputElement)) return;
+    const value = (e.target.value ?? "").trim();
     filter(value);
   }, DEBOUNCE_MS.very_fast);
 
@@ -120,14 +119,13 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   popover.addEventListener(
     "click",
     createAsyncHandler(async (e) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      if (target.closest(".untagged-btn")) {
+      if (!(e.target instanceof Element)) return;
+      if (e.target.closest(".untagged-btn")) {
         await applyView(UNTAGGED);
         close();
         return;
       }
-      const tagElement = target.closest<HTMLSpanElement>(".tag");
+      const tagElement = e.target.closest<HTMLSpanElement>(".tag");
       const tag = tagElement?.dataset["tag"];
       if (tag) {
         const normalizedTag = tag?.trim().toLowerCase();
@@ -138,9 +136,8 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   );
 
   document.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
-    if (popover.contains(target) || button.contains(target)) return;
+    if (!(e.target instanceof Element)) return;
+    if (popover.contains(e.target) || button.contains(e.target)) return;
     close();
   });
 

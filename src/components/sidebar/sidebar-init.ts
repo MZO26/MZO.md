@@ -62,20 +62,19 @@ function applySidebarListeners(
   sidebarHeader.addEventListener(
     "click",
     createAsyncHandler(async (e) => {
-      const target = e.target as HTMLElement | null;
-      if (target === sidebarHeader || !target) return;
-      const addNoteBtn = target.closest<HTMLButtonElement>(".add-note-btn");
+      if (!(e.target instanceof Element)) return;
+      const addNoteBtn = e.target.closest<HTMLButtonElement>(".add-note-btn");
       if (addNoteBtn) {
         await handleCreateNote();
         return;
       }
-      const tagBtn = target.closest<HTMLButtonElement>(".all-tags-btn");
+      const tagBtn = e.target.closest<HTMLButtonElement>(".all-tags-btn");
       if (tagBtn) {
         const tags = noteStore.get("notes").flatMap((n) => n.tags);
         showAllTagsMenu(tagBtn, tags);
         return;
       }
-      const importBtn = target.closest<HTMLButtonElement>(".import-btn");
+      const importBtn = e.target.closest<HTMLButtonElement>(".import-btn");
       if (importBtn) {
         const request: FilePathRequest = { source: "dialog" };
         const loading = createGlobalSpinner(0);
@@ -90,9 +89,8 @@ function applySidebarListeners(
   selectionFooter.addEventListener(
     "click",
     createAsyncHandler(async (e) => {
-      const target = e.target as HTMLButtonElement | null;
-      if (!target) return;
-      const button = target.closest<HTMLButtonElement>("button[data-action]");
+      if (!(e.target instanceof Element)) return;
+      const button = e.target.closest<HTMLButtonElement>("button[data-action]");
       if (!button) return;
       const selectedIds = stateStore.get("selectedIds");
       const action = button.getAttribute("data-action");
@@ -106,16 +104,15 @@ function applySidebarListeners(
     }),
   );
   sidebar.addEventListener("contextmenu", (e) => {
+    if (!(e.target instanceof Element)) return;
     if (stateStore.get("selectionMode") === true) return;
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
     const isEmptySidebar = noteStore.get("visibleIds").length === 0;
-    if (target === sidebar || isEmptySidebar) {
+    if (e.target === sidebar || isEmptySidebar) {
       e.preventDefault();
       return;
     }
     e.preventDefault();
-    const noteElement = target.closest<HTMLDivElement>(".note-item");
+    const noteElement = e.target.closest<HTMLDivElement>(".note-item");
     const id = noteElement?.getAttribute("data-id");
     if (!id || !noteElement) return;
     const isPinned = noteElement.getAttribute("data-pinned") === "true";
@@ -128,13 +125,12 @@ function applySidebarListeners(
   sidebar.addEventListener(
     "click",
     createAsyncHandler(async (e) => {
-      const target = e.target as HTMLElement | null;
-      if (target === sidebar || !target) return;
-      const actionBtn = target.closest<HTMLButtonElement>(".menu-btn");
+      if (!(e.target instanceof Element)) return;
+      const actionBtn = e.target.closest<HTMLButtonElement>(".menu-btn");
       if (actionBtn) {
         e.preventDefault();
         e.stopPropagation();
-        const noteElement = target.closest<HTMLDivElement>(".note-item");
+        const noteElement = e.target.closest<HTMLDivElement>(".note-item");
         const id = noteElement?.getAttribute("data-id");
         if (!id || !noteElement) return;
         const isPinned = noteElement.getAttribute("data-pinned") === "true";
@@ -144,7 +140,7 @@ function applySidebarListeners(
         });
         return;
       }
-      const clearBtn = target.closest<HTMLButtonElement>(
+      const clearBtn = e.target.closest<HTMLButtonElement>(
         ".active-tag-clear-btn",
       );
       if (clearBtn) {
@@ -154,7 +150,7 @@ function applySidebarListeners(
           return;
         }
       }
-      const noteItem = target.closest<HTMLDivElement>(".note-item");
+      const noteItem = e.target.closest<HTMLDivElement>(".note-item");
       const id = noteItem?.getAttribute("data-id");
       if (!id) return;
       if (stateStore.get("selectionMode") === true) {

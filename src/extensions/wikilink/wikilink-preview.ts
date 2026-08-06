@@ -91,15 +91,15 @@ export const WikiLinkPreview = Extension.create({
     const handlers: PreviewHandlers = {
       over: (e: PointerEvent) => {
         window.clearTimeout(this.storage.timer);
-        const target = e.target as HTMLElement | null;
-        if (!target) return;
-        const linkEl = target.closest<HTMLElement>("[data-wikilink]");
+        if (!(e.target instanceof HTMLElement)) return;
+        const linkEl = e.target.closest<HTMLElement>("[data-wikilink]");
         if (linkEl && this.storage.activeId !== linkEl.dataset["id"]) {
           this.storage.timer = window.setTimeout(() => show(linkEl), 300);
         }
       },
       out: (e: PointerEvent) => {
-        const next = e.relatedTarget as HTMLElement | null;
+        if (!(e.relatedTarget instanceof HTMLElement)) return;
+        const next = e.relatedTarget;
         if (next && (element.contains(next) || next.closest("[data-wikilink]")))
           return;
         window.clearTimeout(this.storage.timer);

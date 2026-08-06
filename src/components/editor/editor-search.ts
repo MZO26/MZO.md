@@ -5,8 +5,8 @@ import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
 import {
-  MIN_SEARCH_LENGTH,
   DEBOUNCE_MS,
+  MIN_SEARCH_LENGTH,
 } from "@shared/constants/renderer-constants";
 import { Editor } from "@tiptap/core";
 
@@ -137,13 +137,12 @@ function initEditorSearch(editor: Editor) {
   }
 
   inputWrapper.addEventListener("click", (event: Event) => {
-    const target = event.target as HTMLElement | null;
-    if (!target) return;
-    if (target.closest(".search-prev")) {
+    if (!(event.target instanceof Element)) return;
+    if (event.target.closest(".search-prev")) {
       event.preventDefault();
       goPrev();
       return;
-    } else if (target.closest(".search-next")) {
+    } else if (event.target.closest(".search-next")) {
       event.preventDefault();
       goNext();
       return;
@@ -151,10 +150,9 @@ function initEditorSearch(editor: Editor) {
   });
 
   replaceInputWrapper.addEventListener("click", (event: Event) => {
-    const target = event.target as HTMLElement | null;
-    if (!target) return;
-    const isReplaceOne = target.closest(".replace-one");
-    const isReplaceAll = target.closest(".replace-all");
+    if (!(event.target instanceof Element)) return;
+    const isReplaceOne = event.target.closest(".replace-one");
+    const isReplaceAll = event.target.closest(".replace-all");
     if (isReplaceOne || isReplaceAll) {
       event.preventDefault();
       editor.commands.docSearchSetReplacement(replaceInput.value);
@@ -215,11 +213,11 @@ function initEditorSearch(editor: Editor) {
   });
 
   document.addEventListener("click", (event) => {
-    const target = event.target as HTMLElement | null;
+    if (!(event.target instanceof Element)) return;
     if (!inputWrapper.classList.contains("invisible")) {
-      const clickedInput = inputWrapper.contains(target);
-      const clickedReplace = replaceInputWrapper.contains(target);
-      const clickedToolbar = target?.closest("#toolbar");
+      const clickedInput = inputWrapper.contains(event.target);
+      const clickedReplace = replaceInputWrapper.contains(event.target);
+      const clickedToolbar = event.target.closest("#toolbar");
       if (clickedInput || clickedReplace || clickedToolbar) {
         return;
       }

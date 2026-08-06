@@ -31,9 +31,10 @@ function initTableOfContents() {
   const container = requireElement<HTMLDivElement>(".toc");
   const editorWrapper = document.querySelector<HTMLDivElement>("#editor");
   container.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
-    const button = target.closest<HTMLButtonElement>("button[data-target-id]");
+    if (!(e.target instanceof HTMLElement)) return;
+    const button = e.target.closest<HTMLButtonElement>(
+      "button[data-target-id]",
+    );
     if (!button) return;
     const targetId = button.getAttribute("data-target-id");
     if (targetId) {

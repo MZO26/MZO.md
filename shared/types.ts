@@ -165,7 +165,6 @@ interface UIRegistry {
   wordCountEl: HTMLSpanElement;
   charCountEl: HTMLSpanElement;
   readingTime: HTMLSpanElement;
-  metadataContainer: HTMLDivElement;
   searchInput: HTMLInputElement;
   sidebarHeader: HTMLDivElement;
   sidebarFooter: HTMLDivElement;

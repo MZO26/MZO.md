@@ -58,7 +58,6 @@ function registerSettingsIpc(win: BrowserWindow) {
       };
       const validValue = validation(StoreSchema, mergedSettings);
       settingsService.updateSettings(validValue);
-      win.webContents.send("settings-changed", validValue);
       return validValue;
     });
   });

@@ -3,11 +3,7 @@ import { initListeners } from "@/api/callbacks";
 import { setupEditorListeners } from "@/components/editor/editor-init";
 import { initQuickSwitcher } from "@/components/quick-switch/quick-switch-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
-import {
-  initMetadataToolbar,
-  initToolbar,
-  initTopToolbar,
-} from "@/components/toolbar/toolbar-init";
+import { initToolbar, initTopToolbar } from "@/components/toolbar/toolbar-init";
 import { initAppSettings } from "@/settings/setting-init";
 import {
   syncNoteStore,
@@ -54,7 +50,6 @@ async function initApp() {
   initListeners();
   initToolbar();
   initTopToolbar();
-  initMetadataToolbar();
   renderIcons();
   startAppClock();
   initGlobalShortcuts();

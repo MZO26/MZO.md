@@ -1,22 +1,11 @@
-import {
-  renderLinksToolbar,
-  setEditorWidth,
-  toggleMetadataContainer,
-} from "@/components/toolbar/toolbar-features";
 import { promptImageUpload } from "@/extensions/image/image";
 import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
-import { flushSave } from "@/notes/note-actions";
-import { noteStore, stateStore } from "@/state/state";
-import { getAppItem } from "@/utils/registry";
 import type { ActionMap } from "@shared/types";
 
 const TOP_TOOLBAR_ACTIONS: ActionMap = {
   editorWidth: {
     type: "action",
-    run: () => {
-      const appContainer = getAppItem("appContainer");
-      setEditorWidth(appContainer);
-    },
+    run: () => document.dispatchEvent(new CustomEvent("app:set-editor-width")),
     icon: "ruler-dimension-line",
   },
   focus: {
@@ -47,19 +36,6 @@ const TOOLBAR_ACTIONS: ActionMap = {
     run: (editor) => editor?.chain().focus().redo().run(),
     isDisabled: (editor) => !editor.can().redo(),
     icon: "redo2",
-  },
-  wikilinks: {
-    run: async () => {
-      const activeId = stateStore.get("activeId");
-      if (!activeId) return;
-      const noteIndex = noteStore.get("noteIndex");
-      const activeNote = noteIndex.get(activeId);
-      if (!activeNote) return;
-      const container = toggleMetadataContainer();
-      await flushSave(activeId);
-      renderLinksToolbar(activeNote, noteIndex, container);
-    },
-    icon: "arrow-left-right",
   },
   search: {
     run: () =>

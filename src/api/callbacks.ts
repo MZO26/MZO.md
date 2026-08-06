@@ -11,33 +11,13 @@ import {
   triggerSyncCheck,
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
-import { debouncedSaveNote, handleSaveNote } from "@/notes/note-actions";
-import { noteStore, settingsStore, stateStore } from "@/state/state";
+import { debouncedSaveNote, ensureNoteSaved } from "@/notes/note-actions";
+import { stateStore } from "@/state/state";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { ExportContent } from "@shared/schemas/request-schema";
 
-async function ensureNoteSaved(id: string) {
-  if (!noteStore.get("noteIndex").has(id) || stateStore.get("activeId") !== id)
-    return;
-  debouncedSaveNote.cancel();
-  await handleSaveNote(id, true);
-  if (stateStore.get("activeId") !== id) return;
-  const savedNote = noteStore.get("noteIndex").get(id);
-  if (!savedNote) return;
-  return {
-    created_at: savedNote.created_at,
-    fileName: savedNote.title,
-    extension: "md" as const,
-    updated_at: savedNote.updated_at,
-  };
-}
-
 function initListeners() {
-  window.storeAPI.onSettingsChanged((settings) => {
-    settingsStore.setState(settings);
-  });
-
   window.electronAPI.onTriggerTableAction((action) => triggerTableMenu(action));
 
   window.electronAPI.onTriggerNoteAction((payload: NoteMenuPayload) =>

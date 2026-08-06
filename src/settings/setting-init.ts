@@ -1,13 +1,13 @@
 import { rendererLogger } from "@/app";
 import { settingsContainer, settingsDialog } from "@/settings/dialog-init";
 import { getQuickAction } from "@/settings/quick-actions";
+import { applyAppTheme } from "@/settings/setting-actions";
 import {
   buildSelects,
   createQuickActionContainer,
   createSettingsMenu,
 } from "@/settings/setting-factory";
 import { setSelectListeners } from "@/settings/setting-items-init";
-import { applyAppTheme } from "@/settings/theme-actions";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
@@ -57,9 +57,8 @@ function applyModalListeners(
   quickActionsContainer.addEventListener(
     "click",
     createAsyncHandler(async (e) => {
-      const target = e.target as HTMLElement | null;
-      if (target === quickActionsContainer || !target) return;
-      const button = target.closest<HTMLButtonElement>("button[data-action]");
+      if (!(e.target instanceof Element)) return;
+      const button = e.target.closest<HTMLButtonElement>("button[data-action]");
       if (!button) return;
       const action = button.getAttribute("data-action");
       if (!action) return;
@@ -71,9 +70,8 @@ function applyModalListeners(
     }),
   );
   buttonsContainer.addEventListener("click", (e) => {
-    const target = e.target as HTMLElement | null;
-    if (target === buttonsContainer || !target) return;
-    const btn = target.closest<HTMLButtonElement>(".selection-btn");
+    if (!(e.target instanceof Element)) return;
+    const btn = e.target.closest<HTMLButtonElement>(".selection-btn");
     if (!btn) return;
     const targetTab = btn.dataset["category"];
     if (!targetTab) return;

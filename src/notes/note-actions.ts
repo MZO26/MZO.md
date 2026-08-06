@@ -236,7 +236,9 @@ async function handleSaveNote(id: string, flush: boolean = false) {
       noteIndex,
     };
   });
-  // check if update changed view and if so, recompute visible ids in apply view and set active tag to null. Else visible ids don't change
+  // check if update changed view
+  //  if so, recompute visible ids and set active tag to null.
+  // else visible ids don't change
   if (!tagStillExists) {
     await applyView(null, updatedNotes);
   }
@@ -249,20 +251,10 @@ async function handleSaveNote(id: string, flush: boolean = false) {
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 
-async function flushSave(id: string) {
-  debouncedSaveNote.cancel();
-  try {
-    await handleSaveNote(id, true);
-    return true;
-  } catch (error) {
-    rendererLogger.appError("[flushSave]: Error during save:", error);
-    return false;
-  }
-}
-
 async function handleSelectNote(id: string) {
   const editor = getAppItem("editor");
   const activeId = stateStore.get("activeId");
+  // synchronous flush to avoid overwriting false note
   debouncedSaveNote.flush();
   if (activeId === id) {
     rendererLogger.devLog("Already active. Skipping select.");
@@ -344,9 +336,31 @@ async function handleDuplicateNote(note: Readonly<Note>) {
   }));
 }
 
+async function waitForFlush(id: string | null) {
+  if (!id || stateStore.get("activeId") !== id) return;
+  const noteIndex = noteStore.get("noteIndex");
+  if (!noteIndex.has(id)) {
+    return;
+  }
+  debouncedSaveNote.cancel();
+  await handleSaveNote(id, true);
+  return noteStore.get("noteIndex").get(id);
+}
+
+async function ensureNoteSaved(id: string) {
+  const savedNote = await waitForFlush(id);
+  if (!savedNote) return;
+  return {
+    created_at: savedNote.created_at,
+    fileName: savedNote.title,
+    extension: "md" as const,
+    updated_at: savedNote.updated_at,
+  };
+}
+
 export {
   debouncedSaveNote,
-  flushSave,
+  ensureNoteSaved,
   handleCreateNote,
   handleDeleteManyNotes,
   handleDeleteNote,
@@ -355,4 +369,5 @@ export {
   handleSaveNote,
   handleSelectNote,
   isAutoExportEnabled,
+  waitForFlush,
 };
