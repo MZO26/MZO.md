@@ -1,11 +1,8 @@
-import {
-  MAX_SEARCH_LENGTH,
-  UNTITLED,
-} from "@shared/constants/renderer-constants";
 import { EditorDocSchema } from "@shared/schemas/editor-schema";
+import { MAX_SEARCH_LENGTH, UNTITLED } from "@shared/shared-constants";
 import { z } from "zod";
 
-const IdSchema = z.uuid();
+const IdSchema = z.uuid().brand<"NoteID">();
 
 const IdsSchema = z.array(IdSchema);
 
@@ -155,6 +152,10 @@ const AutoExportWritePayloadSchema = z.object({
   oldFileName: z.string().optional(),
 });
 
+function isNoteID(id: string | null | undefined): id is Id {
+  return typeof id === "string" && id.length > 0;
+}
+
 type BoolDb = z.infer<typeof BoolDbSchema>;
 type DbUpdateArgs = z.infer<typeof DbUpdateSchema>;
 type DbCreateArgs = z.infer<typeof DbCreateSchema>;
@@ -175,7 +176,6 @@ type CreateNotePayload = z.infer<typeof CreateNotePayloadSchema>;
 type CreateNotesPayload = z.infer<typeof CreateNotesPayloadsSchema>;
 type Note = z.infer<typeof NoteSchema>;
 type Id = z.infer<typeof IdSchema>;
-type Ids = z.infer<typeof IdsSchema>;
 
 export {
   AutoExportWritePayloadSchema,
@@ -188,6 +188,7 @@ export {
   DbBoolCodec,
   IdSchema,
   IdsSchema,
+  isNoteID,
   LinksSchema,
   NoteFromDB,
   NoteListItemFromDB,
@@ -215,7 +216,6 @@ export {
   type DbCreateArgs,
   type DbUpdateArgs,
   type Id,
-  type Ids,
   type Link,
   type LinkRow,
   type Note,

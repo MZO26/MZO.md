@@ -19,6 +19,7 @@ import {
   type BoolDb,
   type DbCreateArgs,
   type DbUpdateArgs,
+  type Id,
   type Link,
   type LinkRow,
   type Note,
@@ -34,7 +35,6 @@ import {
   type AppSettings,
   type StoreRow,
 } from "@shared/schemas/store-schema";
-import type { DeepExpand } from "@shared/types";
 import { app } from "electron";
 import { backup, DatabaseSync, type StatementSync } from "node:sqlite";
 import path from "path";
@@ -307,7 +307,7 @@ class AppDB {
   }
 
   public create(payload: DbCreateArgs): NoteListItem {
-    const id = crypto.randomUUID();
+    const id = crypto.randomUUID() as Id;
     const now = new Date().toISOString();
     let { tags, links, ...rest } = payload;
     const uniqueTags = [...new Set(tags)].slice(0, 5);
@@ -326,11 +326,11 @@ class AppDB {
     return result;
   }
 
-  public createMany(payloads: DbCreateArgs[]): NoteListItem[] {
+  public createMany(payloads: DbCreateArgs[]): readonly NoteListItem[] {
     const now = new Date().toISOString();
     const dbContents = [];
     for (const payload of payloads) {
-      const id = crypto.randomUUID();
+      const id = crypto.randomUUID() as Id;
       const { tags, links, ...rest } = payload;
       const uniqueTags = [...new Set(tags)].slice(0, 5);
       const uniqueLinks = [...new Set(links)];
@@ -365,19 +365,19 @@ class AppDB {
     return result;
   }
 
-  public delete(id: string) {
+  public delete(id: Id) {
     const result = this.transactions.safeDelete(id);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
     return result;
   }
 
-  public deleteMany(ids: string[]) {
+  public deleteMany(ids: Id[]) {
     const result = this.transactions.safeDeleteMany(ids);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
     return result;
   }
 
-  public getAll(): NoteListItem[] {
+  public getAll(): readonly NoteListItem[] {
     const tagMap = this.getTagMapAll() ?? new Map();
     const linkMap = this.getLinkMapAll() ?? new Map();
     const results: NoteListItem[] = [];
@@ -393,7 +393,7 @@ class AppDB {
     return results;
   }
 
-  public getAllBackup(): Note[] {
+  public getAllBackup(): readonly Note[] {
     const results: Note[] = [];
     const tagMap = this.getTagMapAll() ?? new Map();
     const linkMap = this.getLinkMapAll() ?? new Map();
@@ -410,7 +410,7 @@ class AppDB {
     return results;
   }
 
-  public getById(id: string): Note {
+  public getById(id: Id): Readonly<Note> {
     const row = this.getNoteByIdStmt.get({ $id: id }) as NoteRow | undefined;
     if (!row) {
       throw new AppBackendError(AppErrorCode.DBError);
@@ -424,7 +424,7 @@ class AppDB {
     });
   }
 
-  public getManyById(ids: string[]): Note[] {
+  public getManyById(ids: Id[]): readonly Note[] {
     if (ids.length === 0) return [];
     const params = { $ids: JSON.stringify(ids) };
     const rows = this.getManyNotesByIdStmt.all(params) as NoteRow[];
@@ -442,7 +442,7 @@ class AppDB {
     });
   }
 
-  public togglePin(id: string): boolean {
+  public togglePin(id: Id): boolean {
     const now = new Date().toISOString();
     const result = this.togglePinStmt.get({ $updated_at: now, $id: id }) as
       | { pinned: BoolDb }
@@ -454,19 +454,19 @@ class AppDB {
     return validation(BoolSchema, decoded);
   }
 
-  public toggleManyPins(ids: string[]): boolean {
+  public toggleManyPins(ids: Id[]): boolean {
     if (ids.length === 0) return false;
     const now = new Date().toISOString();
     const result = this.toggleManyPinStmt.all({
       $updated_at: now,
       $ids: JSON.stringify(ids),
-    }) as { id: string }[];
+    }) as { id: Id }[];
     const flattened = result.map((r) => r.id);
     const rows = validation(IdsSchema, flattened);
     return rows.length > 0;
   }
 
-  public getTagsById(id: string): string[] {
+  public getTagsById(id: Id): string[] {
     const rows = this.getTagsByIdStmt.all({ $id: id }) as {
       tag_name: string;
     }[];
@@ -474,7 +474,7 @@ class AppDB {
     return validation(TagsSchema, tagArr);
   }
 
-  public getLinksById(id: string): Link[] {
+  public getLinksById(id: Id): Link[] {
     const rows = this.getLinksByIdStmt.all({ $id: id }) as Link[];
     return validation(LinksSchema, rows);
   }
@@ -495,13 +495,11 @@ class AppDB {
     });
   }
 
-  public getOldNotes(
-    ids: string[],
-  ): DeepExpand<Pick<Note, "created_at" | "title">>[] {
+  public getOldNotes(ids: Id[]): Pick<Note, "created_at" | "title">[] {
     if (ids.length === 0) return [];
     const rows = this.getOldTitleStmt.all({
       $ids: JSON.stringify(ids),
-    }) as DeepExpand<Pick<Note, "created_at" | "title">>[];
+    }) as Pick<Note, "created_at" | "title">[];
     if (rows.length !== ids.length) {
       throw new AppBackendError(AppErrorCode.DBError);
     }

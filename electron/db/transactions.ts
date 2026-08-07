@@ -6,11 +6,11 @@ import {
   DbBoolCodec,
   NoteListItemFromDB,
   type CreateTransaction,
+  type Id,
   type NoteListItem,
   type NoteRow,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
-import type { DeepExpand } from "@shared/types";
 import { DatabaseSync, type StatementSync } from "node:sqlite";
 
 class Transactions {
@@ -83,7 +83,7 @@ class Transactions {
     }
   }
 
-  private runDeleteManyLogic(ids: string[]): boolean {
+  private runDeleteManyLogic(ids: Id[]): boolean {
     if (ids.length === 0) return false;
     const result = this.deleteManyNotesStmt.run({
       $ids: JSON.stringify(ids),
@@ -91,36 +91,32 @@ class Transactions {
     return result.changes > 0;
   }
 
-  public safeDeleteMany(ids: string[]): boolean {
+  public safeDeleteMany(ids: Id[]): boolean {
     const result = this.transaction(() => this.runDeleteManyLogic(ids));
     return result;
   }
 
   private runCreateManyLogic(paramsArr: CreateTransaction[]) {
-    const results: DeepExpand<{
-      row: Omit<NoteRow, "content" | "plain_text">;
-      safeTags: string[];
-      safeLinks: string[];
-    }>[] = [];
+    const results = [];
     for (const params of paramsArr) {
       const { tags, links, ...noteParams } = params;
       const safeTags = tags ?? [];
       const safeLinks = links ?? [];
       const result = this.createNoteStmt.get(noteParams) as
-        | DeepExpand<Omit<NoteRow, "content" | "plain_text">>
+        | Omit<NoteRow, "content" | "plain_text">
         | undefined;
       if (!result) {
         throw new AppBackendError(AppErrorCode.DBError);
       }
       if (safeLinks.length > 0) {
         this.insertManyLinksStmt.run({
-          $source_id: result.id,
+          $source_id: result.id as Id,
           $links: JSON.stringify(safeLinks),
         });
       }
       if (safeTags.length > 0) {
         this.insertManyTagsStmt.run({
-          $note_id: result.id,
+          $note_id: result.id as Id,
           $tags: JSON.stringify(safeTags),
         });
       }
@@ -152,7 +148,7 @@ class Transactions {
     safeLinks: string[],
   ) {
     const result = this.createNoteStmt.get(noteParams) as
-      | DeepExpand<Omit<NoteRow, "content" | "plain_text">>
+      | Omit<NoteRow, "content" | "plain_text">
       | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
@@ -189,12 +185,12 @@ class Transactions {
     });
   }
 
-  private runDeleteLogic(id: string): boolean {
+  private runDeleteLogic(id: Id): boolean {
     const result = this.deleteNoteStmt.run({ $id: id });
     return result.changes > 0;
   }
 
-  public safeDelete(id: string): boolean {
+  public safeDelete(id: Id): boolean {
     return this.transaction(() => this.runDeleteLogic(id));
   }
 
@@ -204,7 +200,7 @@ class Transactions {
     safeLinks: string[],
   ) {
     const result = this.updateNoteStmt.get(noteParams) as
-      | DeepExpand<Omit<NoteRow, "content" | "plain_text">>
+      | Omit<NoteRow, "content" | "plain_text">
       | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);

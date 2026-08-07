@@ -1,15 +1,13 @@
 import { showNotification } from "@/api/api";
 import { handleImportNote } from "@/notes/note-actions";
+import { MAX_FILE_DROPS } from "@/utils/constants";
 import { getExtension } from "@/utils/note";
 import { createGlobalSpinner } from "@/utils/ui";
-import {
-  ALLOWED_IMPORT_EXTENSIONS,
-  MAX_FILE_DROPS,
-} from "@shared/constants/renderer-constants";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
-import type { ImportExtension } from "@shared/types";
+import { ALLOWED_IMPORT_EXTENSIONS } from "@shared/shared-constants";
+import type { ImportExtension } from "@shared/shared-types";
 
-function isValidExtension(extension: string): extension is ImportExtension {
+function isValidExtension(extension: unknown): extension is ImportExtension {
   return ALLOWED_IMPORT_EXTENSIONS.some((e) => e === extension);
 }
 

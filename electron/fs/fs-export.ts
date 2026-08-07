@@ -3,15 +3,11 @@ import { sanitizeExportString, writeAtomic } from "@electron/fs/fs-helpers";
 import { getPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
+import { processWithLimit } from "@electron/limiter";
 import { createHiddenPdfWindow } from "@electron/win";
-import {
-  CONCURRENCY_EXPORT_NORMAL,
-  CONCURRENCY_EXPORT_PDF,
-} from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
-import { processWithLimit } from "@shared/limiter";
 import type { ExportContent } from "@shared/schemas/request-schema";
-import type { DeepExpand, PDFAssets } from "@shared/types";
+import type { PDFAssets } from "@shared/shared-types";
 import type { BrowserWindow, PrintToPDFOptions } from "electron";
 import { app } from "electron";
 import fs from "fs/promises";
@@ -41,7 +37,7 @@ async function batchExport(folder: string, payload: ExportContent[]) {
   await fs.mkdir(assetsDir, { recursive: true });
   const exported = await processWithLimit(
     payload,
-    CONCURRENCY_EXPORT_NORMAL,
+    3,
     async (item: ExportContent) => {
       try {
         const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
@@ -115,28 +111,24 @@ async function singlePDFExport(
 
 async function batchPDFExport(
   folder: string,
-  payload: DeepExpand<Extract<ExportContent, { extension: "pdf" }>>[],
+  payload: Extract<ExportContent, { extension: "pdf" }>[],
 ) {
   await fs.mkdir(folder, { recursive: true });
   const absoluteTargetFolder = path.resolve(folder);
   const assets = await getPDFAssets();
   let hiddenWin = createHiddenPdfWindow();
   try {
-    const exported = await processWithLimit(
-      payload,
-      CONCURRENCY_EXPORT_PDF,
-      async (item) => {
-        const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
-        const filePath = await exportPDFNote({
-          win: hiddenWin,
-          landscape: item.landscape,
-          filePath: absoluteFilePath,
-          html: item.content,
-          assets,
-        });
-        return filePath;
-      },
-    );
+    const exported = await processWithLimit(payload, 1, async (item) => {
+      const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
+      const filePath = await exportPDFNote({
+        win: hiddenWin,
+        landscape: item.landscape,
+        filePath: absoluteFilePath,
+        html: item.content,
+        assets,
+      });
+      return filePath;
+    });
     return exported.filter((item) => item !== null);
   } catch (error) {
     mainLogger.appError("[batchPDFExport]: Error while exporting:", error);

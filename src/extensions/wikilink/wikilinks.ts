@@ -1,4 +1,5 @@
 import { noteStore } from "@/state/state";
+import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
@@ -8,7 +9,7 @@ const PASTE_REGEX = /\[\[([^\]]+)\]\]/g;
 const EXACT_UUID_REGEX = new RegExp(`^${UUID_PATTERN}$`, "i");
 
 export interface WikiLinkOptions {
-  onClick: (id: string) => void | Promise<void>;
+  onClick: (id: Id) => void | Promise<void>;
 }
 
 declare module "@tiptap/core" {
@@ -17,7 +18,7 @@ declare module "@tiptap/core" {
       insertWikiLink: (options: {
         from: number;
         to: number;
-        id: string;
+        id: Id;
       }) => ReturnType;
     };
   }
@@ -63,7 +64,10 @@ const WikiLink = Node.create<WikiLinkOptions>({
 
   renderHTML({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
-    const title = noteStore.get("noteIndex").get(id)?.title;
+    const validId = isNoteID(id);
+    const title = validId
+      ? noteStore.get("noteIndex").get(id)?.title
+      : undefined;
     const display = title || id;
     return [
       "span",
@@ -105,22 +109,23 @@ const WikiLink = Node.create<WikiLinkOptions>({
     if (EXACT_UUID_REGEX.test(text)) {
       return { type: "wikilink", attrs: { id: text } };
     }
-    const normalizedText = text.toLowerCase();
-    const noteId = noteStore.get("noteIndex").get(normalizedText)?.id;
-    if (noteId) {
-      return { type: "wikilink", attrs: { id: noteId } };
+    const foundNote = noteStore
+      .get("notes")
+      .find((n) => n.title.toLowerCase() === text.toLowerCase());
+    if (foundNote && isNoteID(foundNote.id)) {
+      return { type: "wikilink", attrs: { id: foundNote.id } };
     }
     return { type: "text", text: token.raw || "" };
   },
   renderText({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
-    if (!id) return "";
+    if (!id || !isNoteID(id)) return "";
     const title = noteStore.get("noteIndex").get(id)?.title;
     return title ? `[[${title}]]` : `[[${id}]]`;
   },
   renderMarkdown(node) {
     const id = String(node.attrs?.["id"] ?? "").trim();
-    if (!id) return "";
+    if (!id || !isNoteID(id)) return "";
     const title = noteStore.get("noteIndex").get(id)?.title;
     return title ? `[[${title}]]` : `[[${id}]]`;
   },

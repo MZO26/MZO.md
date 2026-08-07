@@ -19,16 +19,16 @@ import {
 } from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { sleep } from "@/utils/async";
+import { CHAR_BASELINE, YIELD_MS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { CHAR_BASELINE, YIELD_MS } from "@shared/constants/renderer-constants";
 import { ERROR_MESSAGES } from "@shared/errors";
-import type { NoteMenuPayload } from "@shared/schemas/note-schema";
+import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
 import type {
   ExportContent,
   OpenAutoExportPathRequest,
 } from "@shared/schemas/request-schema";
-import type { TableAction } from "@shared/types";
+import type { TableAction } from "@shared/shared-types";
 import { generateHTML } from "@tiptap/core";
 
 function triggerTableMenu(action: TableAction) {
@@ -71,7 +71,7 @@ function triggerNoteItemMenu(payload: NoteMenuPayload) {
 }
 
 async function triggerSingleExport(
-  id: string,
+  id: Id,
   extension: ExportContent["extension"],
 ) {
   const result = await getExportContent(id, extension);
@@ -146,7 +146,7 @@ async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
   }
 }
 
-async function triggerCopyRichText(id: string) {
+async function triggerCopyRichText(id: Id) {
   const result = await getNoteById(id);
   if (!result.success) {
     rendererLogger.appError(
@@ -176,7 +176,7 @@ async function triggerCopyRichText(id: string) {
   }
 }
 
-async function triggerSingleDelete(id: string) {
+async function triggerSingleDelete(id: Id) {
   const titleEl = requireElement<HTMLSpanElement>(
     ".delete-dialog-title",
     deleteDialog,
@@ -190,7 +190,7 @@ async function triggerSingleDelete(id: string) {
   await handleDeleteNote(id);
 }
 
-async function triggerPin(id: string) {
+async function triggerPin(id: Id) {
   const result = await pin(id);
   if (!result.success) {
     rendererLogger.appError(
@@ -212,7 +212,7 @@ async function triggerPin(id: string) {
   });
 }
 
-async function triggerDuplicate(id: string) {
+async function triggerDuplicate(id: Id) {
   const result = await getNoteById(id);
   if (!result.success) {
     rendererLogger.appError(
@@ -229,26 +229,26 @@ async function triggerDuplicate(id: string) {
   );
 }
 
-const syncVersions = new Map<string, number>();
+const syncVersions = new Map<Id, number>();
 
-function beginSyncVersion(id: string) {
+function beginSyncVersion(id: Id) {
   if (stateStore.get("activeId") !== id) return null;
   const next = (syncVersions.get(id) ?? 0) + 1;
   syncVersions.set(id, next);
   return next;
 }
 
-function isSyncVersionCurrent(id: string, version: number) {
+function isSyncVersionCurrent(id: Id, version: number) {
   return stateStore.get("activeId") === id && syncVersions.get(id) === version;
 }
 
-function endSyncVersion(id: string, version: number) {
+function endSyncVersion(id: Id, version: number) {
   if (syncVersions.get(id) === version) {
     syncVersions.delete(id);
   }
 }
 
-async function triggerSyncCheck(id: string) {
+async function triggerSyncCheck(id: Id) {
   const version = beginSyncVersion(id);
   if (version == null) return;
   try {

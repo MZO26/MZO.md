@@ -4,9 +4,9 @@ import { listEl, switchDialog } from "@/settings/dialog-init";
 import { noteStore, stateStore } from "@/state/state";
 import { createInfoSpan } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
+import type { QuickSwitchDisplayNote } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
-import type { Link, NoteListItem } from "@shared/schemas/note-schema";
-import type { QuickSwitchDisplayNote } from "@shared/types";
+import type { Id, Link, NoteListItem } from "@shared/schemas/note-schema";
 
 function initQuickSwitcher() {
   const editor = getAppItem("editor");
@@ -17,7 +17,7 @@ function initQuickSwitcher() {
       switchDialog.close();
       return;
     }
-    const activeId = stateStore.get("activeId");
+    const activeId = stateStore.get("activeId") as Id;
     await waitForFlush(activeId);
     const { recentNotes, noteIndex } = noteStore.getState();
     const activeNote = activeId ? noteIndex.get(activeId) : undefined;
@@ -25,8 +25,8 @@ function initQuickSwitcher() {
     const recentIds = new Set(recentNotes);
     // backlinks and outgoing ones do need to be
     // recomputed and manually put together
-    const backlinkIds = new Set<string>();
-    const outgoingIds = new Set<string>();
+    const backlinkIds = new Set<Id>();
+    const outgoingIds = new Set<Id>();
     const displayNotes: QuickSwitchDisplayNote[] = [];
     for (const id of recentNotes) {
       const note = noteIndex.get(id);
@@ -127,7 +127,7 @@ function initQuickSwitcher() {
     }
   }
 
-  function getSectionLabel(section: string) {
+  function getSectionLabel(section: QuickSwitchDisplayNote["section"]) {
     switch (section) {
       case "recent":
         return "Recent";
@@ -136,6 +136,7 @@ function initQuickSwitcher() {
       case "outgoing":
         return "Links";
       default:
+        section satisfies never;
         return "";
     }
   }

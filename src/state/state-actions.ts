@@ -9,9 +9,10 @@ import {
   type NoteStore,
 } from "@/state/state";
 import { compareNotes, updateNoteCount } from "@/utils/note";
+import type { SidebarParams } from "@/utils/types";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import type { Result, SidebarParams } from "@shared/types";
+import type { Result } from "@shared/shared-types";
 
 let sidebarUpdatePending = false;
 let selectionUpdatePending = false;

@@ -1,6 +1,6 @@
-import { DEFAULT_SETTINGS } from "@shared/constants/setting-constants";
 import { createLogger } from "@shared/log";
-import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { Id, NoteListItem } from "@shared/schemas/note-schema";
+import { DEFAULT_SETTINGS } from "@shared/shared-constants";
 
 interface Store<T> {
   getState: () => Readonly<T>;
@@ -20,10 +20,10 @@ interface Store<T> {
 }
 
 interface AppState {
-  activeId: string | null;
+  activeId: Id | null;
   searchQuery: string;
   selectionMode: boolean;
-  selectedIds: Set<string>;
+  selectedIds: Set<Id>;
   activeTag: string | null;
   focus: boolean;
 }
@@ -32,23 +32,23 @@ const STATE_STORE: AppState = {
   activeId: null,
   searchQuery: "",
   selectionMode: false,
-  selectedIds: new Set<string>(),
+  selectedIds: new Set<Id>(),
   activeTag: null,
   focus: false,
 };
 
 interface NoteStore {
   notes: readonly NoteListItem[];
-  visibleIds: string[];
-  noteIndex: Map<string, NoteListItem>;
-  recentNotes: string[];
-  searchSnippets: Record<string, string>;
+  visibleIds: Id[];
+  noteIndex: Map<Id, NoteListItem>;
+  recentNotes: Id[];
+  searchSnippets: Record<Id, string>;
 }
 
 const NOTE_STORE: NoteStore = {
   notes: [],
   visibleIds: [],
-  noteIndex: new Map<string, NoteListItem>(),
+  noteIndex: new Map<Id, NoteListItem>(),
   recentNotes: [],
   searchSnippets: {},
 };

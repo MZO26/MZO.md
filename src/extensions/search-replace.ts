@@ -1,4 +1,4 @@
-import { MAX_SEARCH_LENGTH } from "@shared/constants/renderer-constants";
+import { MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Extension, type CommandProps } from "@tiptap/core";
 import type { EditorState } from "@tiptap/pm/state";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";

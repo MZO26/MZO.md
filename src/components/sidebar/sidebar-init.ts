@@ -21,12 +21,13 @@ import {
 } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
+import { SELECTION_ACTIONS } from "@/utils/constants";
 import { getAppItem, getUIItems, registerAppEvents } from "@/utils/registry";
 import { isSelectionActive } from "@/utils/shortcuts";
+import type { SelectionAction } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
-import { SELECTION_ACTIONS } from "@shared/constants/renderer-constants";
+import { isNoteID } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
-import type { SelectionAction } from "@shared/types";
 
 function initNotesSidebar() {
   const sidebar = getAppItem("sidebar");
@@ -114,7 +115,7 @@ function applySidebarListeners(
     e.preventDefault();
     const noteElement = e.target.closest<HTMLDivElement>(".note-item");
     const id = noteElement?.getAttribute("data-id");
-    if (!id || !noteElement) return;
+    if (!isNoteID(id) || !noteElement) return;
     const isPinned = noteElement.getAttribute("data-pinned") === "true";
     window.electronAPI.showContextMenu("note", {
       id,
@@ -130,10 +131,10 @@ function applySidebarListeners(
       if (actionBtn) {
         e.preventDefault();
         e.stopPropagation();
-        const noteElement = e.target.closest<HTMLDivElement>(".note-item");
-        const id = noteElement?.getAttribute("data-id");
-        if (!id || !noteElement) return;
-        const isPinned = noteElement.getAttribute("data-pinned") === "true";
+        const noteItem = e.target.closest<HTMLDivElement>(".note-item");
+        const id = noteItem?.getAttribute("data-id");
+        if (!isNoteID(id) || !noteItem) return;
+        const isPinned = noteItem.getAttribute("data-pinned") === "true";
         window.electronAPI.showContextMenu("note", {
           id,
           pinned: isPinned,
@@ -152,7 +153,7 @@ function applySidebarListeners(
       }
       const noteItem = e.target.closest<HTMLDivElement>(".note-item");
       const id = noteItem?.getAttribute("data-id");
-      if (!id) return;
+      if (!isNoteID(id)) return;
       if (stateStore.get("selectionMode") === true) {
         addToSelection(id);
         return;

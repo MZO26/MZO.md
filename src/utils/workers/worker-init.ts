@@ -1,9 +1,6 @@
+import { IMAGE_MAX_WIDTH, IMAGE_QUALITY } from "@/utils/constants";
+import type { ImageCompressionPayload, WorkerResult } from "@/utils/types";
 import { createWorker } from "@/utils/workers/worker-factory";
-import {
-  IMAGE_MAX_WIDTH,
-  IMAGE_QUALITY,
-} from "@shared/constants/renderer-constants";
-import type { ImageCompressionPayload, WorkerResult } from "@shared/types";
 
 const imageWorker =
   typeof window !== "undefined"

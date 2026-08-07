@@ -1,8 +1,8 @@
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { MIN_SEARCH_LENGTH } from "@shared/constants/renderer-constants";
 import { AppErrorCode } from "@shared/errors";
 import type { SearchQuery, SearchResult } from "@shared/schemas/note-schema";
+import { MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 import type { DatabaseSync, StatementSync } from "node:sqlite";
 
 class NotesSearch {
@@ -127,7 +127,7 @@ class NotesSearch {
     }
   }
 
-  public normalizeFTSQuery(input: string) {
+  public normalizeFTSQuery(input: SearchQuery) {
     const trimmed = input.trim();
     if (trimmed.length < MIN_SEARCH_LENGTH) return "";
     const words: string[] = [];

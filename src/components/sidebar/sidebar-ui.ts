@@ -7,6 +7,11 @@ import { applyView } from "@/components/sidebar/sidebar-views";
 import { noteStore } from "@/state/state";
 import { createAsyncHandler, debounce } from "@/utils/async";
 import {
+  DEBOUNCE_MS,
+  SIDEBAR_ALL_NOTES_LIMIT,
+  UNTAGGED,
+} from "@/utils/constants";
+import {
   createIconButton,
   createInfoSpan,
   createTemplateCloner,
@@ -17,12 +22,7 @@ import {
 import { renderIcons } from "@/utils/icons";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
-import {
-  DEBOUNCE_MS,
-  SIDEBAR_ALL_NOTES_LIMIT,
-  UNTAGGED,
-} from "@shared/constants/renderer-constants";
-import type { AllTagsMenu, FilterMode, SidebarParams } from "@shared/types";
+import type { AllTagsMenu, FilterMode, SidebarParams } from "@/utils/types";
 
 let allTagsMenu: AllTagsMenu | null = null;
 
@@ -32,19 +32,18 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   let isOpen = false;
   popover.className = "tags-popover";
   content.className = "tags-popover-content";
-  const header = createInfoSpan("All Tags", "tags-popover-title");
-  const untaggedButton = createIconButton("tag-x", "Untagged");
+  const untaggedButton = createIconButton("TagX", "Untagged");
   untaggedButton.className = "untagged-btn";
-  header.appendChild(untaggedButton);
   const inputWrapper = document.createElement("div");
   inputWrapper.className = "input-wrapper";
   const filterInput = document.createElement("input");
   filterInput.type = "search";
-  filterInput.placeholder = "Filter tags...";
+  filterInput.placeholder = "Filter all tags...";
   filterInput.title = "Filter tags";
   filterInput.className = "search-input";
   inputWrapper.appendChild(filterInput);
-  popover.append(header, inputWrapper, content);
+  content.prepend(untaggedButton);
+  popover.append(inputWrapper, content);
   document.body.appendChild(popover);
   renderIcons(popover);
 
@@ -167,7 +166,7 @@ function createActiveTagHeader(tag: string): HTMLDivElement {
   header.className = "active-tag-header";
   const label = document.createElement("span");
   label.textContent = getTagDisplayLabel(tag);
-  const clearBtn = createIconButton("x");
+  const clearBtn = createIconButton("X");
   clearBtn.className = "active-tag-clear-btn";
   clearBtn.setAttribute("data-action", "clear-active-tag");
   header.append(label, clearBtn);
@@ -210,6 +209,7 @@ function renderSidebarEmptyState(sidebarParams: SidebarParams) {
   const emptyState = getSidebarEmptyStateClone();
   updateSidebarEmptyState(emptyState, sidebarParams.query);
   sidebar.replaceChildren(emptyState);
+  renderIcons(emptyState);
 }
 
 function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
@@ -222,18 +222,12 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
     ".empty-state-description",
     emptyState,
   );
-  const iconEl = requireElement<HTMLElement>("#sidebar-empty-icon", emptyState);
-  const newIcon = document.createElement("i");
   if (isSearch) {
-    newIcon.setAttribute("data-lucide", "search-x");
     titleEl.textContent = "No results found";
     descEl.replaceChildren("No matching notes found");
   } else {
-    newIcon.setAttribute("data-lucide", "library");
     titleEl.textContent = "No notes here";
   }
-  iconEl.replaceChildren(newIcon);
-  renderIcons(emptyState);
 }
 
 function setSidebarState(element: HTMLDivElement, collapsed: boolean) {
@@ -249,7 +243,7 @@ function toggleSidebar() {
 }
 
 function handleSidebarChange(sidebarParams: SidebarParams) {
-  if (sidebarParams.visibleNotes.length === 0) {
+  if (sidebarParams.visibleNotes.length === 0 && !sidebarParams.activeTag) {
     renderSidebarEmptyState(sidebarParams);
     return;
   }

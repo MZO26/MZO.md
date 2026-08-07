@@ -3,7 +3,11 @@ import { noteStore, stateStore } from "@/state/state";
 import { formatNoteDate } from "@/utils/date";
 import { createInfoSpan } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import type { NoteListItem } from "@shared/schemas/note-schema";
+import {
+  isNoteID,
+  type Id,
+  type NoteListItem,
+} from "@shared/schemas/note-schema";
 import { Extension } from "@tiptap/core";
 
 function buildPreviewCard(
@@ -41,7 +45,7 @@ export const WikiLinkPreview = Extension.create({
     return {
       wikilink: null as HTMLDivElement | null,
       timer: undefined as number | undefined,
-      activeId: "",
+      activeId: "" as Id | string,
       handlers: null as PreviewHandlers | null,
     };
   },
@@ -59,6 +63,7 @@ export const WikiLinkPreview = Extension.create({
     };
     const show = (wikilink: HTMLElement) => {
       const id = wikilink.dataset["id"];
+      if (!isNoteID(id)) return;
       if (
         !id ||
         id === stateStore.get("activeId") ||

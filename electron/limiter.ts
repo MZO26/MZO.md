@@ -4,7 +4,7 @@ import { AppErrorCode } from "@shared/errors";
 async function processWithLimit<T, R>(
   items: readonly T[],
   concurrency: number,
-  processItem: (item: T, index: number) => Promise<R>,
+  processItem: (item: Readonly<T>, index: number) => Promise<R>,
 ): Promise<R[]> {
   if (!Number.isInteger(concurrency) || concurrency < 1) {
     throw new AppBackendError(AppErrorCode.CancelledOperation);

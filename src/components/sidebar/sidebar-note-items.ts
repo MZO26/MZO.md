@@ -1,11 +1,11 @@
+import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import { formatNoteDate } from "@/utils/date";
 import { createTemplateCloner, isDiv } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { DOMPURIFY_CONFIG } from "@shared/constants/config-constants";
-import { UNTITLED } from "@shared/constants/renderer-constants";
+import type { SnippetGenParams } from "@/utils/types";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import type { SnippetGenParams } from "@shared/types";
+import { UNTITLED } from "@shared/shared-constants";
 import DOMPurify from "dompurify";
 
 const getNoteItemClone = createTemplateCloner("noteItemTemplate", isDiv);
@@ -43,7 +43,7 @@ function createNoteItem(
   const titleEl = item.querySelector<HTMLSpanElement>(".note-title");
   if (titleEl) titleEl.textContent = safeTitle;
   const dateEl = item.querySelector<HTMLDivElement>(".note-date");
-  if (dateEl) dateEl.textContent = formatNoteDate(note.updated_at);
+  if (dateEl) dateEl.textContent = formatNoteDate(note.created_at);
   const tagsContainer = item.querySelector<HTMLDivElement>(".note-tags");
   if (tagsContainer) {
     tagsContainer.replaceChildren();

@@ -2,13 +2,13 @@ import { rendererLogger } from "@/app";
 import { isValidExtension } from "@/components/sidebar/sidebar-file-drop";
 import { processAndInsertImages } from "@/extensions/image/image";
 import { normalizeFileContent } from "@/notes/import-actions";
-import { getExtension } from "@/utils/note";
 import {
   ALLOWED_TYPES,
-  MAX_BYTES_FILE,
   MAX_DROP_LENGTH,
   MAX_DROP_PASTE_CHARACTERS,
-} from "@shared/constants/renderer-constants";
+} from "@/utils/constants";
+import { getExtension } from "@/utils/note";
+import { MAX_BYTES_FILE } from "@shared/shared-constants";
 import { Editor, Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 

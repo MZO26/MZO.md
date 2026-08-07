@@ -1,6 +1,6 @@
-import { THEME_DATA } from "@shared/constants/main-constants";
+import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import type { NativeWindowColors } from "@shared/types";
+import type { NativeWindowColors } from "@shared/shared-types";
 import { BrowserWindow, nativeTheme } from "electron";
 
 // updates the title bar overlay accordingly
@@ -36,8 +36,48 @@ function onOSThemeChange(win: BrowserWindow, store: AppSettings["theme"]) {
   for (const window of BrowserWindow.getAllWindows()) {
     window.setBackgroundColor(newWindowTheme.backgroundColor);
     window.setTitleBarOverlay(newWindowTheme.overlayOptions);
-    window.webContents.send("theme-changed", resolvedTheme);
+    window.webContents.send(IPC_CHANNELS.THEME_CHANGED, resolvedTheme);
   }
 }
+
+const THEME_DATA: Record<
+  Exclude<Theme, "system">,
+  {
+    color: string;
+    symbolColor: string;
+    background: string;
+    isDark: boolean;
+    focus: string;
+  }
+> = {
+  light: {
+    color: "#fcfcfc", // --bg-sidebar
+    symbolColor: "#18181b", // --text-main
+    background: "#fcfcfc", // --bg-sidebar
+    isDark: false,
+    focus: "#fcfcfc", // --bg-editor
+  },
+  dark: {
+    color: "#1d1d20", // --bg-sidebar
+    symbolColor: "#a1a1aa", // --text-muted
+    background: "#1d1d20", // --bg-sidebar
+    isDark: true,
+    focus: "#1d1d20", // --bg-editor
+  },
+  light_warm: {
+    color: "#f8f7f3", // --bg-sidebar
+    symbolColor: "#5e5b56", // --text-muted
+    background: "#f8f7f3", // --bg-editor
+    isDark: false,
+    focus: "#f8f7f3", // --bg-editor
+  },
+  dark_warm: {
+    color: "#1e1b17", // --bg-sidebar
+    symbolColor: "#9e9890", // --text-muted
+    background: "#1e1b17", // --bg-sidebar
+    isDark: true,
+    focus: "#1e1b17", // --bg-editor
+  },
+} as const;
 
 export { getTitleBarOverlay, initTheme, onOSThemeChange };

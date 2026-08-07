@@ -13,16 +13,17 @@ import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
+import type { SelectionAction } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
-import { MAX_CHARACTERS } from "@shared/constants/renderer-constants";
-import type { SelectionAction } from "@shared/types";
+import type { Id } from "@shared/schemas/note-schema";
+import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { generateHTML, generateText } from "@tiptap/core";
 
 function setSelectionMode(enabled: boolean) {
   const prevSelectedIds = stateStore.get("selectedIds");
   const nextSelectedIds = enabled
-    ? new Set<string>(prevSelectedIds)
-    : new Set<string>();
+    ? new Set<Id>(prevSelectedIds)
+    : new Set<Id>();
   stateStore.setState({
     selectionMode: enabled,
     selectedIds: nextSelectedIds,
@@ -39,7 +40,7 @@ function selectAllVisibleNotes() {
   });
 }
 
-function addToSelection(id: string) {
+function addToSelection(id: Id) {
   const prevSelectedIds = stateStore.get("selectedIds");
   const nextSelectedIds = new Set(prevSelectedIds);
   if (nextSelectedIds.has(id)) {
@@ -56,7 +57,7 @@ function addToSelection(id: string) {
 
 async function getSelectionAction(
   action: SelectionAction,
-  selectedIds: Set<string>,
+  selectedIds: Set<Id>,
 ) {
   switch (action) {
     case "cancel":
@@ -80,7 +81,7 @@ async function getSelectionAction(
   }
 }
 
-async function copyRichTextSelection(selectedIds: string[]) {
+async function copyRichTextSelection(selectedIds: Id[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const { notes, noteIndex } = noteStore.getState();
   const allSelected =
@@ -139,7 +140,7 @@ async function copyRichTextSelection(selectedIds: string[]) {
   }
 }
 
-async function exportSelection(selectedIds: string[]) {
+async function exportSelection(selectedIds: Id[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const { notes, noteIndex } = noteStore.getState();
   const allSelected =
@@ -181,7 +182,7 @@ async function exportSelection(selectedIds: string[]) {
   );
 }
 
-async function pinSelection(selectedIds: string[]) {
+async function pinSelection(selectedIds: Id[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const pinned = await pinMany(selectedIds);
   if (!pinned.success) {

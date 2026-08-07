@@ -1,11 +1,12 @@
 import { rendererLogger } from "@/app";
+import { SELECTION_ACTIONS } from "@/utils/constants";
 import { createIconButton } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { getAppItem, getUIItem } from "@/utils/registry";
-import { SELECTION_ACTIONS } from "@shared/constants/renderer-constants";
-import type { SelectionParams } from "@shared/types";
+import type { SelectionAction, SelectionParams } from "@/utils/types";
+import { isNoteID, type Id } from "@shared/schemas/note-schema";
 
-function getActionLabel(actionId: string, selectedCount: number): string {
+function getActionLabel(actionId: SelectionAction, selectedCount: number) {
   switch (actionId) {
     case "cancel":
       return "Cancel selection";
@@ -18,6 +19,7 @@ function getActionLabel(actionId: string, selectedCount: number): string {
     case "delete":
       return `Delete ${selectedCount} ${selectedCount === 1 ? "note" : "notes"}`;
     default:
+      actionId satisfies never;
       return "";
   }
 }
@@ -40,10 +42,7 @@ function initSelectionFooter() {
   selectionFooter.dataset["initialized"] = "true";
 }
 
-function updateSelectionFooter(
-  selectedIds: Set<string>,
-  selectionMode: boolean,
-) {
+function updateSelectionFooter(selectedIds: Set<Id>, selectionMode: boolean) {
   const selectedCount = selectedIds.size;
   const selectionFooter = getUIItem("selectionFooter");
   selectionFooter.classList.toggle("collapsed", !selectionMode);
@@ -65,6 +64,7 @@ function updateSelectionUI(selectionParams: SelectionParams) {
   const noteItems = sidebar.querySelectorAll<HTMLDivElement>(".note-item");
   for (const item of noteItems) {
     const id = item.getAttribute("data-id");
+    if (!isNoteID(id)) continue;
     const isSelected = selectionMode && !!id && selectedIds.has(id);
     item.classList.toggle("selected", isSelected);
     const checkbox = item.querySelector<HTMLInputElement>(".select-checkbox");

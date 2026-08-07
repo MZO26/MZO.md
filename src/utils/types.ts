@@ -1,25 +1,17 @@
+import type { APP_ICONS } from "@/utils/icons";
+import type { WorkerErrorCode } from "@shared/errors";
 import type {
-  ALLOWED_IMPORT_EXTENSIONS,
+  Id,
+  NoteListItem,
+  SearchResult,
+} from "@shared/schemas/note-schema";
+import type { AppSettings, ExportFormat } from "@shared/schemas/store-schema";
+import type {
   APP_EVENTS,
-  CODE_THEMES,
-  QUICK_ACTIONS,
-  SELECTION_ACTIONS,
+  SETTINGS_CATEGORIES,
   SIDEBAR_FILTER_MODES,
-} from "@shared/constants/renderer-constants";
-import type { AppErrorCode, WorkerErrorCode } from "@shared/errors";
-import type { NoteListItem, SearchResult } from "@shared/schemas/note-schema";
-import type {
-  AppSettings,
-  ExportFormat,
-  Theme,
-} from "@shared/schemas/store-schema";
+} from "@shared/shared-constants";
 import type { Editor, SetContentOptions } from "@tiptap/core";
-import type { SETTINGS_CATEGORIES } from "./constants/setting-constants";
-
-type NativeWindowColors = {
-  backgroundColor: string;
-  overlayOptions: TitleBarOverlayOptions;
-};
 
 type LinkAttributes = {
   href?: string;
@@ -39,47 +31,7 @@ type MathOptions =
       initialValue?: string;
     };
 
-type TitleBarOverlayOptions = {
-  color: string;
-  symbolColor: string;
-  height: number;
-  focus?: boolean;
-};
-
-type UrlDecision = "allow" | "block" | "external";
-
-type ResolvedTheme = Extract<Theme, "light" | "dark">;
-
 type SelectOption<T extends string | boolean> = { value: T; label: string };
-
-type Code = (typeof CODE_THEMES)[number];
-
-type TableAction =
-  | "addRowBefore"
-  | "addRowAfter"
-  | "addColumnBefore"
-  | "addColumnAfter"
-  | "deleteRow"
-  | "deleteColumn"
-  | "deleteTable";
-
-type Expand<T> = T extends unknown ? { [K in keyof T]: T[K] } : never;
-
-type DeepExpand<T> = T extends object
-  ? { [K in keyof T]: DeepExpand<T[K]> }
-  : T;
-
-type Success<T> = {
-  success: true;
-  data: T;
-};
-
-type Failure<E = AppErrorCode> = {
-  success: false;
-  error: E;
-};
-
-type Result<T, E = AppErrorCode> = Success<T> | Failure<E>;
 
 type WorkerSuccess<T> = {
   success: true;
@@ -103,7 +55,7 @@ type Action = {
   run: (args?: Editor | null) => void;
   isActive?: (args: Editor) => boolean;
   isDisabled?: (args: Editor) => boolean;
-  icon: string;
+  icon: AppIcons;
 };
 
 type Divider = {
@@ -117,13 +69,7 @@ type ActionMap = Record<string, ToolbarItem>;
 type Metadata = {
   snippet: string;
   tags: string[];
-  links: string[];
-};
-
-type ImportStats = {
-  total: number;
-  duplicates: number;
-  errors: number;
+  links: Id[];
 };
 
 type ImageCompressionPayload = {
@@ -133,15 +79,7 @@ type ImageCompressionPayload = {
   quality: number;
 };
 
-type PDFAssets = { template: string; css: string };
-
-type ImportExtension = (typeof ALLOWED_IMPORT_EXTENSIONS)[number];
-
-type ContentType = ImportExtension;
-
 type EditorContentType = NonNullable<SetContentOptions["contentType"]>;
-
-type SettingsCategory = (typeof SETTINGS_CATEGORIES)[number];
 
 interface AppRegistry {
   ui: Partial<UIRegistry>;
@@ -181,9 +119,9 @@ interface TemplateRegistry {
 
 type SidebarParams = {
   visibleNotes: readonly NoteListItem[];
-  searchSnippets: Record<string, string>;
+  searchSnippets: Record<Id, string>;
   query: string;
-  activeId: string | null;
+  activeId: Id | null;
   activeTag?: string | null;
   display: AppSettings["note_item_display"];
 };
@@ -191,20 +129,18 @@ type SidebarParams = {
 type SnippetGenParams = {
   item: HTMLDivElement;
   note: NoteListItem;
-  snippets: Record<string, string>;
+  snippets: Record<Id, string>;
   display: AppSettings["note_item_display"];
 };
 
 type SelectionParams = {
   selectionMode: boolean;
-  selectedIds: Set<string>;
+  selectedIds: Set<Id>;
 };
 
-type QuickSwitchDisplayNote = Expand<
-  Pick<NoteListItem, "id" | "title"> & {
-    section: "recent" | "backlink" | "outgoing";
-  }
->;
+type QuickSwitchDisplayNote = Pick<NoteListItem, "id" | "title"> & {
+  section: "recent" | "backlink" | "outgoing";
+};
 
 type AllTagsMenu = {
   popover: HTMLDivElement;
@@ -215,13 +151,30 @@ type AllTagsMenu = {
   close(): void;
 };
 
-type SelectionAction = (typeof SELECTION_ACTIONS)[number]["id"];
+// number to get keys of array (index) and then indexed access
+// has to be as const so ts doesn't infer string
+type SelectionAction =
+  | "cancel"
+  | "pin"
+  | "export"
+  | "copy-rich-text"
+  | "delete";
 
-type QuickAction = (typeof QUICK_ACTIONS)[number]["id"];
+type SelectionActionConfig = { id: SelectionAction; icon: AppIcons };
+
+type SettingsCategory = (typeof SETTINGS_CATEGORIES)[number];
+
+type AppIcons = keyof typeof APP_ICONS;
+
+type QuickAction =
+  | "open-path"
+  | "backup-db"
+  | "backup-notes"
+  | "backup-db-restore";
 
 type QuickActionConfig = {
   id: QuickAction;
-  icon: string;
+  icon: AppIcons;
   label: string;
 };
 
@@ -229,9 +182,9 @@ type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
 
 type AppEvents = (typeof APP_EVENTS)[number];
 
-type MappedMatches = Expand<
-  Omit<SearchResult, "search_match"> & { snippet: string }
->[];
+type MappedMatches = (Omit<SearchResult, "search_match"> & {
+  snippet: string;
+})[];
 
 type ImageContent = (
   | {
@@ -253,44 +206,31 @@ export type {
   ActionMap,
   AllTagsMenu,
   AppEvents,
+  AppIcons,
   AppRegistry,
-  Code,
-  ContentType,
   CoreRegistry,
-  DeepExpand,
   EditorContentType,
-  Expand,
   ExportFormat,
-  Failure,
   FilterMode,
   ImageCompressionPayload,
   ImageContent,
-  ImportExtension,
-  ImportStats,
   LinkAttributes,
   MappedMatches,
   MathOptions,
   Metadata,
-  NativeWindowColors,
-  PDFAssets,
   QuickAction,
   QuickActionConfig,
   QuickSwitchDisplayNote,
-  ResolvedTheme,
-  Result,
   SelectionAction,
+  SelectionActionConfig,
   SelectionParams,
   SelectOption,
   SettingsCategory,
   SidebarParams,
   SnippetGenParams,
-  Success,
-  TableAction,
   TemplateRegistry,
-  TitleBarOverlayOptions,
   ToolbarItem,
   UIRegistry,
-  UrlDecision,
   WorkerRequest,
   WorkerResult,
 };

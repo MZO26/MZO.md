@@ -1,17 +1,14 @@
 import { setSettings, setTheme } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { settingsStore } from "@/state/state";
+import { CODE_THEME_MAP, THEME_MAP } from "@/utils/constants";
 import { isFocusActive } from "@/utils/shortcuts";
-import {
-  CODE_THEME_MAP,
-  THEME_MAP,
-} from "@shared/constants/renderer-constants";
 import type {
   AppSettings,
   CodeTheme,
   Theme,
 } from "@shared/schemas/store-schema";
-import type { ResolvedTheme, Result } from "@shared/types";
+import type { ResolvedTheme, Result } from "@shared/shared-types";
 
 function resolveTheme(theme: Theme): ResolvedTheme {
   if (theme === "system") {

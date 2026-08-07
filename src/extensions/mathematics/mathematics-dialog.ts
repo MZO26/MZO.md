@@ -1,7 +1,7 @@
 import { mathDialog } from "@/settings/dialog-init";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import type { MathOptions } from "@shared/types";
+import type { MathOptions } from "@/utils/types";
 import type { Editor } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 

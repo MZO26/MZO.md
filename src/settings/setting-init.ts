@@ -9,11 +9,11 @@ import {
 } from "@/settings/setting-factory";
 import { setSelectListeners } from "@/settings/setting-items-init";
 import { createAsyncHandler } from "@/utils/async";
+import { QUICK_ACTIONS } from "@/utils/constants";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
-import { QUICK_ACTIONS } from "@shared/constants/renderer-constants";
+import type { QuickAction } from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import type { QuickAction } from "@shared/types";
 
 async function initAppSettings(settings: AppSettings) {
   const buttonsContainer = createSettingsMenu();

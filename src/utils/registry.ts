@@ -1,13 +1,13 @@
 import { initEditor } from "@/components/editor/editor-init";
 import { requireElement } from "@/utils/dom";
-import type { AppSettings } from "@shared/schemas/store-schema";
 import type {
   AppEvents,
   AppRegistry,
   CoreRegistry,
   TemplateRegistry,
   UIRegistry,
-} from "@shared/types";
+} from "@/utils/types";
+import type { AppSettings } from "@shared/schemas/store-schema";
 
 // set settings to empty object to avoid undefined errors, will be populated in app.ts on startup
 const registry = {

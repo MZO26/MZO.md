@@ -1,11 +1,11 @@
 import { rendererLogger } from "@/app";
 import { processAndInsertImages } from "@/extensions/image/image";
-import { DOMPURIFY_CONFIG } from "@shared/constants/config-constants";
 import {
   ALLOWED_TYPES,
+  DOMPURIFY_CONFIG,
   MAX_DROP_LENGTH,
   MAX_DROP_PASTE_CHARACTERS,
-} from "@shared/constants/renderer-constants";
+} from "@/utils/constants";
 import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";

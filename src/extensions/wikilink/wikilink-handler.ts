@@ -1,6 +1,6 @@
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { noteStore, stateStore } from "@/state/state";
-import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
@@ -8,7 +8,7 @@ type AutocompleteState = {
   from: number;
   to: number;
   autocompleteText: string;
-  noteId: string;
+  noteId: Id;
 };
 
 const autocompleteKey = new PluginKey<AutocompleteState>(

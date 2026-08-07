@@ -284,19 +284,18 @@ body.is-dragging * {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.search-icon,
-#sidebar-empty-icon {
-  color: var(--text-muted);
-  margin: 8px;
-  flex-shrink: 0;
-}
-
 .search-icon {
+  color: var(--text-muted);
+  margin: 5px;
+  flex-shrink: 0;
   width: 15px;
   height: 15px;
 }
 
-#sidebar-empty-icon {
+#sidebar-empty-state-icon {
+  color: var(--text-muted);
+  margin: 8px;
+  flex-shrink: 0;
   width: 50px;
   height: 50px;
 }
@@ -312,6 +311,7 @@ body.is-dragging * {
   outline: none;
   width: 100%;
   text-overflow: ellipsis;
+  justify-content: center;
 }
 
 .replace-input-editor {

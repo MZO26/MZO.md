@@ -18,6 +18,7 @@ import {
 } from "@electron/fs/fs-export";
 import { batchImport } from "@electron/fs/fs-import";
 import { checkSyncState } from "@electron/fs/fs-sync";
+import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
   resolveAutoExport,
@@ -25,10 +26,10 @@ import {
 } from "@electron/ipc/ipc-helpers";
 import {
   checkRateLimit,
+  LIMITS,
   result,
   validation,
 } from "@electron/ipc/ipc-validation";
-import { LIMITS } from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import { DbContentCodec } from "@shared/schemas/editor-schema";
 import {
@@ -49,25 +50,25 @@ import {
 import { BrowserWindow, dialog, ipcMain } from "electron";
 
 function registerNoteIpc(win: BrowserWindow) {
-  ipcMain.handle("note:get-all", (e) => {
+  ipcMain.handle(IPC_CHANNELS.GET_ALL_NOTES, (e) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:get-all", LIMITS.READ_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.GET_ALL_NOTES, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       return db.getAll();
     });
   });
 
-  ipcMain.handle("note:get-all-backup", (e) => {
+  ipcMain.handle(IPC_CHANNELS.GET_ALL_NOTES_BACKUP, (e) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:get-all-backup", LIMITS.READ_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.GET_ALL_NOTES_BACKUP, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       return db.getAllBackup();
     });
   });
 
-  ipcMain.handle("note:search", (e, query: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_SEARCH, (e, query: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:search", LIMITS.READ_LIGHT))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_SEARCH, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(QuerySchema, query);
       const result = db.search.search(validatedData);
@@ -75,9 +76,9 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:create", (e, payload: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_CREATE, (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:create", LIMITS.WRITE_LIGHT))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_CREATE, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(CreateNotePayloadSchema, payload);
       const noteData = {
@@ -89,9 +90,9 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:create-many", (e, payloads: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_CREATE_MANY, (e, payloads: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:create-many", LIMITS.WRITE_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_CREATE_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(CreateNotesPayloadsSchema, payloads);
       const noteData = validatedData.map((data) => ({
@@ -103,44 +104,49 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:update", (e, payload: unknown, flush: unknown) => {
-    return result(e, async () => {
-      if (!flush) {
-        if (!checkRateLimit("note:update", LIMITS.WRITE_LIGHT))
-          throw new AppBackendError(AppErrorCode.RateLimitError);
-      } else {
-        if (!checkRateLimit("note:flush-override", LIMITS.WRITE_FLUSH)) {
-          throw new AppBackendError(AppErrorCode.RateLimitError);
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_UPDATE,
+    (e, payload: unknown, flush: unknown) => {
+      return result(e, async () => {
+        if (!flush) {
+          if (!checkRateLimit(IPC_CHANNELS.NOTE_UPDATE, LIMITS.WRITE_LIGHT))
+            throw new AppBackendError(AppErrorCode.RateLimitError);
+        } else {
+          if (
+            !checkRateLimit(IPC_CHANNELS.NOTE_UPDATE_FLUSH, LIMITS.WRITE_FLUSH)
+          ) {
+            throw new AppBackendError(AppErrorCode.RateLimitError);
+          }
         }
-      }
-      const validatedData = validation(UpdateNotePayloadSchema, payload);
-      const noteData = {
-        ...validatedData,
-        content: DbContentCodec.encode(validatedData.content),
-      };
-      const { markdown, ...dbPayload } = noteData;
-      const { targetDir, isAutoExport } = resolveAutoExport();
-      const oldTitle =
-        isAutoExport && targetDir
-          ? db.getOldNotes([validatedData.id])
-          : undefined;
-      const result = db.update(dbPayload);
-      if (!isAutoExport || !targetDir) return result;
-      if (!markdown) return result;
-      await writeAutoExportFile({
-        created_at: result.created_at,
-        fileName: result.title,
-        markdown: markdown,
-        targetDir: targetDir,
-        oldFileName: oldTitle?.[0]?.title,
+        const validatedData = validation(UpdateNotePayloadSchema, payload);
+        const noteData = {
+          ...validatedData,
+          content: DbContentCodec.encode(validatedData.content),
+        };
+        const { markdown, ...dbPayload } = noteData;
+        const { targetDir, isAutoExport } = resolveAutoExport();
+        const oldTitle =
+          isAutoExport && targetDir
+            ? db.getOldNotes([validatedData.id])
+            : undefined;
+        const result = db.update(dbPayload);
+        if (!isAutoExport || !targetDir) return result;
+        if (!markdown) return result;
+        await writeAutoExportFile({
+          created_at: result.created_at,
+          fileName: result.title,
+          markdown: markdown,
+          targetDir: targetDir,
+          oldFileName: oldTitle?.[0]?.title,
+        });
+        return result;
       });
-      return result;
-    });
-  });
+    },
+  );
 
-  ipcMain.handle("note:delete", (e, id: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_DELETE, (e, id: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:delete", LIMITS.WRITE_STANDARD))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_DELETE, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
       const { targetDir, isAutoExport } = resolveAutoExport();
@@ -152,9 +158,9 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:delete-many", (e, ids: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_DELETE_MANY, (e, ids: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:delete-many", LIMITS.WRITE_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_DELETE_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, ids);
       const { targetDir, isAutoExport } = resolveAutoExport();
@@ -166,27 +172,32 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:getById", (e, id: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_GET_BY_ID, (e, id: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:getById", LIMITS.READ_LIGHT))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_GET_BY_ID, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
       return db.getById(validatedData);
     });
   });
 
-  ipcMain.handle("note:getManyById", (e, id: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_GET_MANY_BY_ID, (e, id: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:getManyById", LIMITS.READ_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_GET_MANY_BY_ID, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, id);
       return db.getManyById(validatedData);
     });
   });
 
-  ipcMain.handle("select:auto-export-folder", (e) => {
+  ipcMain.handle(IPC_CHANNELS.SELECT_AUTO_EXPORT_FOLDER, (e) => {
     return result(e, async () => {
-      if (!checkRateLimit("select:auto-export-folder", LIMITS.READ_LIGHT))
+      if (
+        !checkRateLimit(
+          IPC_CHANNELS.SELECT_AUTO_EXPORT_FOLDER,
+          LIMITS.READ_LIGHT,
+        )
+      )
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const result = await dialog.showOpenDialog(win, {
         title: "Select Auto Export Directory",
@@ -200,9 +211,9 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:sync", (e, payload: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_SYNC, (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:sync", LIMITS.READ_LIGHT))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_SYNC, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(SyncRequestPayloadSchema, payload);
       if (!validatedData.updated_at) return null;
@@ -212,9 +223,9 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:import", (e, payload: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_IMPORT, (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:import", LIMITS.WRITE_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_IMPORT, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(FilePathRequestSchema, payload);
       const filePaths =
@@ -230,9 +241,9 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:export-many", (e, payload: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_EXPORT_MANY, (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:export-many", LIMITS.WRITE_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_EXPORT_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ExportManyRequestSchema, payload);
       const selectedFolder = await handleExportManyDialog(win);
@@ -244,9 +255,9 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:export", (e, payload: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_EXPORT, (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:export", LIMITS.WRITE_STANDARD))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_EXPORT, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ExportRequestSchema, payload);
       const data =
@@ -261,36 +272,36 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("note:pin", (e, id: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_PIN, (e, id: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:pin", LIMITS.WRITE_LIGHT))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_PIN, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
       return db.togglePin(validatedData);
     });
   });
 
-  ipcMain.handle("note:pin-many", (e, ids: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.NOTE_PIN_MANY, (e, ids: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("note:pin-many", LIMITS.WRITE_STANDARD))
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_PIN_MANY, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, ids);
       return db.toggleManyPins(validatedData);
     });
   });
 
-  ipcMain.handle("db-backup", (e) => {
+  ipcMain.handle(IPC_CHANNELS.DB_BACKUP, (e) => {
     return result(e, async () => {
-      if (!checkRateLimit("db-backup", LIMITS.WRITE_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.DB_BACKUP, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const filePath = await handleDBBackupDialog(win);
       return await db.backupDb(filePath);
     });
   });
 
-  ipcMain.handle("db-backup-restore", (e) => {
+  ipcMain.handle(IPC_CHANNELS.DB_BACKUP_RESTORE, (e) => {
     return result(e, async () => {
-      if (!checkRateLimit("db-backup-restore", LIMITS.WRITE_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.DB_BACKUP_RESTORE, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const backupPath = await handleDBRestoreDialog(win);
       if (!backupPath) throw new AppBackendError(AppErrorCode.InvalidData);

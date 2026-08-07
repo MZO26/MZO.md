@@ -1,6 +1,6 @@
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppErrorCode } from "@shared/errors";
-import type { Failure } from "@shared/types";
+import type { Failure } from "@shared/shared-types";
 import { ZodError } from "zod";
 
 class AppBackendError extends Error {

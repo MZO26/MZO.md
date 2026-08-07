@@ -1,6 +1,6 @@
 import { getTemplateItem } from "@/utils/registry";
+import type { AppIcons, TemplateRegistry } from "@/utils/types";
 import { createTooltipContent } from "@/utils/ui";
-import type { TemplateRegistry } from "@shared/types";
 
 function requireElement<T extends HTMLElement>(
   selector: string,
@@ -22,7 +22,7 @@ function setActiveItem(element: HTMLElement | null, parent: HTMLElement) {
   element.classList.add("is-active");
 }
 
-function createIconButton(icon: string, tooltip?: string): HTMLButtonElement {
+function createIconButton(icon: AppIcons, tooltip?: string): HTMLButtonElement {
   const btn = document.createElement("button");
   btn.type = "button";
   const i = document.createElement("i");

@@ -1,6 +1,7 @@
 import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import { stateStore } from "@/state/state";
+import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import {
   getMetadata,
   textConverter,
@@ -9,12 +10,11 @@ import {
 } from "@/utils/generators";
 import { addActiveTagToDoc } from "@/utils/note";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
-import { DOMPURIFY_CONFIG } from "@shared/constants/config-constants";
 import { AppErrorCode } from "@shared/errors";
 import { isEditorDoc } from "@shared/schemas/editor-schema";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { ImportContent } from "@shared/schemas/request-schema";
-import type { Result } from "@shared/types";
+import type { Result } from "@shared/shared-types";
 import { generateJSON, generateText, type JSONContent } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
@@ -70,6 +70,7 @@ async function normalizeFileContent(
         return isEditorDoc(doc) ? doc : undefined;
       }
       default:
+        extension satisfies never;
         return undefined;
     }
   } catch (error) {

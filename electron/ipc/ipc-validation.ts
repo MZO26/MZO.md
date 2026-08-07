@@ -1,4 +1,5 @@
 import { IS_DEV_MAIN, mainLogger } from "@electron/handler/permission-handler";
+import type { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { registerElectronIpc } from "@electron/ipc/ipc-electron";
 import {
   AppBackendError,
@@ -6,13 +7,8 @@ import {
 } from "@electron/ipc/ipc-error-handler";
 import { registerNoteIpc } from "@electron/ipc/ipc-note";
 import { registerSettingsIpc } from "@electron/ipc/ipc-settings";
-import {
-  APP_START_TIME,
-  RATE_LIMIT_DEFER_MS,
-  IPC_TIMERS,
-} from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
-import type { Result } from "@shared/types";
+import type { Result, ValueOf } from "@shared/shared-types";
 import { BrowserWindow, app, type IpcMainInvokeEvent } from "electron";
 import z from "zod";
 
@@ -63,9 +59,26 @@ function validateSender(event: IpcMainInvokeEvent) {
   throw new AppBackendError(AppErrorCode.SenderError);
 }
 
-function checkRateLimit(channel: string, cooldownMs: number) {
+const IPC_TIMERS = new Map<string, number>();
+
+const LIMITS = {
+  WRITE_HEAVY: 500,
+  WRITE_STANDARD: 300,
+  WRITE_LIGHT: 100,
+  READ_HEAVY: 500,
+  READ_NORMAL: 300,
+  READ_LIGHT: 100,
+  WRITE_FLUSH: 5,
+} as const;
+
+const APP_START_TIME = Date.now();
+
+function checkRateLimit(
+  channel: ValueOf<typeof IPC_CHANNELS>,
+  cooldownMs: ValueOf<typeof LIMITS>,
+) {
   const now = Date.now();
-  if (now - APP_START_TIME < RATE_LIMIT_DEFER_MS) {
+  if (now - APP_START_TIME < 5000) {
     return true;
   }
   const lastCall = IPC_TIMERS.get(channel) || 0;
@@ -86,4 +99,11 @@ function validation<T extends z.ZodType>(schema: T, payload: unknown) {
   return result.data;
 }
 
-export { checkRateLimit, registerIpc, result, validateSender, validation };
+export {
+  LIMITS,
+  checkRateLimit,
+  registerIpc,
+  result,
+  validateSender,
+  validation,
+};

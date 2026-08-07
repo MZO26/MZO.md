@@ -1,13 +1,13 @@
-import type { MenuType } from "@electron/schemas/electron-schema";
 import type {
+  MenuType,
   Notification,
   Url,
   ZoomAction,
 } from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
+  CreateNotePayload,
   Id,
-  Ids,
   Note,
   NoteListItem,
   NoteMenuPayload,
@@ -25,7 +25,7 @@ import type {
   SyncResult,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import type { ImportStats, Result, TableAction } from "@shared/types";
+import type { ImportStats, Result, TableAction } from "@shared/shared-types";
 
 declare global {
   interface Window {
@@ -71,7 +71,7 @@ declare global {
       getAll: () => Promise<Result<readonly NoteListItem[]>>;
       getAllBackup: () => Promise<Result<readonly Note[]>>;
       getById: (id: Id) => Promise<Result<Readonly<Note>>>;
-      getManyById: (ids: Ids) => Promise<Result<readonly Note[]>>;
+      getManyById: (ids: Id[]) => Promise<Result<readonly Note[]>>;
       create: (payload: CreateNotePayload) => Promise<Result<NoteListItem>>;
       createMany: (
         payload: CreateNotePayload[],
@@ -81,7 +81,7 @@ declare global {
         flush: boolean,
       ) => Promise<Result<NoteListItem>>;
       delete: (id: Id) => Promise<Result<void>>;
-      deleteMany: (ids: Ids) => Promise<Result<void>>;
+      deleteMany: (ids: Id[]) => Promise<Result<void>>;
       selectAutoExportFolder: () => Promise<Result<string>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
       onTriggerExport: (
@@ -104,7 +104,7 @@ declare global {
       onTriggerSync: (callback: (id: Id) => void) => () => void;
       syncRequest: (payload: SyncRequestPayload) => Promise<Result<SyncResult>>;
       pin: (id: Id) => Promise<Result<boolean>>;
-      pinMany: (ids: Ids) => Promise<Result<boolean>>;
+      pinMany: (ids: Id[]) => Promise<Result<boolean>>;
       databaseBackup: () => Promise<Result<number>>;
       databaseBackupRestore: () => Promise<Result<void>>;
       setActiveNote: (id: Id) => void;

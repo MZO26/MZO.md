@@ -1,18 +1,17 @@
 import { getNoteById } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
+import { DOMPURIFY_CONFIG, NODE_BASELINE } from "@/utils/constants";
 import { titleGenerator } from "@/utils/generators";
 import { getAppItem } from "@/utils/registry";
 import { needsLandscape } from "@/utils/ui";
-import { DOMPURIFY_CONFIG } from "@shared/constants/config-constants";
-import { NODE_BASELINE } from "@shared/constants/renderer-constants";
 import { AppErrorCode } from "@shared/errors";
-import type { Note } from "@shared/schemas/note-schema";
+import type { Id, Note } from "@shared/schemas/note-schema";
 import type {
   ExportContent,
   ExportRequest,
 } from "@shared/schemas/request-schema";
-import type { Result } from "@shared/types";
+import type { Result } from "@shared/shared-types";
 import { generateHTML, generateText } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
@@ -93,6 +92,7 @@ async function getBatchExportContent(
         };
       }
       default:
+        extension satisfies never;
         return { success: false, error: AppErrorCode.InvalidData };
     }
   } catch (error) {
@@ -107,7 +107,7 @@ async function getBatchExportContent(
 // single export content function triggered by callback on note menu interaction
 
 async function getExportContent(
-  id: string,
+  id: Id,
   extension: ExportContent["extension"],
 ): Promise<Result<ExportRequest>> {
   const result = await getNoteById(id);
@@ -188,6 +188,7 @@ async function getExportContent(
       };
     }
     default:
+      extension satisfies never;
       rendererLogger.appError(
         "[getExportContent]: Unsupported export format:",
         extension,

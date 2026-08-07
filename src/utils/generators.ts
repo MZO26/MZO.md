@@ -1,5 +1,7 @@
-import { BLOCK_TYPES, UNTITLED } from "@shared/constants/renderer-constants";
-import type { Metadata } from "@shared/types";
+import { BLOCK_TYPES } from "@/utils/constants";
+import type { Metadata } from "@/utils/types";
+import { isNoteID, type Id } from "@shared/schemas/note-schema";
+import { UNTITLED } from "@shared/shared-constants";
 import { type JSONContent } from "@tiptap/core";
 
 function getMetadata(content: JSONContent): Metadata {
@@ -10,7 +12,7 @@ function getMetadata(content: JSONContent): Metadata {
   };
 }
 
-function extractText(node: JSONContent): string {
+function extractText(node: JSONContent) {
   const parts: string[] = [];
   function walk(n: JSONContent) {
     if (!n || typeof n !== "object") return;
@@ -58,7 +60,7 @@ function wrapAsDoc(content: unknown): JSONContent | undefined {
   return undefined;
 }
 
-function titleGenerator(doc: JSONContent): string {
+function titleGenerator(doc: JSONContent) {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0) {
     return UNTITLED;
   }
@@ -79,7 +81,7 @@ function titleGenerator(doc: JSONContent): string {
   return UNTITLED;
 }
 
-function truncateTitle(text: string, maxLength: number = 50): string {
+function truncateTitle(text: string, maxLength: number = 50) {
   if (text.length <= maxLength) return text;
   const targetLength = maxLength - 3;
   const slice = text.slice(0, targetLength);
@@ -88,7 +90,7 @@ function truncateTitle(text: string, maxLength: number = 50): string {
   return safeText.replace(/[.,:;!\-?]+$/, "").trim() + "...";
 }
 
-function snippetGenerator(doc: JSONContent): string {
+function snippetGenerator(doc: JSONContent) {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0) {
     return "";
   }
@@ -113,12 +115,16 @@ function snippetGenerator(doc: JSONContent): string {
 function getLinks(doc: JSONContent) {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0)
     return [];
-  const seen = new Set<string>();
+  const seen = new Set<Id>();
   const stack: JSONContent[] = [...doc.content];
   while (stack.length > 0) {
     const node = stack.pop();
     if (!node || typeof node !== "object") continue;
-    if (node.type === "wikilink" && typeof node.attrs?.["id"] === "string") {
+    if (
+      node.type === "wikilink" &&
+      typeof node.attrs?.["id"] === "string" &&
+      isNoteID(node.attrs?.["id"])
+    ) {
       seen.add(node.attrs["id"]);
     }
     if (Array.isArray(node.content)) {

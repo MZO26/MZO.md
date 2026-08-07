@@ -5,19 +5,17 @@ import {
 import { getFilePath } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { SYNC_BUFFER } from "@shared/constants/main-constants";
-import { MAX_BYTES_FILE } from "@shared/constants/renderer-constants";
 import { AppErrorCode } from "@shared/errors";
 import type { AutoExportWritePayload, Note } from "@shared/schemas/note-schema";
 import type { SyncResult } from "@shared/schemas/request-schema";
-import type { DeepExpand } from "@shared/types";
+import { MAX_BYTES_FILE } from "@shared/shared-constants";
 import fs from "fs/promises";
+
+const SYNC_BUFFER = 2000; // 2 seconds to account for DB timestamp differences or OS write delays
 
 async function checkSyncState(
   targetDir: string,
-  payload: DeepExpand<
-    AutoExportWritePayload & Pick<Readonly<Note>, "updated_at">
-  >,
+  payload: AutoExportWritePayload & Pick<Readonly<Note>, "updated_at">,
 ): Promise<SyncResult> {
   const autoExportPath = resolveAutoExportPath(targetDir);
   const absoluteFilePath = getFilePath(autoExportPath, {

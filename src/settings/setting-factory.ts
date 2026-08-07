@@ -1,6 +1,3 @@
-import { createIconButton, requireElement } from "@/utils/dom";
-import { getUIItem } from "@/utils/registry";
-import { QUICK_ACTIONS } from "@shared/constants/renderer-constants";
 import {
   AUTO_EXPORT_SETTINGS,
   CODE_THEME_SETTINGS,
@@ -12,8 +9,11 @@ import {
   NOTE_ITEM_DISPLAY_SETTINGS,
   SPELLCHECK_SETTINGS,
   THEME_SETTINGS,
-} from "@shared/constants/setting-constants";
-import type { SelectOption, SettingsCategory } from "@shared/types";
+} from "@/settings/setting";
+import { QUICK_ACTIONS } from "@/utils/constants";
+import { createIconButton, requireElement } from "@/utils/dom";
+import { getUIItem } from "@/utils/registry";
+import type { AppIcons, SelectOption, SettingsCategory } from "@/utils/types";
 
 // blueprint for select items and their options for specified categories
 function selectBuilder<T extends string | boolean>(
@@ -41,7 +41,7 @@ function selectBuilder<T extends string | boolean>(
 
 // builds the button palette and wraps it into the button container
 function createSettingsMenu() {
-  const createSettingsButton = (category: SettingsCategory, icon: string) => {
+  const createSettingsButton = (category: SettingsCategory, icon: AppIcons) => {
     const btn = createIconButton(icon, category);
     btn.className = "selection-btn";
     btn.setAttribute("data-category", category);
@@ -50,9 +50,9 @@ function createSettingsMenu() {
   const container = document.createElement("div");
   container.className = "settings-buttons";
   container.append(
-    createSettingsButton("Appearance", "palette"),
-    createSettingsButton("Editor", "pen-line"),
-    createSettingsButton("General", "app-window"),
+    createSettingsButton("Appearance", "Palette"),
+    createSettingsButton("Editor", "PenLine"),
+    createSettingsButton("General", "AppWindow"),
   );
   return container;
 }

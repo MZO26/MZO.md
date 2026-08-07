@@ -1,10 +1,9 @@
-import { MAX_IPC_PAYLOAD_SIZE } from "@shared/constants/main-constants";
-import { UNTITLED } from "@shared/constants/renderer-constants";
 import {
   AutoExportWritePayloadSchema,
   DateSchema,
   PlainTextSchema,
 } from "@shared/schemas/note-schema";
+import { UNTITLED } from "@shared/shared-constants";
 import z from "zod";
 
 function truncateAtBoundary(input: string, maxLength: number): string {
@@ -40,7 +39,7 @@ const FileNameSchema = z
 
 const StringContentSchema = z
   .string()
-  .max(MAX_IPC_PAYLOAD_SIZE, "Content exceeds maximum size")
+  .max(3_000_000, "Content exceeds maximum size")
   .optional()
   .transform((val) => {
     if (!val || val.trim() === "") return UNTITLED;

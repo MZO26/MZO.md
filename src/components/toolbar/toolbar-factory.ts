@@ -1,7 +1,7 @@
 import { settingsStore } from "@/state/state";
 import { createIconButton } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
-import type { Action, ActionMap, ToolbarItem } from "@shared/types";
+import type { Action, ActionMap, ToolbarItem } from "@/utils/types";
 import type { Editor } from "@tiptap/core";
 
 let cachedActions: [string, Action][] | null = null;

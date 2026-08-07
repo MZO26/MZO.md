@@ -1,4 +1,4 @@
-import type { PDFAssets } from "@shared/types";
+import type { PDFAssets } from "@shared/shared-types";
 import { app } from "electron";
 import fs from "fs/promises";
 import path from "path";

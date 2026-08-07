@@ -2,13 +2,20 @@ import { pinWindow } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { getAppItem } from "@/utils/registry";
 
+const widths = ["comfortable", "normal", "wide"] as const;
+
+function isValidWith(width: unknown): width is (typeof widths)[number] {
+  return widths.some((w) => w === width);
+}
+
 function setEditorWidth(container: HTMLDivElement) {
-  const widths = ["comfortable", "normal", "wide"];
   const current = container.getAttribute("data-width") || "normal";
-  const index = widths.indexOf(current as (typeof widths)[number]);
-  const next = widths[(index + 1) % widths.length];
-  if (!next) return;
-  container.setAttribute("data-width", next);
+  if (isValidWith(current)) {
+    const index = widths.indexOf(current);
+    const next = widths[(index + 1) % widths.length];
+    if (!next) return;
+    container.setAttribute("data-width", next);
+  }
 }
 
 async function setWindowTop(toggleBtn: HTMLButtonElement) {

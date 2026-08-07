@@ -8,6 +8,7 @@ import type {
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
+  Id,
   Note,
   NoteListItem,
   SearchQuery,
@@ -24,7 +25,7 @@ import type {
   SyncResult,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
-import type { ImportStats, Result } from "@shared/types";
+import type { ImportStats, Result } from "@shared/shared-types";
 
 async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
   try {
@@ -68,19 +69,19 @@ async function updateNote(
   return invoke(window.noteAPI.update(note, flush));
 }
 
-async function deleteNote(id: string): Promise<Result<void>> {
+async function deleteNote(id: Id): Promise<Result<void>> {
   return invoke(window.noteAPI.delete(id));
 }
 
-async function deleteManyNotes(ids: string[]): Promise<Result<void>> {
+async function deleteManyNotes(ids: Id[]): Promise<Result<void>> {
   return invoke(window.noteAPI.deleteMany(ids));
 }
 
-async function getNoteById(id: string): Promise<Result<Note>> {
+async function getNoteById(id: Id): Promise<Result<Readonly<Note>>> {
   return invoke(window.noteAPI.getById(id));
 }
 
-async function getManyById(ids: string[]): Promise<Result<readonly Note[]>> {
+async function getManyById(ids: Id[]): Promise<Result<readonly Note[]>> {
   return invoke(window.noteAPI.getManyById(ids));
 }
 
@@ -102,11 +103,11 @@ async function importNote(
   return invoke(window.noteAPI.noteImport(payload));
 }
 
-async function pin(id: string): Promise<Result<boolean>> {
+async function pin(id: Id): Promise<Result<boolean>> {
   return invoke(window.noteAPI.pin(id));
 }
 
-async function pinMany(ids: string[]): Promise<Result<boolean>> {
+async function pinMany(ids: Id[]): Promise<Result<boolean>> {
   return invoke(window.noteAPI.pinMany(ids));
 }
 

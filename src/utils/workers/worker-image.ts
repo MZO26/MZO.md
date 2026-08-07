@@ -1,16 +1,10 @@
 /// <reference lib="webworker" />
 import { compressImage } from "@/extensions/image/image-utils";
+import type { ImageCompressionPayload, WorkerRequest } from "@/utils/types";
 import { handleWorkerError } from "@/utils/workers/worker-factory";
-import type {
-  Expand,
-  ImageCompressionPayload,
-  WorkerRequest,
-} from "@shared/types";
 
 self.onmessage = async (
-  e: MessageEvent<
-    Expand<{ id: string } & WorkerRequest<ImageCompressionPayload>>
-  >,
+  e: MessageEvent<{ id: string } & WorkerRequest<ImageCompressionPayload>>,
 ) => {
   const { id, payload } = e.data;
   const { buffer, mimeType, maxWidth, quality } = payload;

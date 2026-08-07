@@ -1,19 +1,27 @@
 import { isAutoExport } from "@electron/fs/fs-auto-export";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
+import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { checkRateLimit, validation } from "@electron/ipc/ipc-validation";
-import { LIMITS } from "@shared/constants/main-constants";
-import { ALLOWED_PROTOCOLS } from "@shared/constants/renderer-constants";
+import {
+  checkRateLimit,
+  LIMITS,
+  validation,
+} from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
-import { IdSchema, type NoteMenuPayload } from "@shared/schemas/note-schema";
+import {
+  IdSchema,
+  type Id,
+  type NoteMenuPayload,
+} from "@shared/schemas/note-schema";
+import { ALLOWED_PROTOCOLS } from "@shared/shared-constants";
 import { clipboard, ipcMain, Menu, shell, type BrowserWindow } from "electron";
 
-let activeId: string | null = null;
+let activeId: Id | null = null;
 
-ipcMain.on("note:set-active", (_e, id: unknown) => {
+ipcMain.on(IPC_CHANNELS.SET_ACTIVE_NOTE, (_e, id: unknown) => {
   try {
-    if (!checkRateLimit("note:set-active", LIMITS.READ_LIGHT))
+    if (!checkRateLimit(IPC_CHANNELS.SET_ACTIVE_NOTE, LIMITS.READ_LIGHT))
       throw new AppBackendError(AppErrorCode.RateLimitError);
     const validatedId = validation(IdSchema, id);
     activeId = validatedId;
@@ -138,35 +146,46 @@ function setUpTableMenu(win: BrowserWindow) {
   const tableMenu = Menu.buildFromTemplate([
     {
       label: "Add Row Before",
-      click: () => win.webContents.send("trigger:table-action", "addRowBefore"),
+      click: () =>
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "addRowBefore"),
     },
     {
       label: "Add Row After",
-      click: () => win.webContents.send("trigger:table-action", "addRowAfter"),
+      click: () =>
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "addRowAfter"),
     },
     { type: "separator" },
     {
       label: "Add Column Before",
       click: () =>
-        win.webContents.send("trigger:table-action", "addColumnBefore"),
+        win.webContents.send(
+          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
+          "addColumnBefore",
+        ),
     },
     {
       label: "Add Column After",
       click: () =>
-        win.webContents.send("trigger:table-action", "addColumnAfter"),
+        win.webContents.send(
+          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
+          "addColumnAfter",
+        ),
     },
     { type: "separator" },
     {
       label: "Delete Row",
-      click: () => win.webContents.send("trigger:table-action", "deleteRow"),
+      click: () =>
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "deleteRow"),
     },
     {
       label: "Delete Column",
-      click: () => win.webContents.send("trigger:table-action", "deleteColumn"),
+      click: () =>
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "deleteColumn"),
     },
     {
       label: "Delete Table",
-      click: () => win.webContents.send("trigger:table-action", "deleteTable"),
+      click: () =>
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "deleteTable"),
     },
   ]);
   return tableMenu;
@@ -182,7 +201,8 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       submenu: [
         {
           label: "Rich Text",
-          click: () => win.webContents.send("note:trigger-copy-rich-text", id),
+          click: () =>
+            win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT, id),
         },
         {
           label: "File Path",
@@ -192,22 +212,22 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
             settings["auto_export"] === true &&
             hasAutoExportedFile,
           visible: settings["auto_export"] === true,
-          click: () => win.webContents.send("note:trigger-copy-path", id),
+          click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_PATH, id),
         },
       ],
     },
     { type: "separator" },
     {
       label: "Select...",
-      click: () => win.webContents.send("note:trigger-select", id),
+      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_SELECT, id),
     },
     {
       label: pinned ? "Unpin Note" : "Pin to Top",
-      click: () => win.webContents.send("note:trigger-pin", id),
+      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_PIN, id),
     },
     {
       label: "Duplicate Note",
-      click: () => win.webContents.send("note:trigger-duplicate", id),
+      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_DUPLICATE, id),
     },
     { type: "separator" },
     {
@@ -215,23 +235,28 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       submenu: [
         {
           label: "Markdown (.md)",
-          click: () => win.webContents.send("note:trigger-export", id, "md"),
+          click: () =>
+            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "md"),
         },
         {
           label: "HTML (.html)",
-          click: () => win.webContents.send("note:trigger-export", id, "html"),
+          click: () =>
+            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "html"),
         },
         {
           label: "JSON Document (.json)",
-          click: () => win.webContents.send("note:trigger-export", id, "json"),
+          click: () =>
+            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "json"),
         },
         {
           label: "Plain Text (.txt)",
-          click: () => win.webContents.send("note:trigger-export", id, "txt"),
+          click: () =>
+            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "txt"),
         },
         {
           label: "PDF (.pdf)",
-          click: () => win.webContents.send("note:trigger-export", id, "pdf"),
+          click: () =>
+            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "pdf"),
         },
       ],
     },
@@ -243,7 +268,7 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
         settings["auto_export"] === true &&
         hasAutoExportedFile,
       visible: settings["auto_export"] === true,
-      click: () => win.webContents.send("note:trigger-sync", id),
+      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_SYNC, id),
     },
     {
       label: "Show in Folder",
@@ -253,7 +278,8 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
         settings["auto_export"] === true &&
         hasAutoExportedFile,
       visible: settings["auto_export"] === true,
-      click: () => win.webContents.send("note:trigger-path", id),
+      click: () =>
+        win.webContents.send(IPC_CHANNELS.TRIGGER_SHOW_IN_FOLDER, id),
     },
     {
       label: "Open in Editor",
@@ -263,12 +289,13 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
         settings["auto_export"] === true &&
         hasAutoExportedFile,
       visible: settings["auto_export"] === true,
-      click: () => win.webContents.send("note:trigger-default-editor", id),
+      click: () =>
+        win.webContents.send(IPC_CHANNELS.TRIGGER_OPEN_DEFAULT_EDITOR, id),
     },
     { type: "separator" },
     {
       label: "Delete Note",
-      click: () => win.webContents.send("note:trigger-delete", id),
+      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_DELETE, id),
     },
   ]);
   return noteItemMenu;

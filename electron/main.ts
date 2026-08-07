@@ -18,8 +18,8 @@ import {
   onOSThemeChange,
 } from "@electron/titlebar";
 import { isWindowVisible, saveWindowBounds } from "@electron/win";
-import { DEFAULT_SETTINGS } from "@shared/constants/setting-constants";
 import { type AppSettings } from "@shared/schemas/store-schema";
+import { DEFAULT_SETTINGS } from "@shared/shared-constants";
 import {
   app,
   BrowserWindow,
@@ -32,6 +32,7 @@ import {
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { IPC_CHANNELS } from "./ipc/ipc-channels";
 
 export let win: BrowserWindow | null = null;
 
@@ -131,7 +132,7 @@ async function createWindow() {
     if (!isReadyToClose) {
       e.preventDefault();
       saveWindowBounds();
-      win?.webContents.send("request-flush");
+      win?.webContents.send(IPC_CHANNELS.REQUEST_FLUSH);
       return;
     }
   });
@@ -148,7 +149,7 @@ async function createWindow() {
 app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
   session.defaultSession.setSpellCheckerLanguages(["en-US", "de-DE"]);
-  ipcMain.on("flush-confirmed", () => {
+  ipcMain.on(IPC_CHANNELS.CONFIRM_FLUSH, () => {
     isReadyToClose = true;
     win?.close();
   });

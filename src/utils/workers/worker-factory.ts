@@ -1,6 +1,6 @@
-import { MAX_WORKER_TIMEOUT_MS } from "@shared/constants/renderer-constants";
+import { MAX_WORKER_TIMEOUT_MS } from "@/utils/constants";
+import type { WorkerResult } from "@/utils/types";
 import { WorkerErrorCode } from "@shared/errors";
-import type { WorkerResult } from "@shared/types";
 
 class WorkerTaskError extends Error {
   constructor(

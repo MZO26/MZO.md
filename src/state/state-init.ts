@@ -56,9 +56,7 @@ function initSubscriptions() {
     (state) => ({
       activeTag: state.activeTag,
     }),
-    () => {
-      sidebarListener();
-    },
+    sidebarListener,
     shallowEq,
   );
 
@@ -91,6 +89,7 @@ function initSubscriptions() {
       }
       return true;
     },
+    { fireImmediately: true },
   );
 
   settingsStore.subscribeSel(

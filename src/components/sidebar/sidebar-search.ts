@@ -6,12 +6,15 @@ import {
 } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
 import { debounce } from "@/utils/async";
+import { DEBOUNCE_MS } from "@/utils/constants";
+import type { MappedMatches } from "@/utils/types";
 import {
-  DEBOUNCE_MS,
-  MAX_SEARCH_LENGTH,
-} from "@shared/constants/renderer-constants";
-import type { NoteListItem, SearchQuery } from "@shared/schemas/note-schema";
-import type { MappedMatches } from "@shared/types";
+  isNoteID,
+  type Id,
+  type NoteListItem,
+  type SearchQuery,
+} from "@shared/schemas/note-schema";
+import { MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 
 async function handleSearch(searchInput: SearchQuery) {
   const nextQuery = searchInput.trim();
@@ -43,12 +46,13 @@ async function handleSearch(searchInput: SearchQuery) {
 
 function computeSearchResult(
   matches: MappedMatches,
-  noteIndex: Map<string, NoteListItem>,
+  noteIndex: Map<Id, NoteListItem>,
   activeTag: string | null,
 ) {
-  const searchSnippets: Record<string, string> = {};
-  const visibleIds: string[] = [];
+  const searchSnippets: Record<Id, string> = {};
+  const visibleIds: Id[] = [];
   for (const match of matches) {
+    if (!isNoteID(match.id)) continue;
     searchSnippets[match.id] = match.snippet;
     const note = noteIndex.get(match.id);
     if (note && matchesActiveTag(note, activeTag)) {

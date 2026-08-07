@@ -2,12 +2,21 @@ import { mainLogger } from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { win } from "@electron/main";
-import { ZOOMS } from "@shared/constants/main-constants";
 import type { ZoomAction } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
 import { BrowserWindow, screen } from "electron";
 
-function nextZoom(current: number, action: ZoomAction) {
+const ZOOMS = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2] as const;
+
+function getClosestZoom(value: number) {
+  return ZOOMS.reduce((closest, current) =>
+    // calculate distance between electron zoom value
+    // and value from zoom array
+    Math.abs(current - value) < Math.abs(closest - value) ? current : closest,
+  );
+}
+
+function nextZoom(current: (typeof ZOOMS)[number], action: ZoomAction) {
   if (action === "get") return current;
   if (action === "reset") return 1;
   let targetIndex: number;
@@ -21,7 +30,7 @@ function nextZoom(current: number, action: ZoomAction) {
   return ZOOMS[targetIndex] ?? 1;
 }
 
-function isWindowVisible(x: number, y: number): boolean {
+function isWindowVisible(x: number, y: number) {
   return screen
     .getAllDisplays()
     .some(
@@ -79,4 +88,11 @@ const createHiddenPdfWindow = () => {
   return hiddenWin;
 };
 
-export { createHiddenPdfWindow, isWindowVisible, nextZoom, saveWindowBounds };
+export {
+  createHiddenPdfWindow,
+  getClosestZoom,
+  isWindowVisible,
+  nextZoom,
+  saveWindowBounds,
+  ZOOMS,
+};

@@ -17,21 +17,18 @@ import { getTableOfContents } from "@/extensions/toc";
 import { setImportedContent } from "@/notes/import-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { debounce } from "@/utils/async";
+import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import { getMetadata, titleGenerator } from "@/utils/generators";
 import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import {
-  DEBOUNCE_MS,
-  EMPTY_DOC,
-  UNTAGGED,
-  UNTITLED,
-} from "@shared/constants/renderer-constants";
-import {
   type CreateNotePayload,
+  type Id,
   type Note,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
+import { EMPTY_DOC, UNTITLED } from "@shared/shared-constants";
 
 function isAutoExportEnabled() {
   return settingsStore.get("auto_export") ?? false;
@@ -124,10 +121,10 @@ async function handleImportNote(request: FilePathRequest) {
   }));
 }
 
-async function handleDeleteManyNotes(ids: string[]) {
+async function handleDeleteManyNotes(ids: Id[]) {
   const activeId = stateStore.get("activeId");
-  const deletedIds = new Set(ids);
-  const isActiveDeleted = activeId !== null && deletedIds.has(activeId);
+  const deletedIds = new Set<Id>(ids);
+  const isActiveDeleted = activeId !== null && deletedIds.has(activeId as Id);
   if (isActiveDeleted) {
     debouncedSaveNote.cancel();
   }
@@ -156,7 +153,7 @@ async function handleDeleteManyNotes(ids: string[]) {
   }
 }
 
-async function handleDeleteNote(id: string) {
+async function handleDeleteNote(id: Id) {
   const activeId = stateStore.get("activeId");
   const isActiveDeletedId = activeId === id;
   if (isActiveDeletedId) {
@@ -185,8 +182,8 @@ async function handleDeleteNote(id: string) {
   }
 }
 
-async function handleSaveNote(id: string, flush: boolean = false) {
-  const activeId = stateStore.get("activeId");
+async function handleSaveNote(id: Id, flush: boolean = false) {
+  const activeId = stateStore.get("activeId") as Id;
   if (activeId !== id) return;
   const activeNote = noteStore.get("noteIndex").get(activeId);
   if (!activeNote) return;
@@ -251,7 +248,7 @@ async function handleSaveNote(id: string, flush: boolean = false) {
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 
-async function handleSelectNote(id: string) {
+async function handleSelectNote(id: Id) {
   const editor = getAppItem("editor");
   const activeId = stateStore.get("activeId");
   // synchronous flush to avoid overwriting false note
@@ -336,7 +333,7 @@ async function handleDuplicateNote(note: Readonly<Note>) {
   }));
 }
 
-async function waitForFlush(id: string | null) {
+async function waitForFlush(id: Id | null) {
   if (!id || stateStore.get("activeId") !== id) return false;
   const noteIndex = noteStore.get("noteIndex");
   if (!noteIndex.has(id)) {
@@ -347,7 +344,7 @@ async function waitForFlush(id: string | null) {
   return stateStore.get("activeId") === id;
 }
 
-async function ensureNoteSaved(id: string) {
+async function ensureNoteSaved(id: Id) {
   const savedNote = await waitForFlush(id);
   if (!savedNote) return;
   const note = noteStore.get("noteIndex").get(id);

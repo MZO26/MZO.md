@@ -5,15 +5,16 @@ import {
 } from "@electron/fs/fs-auto-export";
 import { handleImageWriteMany } from "@electron/fs/fs-image";
 import { processUrl } from "@electron/handler/navigation-handler";
+import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { resolveAutoExport } from "@electron/ipc/ipc-helpers";
 import {
   checkRateLimit,
+  LIMITS,
   result,
   validation,
 } from "@electron/ipc/ipc-validation";
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
-import { LIMITS } from "@shared/constants/main-constants";
 import { AppErrorCode } from "@shared/errors";
 import {
   ExternalUrlSchema,
@@ -35,28 +36,31 @@ import {
 import fs from "fs/promises";
 
 function registerElectronIpc(win: BrowserWindow) {
-  ipcMain.on("context-menu:show", (e, type: unknown, payload: unknown) => {
-    return result(e, async () => {
-      if (!checkRateLimit("context-menu:show", LIMITS.READ_LIGHT))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      if (!win) return;
-      const validMenuType = validation(MenuTypeSchema, type);
-      let menu: Menu;
-      if (validMenuType === "table") {
-        menu = setUpTableMenu(win);
-      } else if (validMenuType === "note") {
-        const validatedData = validation(NoteMenuPayloadSchema, payload);
-        menu = await setUpNoteMenu(win, validatedData);
-      } else {
-        return;
-      }
-      menu.popup({ window: win });
-    });
-  });
+  ipcMain.on(
+    IPC_CHANNELS.SHOW_CONTEXT_MENU,
+    (e, type: unknown, payload: unknown) => {
+      return result(e, async () => {
+        if (!checkRateLimit(IPC_CHANNELS.SHOW_CONTEXT_MENU, LIMITS.READ_LIGHT))
+          throw new AppBackendError(AppErrorCode.RateLimitError);
+        if (!win) return;
+        const validMenuType = validation(MenuTypeSchema, type);
+        let menu: Menu;
+        if (validMenuType === "table") {
+          menu = setUpTableMenu(win);
+        } else if (validMenuType === "note") {
+          const validatedData = validation(NoteMenuPayloadSchema, payload);
+          menu = await setUpNoteMenu(win, validatedData);
+        } else {
+          return;
+        }
+        menu.popup({ window: win });
+      });
+    },
+  );
 
-  ipcMain.handle("open:external", (e, url: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.OPEN_EXTERNAL, (e, url: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("open:external", LIMITS.READ_LIGHT))
+      if (!checkRateLimit(IPC_CHANNELS.OPEN_EXTERNAL, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ExternalUrlSchema, url);
       const decision = processUrl(validatedData);
@@ -66,16 +70,20 @@ function registerElectronIpc(win: BrowserWindow) {
         case "external":
           return shell.openExternal(validatedData);
         case "block":
+          return "block";
         default:
+          decision satisfies never;
           return "block";
       }
     });
   });
 
   // opens note in default editor
-  ipcMain.handle("open:default-editor", (e, payload: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.OPEN_DEFAULT_EDITOR, (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("open:default-editor", LIMITS.READ_LIGHT)) {
+      if (
+        !checkRateLimit(IPC_CHANNELS.OPEN_DEFAULT_EDITOR, LIMITS.READ_LIGHT)
+      ) {
         throw new AppBackendError(AppErrorCode.RateLimitError);
       }
       const { targetDir, isAutoExport } = resolveAutoExport();
@@ -90,33 +98,41 @@ function registerElectronIpc(win: BrowserWindow) {
   });
 
   // opens auto-export directory and shows note
-  ipcMain.handle("open:auto-export-folder", (e, payload: unknown) => {
-    return result(e, async () => {
-      if (!checkRateLimit("open:auto-export-folder", LIMITS.READ_LIGHT))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      const { targetDir, isAutoExport } = resolveAutoExport();
-      if (!targetDir || !isAutoExport) return false;
-      const validatedData = validation(OpenAutoExportPathSchema, payload);
-      if (!validatedData.updated_at) return false;
-      const autoExportPath = resolveAutoExportPath(targetDir);
-      await fs.mkdir(autoExportPath, { recursive: true });
-      const filePath = getFilePath(autoExportPath, validatedData);
-      try {
-        await fs.access(filePath, fs.constants.R_OK);
-        shell.showItemInFolder(filePath);
-        return true;
-      } catch (error) {
-        const err = error as NodeJS.ErrnoException;
-        if (err.code === "ENOENT") return false;
-        else throw new AppBackendError(AppErrorCode.InvalidData);
-      }
-    });
-  });
+  ipcMain.handle(
+    IPC_CHANNELS.OPEN_AUTO_EXPORT_FOLDER,
+    (e, payload: unknown) => {
+      return result(e, async () => {
+        if (
+          !checkRateLimit(
+            IPC_CHANNELS.OPEN_AUTO_EXPORT_FOLDER,
+            LIMITS.READ_LIGHT,
+          )
+        )
+          throw new AppBackendError(AppErrorCode.RateLimitError);
+        const { targetDir, isAutoExport } = resolveAutoExport();
+        if (!targetDir || !isAutoExport) return false;
+        const validatedData = validation(OpenAutoExportPathSchema, payload);
+        if (!validatedData.updated_at) return false;
+        const autoExportPath = resolveAutoExportPath(targetDir);
+        await fs.mkdir(autoExportPath, { recursive: true });
+        const filePath = getFilePath(autoExportPath, validatedData);
+        try {
+          await fs.access(filePath, fs.constants.R_OK);
+          shell.showItemInFolder(filePath);
+          return true;
+        } catch (error) {
+          const err = error as NodeJS.ErrnoException;
+          if (err.code === "ENOENT") return false;
+          else throw new AppBackendError(AppErrorCode.InvalidData);
+        }
+      });
+    },
+  );
 
   // returns absolute file path ready to copy
-  ipcMain.handle("get:auto-export-path", (e, payload: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.GET_AUTO_EXPORT_PATH, (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("get:auto-export-path", LIMITS.READ_LIGHT))
+      if (!checkRateLimit(IPC_CHANNELS.GET_AUTO_EXPORT_PATH, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const { targetDir, isAutoExport } = resolveAutoExport();
       if (!targetDir || !isAutoExport) return null;
@@ -136,9 +152,9 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("open:app-path", (e) => {
+  ipcMain.handle(IPC_CHANNELS.OPEN_APP_PATH, (e) => {
     return result(e, async () => {
-      if (!checkRateLimit("open:app-path", LIMITS.READ_LIGHT))
+      if (!checkRateLimit(IPC_CHANNELS.OPEN_APP_PATH, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const userDataPath = app.getPath("userData");
       const error = await shell.openPath(userDataPath);
@@ -147,25 +163,28 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("theme:set", (e, theme: unknown, focus?: unknown) => {
-    return result(e, async () => {
-      if (!checkRateLimit("theme:set", LIMITS.WRITE_LIGHT))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      const validTheme = validation(StoreSchema.shape["theme"], theme);
-      const resolvedTheme = initTheme(validTheme);
-      const isFocus = typeof focus === "boolean" && focus === true;
-      const windowTheme = getTitleBarOverlay(resolvedTheme, isFocus);
-      for (const window of BrowserWindow.getAllWindows()) {
-        window.setBackgroundColor(windowTheme.backgroundColor);
-        window.setTitleBarOverlay?.(windowTheme.overlayOptions);
-      }
-      return resolvedTheme;
-    });
-  });
+  ipcMain.handle(
+    IPC_CHANNELS.SET_THEME,
+    (e, theme: unknown, focus?: unknown) => {
+      return result(e, async () => {
+        if (!checkRateLimit(IPC_CHANNELS.SET_THEME, LIMITS.WRITE_LIGHT))
+          throw new AppBackendError(AppErrorCode.RateLimitError);
+        const validTheme = validation(StoreSchema.shape["theme"], theme);
+        const resolvedTheme = initTheme(validTheme);
+        const isFocus = typeof focus === "boolean" && focus === true;
+        const windowTheme = getTitleBarOverlay(resolvedTheme, isFocus);
+        for (const window of BrowserWindow.getAllWindows()) {
+          window.setBackgroundColor(windowTheme.backgroundColor);
+          window.setTitleBarOverlay?.(windowTheme.overlayOptions);
+        }
+        return resolvedTheme;
+      });
+    },
+  );
 
-  ipcMain.handle("app:pin", (e) => {
+  ipcMain.handle(IPC_CHANNELS.APP_PIN, (e) => {
     return result(e, async () => {
-      if (!checkRateLimit("app:pin", LIMITS.WRITE_LIGHT))
+      if (!checkRateLimit(IPC_CHANNELS.APP_PIN, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       if (win && !win.isDestroyed()) {
         const isCurrentlyPinned = win.isAlwaysOnTop();
@@ -185,21 +204,24 @@ function registerElectronIpc(win: BrowserWindow) {
     });
   });
 
-  ipcMain.handle("notification:show", (e, title: unknown, body: unknown) => {
-    return result(e, async () => {
-      if (!checkRateLimit("notification:show", LIMITS.READ_LIGHT))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      const validNotif = validation(NotificationSchema, { title, body });
-      if (Notification.isSupported()) {
-        const notif = new Notification(validNotif);
-        notif.show();
-      }
-    });
-  });
+  ipcMain.handle(
+    IPC_CHANNELS.SHOW_NOTIFICATION,
+    (e, title: unknown, body: unknown) => {
+      return result(e, async () => {
+        if (!checkRateLimit(IPC_CHANNELS.SHOW_NOTIFICATION, LIMITS.READ_LIGHT))
+          throw new AppBackendError(AppErrorCode.RateLimitError);
+        const validNotif = validation(NotificationSchema, { title, body });
+        if (Notification.isSupported()) {
+          const notif = new Notification(validNotif);
+          notif.show();
+        }
+      });
+    },
+  );
 
-  ipcMain.handle("image:write-many", (e, payload: unknown) => {
+  ipcMain.handle(IPC_CHANNELS.WRITE_IMAGE, (e, payload: unknown) => {
     return result(e, async () => {
-      if (!checkRateLimit("image:write-many", LIMITS.WRITE_HEAVY))
+      if (!checkRateLimit(IPC_CHANNELS.WRITE_IMAGE, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ImagePayloadsSchema, payload);
       return await handleImageWriteMany(validatedData);

@@ -1,7 +1,6 @@
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { CONCURRENCY_IMAGE } from "@shared/constants/main-constants";
+import { processWithLimit } from "@electron/limiter";
 import { AppErrorCode } from "@shared/errors";
-import { processWithLimit } from "@shared/limiter";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import { createHash } from "crypto";
 import { app } from "electron";
@@ -37,7 +36,7 @@ async function handleImageWriteMany(validatedData: ImagePayload[]) {
   }
   await processWithLimit(
     [...uniqueWrites.values()],
-    CONCURRENCY_IMAGE,
+    5,
     async ({ filePath, imageBuffer }) => {
       try {
         await fs.writeFile(filePath, imageBuffer, { flag: "wx" });

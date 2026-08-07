@@ -1,6 +1,16 @@
 import { selectAutoExportFolder } from "@/api/api";
 import { rendererLogger } from "@/app";
 import {
+  CODE_THEME_SETTINGS,
+  EXPORT_FORMAT_SETTINGS,
+  FONT_FAMILY_SETTINGS,
+  FONT_SIZE_SETTINGS,
+  HIGHLIGHT_THEME_SETTINGS,
+  LINE_HEIGHT_SETTINGS,
+  NOTE_ITEM_DISPLAY_SETTINGS,
+  THEME_SETTINGS,
+} from "@/settings/setting";
+import {
   applyAppTheme,
   applyFontFamily,
   applyFontSize,
@@ -10,18 +20,8 @@ import {
 } from "@/settings/setting-actions";
 import { settingsStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
+import { CODE_THEME_MAP } from "@/utils/constants";
 import { getAppItem } from "@/utils/registry";
-import { CODE_THEME_MAP } from "@shared/constants/renderer-constants";
-import {
-  CODE_THEME_SETTINGS,
-  EXPORT_FORMAT_SETTINGS,
-  FONT_FAMILY_SETTINGS,
-  FONT_SIZE_SETTINGS,
-  HIGHLIGHT_THEME_SETTINGS,
-  LINE_HEIGHT_SETTINGS,
-  NOTE_ITEM_DISPLAY_SETTINGS,
-  THEME_SETTINGS,
-} from "@shared/constants/setting-constants";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 function initAppearanceSettings(

@@ -2,7 +2,7 @@ import { openExternal } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { promptImageUpload } from "@/extensions/image/image";
 import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
-import type { LinkAttributes } from "@shared/types";
+import type { LinkAttributes } from "@/utils/types";
 import { Extension } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
 

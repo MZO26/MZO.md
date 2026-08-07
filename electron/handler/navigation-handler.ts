@@ -1,5 +1,5 @@
 import { mainLogger } from "@electron/handler/permission-handler";
-import type { UrlDecision } from "@shared/types";
+import type { UrlDecision } from "@shared/shared-types";
 import { app, net, protocol, shell, type BrowserWindow } from "electron";
 import fs from "fs/promises";
 import path from "path";

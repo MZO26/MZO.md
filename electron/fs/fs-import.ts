@@ -2,16 +2,12 @@ import db from "@electron/db/database";
 import { sanitizeImportString } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import { CONCURRENCY_IMPORT } from "@shared/constants/main-constants";
-import {
-  MAX_BYTES_FILE,
-  MAX_CHARACTERS,
-} from "@shared/constants/renderer-constants";
-import { processWithLimit } from "@shared/limiter";
+import { processWithLimit } from "@electron/limiter";
 import {
   ImportRequestSchema,
   type ImportRequest,
 } from "@shared/schemas/request-schema";
+import { MAX_BYTES_FILE, MAX_CHARACTERS } from "@shared/shared-constants";
 import { app } from "electron";
 import fs from "fs/promises";
 import path from "path";
@@ -25,7 +21,7 @@ async function batchImport(filePaths: string[]) {
   let errorCount = 0;
   const imported = await processWithLimit(
     [...uniqueFilePaths],
-    CONCURRENCY_IMPORT,
+    3,
     async (file) => {
       try {
         const stats = await fs.stat(file);

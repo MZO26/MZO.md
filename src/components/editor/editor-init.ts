@@ -35,16 +35,13 @@ import {
   waitForFlush,
 } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
+import { NODE_BASELINE, SHARED_KATEX_OPTIONS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
-import { SHARED_KATEX_OPTIONS } from "@shared/constants/config-constants";
-import {
-  ALLOWED_PROTOCOLS,
-  MAX_CHARACTERS,
-  NODE_BASELINE,
-} from "@shared/constants/renderer-constants";
+import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
+import { ALLOWED_PROTOCOLS, MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
@@ -74,7 +71,7 @@ function initEditor(settings: Partial<AppSettings>): Editor {
   });
   editor.on("update", ({ transaction }) => {
     if (!transaction.docChanged) return;
-    const activeId = stateStore.get("activeId");
+    const activeId = stateStore.get("activeId") as Id;
     if (!activeId) return;
     debouncedSaveNote(activeId, false);
   });
@@ -99,6 +96,7 @@ function getNoteEditorExtensions() {
     Highlight,
     WikilinkHandler.configure({
       onClick: async (id) => {
+        if (!isNoteID(id)) return;
         const noteExists = noteStore.get("noteIndex").has(id);
         if (!noteExists) {
           rendererLogger.devLog("[Wikilink configure]: Note not found.");
@@ -130,7 +128,7 @@ function getNoteEditorExtensions() {
     NoteTagHandler.configure({
       onClick: async (id: string) => {
         const normalizedTag = id?.trim().toLowerCase();
-        const activeId = stateStore.get("activeId");
+        const activeId = stateStore.get("activeId") as Id;
         if (!normalizedTag || !activeId) return;
         const saved = await waitForFlush(activeId);
         if (!saved) return;

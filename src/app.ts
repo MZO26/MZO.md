@@ -50,11 +50,11 @@ async function initApp() {
   initListeners();
   initToolbar();
   initTopToolbar();
-  renderIcons();
   startAppClock();
   initGlobalShortcuts();
   initNotesSidebar();
   initQuickSwitcher();
+  renderIcons();
   rendererLogger.timeEnd("DOM Loading Time");
   rendererLogger.devLog("App started successfully");
 }

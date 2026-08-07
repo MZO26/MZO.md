@@ -1,22 +1,22 @@
 import { promptImageUpload } from "@/extensions/image/image";
 import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
-import type { ActionMap } from "@shared/types";
+import type { ActionMap } from "@/utils/types";
 
 const TOP_TOOLBAR_ACTIONS: ActionMap = {
   editorWidth: {
     type: "action",
     run: () => document.dispatchEvent(new CustomEvent("app:set-editor-width")),
-    icon: "ruler-dimension-line",
+    icon: "RulerDimensionLine",
   },
   focus: {
     type: "action",
     run: () => document.dispatchEvent(new CustomEvent("app:toggle-focus-mode")),
-    icon: "focus",
+    icon: "Focus",
   },
   toggleToolbar: {
     type: "action",
     run: () => document.dispatchEvent(new CustomEvent("app:toggle-toolbar")),
-    icon: "arrow-down-from-line",
+    icon: "ArrowDownFromLine",
   },
 };
 
@@ -25,53 +25,53 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
 const TOOLBAR_ACTIONS: ActionMap = {
   toggleSidebar: {
     run: () => document.dispatchEvent(new CustomEvent("app:toggle-sidebar")),
-    icon: "arrow-left-from-line",
+    icon: "ArrowLeftFromLine",
   },
   undo: {
     run: (editor) => editor?.chain().focus().undo().run(),
     isDisabled: (editor) => !editor.can().undo(),
-    icon: "undo2",
+    icon: "Undo2",
   },
   redo: {
     run: (editor) => editor?.chain().focus().redo().run(),
     isDisabled: (editor) => !editor.can().redo(),
-    icon: "redo2",
+    icon: "Redo2",
   },
   search: {
     run: () =>
       document.dispatchEvent(new CustomEvent("app:toggle-editor-search")),
-    icon: "search",
+    icon: "Search",
   },
   quickSwitch: {
     run: () =>
       document.dispatchEvent(new CustomEvent("app:toggle-quick-switch")),
-    icon: "file-clock",
+    icon: "FileClock",
   },
   divider1: { type: "divider" },
   bold: {
     run: (editor) => editor?.chain().focus().toggleBold().run(),
     isActive: (editor) => editor?.isActive("bold"),
-    icon: "bold",
+    icon: "Bold",
   },
   italic: {
     run: (editor) => editor?.chain().focus().toggleItalic().run(),
     isActive: (editor) => editor?.isActive("italic"),
-    icon: "italic",
+    icon: "Italic",
   },
   strike: {
     run: (editor) => editor?.chain().focus().toggleStrike().run(),
     isActive: (editor) => editor?.isActive("strike"),
-    icon: "strikethrough",
+    icon: "Strikethrough",
   },
   underline: {
     run: (editor) => editor?.chain().focus().toggleUnderline().run(),
     isActive: (editor) => editor?.isActive("underline"),
-    icon: "underline",
+    icon: "Underline",
   },
   highlight: {
     run: (editor) => editor?.chain().focus().toggleHighlight().run(),
     isActive: (editor) => editor?.isActive("highlight"),
-    icon: "highlighter",
+    icon: "Highlighter",
   },
   mathInline: {
     run: (editor) => {
@@ -87,55 +87,55 @@ const TOOLBAR_ACTIONS: ActionMap = {
       });
     },
     isActive: (editor) => editor?.isActive("inlineMath"),
-    icon: "sigma",
+    icon: "Sigma",
   },
   divider2: { type: "divider" },
   heading1: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
     isActive: (editor) => editor?.isActive("heading", { level: 1 }),
-    icon: "heading-1",
+    icon: "Heading1",
   },
   heading2: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
     isActive: (editor) => editor?.isActive("heading", { level: 2 }),
-    icon: "heading-2",
+    icon: "Heading2",
   },
   heading3: {
     run: (editor) => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
     isActive: (editor) => editor?.isActive("heading", { level: 3 }),
-    icon: "heading-3",
+    icon: "Heading3",
   },
   divider3: { type: "divider" },
   bulletList: {
     run: (editor) => editor?.chain().focus().toggleBulletList().run(),
     isActive: (editor) => editor?.isActive("bulletList"),
-    icon: "list",
+    icon: "List",
   },
   orderedList: {
     run: (editor) => editor?.chain().focus().toggleOrderedList().run(),
     isActive: (editor) => editor?.isActive("orderedList"),
-    icon: "list-ordered",
+    icon: "ListOrdered",
   },
   taskList: {
     run: (editor) => editor?.chain().focus().toggleTaskList().run(),
     isActive: (editor) => editor?.isActive("taskList"),
-    icon: "list-todo",
+    icon: "ListTodo",
   },
   blockQuote: {
     run: (editor) => editor?.chain().focus().toggleBlockquote().run(),
     isActive: (editor) => editor?.isActive("blockquote"),
-    icon: "text-quote",
+    icon: "TextQuote",
   },
   divider4: { type: "divider" },
   inlineCode: {
     run: (editor) => editor?.chain().focus().toggleCode().run(),
     isActive: (editor) => editor?.isActive("code"),
-    icon: "code",
+    icon: "Code",
   },
   codeBlock: {
     run: (editor) => editor?.chain().focus().toggleCodeBlock().run(),
     isActive: (editor) => editor?.isActive("codeBlock"),
-    icon: "code-xml",
+    icon: "CodeXml",
   },
   mathBlock: {
     run: (editor) => {
@@ -147,12 +147,12 @@ const TOOLBAR_ACTIONS: ActionMap = {
       });
     },
     isActive: (editor) => editor?.isActive("blockMath"),
-    icon: "square-sigma",
+    icon: "SquareSigma",
   },
   horizontalRule: {
     run: (editor) => editor?.chain().focus().setHorizontalRule().run(),
     isActive: (editor) => editor?.isActive("hr"),
-    icon: "separator-horizontal",
+    icon: "SeparatorHorizontal",
   },
   divider5: { type: "divider" },
   link: {
@@ -164,12 +164,12 @@ const TOOLBAR_ACTIONS: ActionMap = {
       return editor.chain().focus().setLink({ href: "" }).run();
     },
     isActive: (editor) => editor?.isActive("link"),
-    icon: "link",
+    icon: "Link",
   },
   image: {
     run: (editor) => editor && promptImageUpload(editor),
     isActive: (editor) => editor?.isActive("image"),
-    icon: "image",
+    icon: "Image",
   },
   table: {
     run: (editor) =>
@@ -179,7 +179,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
         .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
         .run(),
     isActive: (editor) => editor?.isActive("table"),
-    icon: "grid-2x2",
+    icon: "Grid2x2",
   },
 };
 

@@ -14,7 +14,7 @@ import {
 import { debouncedSaveNote, ensureNoteSaved } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
 import { createGlobalSpinner } from "@/utils/ui";
-import type { NoteMenuPayload } from "@shared/schemas/note-schema";
+import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { ExportContent } from "@shared/schemas/request-schema";
 
 function initListeners() {
@@ -25,45 +25,45 @@ function initListeners() {
   );
 
   window.noteAPI.onTriggerExport(
-    async (id: string, extension: ExportContent["extension"]) => {
+    async (id: Id, extension: ExportContent["extension"]) => {
       await triggerSingleExport(id, extension);
     },
   );
 
-  window.noteAPI.onTriggerPath(async (id: string) => {
+  window.noteAPI.onTriggerPath(async (id: Id) => {
     const autoExportPayload = await ensureNoteSaved(id);
     if (!autoExportPayload) return;
     await triggerOpenAutoExportFolder(autoExportPayload);
   });
 
-  window.noteAPI.onTriggerDefaultEditor(async (id: string) => {
+  window.noteAPI.onTriggerDefaultEditor(async (id: Id) => {
     const autoExportPayload = await ensureNoteSaved(id);
     if (!autoExportPayload) return;
     await triggerOpenInDefaultEditor(autoExportPayload);
   });
 
-  window.noteAPI.onTriggerCopyPath(async (id: string) => {
+  window.noteAPI.onTriggerCopyPath(async (id: Id) => {
     const syncPayload = await ensureNoteSaved(id);
     if (!syncPayload) return;
     await triggerCopyFilePath(syncPayload);
   });
 
-  window.noteAPI.onTriggerCopyRichText(async (id: string) => {
+  window.noteAPI.onTriggerCopyRichText(async (id: Id) => {
     const loading = createGlobalSpinner();
     await loading.wrap(async () => {
       await triggerCopyRichText(id);
     });
   });
 
-  window.noteAPI.onTriggerDelete(async (id: string) => {
+  window.noteAPI.onTriggerDelete(async (id: Id) => {
     await triggerSingleDelete(id);
   });
 
-  window.noteAPI.onTriggerPin(async (id: string) => {
+  window.noteAPI.onTriggerPin(async (id: Id) => {
     await triggerPin(id);
   });
 
-  window.noteAPI.onTriggerSelect((id: string) => {
+  window.noteAPI.onTriggerSelect((id: Id) => {
     stateStore.setState((state) => {
       const nextSelectedIds = new Set(state.selectedIds);
       nextSelectedIds.add(id);
@@ -74,11 +74,11 @@ function initListeners() {
     });
   });
 
-  window.noteAPI.onTriggerDuplicate(async (id: string) => {
+  window.noteAPI.onTriggerDuplicate(async (id: Id) => {
     await triggerDuplicate(id);
   });
 
-  window.noteAPI.onTriggerSync(async (id: string) => {
+  window.noteAPI.onTriggerSync(async (id: Id) => {
     const loading = createGlobalSpinner();
     await loading.wrap(async () => {
       await triggerSyncCheck(id);

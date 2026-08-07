@@ -7,8 +7,8 @@ import {
 import { rendererLogger } from "@/app";
 import { exportSelection } from "@/components/sidebar/sidebar-selection";
 import { noteStore } from "@/state/state";
+import type { QuickAction } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
-import type { QuickAction } from "@shared/types";
 
 async function getQuickAction(action: QuickAction) {
   switch (action) {

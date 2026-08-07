@@ -1,8 +1,8 @@
 import { rendererLogger } from "@/app";
 import { handleUpdateSettings } from "@/settings/setting-actions";
 import { noteStore, stateStore } from "@/state/state";
+import { UNTAGGED } from "@/utils/constants";
 import { getUIItem } from "@/utils/registry";
-import { UNTAGGED } from "@shared/constants/renderer-constants";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 
 function matchesActiveTag(note: NoteListItem, activeTag: string | null) {

@@ -1,5 +1,5 @@
+import type { ExportFormat, SelectOption } from "@/utils/types";
 import type {
-  AppSettings,
   AutoExport,
   CodeTheme,
   FontFamily,
@@ -10,26 +10,6 @@ import type {
   Spellcheck,
   Theme,
 } from "@shared/schemas/store-schema";
-import type { ExportFormat, SelectOption } from "@shared/types";
-
-const SETTINGS_CATEGORIES = ["Appearance", "Editor", "General"] as const;
-
-const DEFAULT_SETTINGS: AppSettings = {
-  theme: "system",
-  font_family: "system",
-  font_size: "18",
-  line_height: "1.5",
-  spellcheck: false,
-  auto_export: false,
-  auto_export_path: null,
-  export_format: "md",
-  code_theme: "balanced",
-  highlight: "context",
-  note_item_display: "preview",
-  toolbar_collapsed: false,
-  window_bounds: { width: 800, height: 500 },
-  active_tag: null,
-};
 
 const THEME_SETTINGS: readonly SelectOption<Theme>[] = [
   { value: "system", label: "System" },
@@ -105,14 +85,12 @@ const AUTO_EXPORT_SETTINGS: readonly SelectOption<AutoExport>[] = [
 export {
   AUTO_EXPORT_SETTINGS,
   CODE_THEME_SETTINGS,
-  DEFAULT_SETTINGS,
   EXPORT_FORMAT_SETTINGS,
   FONT_FAMILY_SETTINGS,
   FONT_SIZE_SETTINGS,
   HIGHLIGHT_THEME_SETTINGS,
   LINE_HEIGHT_SETTINGS,
   NOTE_ITEM_DISPLAY_SETTINGS,
-  SETTINGS_CATEGORIES,
   SPELLCHECK_SETTINGS,
   THEME_SETTINGS,
 };
