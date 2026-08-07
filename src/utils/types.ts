@@ -115,6 +115,8 @@ interface TemplateRegistry {
   sidebarEmptyStateTemplate: HTMLTemplateElement;
   // note item template
   noteItemTemplate: HTMLTemplateElement;
+  // tags popover template
+  tagsPopoverTemplate: HTMLTemplateElement;
 }
 
 type SidebarParams = {

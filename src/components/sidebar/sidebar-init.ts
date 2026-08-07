@@ -10,7 +10,7 @@ import {
 } from "@/components/sidebar/sidebar-selection";
 import {
   resizeSidebar,
-  showAllTagsMenu,
+  showTagPopover,
   toggleSidebar,
 } from "@/components/sidebar/sidebar-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
@@ -72,7 +72,7 @@ function applySidebarListeners(
       const tagBtn = e.target.closest<HTMLButtonElement>(".all-tags-btn");
       if (tagBtn) {
         const tags = noteStore.get("notes").flatMap((n) => n.tags);
-        showAllTagsMenu(tagBtn, tags);
+        showTagPopover(tagBtn, tags);
         return;
       }
       const importBtn = e.target.closest<HTMLButtonElement>(".import-btn");

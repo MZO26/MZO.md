@@ -71,7 +71,7 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit(IPC_CHANNELS.NOTE_SEARCH, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(QuerySchema, query);
-      const result = db.search.search(validatedData);
+      const result = db.getSearch().search(validatedData);
       return result;
     });
   });

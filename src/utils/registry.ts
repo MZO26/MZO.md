@@ -152,6 +152,9 @@ function initTemplateRegistry() {
     noteItemTemplate: requireElement<HTMLTemplateElement>(
       "#note-item-template",
     ),
+    tagsPopoverTemplate: requireElement<HTMLTemplateElement>(
+      "#tags-popover-template",
+    ),
   });
 }
 

@@ -211,6 +211,24 @@
         <div class="settings-content" data-activetab="Appearance"></div>
       </form>
     </dialog>
+    <template id="tags-popover-template">
+      <div class="tags-popover">
+        <div class="tags-popover-header">
+          <div class="input-wrapper">
+            <input
+              type="search"
+              class="search-input"
+              placeholder="Filter all tags..."
+              title="Filter tags"
+            />
+          </div>
+          <button class="untagged-btn" title="Untagged">
+            <i data-lucide="tag-x"></i>
+          </button>
+        </div>
+        <div class="tags-popover-content"></div>
+      </div>
+    </template>
     <template id="sidebar-empty-state-template">
       <div class="sidebar-empty-state empty-state-content">
         <div class="empty-state-icon">

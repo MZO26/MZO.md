@@ -15,17 +15,23 @@ import { DatabaseSync, type StatementSync } from "node:sqlite";
 
 class Transactions {
   private db: DatabaseSync;
-  private readonly createNoteStmt: StatementSync;
-  private readonly updateNoteStmt: StatementSync;
-  private readonly deleteNoteStmt: StatementSync;
-  private readonly deleteTagsStmt: StatementSync;
-  private readonly deleteLinksStmt: StatementSync;
-  private readonly insertManyTagsStmt: StatementSync;
-  private readonly insertManyLinksStmt: StatementSync;
-  private readonly deleteManyNotesStmt: StatementSync;
+  private createNoteStmt!: StatementSync;
+  private updateNoteStmt!: StatementSync;
+  private deleteNoteStmt!: StatementSync;
+  private deleteTagsStmt!: StatementSync;
+  private deleteLinksStmt!: StatementSync;
+  private insertManyTagsStmt!: StatementSync;
+  private insertManyLinksStmt!: StatementSync;
+  private deleteManyNotesStmt!: StatementSync;
   constructor(dbConnection: DatabaseSync) {
     this.db = dbConnection;
+  }
 
+  public init() {
+    this.prepareStmts();
+  }
+
+  private prepareStmts() {
     this.createNoteStmt = this.db.prepare(
       `INSERT INTO notes (id, title, content, plain_text, snippet, pinned, created_at, updated_at) VALUES ($id, $title, $content, $plain_text, $snippet, $pinned, $created_at, $updated_at) RETURNING id, title, snippet, pinned, created_at, updated_at`,
     );

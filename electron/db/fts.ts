@@ -7,11 +7,18 @@ import type { DatabaseSync, StatementSync } from "node:sqlite";
 
 class NotesSearch {
   private db: DatabaseSync;
-  public readonly searchStmt: StatementSync;
+  private searchStmt!: StatementSync;
   constructor(db: DatabaseSync) {
     this.db = db;
-    this.createVirtualTable(this.db);
-    this.buildIndex(this.db);
+  }
+
+  public init() {
+    this.createVirtualTable();
+    this.buildIndex();
+    this.prepareStmt();
+  }
+
+  private prepareStmt() {
     this.searchStmt = this.db.prepare(`
     WITH matched_notes AS (
         SELECT
@@ -34,8 +41,8 @@ class NotesSearch {
     `);
   }
 
-  public createVirtualTable(db: DatabaseSync) {
-    const available = db
+  private createVirtualTable() {
+    const available = this.db
       .prepare(`SELECT 1 FROM pragma_module_list WHERE name = 'fts5'`)
       .get();
 
@@ -45,7 +52,7 @@ class NotesSearch {
       throw new AppBackendError(AppErrorCode.DBError, msg);
     }
     mainLogger.devLog("[FTS5]: Creating Virtual Table");
-    db.exec(`
+    this.db.exec(`
       CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
         title,
         plain_text,
@@ -56,9 +63,9 @@ class NotesSearch {
       );`);
   }
 
-  public buildIndex(db: DatabaseSync) {
+  private buildIndex() {
     mainLogger.devLog("[FTS5]: Building Index");
-    db.exec(`
+    this.db.exec(`
     CREATE TRIGGER IF NOT EXISTS trg_notes_ai
       AFTER INSERT ON notes
       BEGIN
@@ -87,8 +94,8 @@ class NotesSearch {
   private isRebuilding = false;
   private hasRebuilt = false;
 
-  public rebuildIndex(db: DatabaseSync) {
-    db.exec(`
+  private rebuildIndex() {
+    this.db.exec(`
       INSERT INTO notes_fts(notes_fts) VALUES ('rebuild');
       INSERT INTO notes_fts(notes_fts) VALUES ('optimize');
     `);
@@ -116,7 +123,7 @@ class NotesSearch {
       );
       this.isRebuilding = true;
       try {
-        this.rebuildIndex(this.db);
+        this.rebuildIndex();
       } catch (error) {
         mainLogger.appError("[FTS5]: Error during rebuild process:", error);
       } finally {
@@ -127,7 +134,7 @@ class NotesSearch {
     }
   }
 
-  public normalizeFTSQuery(input: SearchQuery) {
+  private normalizeFTSQuery(input: SearchQuery) {
     const trimmed = input.trim();
     if (trimmed.length < MIN_SEARCH_LENGTH) return "";
     const words: string[] = [];

@@ -24,28 +24,21 @@ import { compareNotes, updateNoteCount } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import type { AllTagsMenu, FilterMode, SidebarParams } from "@/utils/types";
 
-let allTagsMenu: AllTagsMenu | null = null;
+const tagsPopoverClone = createTemplateCloner("tagsPopoverTemplate", isDiv);
+
+let tagPopoverClone: AllTagsMenu | null = null;
 
 function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
-  const popover = document.createElement("div");
-  const content = document.createElement("div");
+  const popover = tagsPopoverClone();
+  const content = requireElement<HTMLDivElement>(
+    ".tags-popover-content",
+    popover,
+  );
+  const filterInput = requireElement<HTMLInputElement>(
+    ".search-input",
+    popover,
+  );
   let isOpen = false;
-  popover.className = "tags-popover";
-  content.className = "tags-popover-content";
-  const inputWrapper = document.createElement("div");
-  inputWrapper.className = "input-wrapper";
-  const filterInput = document.createElement("input");
-  const header = document.createElement("div");
-  header.className = "tags-popover-header";
-  filterInput.type = "search";
-  filterInput.placeholder = "Filter all tags...";
-  filterInput.title = "Filter tags";
-  filterInput.className = "search-input";
-  inputWrapper.appendChild(filterInput);
-  const untaggedButton = createIconButton("TagX", "Untagged");
-  untaggedButton.className = "untagged-btn";
-  header.append(inputWrapper, untaggedButton);
-  popover.append(header, content);
   document.body.appendChild(popover);
   renderIcons(popover);
 
@@ -137,7 +130,7 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   );
 
   document.addEventListener("click", (e) => {
-    if (!(e.target instanceof Element)) return;
+    if (!isOpen || !(e.target instanceof Element)) return;
     if (popover.contains(e.target) || button.contains(e.target)) return;
     close();
   });
@@ -152,8 +145,8 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   };
 }
 
-function showAllTagsMenu(button: HTMLButtonElement, tags: string[]) {
-  const menu = (allTagsMenu ??= createAllTagsPopover(button));
+function showTagPopover(button: HTMLButtonElement, tags: string[]) {
+  const menu = (tagPopoverClone ??= createAllTagsPopover(button));
   menu.render(tags);
   menu.toggle();
 }
@@ -206,12 +199,16 @@ const getSidebarEmptyStateClone = createTemplateCloner(
   isDiv,
 );
 
+let emptyStateClone: HTMLDivElement | null = null;
+
 function renderSidebarEmptyState(sidebarParams: SidebarParams) {
   const sidebar = getAppItem("sidebar");
-  const emptyState = getSidebarEmptyStateClone();
-  updateSidebarEmptyState(emptyState, sidebarParams.query);
-  sidebar.replaceChildren(emptyState);
-  renderIcons(emptyState);
+  if (!emptyStateClone) {
+    emptyStateClone = getSidebarEmptyStateClone();
+    renderIcons(emptyStateClone);
+  }
+  updateSidebarEmptyState(emptyStateClone, sidebarParams.query);
+  sidebar.replaceChildren(emptyStateClone);
 }
 
 function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
@@ -352,7 +349,7 @@ export {
   renderNoteList,
   resizeSidebar,
   setSidebarState,
-  showAllTagsMenu,
+  showTagPopover,
   toggleSidebar,
   updateNoteCount,
 };

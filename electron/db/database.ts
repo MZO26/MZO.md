@@ -41,88 +41,116 @@ import path from "path";
 
 class AppDB {
   private db: DatabaseSync | undefined;
-  private readonly dbPath: string;
-  public readonly transactions: Transactions;
-  public readonly search: NotesSearch;
-  private readonly getAllNotesStmt: StatementSync;
-  private readonly getAllBackupStmt: StatementSync;
-  private readonly getNoteByIdStmt: StatementSync;
-  private readonly getManyNotesByIdStmt: StatementSync;
-  private readonly getAllTagsStmt: StatementSync;
-  private readonly getAllLinksStmt: StatementSync;
-  private readonly getTagsByIdStmt: StatementSync;
-  private readonly getLinksByIdStmt: StatementSync;
-  private readonly getManyTagsStmt: StatementSync;
-  private readonly getManyLinksStmt: StatementSync;
-  private readonly getOldTitleStmt: StatementSync;
-  private readonly togglePinStmt: StatementSync;
-  private readonly toggleManyPinStmt: StatementSync;
-  private readonly updateStoreStmt: StatementSync;
-  private readonly getAllSettingsStmt: StatementSync;
-  private readonly checkNoteStmt: StatementSync;
+  private dbPath: string;
+  public transactions: Transactions | undefined;
+  public search: NotesSearch | undefined;
+  private getAllNotesStmt!: StatementSync;
+  private getAllBackupStmt!: StatementSync;
+  private getNoteByIdStmt!: StatementSync;
+  private getManyNotesByIdStmt!: StatementSync;
+  private getAllTagsStmt!: StatementSync;
+  private getAllLinksStmt!: StatementSync;
+  private getTagsByIdStmt!: StatementSync;
+  private getLinksByIdStmt!: StatementSync;
+  private getManyTagsStmt!: StatementSync;
+  private getManyLinksStmt!: StatementSync;
+  private getOldTitleStmt!: StatementSync;
+  private togglePinStmt!: StatementSync;
+  private toggleManyPinStmt!: StatementSync;
+  private updateStoreStmt!: StatementSync;
+  private getAllSettingsStmt!: StatementSync;
+  private checkNoteStmt!: StatementSync;
   constructor() {
     this.dbPath = path.join(app.getPath("userData"), "app.db");
+  }
+
+  public open(): DatabaseSync {
+    if (this.db) return this.db;
+    const db = new DatabaseSync(this.dbPath, {
+      open: true,
+      readOnly: false,
+    });
     try {
-      this.db = new DatabaseSync(this.dbPath);
-      // create tables to ensure they exist before preparing statements
-      this.createTables(this.db);
-      this.createIndexes(this.db);
-      this.transactions = new Transactions(this.db);
-      this.search = new NotesSearch(this.db);
-      // predefined statements to prevent parsing them for every transaction
-      this.getAllNotesStmt = this.db.prepare(
-        `SELECT id, title, pinned, snippet, created_at, updated_at
+      this.db = db;
+      this.execPragma("journal_mode = WAL", db);
+      this.execPragma("foreign_keys = ON", db);
+      this.execPragma("busy_timeout = 5000", db);
+      this.execPragma("synchronous = NORMAL", db);
+      this.createTables(db);
+      this.createIndexes(db);
+      const integrity = this.queryPragma<{ quick_check: string }>(
+        "quick_check",
+        db,
+      );
+      if (integrity?.quick_check !== "ok") {
+        throw new AppBackendError(AppErrorCode.DBError);
+      }
+      this.search = new NotesSearch(db);
+      this.search.init();
+      this.transactions = new Transactions(db);
+      this.transactions.init();
+      this.prepareStmts(db);
+      return db;
+    } catch (error) {
+      mainLogger.appError("[Database Error]: Failed to open db", error);
+      db.close();
+      this.db = undefined;
+      this.search = undefined;
+      this.transactions = undefined;
+      throw error;
+    }
+  }
+
+  private prepareStmts(db: DatabaseSync) {
+    this.getAllNotesStmt = db.prepare(
+      `SELECT id, title, pinned, snippet, created_at, updated_at
       FROM notes 
       ORDER BY updated_at DESC`,
-      );
-      this.getAllBackupStmt = this.db.prepare(`
+    );
+    this.getAllBackupStmt = db.prepare(`
         SELECT * FROM notes ORDER BY updated_at DESC
         `);
-      this.getNoteByIdStmt = this.db.prepare(
-        `SELECT * FROM notes WHERE id = $id`,
-      );
-      this.getManyNotesByIdStmt = this.db.prepare(`
+    this.getNoteByIdStmt = db.prepare(`SELECT * FROM notes WHERE id = $id`);
+    this.getManyNotesByIdStmt = db.prepare(`
       SELECT * FROM notes WHERE id IN (SELECT value FROM json_each($ids))
     `);
-      this.getAllTagsStmt = this.db.prepare(
-        `SELECT note_id, tag_name FROM note_tags`,
-      );
-      this.getAllLinksStmt = this.db.prepare(
-        `SELECT source_id, target_id FROM note_links`,
-      );
-      this.getTagsByIdStmt = this.db.prepare(
-        `SELECT tag_name FROM note_tags WHERE note_id = $id`,
-      );
-      this.getLinksByIdStmt = this.db.prepare(`
+    this.getAllTagsStmt = db.prepare(`SELECT note_id, tag_name FROM note_tags`);
+    this.getAllLinksStmt = db.prepare(
+      `SELECT source_id, target_id FROM note_links`,
+    );
+    this.getTagsByIdStmt = db.prepare(
+      `SELECT tag_name FROM note_tags WHERE note_id = $id`,
+    );
+    this.getLinksByIdStmt = db.prepare(`
       SELECT target_id AS id, 'out' AS dir FROM note_links WHERE source_id = $id UNION ALL SELECT source_id AS id, 'in' AS dir FROM note_links WHERE target_id = $id
       `);
-      this.getManyTagsStmt = this.db.prepare(`
+    this.getManyTagsStmt = db.prepare(`
       SELECT note_id, tag_name FROM note_tags
       WHERE note_id IN  (SELECT value FROM json_each($ids))
       `);
-      this.getManyLinksStmt = this.db.prepare(`
+    this.getManyLinksStmt = db.prepare(`
       SELECT source_id, target_id
       FROM note_links
       WHERE source_id IN (SELECT value FROM json_each($ids))
       OR target_id IN (SELECT value FROM json_each($ids))
       `);
-      this.togglePinStmt = this.db.prepare(`
+    this.togglePinStmt = db.prepare(`
       UPDATE notes 
       SET pinned = NOT pinned, updated_at = $updated_at
       WHERE id = $id RETURNING pinned
     `);
-      this.toggleManyPinStmt = this.db.prepare(`
+    this.toggleManyPinStmt = db.prepare(`
       UPDATE notes
       SET pinned = NOT pinned, updated_at = $updated_at
       WHERE id IN (SELECT value FROM json_each($ids))
       RETURNING id
       `);
-      this.getOldTitleStmt = this.db.prepare(`
+    this.getOldTitleStmt = db.prepare(`
       SELECT created_at, title 
       FROM notes
       WHERE id IN (SELECT value FROM json_each($ids))
       `);
-      this.updateStoreStmt = this.db.prepare(`
+    this.updateStoreStmt = db.prepare(`
       UPDATE store SET
       "theme" = $theme,
       "font_family" = $font_family,
@@ -140,10 +168,10 @@ class AppDB {
       "active_tag" = $active_tag
       WHERE id = 1
       `);
-      this.getAllSettingsStmt = this.db.prepare(`
+    this.getAllSettingsStmt = db.prepare(`
         SELECT * FROM store WHERE id = 1
       `);
-      this.checkNoteStmt = this.db.prepare(`
+    this.checkNoteStmt = db.prepare(`
       SELECT 1 
       FROM notes 
       WHERE title = $title 
@@ -151,16 +179,6 @@ class AppDB {
       AND created_at < $end 
       LIMIT 1;
       `);
-      mainLogger.devLog(`Database initialized at: ${this.dbPath}`);
-    } catch (error) {
-      mainLogger.appError("[AppDB]: Failed to initialize database:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      const msg =
-        `database to load on platform: ${process.platform}. ` +
-        `Original error: ${errorMessage}`;
-      throw new AppBackendError(AppErrorCode.DBError, msg);
-    }
   }
 
   private createTables(db: DatabaseSync) {
@@ -324,7 +342,7 @@ class AppDB {
       updated_at: now,
     };
     const dbContent = validation(CreateTransactionSchema, dbPayload);
-    const result = this.transactions.safeCreate(dbContent);
+    const result = this.getTransactions().safeCreate(dbContent);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
     return result;
   }
@@ -347,7 +365,7 @@ class AppDB {
       };
       dbContents.push(dbPayload);
     }
-    const result = this.transactions.safeCreateMany(dbContents);
+    const result = this.getTransactions().safeCreateMany(dbContents);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
     return result;
   }
@@ -363,19 +381,19 @@ class AppDB {
       links: uniqueLinks,
       updated_at: now,
     };
-    const result = this.transactions.safeUpdate(dbPayload);
+    const result = this.getTransactions().safeUpdate(dbPayload);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
     return result;
   }
 
   public delete(id: Id) {
-    const result = this.transactions.safeDelete(id);
+    const result = this.getTransactions().safeDelete(id);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
     return result;
   }
 
   public deleteMany(ids: Id[]) {
-    const result = this.transactions.safeDeleteMany(ids);
+    const result = this.getTransactions().safeDeleteMany(ids);
     if (!result) throw new AppBackendError(AppErrorCode.DBError);
     return result;
   }
@@ -509,21 +527,30 @@ class AppDB {
     return validation(OldNoteSchema, rows);
   }
 
-  public execPragma(name: string): void {
-    if (!this.db) {
-      throw new Error(
-        `[Database Error]: Attempted to call execPragma("${name}") before the database was initialized.`,
-      );
+  public getSearch(): NotesSearch {
+    if (!this.search) {
+      throw new AppBackendError(AppErrorCode.DBError);
     }
+    return this.search;
+  }
+
+  private getTransactions(): Transactions {
+    if (!this.transactions) {
+      throw new AppBackendError(AppErrorCode.DBError);
+    }
+    return this.transactions;
+  }
+
+  public execPragma(name: string, db: DatabaseSync = this.getDb()): void {
     const sql = name.trim().toUpperCase().startsWith("PRAGMA ")
       ? name
       : `PRAGMA ${name}`;
-    this.db.prepare(sql).run();
+    db.prepare(sql).run();
   }
 
-  public queryPragma<T extends Record<string, unknown>>(
+  private queryPragma<T extends Record<string, unknown>>(
     sql: string,
-    db: DatabaseSync,
+    db: DatabaseSync = this.getDb(),
   ): T | undefined {
     const command = sql.trim().toUpperCase().startsWith("PRAGMA ")
       ? sql
@@ -532,9 +559,7 @@ class AppDB {
   }
 
   public close() {
-    if (!this.db) {
-      return;
-    }
+    if (!this.db) return;
     try {
       this.db.close();
     } catch (error) {
@@ -547,48 +572,17 @@ class AppDB {
     }
   }
 
-  public open(): DatabaseSync {
-    if (this.db) return this.db;
-    const dbPath = this.pathDb();
-    const db = new DatabaseSync(dbPath, {
-      open: true,
-      readOnly: false,
-    });
-    this.db = db;
-    try {
-      this.execPragma("journal_mode = WAL");
-      this.execPragma("foreign_keys = ON");
-      this.execPragma("busy_timeout = 5000");
-      this.execPragma("synchronous = NORMAL");
-      this.createTables(db);
-      this.createIndexes(db);
-      const integrity = this.queryPragma<{ quick_check: string }>(
-        "quick_check",
-        db,
-      );
-      if (integrity?.quick_check !== "ok") {
-        throw new AppBackendError(AppErrorCode.DBError);
-      }
-      return this.db;
-    } catch (error) {
-      mainLogger.appError("[Database Error]: Failed to open db", error);
-      db.close();
-      this.db = undefined;
-      throw error;
-    }
+  private getDb(): DatabaseSync {
+    return this.db ?? this.open();
   }
 
   public pathDb(): string {
     return this.dbPath;
   }
 
-  public async backupDb(destination: string, db?: DatabaseSync) {
-    const targetDb = db ?? this.db;
-    if (!targetDb) {
-      throw new AppBackendError(AppErrorCode.DBError);
-    }
+  public async backupDb(destination: string, db: DatabaseSync = this.getDb()) {
     try {
-      await backup(targetDb, destination, {
+      await backup(db, destination, {
         progress: (info) => {
           mainLogger.devLog(
             `Backup progress: ${info.remainingPages} pages left.`,
