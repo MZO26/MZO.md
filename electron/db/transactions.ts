@@ -15,14 +15,14 @@ import { DatabaseSync, type StatementSync } from "node:sqlite";
 
 class Transactions {
   private db: DatabaseSync;
-  private createNoteStmt: StatementSync;
-  private updateNoteStmt: StatementSync;
-  private deleteNoteStmt: StatementSync;
-  private deleteTagsStmt: StatementSync;
-  private deleteLinksStmt: StatementSync;
-  private insertManyTagsStmt: StatementSync;
-  private insertManyLinksStmt: StatementSync;
-  private deleteManyNotesStmt: StatementSync;
+  private readonly createNoteStmt: StatementSync;
+  private readonly updateNoteStmt: StatementSync;
+  private readonly deleteNoteStmt: StatementSync;
+  private readonly deleteTagsStmt: StatementSync;
+  private readonly deleteLinksStmt: StatementSync;
+  private readonly insertManyTagsStmt: StatementSync;
+  private readonly insertManyLinksStmt: StatementSync;
+  private readonly deleteManyNotesStmt: StatementSync;
   constructor(dbConnection: DatabaseSync) {
     this.db = dbConnection;
 

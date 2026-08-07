@@ -32,18 +32,20 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   let isOpen = false;
   popover.className = "tags-popover";
   content.className = "tags-popover-content";
-  const untaggedButton = createIconButton("TagX", "Untagged");
-  untaggedButton.className = "untagged-btn";
   const inputWrapper = document.createElement("div");
   inputWrapper.className = "input-wrapper";
   const filterInput = document.createElement("input");
+  const header = document.createElement("div");
+  header.className = "tags-popover-header";
   filterInput.type = "search";
   filterInput.placeholder = "Filter all tags...";
   filterInput.title = "Filter tags";
   filterInput.className = "search-input";
   inputWrapper.appendChild(filterInput);
-  content.prepend(untaggedButton);
-  popover.append(inputWrapper, content);
+  const untaggedButton = createIconButton("TagX", "Untagged");
+  untaggedButton.className = "untagged-btn";
+  header.append(inputWrapper, untaggedButton);
+  popover.append(header, content);
   document.body.appendChild(popover);
   renderIcons(popover);
 

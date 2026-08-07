@@ -7,7 +7,7 @@ import type { DatabaseSync, StatementSync } from "node:sqlite";
 
 class NotesSearch {
   private db: DatabaseSync;
-  public searchStmt: StatementSync;
+  public readonly searchStmt: StatementSync;
   constructor(db: DatabaseSync) {
     this.db = db;
     this.createVirtualTable(this.db);

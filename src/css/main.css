@@ -484,6 +484,12 @@
   max-width: 260px;
 }
 
+.tags-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .tags-popover-content {
   display: flex;
   flex-wrap: wrap;

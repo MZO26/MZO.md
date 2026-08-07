@@ -42,28 +42,31 @@ import path from "path";
 class AppDB {
   private db: DatabaseSync | undefined;
   private readonly dbPath: string;
-  public transactions: Transactions;
-  public search: NotesSearch;
-  private getAllNotesStmt: StatementSync;
-  private getAllBackupStmt: StatementSync;
-  private getNoteByIdStmt: StatementSync;
-  private getManyNotesByIdStmt: StatementSync;
-  private getAllTagsStmt: StatementSync;
-  private getAllLinksStmt: StatementSync;
-  private getTagsByIdStmt: StatementSync;
-  private getLinksByIdStmt: StatementSync;
-  private getManyTagsStmt: StatementSync;
-  private getManyLinksStmt: StatementSync;
-  private getOldTitleStmt: StatementSync;
-  private togglePinStmt: StatementSync;
-  private toggleManyPinStmt: StatementSync;
-  private updateStoreStmt: StatementSync;
-  private getAllSettingsStmt: StatementSync;
-  private checkNoteStmt: StatementSync;
+  public readonly transactions: Transactions;
+  public readonly search: NotesSearch;
+  private readonly getAllNotesStmt: StatementSync;
+  private readonly getAllBackupStmt: StatementSync;
+  private readonly getNoteByIdStmt: StatementSync;
+  private readonly getManyNotesByIdStmt: StatementSync;
+  private readonly getAllTagsStmt: StatementSync;
+  private readonly getAllLinksStmt: StatementSync;
+  private readonly getTagsByIdStmt: StatementSync;
+  private readonly getLinksByIdStmt: StatementSync;
+  private readonly getManyTagsStmt: StatementSync;
+  private readonly getManyLinksStmt: StatementSync;
+  private readonly getOldTitleStmt: StatementSync;
+  private readonly togglePinStmt: StatementSync;
+  private readonly toggleManyPinStmt: StatementSync;
+  private readonly updateStoreStmt: StatementSync;
+  private readonly getAllSettingsStmt: StatementSync;
+  private readonly checkNoteStmt: StatementSync;
   constructor() {
     this.dbPath = path.join(app.getPath("userData"), "app.db");
     try {
-      this.db = this.open();
+      this.db = new DatabaseSync(this.dbPath);
+      // create tables to ensure they exist before preparing statements
+      this.createTables(this.db);
+      this.createIndexes(this.db);
       this.transactions = new Transactions(this.db);
       this.search = new NotesSearch(this.db);
       // predefined statements to prevent parsing them for every transaction
@@ -222,9 +225,9 @@ class AppDB {
     `);
   }
 
-  private getTagMapAll(): Map<string, Tag[]> {
+  private getTagMapAll(): Map<Id, Tag[]> {
     const allTags = this.getAllTagsStmt.all() as TagRow[];
-    const tagMap = new Map<string, Tag[]>();
+    const tagMap = new Map<Id, Tag[]>();
     for (const { note_id, tag_name } of allTags) {
       const existingTags = tagMap.get(note_id) ?? [];
       existingTags.push(tag_name);
@@ -233,11 +236,11 @@ class AppDB {
     return tagMap;
   }
 
-  private getTagMapMany(ids: string[]): Map<string, Tag[]> {
+  private getTagMapMany(ids: Id[]): Map<Id, Tag[]> {
     const manyTags = this.getManyTagsStmt.all({
       $ids: JSON.stringify(ids),
     }) as TagRow[];
-    const tagMap = new Map<string, Tag[]>();
+    const tagMap = new Map<Id, Tag[]>();
     for (const { note_id, tag_name } of manyTags) {
       const existingTags = tagMap.get(note_id) ?? [];
       existingTags.push(tag_name);
@@ -246,9 +249,9 @@ class AppDB {
     return tagMap;
   }
 
-  private getLinkMapAll(): Map<string, Link[]> {
+  private getLinkMapAll(): Map<Id, Link[]> {
     const allLinks = this.getAllLinksStmt.all() as LinkRow[];
-    const linkMap = new Map<string, Link[]>();
+    const linkMap = new Map<Id, Link[]>();
     for (const { source_id, target_id } of allLinks) {
       const sourceLinks = linkMap.get(source_id) ?? [];
       sourceLinks.push({ id: target_id, dir: "out" });
@@ -260,12 +263,12 @@ class AppDB {
     return linkMap;
   }
 
-  private getLinkMapMany(ids: string[]): Map<string, Link[]> {
+  private getLinkMapMany(ids: Id[]): Map<Id, Link[]> {
     const allLinks = this.getManyLinksStmt.all({
       $ids: JSON.stringify(ids),
     }) as LinkRow[];
     const requestedIds = new Set(ids);
-    const linkMap = new Map<string, Link[]>();
+    const linkMap = new Map<Id, Link[]>();
     for (const { source_id, target_id } of allLinks) {
       if (requestedIds.has(source_id)) {
         const sourceLinks = linkMap.get(source_id) ?? [];

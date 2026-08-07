@@ -6,7 +6,7 @@ import type { ZoomAction } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
 import { BrowserWindow, screen } from "electron";
 
-const ZOOMS = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2] as const;
+const ZOOMS = [1, 1.1, 1.25, 1.5] as const;
 
 function getClosestZoom(value: number) {
   return ZOOMS.reduce((closest, current) =>
