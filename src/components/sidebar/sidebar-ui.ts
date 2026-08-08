@@ -68,10 +68,22 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
     isOpen ? close() : open();
   }
 
-  function render(tags: string[]) {
-    const uniqueSortedTags = [...new Set(tags)].sort((a, b) =>
+  function precomputeTags(tags: string[]) {
+    const tagCount = tags.reduce(
+      (acc, tag) => {
+        acc[tag] = (acc[tag] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    const uniqueSortedTags = Object.keys(tagCount).sort((a, b) =>
       a.localeCompare(b),
     );
+    return { uniqueSortedTags, tagCount };
+  }
+
+  function render(tags: string[]) {
+    const { uniqueSortedTags, tagCount } = precomputeTags(tags);
     if (uniqueSortedTags.length === 0) {
       content.replaceChildren(createInfoSpan("No tags here."));
       return;
@@ -79,10 +91,11 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
     const frag = document.createDocumentFragment();
     for (const tag of uniqueSortedTags) {
       const item = document.createElement("span");
+      const count = tagCount[tag];
       item.className = "tags-popover-item tag";
       item.dataset["tag"] = tag;
-      item.title = `#${tag}`;
-      item.textContent = `#${tag}`;
+      item.title = `#${tag} (${count})`;
+      item.textContent = `#${tag} (${count})`;
       frag.appendChild(item);
     }
     content.replaceChildren(frag);
@@ -90,15 +103,15 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
 
   function filter(query: string) {
     const notes = noteStore.get("notes");
-    const allTags = notes.flatMap((n) => n.tags ?? []);
-    if (!query) {
-      render(allTags);
-      return;
-    }
     const normalizedQuery = query.toLowerCase();
-    const matches = allTags.filter((tag) =>
-      tag.toLowerCase().includes(normalizedQuery),
-    );
+    const matches: string[] = [];
+    for (const note of notes) {
+      for (const tag of note.tags ?? []) {
+        if (!normalizedQuery || tag.toLowerCase().includes(normalizedQuery)) {
+          matches.push(tag);
+        }
+      }
+    }
     render(matches);
   }
 

@@ -18,6 +18,17 @@ function initQuickSwitcher() {
       switchDialog.close();
       return;
     }
+    const displayNotes = await getDisplayNotes();
+    currentDisplayNotes = displayNotes;
+    activeIndex = 0;
+    if (editor.isFocused) {
+      editor.commands.blur();
+    }
+    switchDialog.showModal();
+    renderTitleList();
+  }
+
+  async function getDisplayNotes() {
     const activeId = stateStore.get("activeId") as Id;
     await waitForFlush(activeId);
     const { recentNotes, noteIndex } = noteStore.getState();
@@ -61,13 +72,7 @@ function initQuickSwitcher() {
         });
       }
     }
-    currentDisplayNotes = displayNotes;
-    activeIndex = 0;
-    if (editor.isFocused) {
-      editor.commands.blur();
-    }
-    switchDialog.showModal();
-    renderTitleList();
+    return displayNotes;
   }
 
   function computeActiveNoteLinks(activeNote: NoteListItem) {
@@ -84,6 +89,17 @@ function initQuickSwitcher() {
     return { backlinks, outgoingLinks };
   }
 
+  function getSectionCount() {
+    const count = currentDisplayNotes.reduce(
+      (acc, note) => {
+        acc[note.section] = (acc[note.section] ?? 0) + 1;
+        return acc;
+      },
+      {} as Record<QuickSwitchDisplayNote["section"], number>,
+    );
+    return count;
+  }
+
   function renderTitleList() {
     listEl.replaceChildren();
     if (currentDisplayNotes.length === 0) {
@@ -92,11 +108,12 @@ function initQuickSwitcher() {
       return;
     }
     let lastSection: string | null = null;
+    const count = getSectionCount();
     for (const [index, note] of currentDisplayNotes.entries()) {
       if (note.section !== lastSection) {
         const header = document.createElement("div");
         header.className = "quick-switch-section-header";
-        header.textContent = getSectionLabel(note.section);
+        header.textContent = getSectionLabel(note.section, count);
         listEl.appendChild(header);
         lastSection = note.section;
       }
@@ -128,14 +145,17 @@ function initQuickSwitcher() {
     }
   }
 
-  function getSectionLabel(section: QuickSwitchDisplayNote["section"]) {
+  function getSectionLabel(
+    section: QuickSwitchDisplayNote["section"],
+    count: Record<QuickSwitchDisplayNote["section"], number>,
+  ) {
     switch (section) {
       case "recent":
-        return "Recent";
+        return `Recent (${count.recent})`;
       case "backlink":
-        return "Backlinks";
+        return `Backlinks (${count.backlink})`;
       case "outgoing":
-        return "Links";
+        return `Links (${count.outgoing})`;
       default:
         section satisfies never;
         return "";

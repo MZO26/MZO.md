@@ -5,7 +5,7 @@ import { matchesActiveTag } from "@/components/sidebar/sidebar-views";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import type { SidebarParams } from "@/utils/types";
-import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { Result } from "@shared/shared-types";
 
@@ -32,14 +32,16 @@ function memoize<T extends any[], R>(
 
 const selectSidebarNotes = memoize(
   (
-    visibleIds: string[],
-    noteIndex: Map<string, NoteListItem>,
+    visibleIds: Id[],
+    noteIndex: Map<Id, NoteListItem>,
     activeTag: string | null,
   ) => {
     return visibleIds
       .map((id) => noteIndex.get(id))
-      .filter((note): note is NoteListItem => !!note)
-      .filter((n) => matchesActiveTag(n, activeTag))
+      .filter(
+        (note): note is NoteListItem =>
+          !!note && matchesActiveTag(note, activeTag),
+      )
       .sort(compareNotes);
   },
 );
