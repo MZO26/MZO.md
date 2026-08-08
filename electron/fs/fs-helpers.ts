@@ -3,7 +3,10 @@ import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { processWithLimit } from "@electron/limiter";
 import { AppErrorCode } from "@shared/errors";
-import { FileNameSchema } from "@shared/schemas/request-schema";
+import {
+  FileNameSchema,
+  type ExportContent,
+} from "@shared/schemas/request-schema";
 import fs from "fs/promises";
 import { open, rename, unlink, type FileHandle } from "node:fs/promises";
 import path from "path";
@@ -144,7 +147,7 @@ function parseFilenameToDate(
       Number(second),
     ),
   );
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return null;
   }
   const safeTitle =
@@ -157,7 +160,11 @@ function parseFilenameToDate(
 
 function getFilePath(
   targetDirectory: string,
-  payload: { fileName: string; created_at: string; extension: string },
+  payload: {
+    fileName: string;
+    created_at: string;
+    extension: ExportContent["extension"];
+  },
 ) {
   const extension = payload.extension ?? "md";
   const creationDate = new Date(payload.created_at);

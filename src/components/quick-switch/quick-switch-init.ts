@@ -7,6 +7,7 @@ import { getAppItem, registerAppEvents } from "@/utils/registry";
 import type { QuickSwitchDisplayNote } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id, Link, NoteListItem } from "@shared/schemas/note-schema";
+import { APP_EVENTS } from "@shared/shared-constants";
 
 function initQuickSwitcher() {
   const editor = getAppItem("editor");
@@ -217,7 +218,8 @@ function initQuickSwitcher() {
   listEl.addEventListener("click", handleListClick);
   document.addEventListener("keydown", handleDocumentKeydown);
   registerAppEvents(document, {
-    "app:toggle-quick-switch": () => toggleSwitcher(),
+    // [] for computed keys to be evaluated correctly
+    [APP_EVENTS.TOGGLE_QUICK_SWITCH]: toggleSwitcher,
   });
 }
 

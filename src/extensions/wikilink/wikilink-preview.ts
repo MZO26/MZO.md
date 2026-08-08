@@ -17,7 +17,7 @@ function buildPreviewCard(
   const cardContent = document.createElement("div");
   cardContent.className = "wikilink-preview-content";
   const dateVal = new Date(updated_at).getTime();
-  if (!updated_at || isNaN(dateVal)) {
+  if (!updated_at || Number.isNaN(dateVal)) {
     cardContent.appendChild(createInfoSpan("Failed to load note metadata"));
     return cardContent;
   }
@@ -45,7 +45,7 @@ export const WikiLinkPreview = Extension.create({
     return {
       wikilink: null as HTMLDivElement | null,
       timer: undefined as number | undefined,
-      activeId: "" as Id | string,
+      activeId: null as Id | null,
       handlers: null as PreviewHandlers | null,
     };
   },
@@ -57,7 +57,7 @@ export const WikiLinkPreview = Extension.create({
     document.body.appendChild(element);
     this.storage.wikilink = element;
     const hide = () => {
-      this.storage.activeId = "";
+      this.storage.activeId = null;
       element.classList.add("hidden");
       element.replaceChildren();
     };

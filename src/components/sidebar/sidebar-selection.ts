@@ -78,6 +78,9 @@ async function getSelectionAction(
     case "delete":
       await deleteSelection();
       break;
+    default:
+      action satisfies never;
+      break;
   }
 }
 

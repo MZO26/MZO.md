@@ -11,12 +11,12 @@ import {
   setEditorWidth,
   setWindowTop,
 } from "@/components/toolbar/toolbar-features";
-import { handleUpdateSettings } from "@/settings/setting-actions";
-import { settingsStore, stateStore } from "@/state/state";
+import { stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { isFocusActive } from "@/utils/shortcuts";
+import { APP_EVENTS } from "@shared/shared-constants";
 
 function initToolbar() {
   const toolbarContainer = requireElement<HTMLDivElement>("#toolbar");
@@ -35,14 +35,10 @@ function initTopToolbar() {
     createAsyncHandler(async () => await setWindowTop(appPinBtn)),
   );
   registerAppEvents(document, {
-    "app:set-editor-width": () => setEditorWidth(appContainer),
-    "app:toggle-focus-mode": () => {
+    [APP_EVENTS.SET_EDITOR_WIDTH]: () => setEditorWidth(appContainer),
+    [APP_EVENTS.TOGGLE_FOCUS_MODE]: () => {
       const newState = !isFocusActive();
       stateStore.setState({ focus: newState });
-    },
-    "app:toggle-toolbar": async () => {
-      const newState = !settingsStore.get("toolbar_collapsed");
-      await handleUpdateSettings({ toolbar_collapsed: newState });
     },
   });
 }

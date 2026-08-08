@@ -28,6 +28,7 @@ import type {
   ExportContent,
   OpenAutoExportPathRequest,
 } from "@shared/schemas/request-schema";
+import { TABLE_ACTIONS } from "@shared/shared-constants";
 import type { TableAction } from "@shared/shared-types";
 import { generateHTML } from "@tiptap/core";
 
@@ -35,26 +36,29 @@ function triggerTableMenu(action: TableAction) {
   const editor = getAppItem("editor");
   const chain = editor.chain().focus();
   switch (action) {
-    case "addRowBefore":
+    case TABLE_ACTIONS.ADD_ROW_BEFORE:
       chain.addRowBefore().run();
       break;
-    case "addRowAfter":
+    case TABLE_ACTIONS.ADD_ROW_AFTER:
       chain.addRowAfter().run();
       break;
-    case "addColumnBefore":
+    case TABLE_ACTIONS.ADD_COLUMN_BEFORE:
       chain.addColumnBefore().run();
       break;
-    case "addColumnAfter":
+    case TABLE_ACTIONS.ADD_COLUMN_AFTER:
       chain.addColumnAfter().run();
       break;
-    case "deleteRow":
+    case TABLE_ACTIONS.DELETE_ROW:
       chain.deleteRow().run();
       break;
-    case "deleteColumn":
+    case TABLE_ACTIONS.DELETE_COLUMN:
       chain.deleteColumn().run();
       break;
-    case "deleteTable":
+    case TABLE_ACTIONS.DELETE_TABLE:
       chain.deleteTable().run();
+      break;
+    default:
+      action satisfies never;
       break;
   }
 }
@@ -280,16 +284,17 @@ async function triggerSyncCheck(id: Id) {
       );
       return;
     }
-    switch (syncResult.data.status) {
+    const status = syncResult.data.status;
+    switch (status) {
       case "UNCHANGED":
         await showNotification("Sync Check", "Note is in sync");
-        return;
+        break;
       case "MISSING":
         await showNotification(
           "Sync Check",
           "Note not found in target directory",
         );
-        return;
+        break;
       case "MODIFIED": {
         await showNotification("Sync Check", "Note is out of sync");
         const titleEl = requireElement<HTMLSpanElement>(
@@ -310,7 +315,11 @@ async function triggerSyncCheck(id: Id) {
           emitUpdate: true,
           contentType: "markdown",
         });
+        break;
       }
+      default:
+        status satisfies never;
+        break;
     }
   } finally {
     endSyncVersion(id, version);

@@ -14,7 +14,7 @@ import {
   type Id,
   type NoteMenuPayload,
 } from "@shared/schemas/note-schema";
-import { ALLOWED_PROTOCOLS } from "@shared/shared-constants";
+import { ALLOWED_PROTOCOLS, TABLE_ACTIONS } from "@shared/shared-constants";
 import { clipboard, ipcMain, Menu, shell, type BrowserWindow } from "electron";
 
 let activeId: Id | null = null;
@@ -147,12 +147,18 @@ function setUpTableMenu(win: BrowserWindow) {
     {
       label: "Add Row Before",
       click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "addRowBefore"),
+        win.webContents.send(
+          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
+          TABLE_ACTIONS.ADD_ROW_BEFORE,
+        ),
     },
     {
       label: "Add Row After",
       click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "addRowAfter"),
+        win.webContents.send(
+          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
+          TABLE_ACTIONS.ADD_ROW_AFTER,
+        ),
     },
     { type: "separator" },
     {
@@ -160,7 +166,7 @@ function setUpTableMenu(win: BrowserWindow) {
       click: () =>
         win.webContents.send(
           IPC_CHANNELS.TRIGGER_TABLE_ACTION,
-          "addColumnBefore",
+          TABLE_ACTIONS.ADD_COLUMN_BEFORE,
         ),
     },
     {
@@ -168,24 +174,33 @@ function setUpTableMenu(win: BrowserWindow) {
       click: () =>
         win.webContents.send(
           IPC_CHANNELS.TRIGGER_TABLE_ACTION,
-          "addColumnAfter",
+          TABLE_ACTIONS.ADD_COLUMN_AFTER,
         ),
     },
     { type: "separator" },
     {
       label: "Delete Row",
       click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "deleteRow"),
+        win.webContents.send(
+          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
+          TABLE_ACTIONS.DELETE_ROW,
+        ),
     },
     {
       label: "Delete Column",
       click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "deleteColumn"),
+        win.webContents.send(
+          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
+          TABLE_ACTIONS.DELETE_COLUMN,
+        ),
     },
     {
       label: "Delete Table",
       click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, "deleteTable"),
+        win.webContents.send(
+          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
+          TABLE_ACTIONS.DELETE_TABLE,
+        ),
     },
   ]);
   return tableMenu;

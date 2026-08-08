@@ -1,4 +1,4 @@
-import { mainLogger } from "@electron/handler/permission-handler";
+import { IS_DEV_MAIN, mainLogger } from "@electron/handler/permission-handler";
 import type { UrlDecision } from "@shared/shared-types";
 import { app, net, protocol, shell, type BrowserWindow } from "electron";
 import fs from "fs/promises";
@@ -92,7 +92,7 @@ function processUrl(url: string): UrlDecision {
       return "external";
     }
     if (
-      (isWebProtocol && isLocalhost) ||
+      (isWebProtocol && isLocalhost && IS_DEV_MAIN) ||
       isSafeLocalFile ||
       isCustomAppProtocol
     ) {
@@ -142,17 +142,14 @@ function navigationHandler(win: BrowserWindow) {
   });
 
   win.webContents.on("will-frame-navigate", (e) => {
-    if (!e.isMainFrame) {
-      const decision = processUrl(e.url);
-      if (decision === "external") {
-        e.preventDefault();
-        void shell.openExternal(e.url);
-        return;
-      }
-
-      if (decision === "block") {
-        e.preventDefault();
-      }
+    const decision = processUrl(e.url);
+    if (decision === "external") {
+      e.preventDefault();
+      void shell.openExternal(e.url);
+      return;
+    }
+    if (decision === "block") {
+      e.preventDefault();
     }
   });
 

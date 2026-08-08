@@ -54,6 +54,9 @@ async function getQuickAction(action: QuickAction) {
         await exportSelection(allIds);
       });
       break;
+    default:
+      action satisfies never;
+      break;
   }
 }
 

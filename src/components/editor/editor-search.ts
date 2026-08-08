@@ -5,7 +5,7 @@ import { DEBOUNCE_MS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
-import { MIN_SEARCH_LENGTH } from "@shared/shared-constants";
+import { APP_EVENTS, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
 
 function hasSearchMatch(editor: Editor): boolean {
@@ -233,7 +233,7 @@ function initEditorSearch(editor: Editor) {
   input.addEventListener("input", debouncedSearch);
 
   registerAppEvents(document, {
-    "app:toggle-editor-search": () => toggle(),
+    [APP_EVENTS.TOGGLE_EDITOR_SEARCH]: toggle,
   });
 }
 

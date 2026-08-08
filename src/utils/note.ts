@@ -17,28 +17,27 @@ function createNoteUpdater() {
 
 const updateNoteCount = createNoteUpdater();
 
-function getNotePriority(note: NoteListItem) {
-  if (note.pinned) return 0; // highest priority
-  return 1; // normal
-}
-
 // this function returns a number by which note items
 //  are being displayed in the sidebar. If it returns
 //  a negative number, a comes first, then b
 function compareNotes(a: NoteListItem, b: NoteListItem) {
-  const priorityDiff = getNotePriority(a) - getNotePriority(b);
-  if (priorityDiff !== 0) return priorityDiff;
-  // if priorities are equal, they get sorted by title
+  if (a.pinned !== b.pinned) {
+    return a.pinned ? -1 : 1;
+  }
+  if (a.created_at > b.created_at) return -1;
+  if (a.created_at < b.created_at) return 1;
+
+  // 3. Fallback to Title
   return a.title.localeCompare(b.title, undefined, {
     sensitivity: "accent",
     numeric: true,
   });
-  // passing undefined for locale args to use defaults
-  // set sensitivity to accent for edge cases on
-  // accented characters or caps vs no caps
-  // numeric true recognizes numbers and correctly
-  // sorts them in the title
 }
+// passing undefined for locale args to use defaults
+// set sensitivity to accent for edge cases on
+// accented characters or caps vs no caps
+// numeric true recognizes numbers and correctly
+// sorts them in the title
 
 function addActiveTagToDoc(
   doc: JSONContent,

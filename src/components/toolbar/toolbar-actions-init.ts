@@ -1,21 +1,25 @@
 import { promptImageUpload } from "@/extensions/image/image";
 import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
 import type { ActionMap } from "@/utils/types";
+import { APP_EVENTS } from "@shared/shared-constants";
 
 const TOP_TOOLBAR_ACTIONS: ActionMap = {
   editorWidth: {
     type: "action",
-    run: () => document.dispatchEvent(new CustomEvent("app:set-editor-width")),
+    run: () =>
+      document.dispatchEvent(new CustomEvent(APP_EVENTS.SET_EDITOR_WIDTH)),
     icon: "RulerDimensionLine",
   },
   focus: {
     type: "action",
-    run: () => document.dispatchEvent(new CustomEvent("app:toggle-focus-mode")),
+    run: () =>
+      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_FOCUS_MODE)),
     icon: "Focus",
   },
   toggleToolbar: {
     type: "action",
-    run: () => document.dispatchEvent(new CustomEvent("app:toggle-toolbar")),
+    run: () =>
+      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_TOOLBAR)),
     icon: "ArrowDownFromLine",
   },
 };
@@ -24,7 +28,8 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
 
 const TOOLBAR_ACTIONS: ActionMap = {
   toggleSidebar: {
-    run: () => document.dispatchEvent(new CustomEvent("app:toggle-sidebar")),
+    run: () =>
+      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_SIDEBAR)),
     icon: "ArrowLeftFromLine",
   },
   undo: {
@@ -39,12 +44,12 @@ const TOOLBAR_ACTIONS: ActionMap = {
   },
   search: {
     run: () =>
-      document.dispatchEvent(new CustomEvent("app:toggle-editor-search")),
+      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_EDITOR_SEARCH)),
     icon: "Search",
   },
   quickSwitch: {
     run: () =>
-      document.dispatchEvent(new CustomEvent("app:toggle-quick-switch")),
+      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_QUICK_SWITCH)),
     icon: "FileClock",
   },
   divider1: { type: "divider" },

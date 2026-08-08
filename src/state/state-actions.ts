@@ -2,12 +2,7 @@ import { rendererLogger } from "@/app";
 import { updateSelectionUI } from "@/components/sidebar/sidebar-selection-ui";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { matchesActiveTag } from "@/components/sidebar/sidebar-views";
-import {
-  noteStore,
-  settingsStore,
-  stateStore,
-  type NoteStore,
-} from "@/state/state";
+import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { compareNotes, updateNoteCount } from "@/utils/note";
 import type { SidebarParams } from "@/utils/types";
 import type { NoteListItem } from "@shared/schemas/note-schema";
@@ -35,17 +30,19 @@ function memoize<T extends any[], R>(
   };
 }
 
-const computeVisibleNotes = memoize(
-  (visibleIds: string[], noteIndex: Map<string, NoteListItem>) => {
+const selectSidebarNotes = memoize(
+  (
+    visibleIds: string[],
+    noteIndex: Map<string, NoteListItem>,
+    activeTag: string | null,
+  ) => {
     return visibleIds
       .map((id) => noteIndex.get(id))
-      .filter((note): note is NoteListItem => !!note);
+      .filter((note): note is NoteListItem => !!note)
+      .filter((n) => matchesActiveTag(n, activeTag))
+      .sort(compareNotes);
   },
 );
-
-function getVisibleNotes(noteState: NoteStore) {
-  return computeVisibleNotes(noteState.visibleIds, noteState.noteIndex);
-}
 
 function shallowEq<T>(a: T, b: T): boolean {
   if (Object.is(a, b)) return true;
@@ -88,14 +85,12 @@ function shallowEq<T>(a: T, b: T): boolean {
 
 function getSidebarParams(): SidebarParams {
   const { searchQuery, activeTag, activeId } = stateStore.getState();
-  const noteState = noteStore.getState();
+  const { visibleIds, noteIndex, searchSnippets } = noteStore.getState();
   const display = settingsStore.get("note_item_display");
-  const visibleNotes = getVisibleNotes(noteState).filter((n) =>
-    matchesActiveTag(n, activeTag),
-  );
+  const visibleNotes = selectSidebarNotes(visibleIds, noteIndex, activeTag);
   return {
     visibleNotes,
-    searchSnippets: noteState.searchSnippets,
+    searchSnippets,
     query: searchQuery,
     activeTag,
     activeId,
@@ -167,8 +162,6 @@ function syncStateStore(
 
 export {
   getSidebarParams,
-  getVisibleNotes,
-  memoize,
   shallowEq,
   sidebarListener,
   syncNoteStore,

@@ -14,6 +14,7 @@ import { requireElement, setActiveItem } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
 import type { QuickAction } from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";
+import { APP_EVENTS } from "@shared/shared-constants";
 
 async function initAppSettings(settings: AppSettings) {
   const buttonsContainer = createSettingsMenu();
@@ -36,7 +37,7 @@ async function initAppSettings(settings: AppSettings) {
     quickActionContainer,
   );
   registerAppEvents(document, {
-    "app:open-settings": () => settingsDialog.showModal(),
+    [APP_EVENTS.OPEN_SETTINGS]: () => settingsDialog.showModal(),
   });
 }
 

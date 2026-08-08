@@ -7,7 +7,6 @@ import type {
 } from "@shared/schemas/note-schema";
 import type { AppSettings, ExportFormat } from "@shared/schemas/store-schema";
 import type {
-  APP_EVENTS,
   SETTINGS_CATEGORIES,
   SIDEBAR_FILTER_MODES,
 } from "@shared/shared-constants";
@@ -182,8 +181,6 @@ type QuickActionConfig = {
 
 type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
 
-type AppEvents = (typeof APP_EVENTS)[number];
-
 type MappedMatches = (Omit<SearchResult, "search_match"> & {
   snippet: string;
 })[];
@@ -207,7 +204,6 @@ export type {
   Action,
   ActionMap,
   AllTagsMenu,
-  AppEvents,
   AppIcons,
   AppRegistry,
   CoreRegistry,

@@ -28,6 +28,7 @@ import type { SelectionAction } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
 import { isNoteID } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
+import { APP_EVENTS } from "@shared/shared-constants";
 
 function initNotesSidebar() {
   const sidebar = getAppItem("sidebar");
@@ -39,13 +40,14 @@ function initNotesSidebar() {
   applySidebarListeners(sidebar, sidebarHeader, searchInput, selectionFooter);
   setupSidebarFileDrop(sidebar);
   registerAppEvents(document, {
-    "app:toggle-sidebar": () => toggleSidebar(),
-    "app:create-new-note": () => handleCreateNote(),
-    "app:open-global-search": () => searchInput.focus(),
-    "app:set-selection-mode": () => setSelectionMode(!isSelectionActive()),
-    "app:exit-selection-mode": () => setSelectionMode(false),
-    "app:delete-selected": () => deleteSelection(),
-    "app:select-all-visible": () => selectAllVisibleNotes(),
+    [APP_EVENTS.TOGGLE_SIDEBAR]: toggleSidebar,
+    [APP_EVENTS.CREATE_NEW_NOTE]: handleCreateNote,
+    [APP_EVENTS.FOCUS_GLOBAL_SEARCH]: () => searchInput.focus(),
+    [APP_EVENTS.SET_SELECTION_MODE]: () =>
+      setSelectionMode(!isSelectionActive()),
+    [APP_EVENTS.EXIT_SELECTION_MODE]: () => setSelectionMode(false),
+    [APP_EVENTS.DELETE_SELECTED]: deleteSelection,
+    [APP_EVENTS.SELECT_ALL_VISIBLE]: selectAllVisibleNotes,
   });
 }
 
@@ -59,7 +61,7 @@ function applySidebarListeners(
   searchInput: HTMLInputElement,
   selectionFooter: HTMLDivElement,
 ) {
-  resizeSidebar(".resizer-sidebar", ".sidebar-container");
+  resizeSidebar();
   sidebarHeader.addEventListener(
     "click",
     createAsyncHandler(async (e) => {

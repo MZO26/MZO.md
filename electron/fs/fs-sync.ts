@@ -36,6 +36,8 @@ async function checkSyncState(
       throw new AppBackendError(AppErrorCode.CancelledOperation);
     }
     const dbUpdatedAt = new Date(payload.updated_at).getTime();
+    if (Number.isNaN(dbUpdatedAt))
+      throw new AppBackendError(AppErrorCode.InvalidData);
     if (fsStat.mtimeMs <= dbUpdatedAt + SYNC_BUFFER) {
       mainLogger.devLog("UNCHANGED");
       return { status: "UNCHANGED" };

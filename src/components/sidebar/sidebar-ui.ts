@@ -20,7 +20,7 @@ import {
   setActiveItem,
 } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { compareNotes, updateNoteCount } from "@/utils/note";
+import { updateNoteCount } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import type { AllTagsMenu, FilterMode, SidebarParams } from "@/utils/types";
 
@@ -191,6 +191,9 @@ function handleHeaderChange(change: FilterMode, activeTag?: string) {
       return createInfoHeader("Recent");
     case "search":
       return createInfoHeader("Search");
+    default:
+      change satisfies never;
+      return;
   }
 }
 
@@ -261,22 +264,20 @@ function renderNoteList(sidebarParams: SidebarParams) {
   } = sidebarParams;
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
-  let currentMode: FilterMode = "recent";
-  if (searchQuery) {
-    currentMode = "search";
-  } else if (activeTag) {
-    currentMode = "tag";
-  }
+  const currentMode: FilterMode = searchQuery
+    ? "search"
+    : activeTag
+      ? "tag"
+      : "recent";
   const headerElement = handleHeaderChange(currentMode, activeTag ?? undefined);
   if (headerElement) {
     fragment.appendChild(headerElement);
   }
-  const sortedNotes = [...notes].sort(compareNotes);
   const isFiltered = !!activeTag;
-  const isLimited = !isFiltered && sortedNotes.length > SIDEBAR_ALL_NOTES_LIMIT;
+  const isLimited = !isFiltered && notes.length > SIDEBAR_ALL_NOTES_LIMIT;
   const displayNotes = isFiltered
-    ? sortedNotes
-    : sortedNotes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
+    ? notes
+    : notes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
   for (const note of displayNotes) {
     const item = createNoteItem(note, display);
     getSafeSnippet({ item, note, snippets: searchSnippets, display });
@@ -288,7 +289,7 @@ function renderNoteList(sidebarParams: SidebarParams) {
   if (isLimited) {
     fragment.appendChild(
       createInfoSpan(
-        `Showing ${SIDEBAR_ALL_NOTES_LIMIT} of ${sortedNotes.length} notes.\nUse search or tags to narrow the list.`,
+        `Showing ${SIDEBAR_ALL_NOTES_LIMIT} of ${notes.length} notes.\nUse search or tags to narrow the list.`,
         "note-list-info",
       ),
     );
@@ -299,19 +300,24 @@ function renderNoteList(sidebarParams: SidebarParams) {
   }
 }
 
-function resizeSidebar(resizerSelector: string, sidebarSelector: string) {
+function resizeSidebar() {
   const minWidth = 0;
   const maxWidth = 420;
-  const resizer = requireElement<HTMLDivElement>(resizerSelector);
-  const sidebar = requireElement<HTMLDivElement>(sidebarSelector);
+  const sidebarContainer = getAppItem("sidebarContainer");
+  const resizer = requireElement<HTMLDivElement>(
+    ".resizer-sidebar",
+    sidebarContainer,
+  );
+
   let isResizing = false;
   let isUpdatePending = false;
   let startX = 0;
   let startWidth = 0;
+
   resizer.addEventListener("pointerdown", (e: PointerEvent) => {
     isResizing = true;
     startX = e.clientX;
-    startWidth = sidebar.getBoundingClientRect().width;
+    startWidth = sidebarContainer.getBoundingClientRect().width;
     resizer.setPointerCapture(e.pointerId);
     document.body.classList.add("is-dragging");
     document.body.style.userSelect = "none";

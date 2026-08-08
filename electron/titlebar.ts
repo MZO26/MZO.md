@@ -5,7 +5,7 @@ import { BrowserWindow, nativeTheme } from "electron";
 
 // updates the title bar overlay accordingly
 function getTitleBarOverlay(
-  themeName: Exclude<Theme, "system">, // exclude for union types (|) and Omit for object types ({})
+  themeName: Exclude<Theme, "system">,
   focus?: boolean,
 ): NativeWindowColors {
   const theme = THEME_DATA[themeName];

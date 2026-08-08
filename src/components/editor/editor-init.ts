@@ -5,13 +5,13 @@ import {
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { ActiveCodeHighlight } from "@/extensions/codeblock-highlight";
-import { DropHandler } from "@/extensions/editor-handler/dropHandler";
+import { DropHandler } from "@/extensions/editor-handler/drop-handler";
 import {
   GoogleDocsCleanup,
   PasteHandler,
   SecurityCleanup,
   WordCleanup,
-} from "@/extensions/editor-handler/pasteHandler";
+} from "@/extensions/editor-handler/paste-handler";
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
@@ -212,7 +212,7 @@ function getNoteEditorExtensions() {
 
 function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   editorWrapper.addEventListener("contextmenu", (event: MouseEvent) => {
-    if (!(event.target instanceof HTMLImageElement)) return;
+    if (!(event.target instanceof HTMLElement)) return;
     if (event.target.closest(".selectedCell")) {
       event.preventDefault();
       window.electronAPI.showContextMenu("table");

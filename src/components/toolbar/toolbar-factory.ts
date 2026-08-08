@@ -1,7 +1,9 @@
+import { handleUpdateSettings } from "@/settings/setting-actions";
 import { settingsStore } from "@/state/state";
 import { createIconButton } from "@/utils/dom";
 import { getAppItem, registerAppEvents } from "@/utils/registry";
 import type { Action, ActionMap, ToolbarItem } from "@/utils/types";
+import { APP_EVENTS } from "@shared/shared-constants";
 import type { Editor } from "@tiptap/core";
 
 let cachedActions: [string, Action][] | null = null;
@@ -80,7 +82,11 @@ function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
     refresh();
   });
   registerAppEvents(document, {
-    "app:refresh-toolbar": () => refresh(),
+    [APP_EVENTS.TOGGLE_TOOLBAR]: async () => {
+      const newState = !settingsStore.get("toolbar_collapsed");
+      await handleUpdateSettings({ toolbar_collapsed: newState });
+      refresh();
+    },
   });
 }
 
