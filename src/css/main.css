@@ -473,7 +473,7 @@
   border: 1px solid var(--border-color);
   width: fit-content;
   width: 300px;
-  padding: 15px;
+  padding: 10px;
   gap: 5px;
   border-radius: 15px;
   transform: translateX(-50%);
@@ -497,8 +497,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 220px;
-  padding: 10px 0;
-  gap: 12px;
+  padding: 10px 4px;
+  gap: 8px;
 }
 
 .tags-popover-item {
@@ -1041,36 +1041,27 @@ svg.empty-state-icon {
   max-height: 100px;
   width: fit-content;
   max-width: 80ch;
-  font-size: 0.9em;
+  font-size: 0.9rem;
+  font-weight: 600;
   background-color: var(--tooltip-bg);
   color: var(--text-muted);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: var(--shadow);
-}
-
-.wikilink-preview-content > * {
-  padding: 8px 0;
-}
-
-.wikilink-preview-content .note-tags {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 5px;
-  overflow: hidden;
-}
-
-.wikilink-preview-content .note-tags .tag {
-  font-size: 0.8em;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .wikilink-preview.hidden {
   display: none;
 }
 
-.wikilink-preview-content::selection {
+.wikilink-preview::selection {
   background-color: var(--selection-bg);
+}
+
+.wikilink-preview .note-tags {
+  margin: 8px 0;
 }
 
 .quick-switch-dialog {
@@ -1113,7 +1104,7 @@ svg.empty-state-icon {
 
 .quick-switch-section-header {
   padding: 8px 10px 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;

@@ -7,7 +7,6 @@ import { NoteTag } from "@/extensions/tag/tag";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import type { Editor, JSONContent } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
-import { ListKit } from "@tiptap/extension-list";
 import {
   Table,
   TableCell,
@@ -45,9 +44,6 @@ function getMarkdownManager() {
 
 function getRequestExtensions() {
   return [
-    ListKit.configure({
-      taskItem: { nested: true },
-    }),
     Highlight,
     WikiLink,
     Image,
@@ -56,15 +52,7 @@ function getRequestExtensions() {
     TableCell,
     TableHeader,
     NoteTag,
-    StarterKit.configure({
-      heading: {
-        levels: [1, 2, 3, 4, 5, 6],
-      },
-      listItem: false,
-      listKeymap: false,
-      orderedList: false,
-      bulletList: false,
-    }),
+    StarterKit,
     CustomBlockMath,
     CustomInlineMath,
   ];

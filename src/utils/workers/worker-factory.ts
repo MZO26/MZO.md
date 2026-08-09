@@ -1,6 +1,7 @@
 import { MAX_WORKER_TIMEOUT_MS } from "@/utils/constants";
 import type { WorkerResult } from "@/utils/types";
 import { WorkerErrorCode } from "@shared/errors";
+import type { Id } from "@shared/schemas/note-schema";
 
 class WorkerTaskError extends Error {
   constructor(
@@ -43,7 +44,7 @@ function createWorker<T, R>(worker: Worker | null) {
         worker.removeEventListener("error", handleError);
       };
       const handleMessage = (
-        event: MessageEvent<{ id: string } & WorkerResult<R>>,
+        event: MessageEvent<{ id: Id } & WorkerResult<R>>,
       ) => {
         if (event.data.id === id) {
           workerDone();

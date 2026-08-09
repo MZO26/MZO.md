@@ -8,7 +8,7 @@ function createTooltipContent(baseText: string) {
     .replace(/^./, (char) => char.toUpperCase());
 }
 
-function createGlobalSpinner(showDelay = 200) {
+function createGlobalSpinner(showDelay: number = 200) {
   const spinner = requireElement<HTMLDivElement>(".app-loading");
   return {
     async wrap<T>(

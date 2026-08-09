@@ -30,22 +30,6 @@ function memoize<T extends any[], R>(
   };
 }
 
-const selectSidebarNotes = memoize(
-  (
-    visibleIds: Id[],
-    noteIndex: Map<Id, NoteListItem>,
-    activeTag: string | null,
-  ) => {
-    return visibleIds
-      .map((id) => noteIndex.get(id))
-      .filter(
-        (note): note is NoteListItem =>
-          !!note && matchesActiveTag(note, activeTag),
-      )
-      .sort(compareNotes);
-  },
-);
-
 function shallowEq<T>(a: T, b: T): boolean {
   if (Object.is(a, b)) return true;
   if (a instanceof Map && b instanceof Map) {
@@ -84,6 +68,22 @@ function shallowEq<T>(a: T, b: T): boolean {
   }
   return true;
 }
+
+const selectSidebarNotes = memoize(
+  (
+    visibleIds: Id[],
+    noteIndex: Map<Id, NoteListItem>,
+    activeTag: string | null,
+  ) => {
+    return visibleIds
+      .map((id) => noteIndex.get(id))
+      .filter(
+        (note): note is NoteListItem =>
+          !!note && matchesActiveTag(note, activeTag),
+      )
+      .sort(compareNotes);
+  },
+);
 
 function getSidebarParams(): SidebarParams {
   const { searchQuery, activeTag, activeId } = stateStore.getState();

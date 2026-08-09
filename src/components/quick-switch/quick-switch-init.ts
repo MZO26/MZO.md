@@ -125,6 +125,7 @@ function initQuickSwitcher() {
       optionEl.dataset["index"] = String(index);
       const titleEl = createInfoSpan(note.title);
       optionEl.appendChild(titleEl);
+      optionEl.title = note.title;
       listEl.appendChild(optionEl);
     }
   }

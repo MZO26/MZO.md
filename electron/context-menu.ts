@@ -38,6 +38,16 @@ function pushOptionalSeparator(items: Electron.MenuItemConstructorOptions[]) {
   }
 }
 
+function addAction(
+  flag: boolean,
+  label: string,
+  action: "cut" | "copy" | "paste" | "selectAll",
+  items: Electron.MenuItemConstructorOptions[],
+  win: BrowserWindow,
+) {
+  if (flag) items.push({ label, click: () => win.webContents[action]() });
+}
+
 function setUpEditorMenu(win: BrowserWindow) {
   win.webContents.on("context-menu", (_event, params) => {
     const items: Electron.MenuItemConstructorOptions[] = [];
@@ -50,23 +60,17 @@ function setUpEditorMenu(win: BrowserWindow) {
       params.editFlags.canCopy ||
       params.editFlags.canPaste;
     if (!canEdit && !hasSelection && !isImage && !hasLink) return;
-    const addAction = (
-      flag: boolean,
-      label: string,
-      action: "cut" | "copy" | "paste" | "selectAll",
-    ) => {
-      if (flag) items.push({ label, click: () => win.webContents[action]() });
-    };
+
     if (params.isEditable) {
-      addAction(params.editFlags.canCut, "Cut", "cut");
-      addAction(params.editFlags.canCopy, "Copy", "copy");
-      addAction(params.editFlags.canPaste, "Paste", "paste");
+      addAction(params.editFlags.canCut, "Cut", "cut", items, win);
+      addAction(params.editFlags.canCopy, "Copy", "copy", items, win);
+      addAction(params.editFlags.canPaste, "Paste", "paste", items, win);
       if (items.length > 0 && params.editFlags.canSelectAll) {
         pushOptionalSeparator(items);
-        addAction(true, "Select All", "selectAll");
+        addAction(true, "Select All", "selectAll", items, win);
       }
     } else if (hasSelection && params.editFlags.canCopy) {
-      addAction(true, "Copy", "copy");
+      addAction(true, "Copy", "copy", items, win);
     }
     if (hasSelection) {
       pushOptionalSeparator(items);

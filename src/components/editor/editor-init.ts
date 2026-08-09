@@ -44,7 +44,6 @@ import type { AppSettings } from "@shared/schemas/store-schema";
 import { ALLOWED_PROTOCOLS, MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
-import { ListKit } from "@tiptap/extension-list";
 import {
   Table,
   TableCell,
@@ -86,12 +85,9 @@ function getNoteEditorExtensions() {
     WordCleanup,
     SecurityCleanup,
     DropHandler,
-    Markdown.configure({ markedOptions: { gfm: true, pedantic: false } }),
+    Markdown,
     MasterShortcuts,
     InputRules,
-    ListKit.configure({
-      taskItem: { nested: true },
-    }),
     CustomUnderline,
     Highlight,
     WikilinkHandler.configure({
@@ -160,10 +156,6 @@ function getNoteEditorExtensions() {
         },
       },
       heading: false,
-      listItem: false,
-      listKeymap: false,
-      orderedList: false,
-      bulletList: false,
       underline: false,
       undoRedo: {
         depth: 20,

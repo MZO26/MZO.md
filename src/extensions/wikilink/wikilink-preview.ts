@@ -15,7 +15,6 @@ function buildPreviewCard(
   tags: NoteListItem["tags"],
 ) {
   const cardContent = document.createElement("div");
-  cardContent.className = "wikilink-preview-content";
   const dateVal = new Date(updated_at).getTime();
   if (!updated_at || Number.isNaN(dateVal)) {
     cardContent.appendChild(createInfoSpan("Failed to load note metadata"));

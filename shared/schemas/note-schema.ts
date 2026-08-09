@@ -152,8 +152,8 @@ const AutoExportWritePayloadSchema = z.object({
   oldFileName: z.string().optional(),
 });
 
-function isNoteID(id: string | null | undefined): id is Id {
-  return typeof id === "string" && id.length > 0;
+function isNoteID(id: unknown): id is Id {
+  return typeof id === "string" && id.length === 36;
 }
 
 type BoolDb = z.infer<typeof BoolDbSchema>;

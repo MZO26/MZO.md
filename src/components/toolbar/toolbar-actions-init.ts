@@ -121,11 +121,6 @@ const TOOLBAR_ACTIONS: ActionMap = {
     isActive: (editor) => editor?.isActive("orderedList"),
     icon: "ListOrdered",
   },
-  taskList: {
-    run: (editor) => editor?.chain().focus().toggleTaskList().run(),
-    isActive: (editor) => editor?.isActive("taskList"),
-    icon: "ListTodo",
-  },
   blockQuote: {
     run: (editor) => editor?.chain().focus().toggleBlockquote().run(),
     isActive: (editor) => editor?.isActive("blockquote"),

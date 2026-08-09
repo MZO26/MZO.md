@@ -3,9 +3,10 @@ import { getMarkdownManager } from "@/components/editor/editor-actions";
 import type { WorkerRequest } from "@/utils/types";
 import { handleWorkerError } from "@/utils/workers/worker-factory";
 import { WorkerErrorCode } from "@shared/errors";
+import type { Id } from "@shared/schemas/note-schema";
 
 self.onmessage = async (
-  e: MessageEvent<{ id: string } & WorkerRequest<{ markdown: string }>>,
+  e: MessageEvent<{ id: Id } & WorkerRequest<{ markdown: string }>>,
 ) => {
   const { id, payload } = e.data;
   if (typeof payload !== "string") {

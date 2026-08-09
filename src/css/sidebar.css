@@ -152,7 +152,8 @@ body.is-dragging * {
 }
 
 .info-span {
-  font-size: 0.85rem;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-muted);
   user-select: none;
 }
@@ -307,7 +308,7 @@ body.is-dragging * {
   background: transparent;
   border: none;
   color: var(--text-main);
-  font-size: 14px;
+  font-size: 13px;
   outline: none;
   width: 100%;
   text-overflow: ellipsis;
@@ -524,12 +525,6 @@ input::-webkit-search-cancel-button {
   padding: 2px 7px;
   border-radius: 20px;
   font-size: 0.65rem;
-}
-
-.wikilink-preview-content .tag-node {
-  user-select: none;
-  pointer-events: none;
-  -webkit-user-select: none;
 }
 
 .tag-node:hover,
