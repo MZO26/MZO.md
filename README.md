@@ -106,7 +106,6 @@ npm install
 | **Lists**                                              |              |                                |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd>       | `1. `        | Ordered list                   |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>       | `- `         | Bullet list                    |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>       | `[] `        | Task list                      |
 | <kbd>Tab</kbd>                                         |              | Indent list item               |
 | <kbd>Shift</kbd> + <kbd>Tab</kbd>                      |              | Outdent list item              |
 | <kbd>Enter</kbd>                                       |              | Next list item                 |

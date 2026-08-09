@@ -1,6 +1,6 @@
 {
   "name": "mzo.md",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A local-first note-taking app",
   "main": "dist-electron/main/main.js",
   "scripts": {
