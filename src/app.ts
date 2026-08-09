@@ -1,6 +1,7 @@
 import { getAll, getAllSettings } from "@/api/api";
 import { initListeners } from "@/api/callbacks";
 import { setupEditorListeners } from "@/components/editor/editor-init";
+import { initEditorSearch } from "@/components/editor/editor-search";
 import { initQuickSwitcher } from "@/components/quick-switch/quick-switch-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { initToolbar, initTopToolbar } from "@/components/toolbar/toolbar-init";
@@ -15,7 +16,7 @@ import { initSubscriptions } from "@/state/state-init";
 import { startAppClock } from "@/utils/date";
 import { renderIcons } from "@/utils/icons";
 import {
-  getAppItem,
+  getAppItems,
   initCoreRegistry,
   initTemplateRegistry,
   initUIRegistry,
@@ -40,20 +41,27 @@ async function initApp() {
   initCoreRegistry(settings);
   initTemplateRegistry();
   initUIRegistry();
-  initSubscriptions();
+  const { editor, editorWrapper, editorContainer, appContainer, sidebar } =
+    getAppItems([
+      "editor",
+      "editorWrapper",
+      "editorContainer",
+      "appContainer",
+      "sidebar",
+    ]);
+  initSubscriptions(sidebar);
   syncStateStore(settingsResult);
   syncNoteStore(notesResult.data);
-  const editor = getAppItem("editor");
-  const editorWrapper = getAppItem("editorWrapper");
   setupEditorListeners(editorWrapper, editor);
+  initEditorSearch(editor, editorContainer, editorWrapper);
   await initAppSettings(settings);
   initListeners();
-  initToolbar();
-  initTopToolbar();
+  initToolbar(editorContainer);
+  initTopToolbar(appContainer);
   startAppClock();
   initGlobalShortcuts();
-  initNotesSidebar();
-  initQuickSwitcher();
+  initNotesSidebar(sidebar);
+  initQuickSwitcher(editor);
   renderIcons();
   rendererLogger.timeEnd("DOM Loading Time");
   rendererLogger.devLog("App started successfully");

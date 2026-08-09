@@ -12,16 +12,14 @@ import {
   updateSelection,
 } from "@/state/state-actions";
 import { setActiveItem } from "@/utils/dom";
-import { getAppItem } from "@/utils/registry";
 
-function initSubscriptions() {
+function initSubscriptions(sidebar: HTMLDivElement) {
   stateStore.subscribeSel(
     (state) => state.activeId,
     (activeId) => {
       handleEditorEmptyState(activeId);
       if (!activeId) return;
       window.noteAPI.setActiveNote(activeId);
-      const sidebar = getAppItem("sidebar");
       const noteElement = sidebar.querySelector<HTMLDivElement>(
         `.note-item[data-id="${CSS.escape(activeId)}"]`,
       );

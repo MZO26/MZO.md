@@ -3,14 +3,14 @@ import { handleSelectNote, waitForFlush } from "@/notes/note-actions";
 import { listEl, switchDialog } from "@/settings/dialog-init";
 import { noteStore, stateStore } from "@/state/state";
 import { createInfoSpan } from "@/utils/dom";
-import { getAppItem, registerAppEvents } from "@/utils/registry";
+import { registerAppEvents } from "@/utils/registry";
 import type { QuickSwitchDisplayNote } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id, Link, NoteListItem } from "@shared/schemas/note-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
+import type { Editor } from "@tiptap/core";
 
-function initQuickSwitcher() {
-  const editor = getAppItem("editor");
+function initQuickSwitcher(editor: Editor) {
   let activeIndex = 0;
   let currentDisplayNotes: QuickSwitchDisplayNote[] = [];
   async function toggleSwitcher() {

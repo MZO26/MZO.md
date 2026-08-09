@@ -14,18 +14,20 @@ import {
 import { stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
-import { getAppItem, registerAppEvents } from "@/utils/registry";
+import { registerAppEvents } from "@/utils/registry";
 import { isFocusActive } from "@/utils/shortcuts";
 import { APP_EVENTS } from "@shared/shared-constants";
 
-function initToolbar() {
-  const toolbarContainer = requireElement<HTMLDivElement>("#toolbar");
+function initToolbar(editorContainer: HTMLDivElement) {
+  const toolbarContainer = requireElement<HTMLDivElement>(
+    "#toolbar",
+    editorContainer,
+  );
   buildToolbarMenu(toolbarContainer, TOOLBAR_ACTIONS);
   setupToolbarListeners(toolbarContainer, TOOLBAR_ACTIONS);
 }
 
-function initTopToolbar() {
-  const appContainer = getAppItem("appContainer");
+function initTopToolbar(appContainer: HTMLDivElement) {
   const appPinBtn = requireElement<HTMLButtonElement>(".app-pin-btn");
   const topToolbar = requireElement<HTMLDivElement>(".top-toolbar");
   buildTopToolbarMenu(topToolbar, TOP_TOOLBAR_ACTIONS);

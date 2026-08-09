@@ -22,7 +22,7 @@ import {
 import { noteStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { SELECTION_ACTIONS } from "@/utils/constants";
-import { getAppItem, getUIItems, registerAppEvents } from "@/utils/registry";
+import { getUIItems, registerAppEvents } from "@/utils/registry";
 import { isSelectionActive } from "@/utils/shortcuts";
 import type { SelectionAction } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
@@ -30,8 +30,7 @@ import { isNoteID } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
 
-function initNotesSidebar() {
-  const sidebar = getAppItem("sidebar");
+function initNotesSidebar(sidebar: HTMLDivElement) {
   const { searchInput, selectionFooter, sidebarHeader } = getUIItems([
     "searchInput",
     "selectionFooter",

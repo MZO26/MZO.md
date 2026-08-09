@@ -3,7 +3,7 @@ import { stateStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { DEBOUNCE_MS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
-import { getAppItem, registerAppEvents } from "@/utils/registry";
+import { registerAppEvents } from "@/utils/registry";
 import { waitForPaint } from "@/utils/ui";
 import { APP_EVENTS, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
@@ -14,20 +14,32 @@ function hasSearchMatch(editor: Editor): boolean {
   return !!hasMatches;
 }
 
-function initEditorSearch(editor: Editor) {
-  const editorWrapper = getAppItem("editorWrapper");
-  const inputWrapper = requireElement<HTMLDivElement>(".input-wrapper-editor");
+function initEditorSearch(
+  editor: Editor,
+  editorContainer: HTMLDivElement,
+  editorWrapper: HTMLDivElement,
+) {
+  const inputWrapper = requireElement<HTMLDivElement>(
+    ".input-wrapper-editor",
+    editorContainer,
+  );
   const input = requireElement<HTMLInputElement>(".search-input-editor");
   const replaceInputWrapper = requireElement<HTMLDivElement>(
     ".input-wrapper-editor-replace",
+    editorContainer,
   );
   const replaceInput = requireElement<HTMLInputElement>(
     ".replace-input-editor",
+    replaceInputWrapper,
   );
   const chevronBtn = requireElement<HTMLButtonElement>(
     ".input-wrapper-chevron",
+    inputWrapper,
   );
-  const searchCount = requireElement<HTMLSpanElement>(".search-count");
+  const searchCount = requireElement<HTMLSpanElement>(
+    ".search-count",
+    inputWrapper,
+  );
 
   function updateButtons() {
     const disabled = input.value.trim() === "" || !hasSearchMatch(editor);

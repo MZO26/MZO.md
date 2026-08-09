@@ -1,5 +1,4 @@
 import { rendererLogger } from "@/app";
-import { initEditorSearch } from "@/components/editor/editor-search";
 import {
   applyView,
   restoreSidebarScope,
@@ -227,7 +226,6 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
     },
     true,
   );
-  initEditorSearch(editor);
 }
 
 export { getNoteEditorExtensions, initEditor, setupEditorListeners };
