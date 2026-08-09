@@ -3,13 +3,14 @@ import { createTemplateCloner, isDiv } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { estimateReadingTime } from "@/utils/note";
 import { getAppItem, getTemplateItem, getUIItems } from "@/utils/registry";
+import type { Id } from "@shared/schemas/note-schema";
 
 const getEditorEmptyStateClone = createTemplateCloner(
   "editorEmptyStateTemplate",
   isDiv,
 );
 
-function handleEditorEmptyState(activeId: string | null) {
+function handleEditorEmptyState(activeId: Id | null) {
   const editorContainer = getAppItem("editorContainer");
   const editorView = getTemplateItem("editorView");
   const topToolbar = editorContainer.querySelector<HTMLDivElement>(
