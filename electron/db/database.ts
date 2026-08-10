@@ -229,7 +229,7 @@ class AppDB {
       highlight TEXT NOT NULL DEFAULT 'context',
       note_item_display TEXT NOT NULL DEFAULT 'preview',
       toolbar_collapsed INTEGER NOT NULL DEFAULT 0,
-      window_bounds TEXT NOT NULL DEFAULT '{"width":800,"height":500}',
+      window_bounds TEXT NOT NULL DEFAULT '{"width":1100,"height":800}',
       active_tag TEXT
     );
     INSERT OR IGNORE INTO store (id) VALUES (1);

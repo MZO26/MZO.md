@@ -34,8 +34,8 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
     if (!hasFiles(event)) return;
     event.preventDefault();
     event.stopPropagation();
-    const relatedTarget = event.relatedTarget as Node | null;
-    if (!sidebar.contains(relatedTarget)) {
+    const relatedTarget = event.relatedTarget;
+    if (!(relatedTarget instanceof Node) || !sidebar.contains(relatedTarget)) {
       setActive(false);
     }
   }

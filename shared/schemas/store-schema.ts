@@ -3,12 +3,12 @@ import z from "zod";
 
 const WindowBoundsSchema = z
   .object({
-    width: z.number().min(800).catch(800),
-    height: z.number().min(500).catch(500),
+    width: z.number().min(700).catch(1100),
+    height: z.number().min(500).catch(800),
     x: z.number().optional(),
     y: z.number().optional(),
   })
-  .catch({ width: 800, height: 500 });
+  .catch({ width: 1100, height: 800 });
 
 const StoreSchema = z.object({
   theme: z

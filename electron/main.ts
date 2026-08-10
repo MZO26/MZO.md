@@ -81,9 +81,9 @@ async function createWindow() {
   const bounds = settings["window_bounds"];
   const windowConfig: BrowserWindowConstructorOptions = {
     show: false,
-    width: Math.max(800, bounds?.width ?? 1100),
+    width: Math.max(700, bounds?.width ?? 1100),
     height: Math.max(500, bounds?.height ?? 800),
-    minWidth: 800,
+    minWidth: 700,
     minHeight: 500,
     titleBarStyle: "hidden",
     trafficLightPosition: { x: 15, y: 9 },

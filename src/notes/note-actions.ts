@@ -334,7 +334,7 @@ async function handleDuplicateNote(note: Readonly<Note>) {
 }
 
 async function waitForFlush(id: Id | null) {
-  if (!id || stateStore.get("activeId") !== id) return false;
+  if (!id || stateStore.get("activeId") !== id) return;
   const noteIndex = noteStore.get("noteIndex");
   if (!noteIndex.has(id)) {
     return;

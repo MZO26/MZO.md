@@ -18,6 +18,7 @@ import {
   handleCreateNote,
   handleImportNote,
   handleSelectNote,
+  waitForFlush,
 } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
@@ -26,7 +27,7 @@ import { getUIItems, registerAppEvents } from "@/utils/registry";
 import { isSelectionActive } from "@/utils/shortcuts";
 import type { SelectionAction } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
-import { isNoteID } from "@shared/schemas/note-schema";
+import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
 
@@ -72,6 +73,8 @@ function applySidebarListeners(
       }
       const tagBtn = e.target.closest<HTMLButtonElement>(".all-tags-btn");
       if (tagBtn) {
+        const activeId = stateStore.get("activeId") as Id;
+        await waitForFlush(activeId);
         const tags = noteStore.get("notes").flatMap((n) => n.tags);
         showTagPopover(tagBtn, tags);
         return;

@@ -21,15 +21,6 @@
     padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.frame-left time {
-  white-space: nowrap;
-  opacity: 1;
-  transform: scale(1);
-  transition:
-    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 .app-container.collapsed .frame-info,
 .app-container.focus .frame-info {
   opacity: 0;
@@ -625,7 +616,10 @@
   width: 100%;
   height: 100%;
   grid-template-rows: 30px 1fr;
-  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  grid-template-columns: clamp(0px, var(--sidebar-width, 250px), 420px) minmax(
+      0,
+      1fr
+    );
   transition:
     grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -807,8 +801,7 @@ svg.empty-state-icon {
 }
 
 #datetime-display {
-  padding: 5px;
-  margin: 0;
+  padding: 0 5px;
   color: var(--text-muted);
   font-size: 0.8rem;
   font-weight: 500;
@@ -831,8 +824,8 @@ svg.empty-state-icon {
   -webkit-app-region: no-drag;
   min-height: 0 !important;
   min-width: 0 !important;
-  height: 25px;
-  width: 25px;
+  height: 20px;
+  width: 20px;
   background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -1172,9 +1165,49 @@ svg.empty-state-icon {
 }
 
 @media (max-width: 900px) {
+  .app-container {
+    grid-template-columns:
+      clamp(0px, var(--sidebar-width, 250px), 320px)
+      minmax(0, 1fr);
+  }
+
+  #datetime-display {
+    font-size: 0.7rem;
+  }
+
+  .editor-empty-state h2 {
+    font-size: 1rem;
+  }
+
+  .editor-empty-state p {
+    font-size: 0.8rem;
+  }
+
+  .app-pin-btn {
+    width: 20px;
+    height: 20px;
+  }
+
   .settings-modal {
-    width: 500px;
-    height: 380px;
+    width: 450px;
+    height: 320px;
+  }
+
+  .settings-buttons button {
+    width: 35px;
+    height: 35px;
+  }
+
+  .settings-title {
+    font-size: 14px;
+  }
+
+  .settings-row > * {
+    font-size: 12px;
+  }
+
+  .settings-row {
+    padding: 5px;
   }
 
   .math-dialog {

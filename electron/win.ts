@@ -6,7 +6,7 @@ import type { ZoomAction } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
 import { BrowserWindow, screen } from "electron";
 
-const ZOOMS = [1, 1.1, 1.25, 1.5] as const;
+const ZOOMS = [1, 1.1, 1.25] as const;
 
 function getClosestZoom(value: number) {
   return ZOOMS.reduce((closest, current) =>
@@ -52,7 +52,7 @@ function saveWindowBounds() {
     const preparedBounds = {
       x: bounds.x,
       y: bounds.y,
-      width: Math.max(800, bounds.width),
+      width: Math.max(700, bounds.width),
       height: Math.max(500, bounds.height),
     };
     const result = validation(
