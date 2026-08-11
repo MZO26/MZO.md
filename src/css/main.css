@@ -1220,8 +1220,7 @@ svg.empty-state-icon {
     max-height: 150px;
   }
 
-  .input-wrapper-editor,
-  .input-wrapper-editor-replace {
-    width: 210px;
+  .input-wrapper-editor {
+    width: 250px;
   }
 }
