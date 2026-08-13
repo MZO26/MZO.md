@@ -111,14 +111,17 @@ async function handleImportNote(request: FilePathRequest) {
       `Duplicates skipped: ${duplicates}\n` +
       `Errors: ${errors}`,
   );
-  noteStore.setState((state) => ({
-    notes: [...result.data, ...state.notes],
-    visibleIds: [...result.data.map((n) => n.id), ...state.visibleIds],
-    noteIndex: new Map([
-      ...state.noteIndex,
-      ...result.data.map((n) => [n.id, n] as const),
-    ]),
-  }));
+  noteStore.setState((state) => {
+    const noteIndex = new Map(state.noteIndex);
+    for (const note of result.data) {
+      noteIndex.set(note.id, note);
+    }
+    return {
+      notes: [...result.data, ...state.notes],
+      visibleIds: [...result.data.map((n) => n.id), ...state.visibleIds],
+      noteIndex,
+    };
+  });
 }
 
 async function handleDeleteManyNotes(ids: Id[]) {
@@ -251,7 +254,6 @@ const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 async function handleSelectNote(id: Id) {
   const editor = getAppItem("editor");
   const activeId = stateStore.get("activeId");
-  // synchronous flush to avoid overwriting false note
   debouncedSaveNote.flush();
   if (activeId === id) {
     rendererLogger.devLog("Already active. Skipping select.");

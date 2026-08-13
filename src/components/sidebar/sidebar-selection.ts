@@ -226,10 +226,9 @@ async function deleteSelection() {
     ids.length === 1 ? "Delete this note?" : `Delete ${ids.length} notes?`,
   );
   if (!confirmed) return;
+  const idsToDelete = new Set(ids);
   await handleDeleteManyNotes(ids);
-  const nextSelectedIds = new Set(
-    [...stateStore.get("selectedIds")].filter((id) => !ids.includes(id)),
-  );
+  const nextSelectedIds = stateStore.get("selectedIds").difference(idsToDelete);
   const nextSelectionMode = nextSelectedIds.size === 0 ? false : true;
   stateStore.setState({
     selectedIds: nextSelectedIds,
