@@ -2,7 +2,7 @@ import type { AppSettings } from "@shared/schemas/store-schema";
 
 const MAX_BYTES_FILE = 3 * 1024 * 1024;
 
-const MAX_CHARACTERS = 3_000_000;
+const MAX_CHARACTERS = 3_500_000;
 
 const MAX_SEARCH_LENGTH = 100;
 

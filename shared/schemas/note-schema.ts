@@ -57,13 +57,9 @@ const NoteTableSchema = z.object({
   snippet: SnippetSchema,
   content: z.string(),
   plain_text: PlainTextSchema,
-  pinned: BoolSchema,
+  pinned: BoolDbSchema,
   created_at: DateSchema,
   updated_at: DateSchema,
-});
-
-const NoteRowSchema = NoteTableSchema.omit({ pinned: true }).extend({
-  pinned: BoolDbSchema,
 });
 
 // Full Note Object
@@ -71,6 +67,7 @@ const NoteSchema = NoteTableSchema.extend({
   content: EditorDocSchema,
   tags: TagsSchema,
   links: LinksSchema,
+  pinned: BoolSchema,
 });
 
 const OldNoteSchema = z.array(
@@ -83,7 +80,6 @@ const NotesSchema = z.array(NoteSchema);
 // DB Results (Content gets parsed / 0 or 1 gets converted to boolean). Links have new Schema
 const NoteFromDB = NoteSchema.extend({
   content: EditorDocSchema,
-  pinned: BoolSchema,
   links: LinksSchema,
 });
 
@@ -93,11 +89,9 @@ const NoteListItemFromDB = NoteFromDB.omit({
 }).readonly();
 
 // Payload Evaluation: Expects content to be stringified and converts booleans to 0 or 1 for DB
-const NoteToDBSchema = NoteSchema.extend({
-  id: IdSchema,
-  content: z.string(),
-  pinned: BoolDbSchema,
+const NoteToDBSchema = NoteTableSchema.extend({
   links: LinkPayloadSchema,
+  tags: TagsSchema,
 });
 
 // Omitted values get generated in the DB. Links have their own Schema for Payload because DB expects them in an Array.
@@ -164,7 +158,7 @@ type SearchResult = z.infer<typeof SearchResultSchema>;
 type NoteMenuPayload = z.infer<typeof NoteMenuPayloadSchema>;
 type NoteListItem = z.infer<typeof NoteListItemFromDB>;
 type AutoExportWritePayload = z.infer<typeof AutoExportWritePayloadSchema>;
-type NoteRow = z.infer<typeof NoteRowSchema>;
+type NoteRow = z.infer<typeof NoteTableSchema>;
 type TagRow = z.infer<typeof TagRowSchema>;
 type LinkRow = z.infer<typeof LinkRowSchema>;
 type Tag = z.infer<typeof TagSchema>;
@@ -193,7 +187,6 @@ export {
   NoteFromDB,
   NoteListItemFromDB,
   NoteMenuPayloadSchema,
-  NoteRowSchema,
   NoteSchema,
   NotesSchema,
   NoteToDBSchema,

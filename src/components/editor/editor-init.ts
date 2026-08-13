@@ -20,6 +20,7 @@ import {
 } from "@/extensions/mathematics/mathematics";
 import { handleMathClick } from "@/extensions/mathematics/mathematics-dialog";
 import { CustomHeading } from "@/extensions/overrides/headings";
+import { LinkWithTitle } from "@/extensions/overrides/link";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { Placeholder } from "@/extensions/placeholder";
 import { DocSearch } from "@/extensions/search-replace";
@@ -159,33 +160,34 @@ function getNoteEditorExtensions() {
       undoRedo: {
         depth: 20,
       },
-      link: {
-        openOnClick: false,
-        defaultProtocol: "https",
-        shouldAutoLink: () => {
-          const editor = getAppItem("editor");
-          if (!editor) return true;
-          return editor.state.doc.childCount <= NODE_BASELINE;
-        },
-        HTMLAttributes: {
-          target: "_blank",
-          rel: "noopener noreferrer",
-        },
-        isAllowedUri: (url, ctx) => {
-          if (!ctx.defaultValidate(url)) return false;
-          try {
-            // google as base path for relative path parsing
-            const parsed = new URL(url, "https://google.com");
-            return ALLOWED_PROTOCOLS.includes(parsed.protocol);
-          } catch (error: unknown) {
-            rendererLogger.appError("[link.configure]: Invalid URL");
-            return false;
-          }
-        },
-      },
+      link: false,
       dropcursor: {
         width: 2,
         class: "editor-dropcursor",
+      },
+    }),
+    LinkWithTitle.configure({
+      openOnClick: false,
+      defaultProtocol: "https",
+      shouldAutoLink: () => {
+        const editor = getAppItem("editor");
+        if (!editor) return true;
+        return editor.state.doc.childCount <= NODE_BASELINE;
+      },
+      HTMLAttributes: {
+        target: "_blank",
+        rel: "noopener noreferrer",
+      },
+      isAllowedUri: (url, ctx) => {
+        if (!ctx.defaultValidate(url)) return false;
+        try {
+          // google as base path for relative path parsing
+          const parsed = new URL(url, "https://google.com");
+          return ALLOWED_PROTOCOLS.includes(parsed.protocol);
+        } catch (error: unknown) {
+          rendererLogger.appError("[link.configure]: Invalid URL");
+          return false;
+        }
       },
     }),
     ActiveCodeHighlight,

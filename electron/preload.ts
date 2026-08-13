@@ -135,6 +135,15 @@ if (process.contextIsolated) {
       onTriggerSync: (callback: (id: Id) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_SYNC, callback);
       },
+      onTriggerCopySelectionRichText: (callback: () => void) => {
+        subscribe(IPC_CHANNELS.TRIGGER_COPY_SELECTION_RICH_TEXT, callback);
+      },
+      onTriggerCopySelectionMarkdown: (callback: () => void) => {
+        subscribe(IPC_CHANNELS.TRIGGER_COPY_SELECTION_MARKDOWN, callback);
+      },
+      onTriggerCopySelectionHTML: (callback: () => void) => {
+        subscribe(IPC_CHANNELS.TRIGGER_COPY_SELECTION_HTML, callback);
+      },
       syncRequest: (payload: SyncRequestPayload) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_SYNC, payload),
       getById: (id: Id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_BY_ID, id),

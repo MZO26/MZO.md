@@ -1,6 +1,9 @@
 import {
   triggerCopyFilePath,
   triggerCopyRichText,
+  triggerCopySelectionHtml,
+  triggerCopySelectionMarkdown,
+  triggerCopySelectionRichText,
   triggerDuplicate,
   triggerNoteItemMenu,
   triggerOpenAutoExportFolder,
@@ -53,6 +56,18 @@ function initListeners() {
     await loading.wrap(async () => {
       await triggerCopyRichText(id);
     });
+  });
+
+  window.noteAPI.onTriggerCopySelectionRichText(async () => {
+    await triggerCopySelectionRichText();
+  });
+
+  window.noteAPI.onTriggerCopySelectionHTML(async () => {
+    await triggerCopySelectionHtml();
+  });
+
+  window.noteAPI.onTriggerCopySelectionMarkdown(async () => {
+    await triggerCopySelectionMarkdown();
   });
 
   window.noteAPI.onTriggerDelete(async (id: Id) => {

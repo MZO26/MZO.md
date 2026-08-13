@@ -51,6 +51,9 @@ const IPC_CHANNELS = {
   TRIGGER_SELECT: "callback:trigger-select",
   TRIGGER_SYNC: "callback:trigger-sync",
   REQUEST_FLUSH: "callback:request-flush",
+  TRIGGER_COPY_SELECTION_RICH_TEXT: "callback:copy-selection-rich-text",
+  TRIGGER_COPY_SELECTION_MARKDOWN: "callback:copy-selection-markdown",
+  TRIGGER_COPY_SELECTION_HTML: "callback:copy-selection-html",
   // messages
   CONFIRM_FLUSH: "message:confirm-flush",
   SET_ACTIVE_NOTE: "message:set-active-note",

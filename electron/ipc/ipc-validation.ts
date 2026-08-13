@@ -77,12 +77,13 @@ function checkRateLimit(
   channel: ValueOf<typeof IPC_CHANNELS>,
   cooldownMs: ValueOf<typeof LIMITS>,
 ) {
+  if (IS_DEV_MAIN) return true;
   const now = Date.now();
   if (now - APP_START_TIME < 5000) {
     return true;
   }
   const lastCall = IPC_TIMERS.get(channel) || 0;
-  if (!IS_DEV_MAIN && now - lastCall < cooldownMs) return false;
+  if (now - lastCall < cooldownMs) return false;
   IPC_TIMERS.set(channel, now);
   return true;
 }

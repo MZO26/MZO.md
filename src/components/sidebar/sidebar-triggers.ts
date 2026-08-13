@@ -9,7 +9,10 @@ import {
   syncRequest,
 } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
+import {
+  getCachedEditorExtensions,
+  getMarkdownManager,
+} from "@/components/editor/editor-actions";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
 import {
@@ -30,7 +33,7 @@ import type {
 } from "@shared/schemas/request-schema";
 import { TABLE_ACTIONS } from "@shared/shared-constants";
 import type { TableAction } from "@shared/shared-types";
-import { generateHTML } from "@tiptap/core";
+import { Editor, generateHTML, getHTMLFromFragment } from "@tiptap/core";
 
 function triggerTableMenu(action: TableAction) {
   const editor = getAppItem("editor");
@@ -175,6 +178,113 @@ async function triggerCopyRichText(id: Id) {
     await showNotification("Failed to copy to clipboard", "");
     rendererLogger.appError(
       "[onTriggerCopyMarkdown]: Failed to copy markdown:",
+      error,
+    );
+  }
+}
+
+function getHTMLContentBetween(
+  editor: Editor,
+  from: number,
+  to: number,
+): string {
+  const { doc } = editor.state;
+  const safeFrom = Math.max(0, Math.min(from, doc.content.size));
+  const safeTo = Math.max(safeFrom, Math.min(to, doc.content.size));
+  try {
+    const slice = doc.slice(safeFrom, safeTo);
+    return getHTMLFromFragment(slice.content, editor.schema);
+  } catch (error) {
+    rendererLogger.appError(
+      "[getHTMLContentBetween]: Failed to slice selection:",
+      error,
+    );
+    return "";
+  }
+}
+
+function getMarkdownContentBetween(
+  editor: Editor,
+  from: number,
+  to: number,
+): string {
+  const { doc } = editor.state;
+  const safeFrom = Math.max(0, Math.min(from, doc.content.size));
+  const safeTo = Math.max(safeFrom, Math.min(to, doc.content.size));
+  try {
+    const slice = doc.slice(safeFrom, safeTo);
+    const json = {
+      type: "doc",
+      content: slice.content.toJSON() ?? [],
+    };
+    return getMarkdownManager().serialize(json);
+  } catch (error) {
+    rendererLogger.appError(
+      "[getMarkdownContentBetween]: Failed to slice selection:",
+      error,
+    );
+    return "";
+  }
+}
+
+async function triggerCopySelectionHtml() {
+  const editor = getAppItem("editor");
+  if (!editor) return;
+  const { state } = editor;
+  const { from, to } = state.selection;
+  if (from === to) return;
+  const html = getHTMLContentBetween(editor, from, to);
+  if (!html) return;
+  try {
+    await navigator.clipboard.writeText(html);
+  } catch (error) {
+    rendererLogger.appError(
+      "[triggerCopySelectionHtml]: Failed to copy selection as HTML:",
+      error,
+    );
+  }
+}
+
+async function triggerCopySelectionMarkdown() {
+  const editor = getAppItem("editor");
+  if (!editor) return;
+  const { from, to } = editor.state.selection;
+  if (from === to) return;
+  const markdown = getMarkdownContentBetween(editor, from, to);
+  if (!markdown) return;
+  try {
+    await navigator.clipboard.writeText(markdown);
+  } catch (error) {
+    rendererLogger.appError(
+      "[triggerCopySelectionMarkdown]: Failed to copy selection as markdown:",
+      error,
+    );
+  }
+}
+
+async function triggerCopySelectionRichText() {
+  const editor = getAppItem("editor");
+  if (!editor) return;
+  const { state } = editor;
+  const { from, to } = state.selection;
+  if (from === to) return;
+  const html = getHTMLContentBetween(editor, from, to);
+  const plain = state.doc.textBetween(
+    Math.min(from, to),
+    Math.max(from, to),
+    "\n",
+  );
+  if (!html && !plain) return;
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([plain], { type: "text/plain" }),
+      }),
+    ]);
+  } catch (error) {
+    rendererLogger.appError(
+      "[triggerCopySelectionRichText]: Failed to copy selection as rich text:",
       error,
     );
   }
@@ -329,6 +439,9 @@ async function triggerSyncCheck(id: Id) {
 export {
   triggerCopyFilePath,
   triggerCopyRichText,
+  triggerCopySelectionHtml,
+  triggerCopySelectionMarkdown,
+  triggerCopySelectionRichText,
   triggerDuplicate,
   triggerNoteItemMenu,
   triggerOpenAutoExportFolder,
