@@ -38,6 +38,7 @@ const IPC_CHANNELS = {
   DB_BACKUP_RESTORE: "note:db-backup-restore",
   // callbacks
   THEME_CHANGED: "callback:theme-changed",
+  AUTO_EXPORT_DIR_SYNC: "callback:auto-export-dir-sync",
   TRIGGER_TABLE_ACTION: "callback:trigger-table-action",
   TRIGGER_NOTE_ITEM_ACTION: "callback:trigger-note-item-action",
   TRIGGER_EXPORT: "callback:trigger-export",

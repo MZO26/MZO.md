@@ -1,6 +1,7 @@
 import { setUpEditorMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
 import { removeUnusedImages } from "@electron/fs/fs-image";
+import { checkCurrentFolderState } from "@electron/fs/fs-sync";
 import { setupGlobalErrorHandling } from "@electron/handler/global-handler";
 import {
   navigationHandler,
@@ -137,7 +138,7 @@ async function createWindow() {
       return;
     }
   });
-  win.once("ready-to-show", () => {
+  win.once("ready-to-show", async () => {
     win?.show();
   });
   win.webContents.on("did-finish-load", () => {
@@ -150,7 +151,19 @@ async function createWindow() {
       } catch (error) {
         mainLogger.appError("Failed to clean up assets", error);
       }
-    }, 5000);
+      if (settings["auto_export_path"]) {
+        try {
+          const dirResult = await checkCurrentFolderState(
+            settings["auto_export_path"],
+          );
+          if (dirResult.length > 0) {
+            win?.webContents.send(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, dirResult);
+          }
+        } catch (error) {
+          mainLogger.appError("Failed to import files from folder", error);
+        }
+      }
+    }, 1000);
   });
 }
 

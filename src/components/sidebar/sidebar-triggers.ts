@@ -414,7 +414,7 @@ async function triggerSyncCheck(id: Id) {
         const confirmed = await confirmWithDialog(
           syncDialog,
           titleEl,
-          "Load external changes?",
+          "File got modified. Update note?",
         );
         if (!confirmed) return;
         if (!isSyncVersionCurrent(id, version)) return;

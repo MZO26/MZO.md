@@ -150,11 +150,9 @@ function parseFilenameToDate(
   if (Number.isNaN(date.getTime())) {
     return null;
   }
-  const safeTitle =
-    typeof title === "string" && title.length > 50
-      ? title.trim().slice(0, 50)
-      : null;
-  if (!safeTitle) return null;
+  const trimmed = title.trim();
+  if (trimmed.length === 0) return null;
+  const safeTitle = trimmed.length > 50 ? trimmed.slice(0, 50) : trimmed;
   return { title: safeTitle, date };
 }
 

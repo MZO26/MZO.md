@@ -32,23 +32,32 @@ class Transactions {
   }
 
   private prepareStmts() {
-    this.createNoteStmt = this.db.prepare(
-      `INSERT INTO notes (id, title, content, plain_text, snippet, pinned, created_at, updated_at) VALUES ($id, $title, $content, $plain_text, $snippet, $pinned, $created_at, $updated_at) RETURNING id, title, snippet, pinned, created_at, updated_at`,
-    );
-    this.updateNoteStmt = this.db
-      .prepare(`UPDATE notes SET title = $title, content = $content, plain_text = $plain_text, snippet = $snippet, updated_at = $updated_at WHERE id = $id RETURNING id, title, snippet, pinned, created_at, updated_at
+    this.createNoteStmt = this.db.prepare(`
+      INSERT INTO notes (id, title, content, plain_text, snippet, pinned, created_at, updated_at) 
+      VALUES ($id, $title, $content, $plain_text, $snippet, $pinned, $created_at, $updated_at) 
+      RETURNING id, title, snippet, pinned, created_at, updated_at`);
+    this.updateNoteStmt = this.db.prepare(`
+      UPDATE notes 
+      SET title = $title, content = $content, plain_text = $plain_text, snippet = $snippet, updated_at = $updated_at 
+      WHERE id = $id 
+      RETURNING id, title, snippet, pinned, created_at, updated_at
     `);
-    this.deleteNoteStmt = this.db.prepare("DELETE FROM notes WHERE id = $id");
+    this.deleteNoteStmt = this.db.prepare(`
+      DELETE FROM notes 
+      WHERE id = $id
+    `);
     this.deleteManyNotesStmt = this.db.prepare(`
       DELETE FROM notes 
       WHERE id IN (SELECT value FROM json_each($ids))
     `);
-    this.deleteTagsStmt = this.db.prepare(
-      "DELETE FROM note_tags WHERE note_id = $note_id",
-    );
-    this.deleteLinksStmt = this.db.prepare(
-      "DELETE FROM note_links WHERE source_id = $source_id",
-    );
+    this.deleteTagsStmt = this.db.prepare(`
+      DELETE FROM note_tags 
+      WHERE note_id = $note_id
+    `);
+    this.deleteLinksStmt = this.db.prepare(`
+      DELETE FROM note_links 
+      WHERE source_id = $source_id
+    `);
     this.insertManyTagsStmt = this.db.prepare(`
       INSERT INTO note_tags (note_id, tag_name)
       SELECT $note_id, j.value

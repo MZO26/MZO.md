@@ -103,6 +103,9 @@ if (process.contextIsolated) {
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_EXPORT_MANY, payload),
       noteImport: (payload: FilePathRequest) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_IMPORT, payload),
+      onDirSync: (callback: (result: string[]) => void) => {
+        subscribe(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, callback);
+      },
       onTriggerExport: (
         callback: (id: Id, extension: ExportRequest["extension"]) => void,
       ) => {

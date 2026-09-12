@@ -14,8 +14,14 @@ import {
   triggerSyncCheck,
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
-import { debouncedSaveNote, ensureNoteSaved } from "@/notes/note-actions";
+import {
+  debouncedSaveNote,
+  ensureNoteSaved,
+  handleImportNote,
+} from "@/notes/note-actions";
+import { confirmWithDialog, syncDialog } from "@/settings/dialog-init";
 import { stateStore } from "@/state/state";
+import { requireElement } from "@/utils/dom";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { ExportContent } from "@shared/schemas/request-schema";
@@ -102,6 +108,20 @@ function initListeners() {
 
   window.electronAPI.onThemeChanged(async (resolvedTheme) => {
     document.documentElement.dataset["theme"] = resolvedTheme;
+  });
+
+  window.noteAPI.onDirSync(async (dirResult) => {
+    const titleEl = requireElement<HTMLSpanElement>(
+      ".sync-dialog-title",
+      syncDialog,
+    );
+    const confirmed = await confirmWithDialog(
+      syncDialog,
+      titleEl,
+      "External changes detected",
+    );
+    if (!confirmed) return;
+    await handleImportNote({ source: "external", filePaths: dirResult });
   });
 
   window.electronAPI.onRequestFlush(async () => {

@@ -8,7 +8,7 @@ import {
   type ImportRequest,
 } from "@shared/schemas/request-schema";
 import { MAX_BYTES_FILE, MAX_CHARACTERS } from "@shared/shared-constants";
-import { app } from "electron";
+import { app, shell } from "electron";
 import fs from "fs/promises";
 import path from "path";
 
@@ -53,6 +53,11 @@ async function batchImport(filePaths: string[]) {
           importedFileDir,
           imagesFolder,
         );
+        try {
+          await shell.trashItem(file);
+        } catch (error) {
+          mainLogger.appError(`Failed to trash foreign file ${file}`, error);
+        }
         return validation(ImportRequestSchema, {
           extension,
           fileName,
@@ -70,6 +75,12 @@ async function batchImport(filePaths: string[]) {
   );
   const validNotes = imported.filter(
     (note): note is ImportRequest => note !== null,
+  );
+  mainLogger.devLog(
+    `[batchImport]: Successfully imported ${validNotes.length} notes.`,
+  );
+  mainLogger.devLog(
+    `[batchImport]: ${duplicateCount} duplicates and ${errorCount} errors encountered.`,
   );
   return {
     data: validNotes,

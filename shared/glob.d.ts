@@ -84,6 +84,7 @@ declare global {
       deleteMany: (ids: Id[]) => Promise<Result<void>>;
       selectAutoExportFolder: () => Promise<Result<string>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
+      onDirSync: (callback: (result: string[]) => void) => () => void;
       onTriggerExport: (
         callback: (id: Id, extension: ExportContent["extension"]) => void,
       ) => () => void;

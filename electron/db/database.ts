@@ -106,27 +106,48 @@ class AppDB {
     this.getAllNotesStmt = db.prepare(
       `SELECT id, title, pinned, snippet, created_at, updated_at
       FROM notes 
-      ORDER BY updated_at DESC`,
+      ORDER BY created_at DESC`,
     );
     this.getAllBackupStmt = db.prepare(`
-        SELECT * FROM notes ORDER BY updated_at DESC
-        `);
-    this.getNoteByIdStmt = db.prepare(`SELECT * FROM notes WHERE id = $id`);
-    this.getManyNotesByIdStmt = db.prepare(`
-      SELECT * FROM notes WHERE id IN (SELECT value FROM json_each($ids))
+        SELECT * 
+        FROM notes 
+        ORDER BY created_at DESC
+      `);
+    this.getNoteByIdStmt = db.prepare(`
+      SELECT * 
+      FROM notes 
+      WHERE id = $id
     `);
-    this.getAllTagsStmt = db.prepare(`SELECT note_id, tag_name FROM note_tags`);
+    this.getManyNotesByIdStmt = db.prepare(`
+      SELECT * 
+      FROM notes 
+      WHERE id IN (SELECT value FROM json_each($ids))
+    `);
+    this.getAllTagsStmt = db.prepare(`
+      SELECT note_id, tag_name 
+      FROM note_tags
+    `);
     this.getAllLinksStmt = db.prepare(
-      `SELECT source_id, target_id FROM note_links`,
+      `SELECT source_id, target_id 
+      FROM note_links`,
     );
     this.getTagsByIdStmt = db.prepare(
-      `SELECT tag_name FROM note_tags WHERE note_id = $id`,
+      `SELECT tag_name 
+      FROM note_tags 
+      WHERE note_id = $id`,
     );
     this.getLinksByIdStmt = db.prepare(`
-      SELECT target_id AS id, 'out' AS dir FROM note_links WHERE source_id = $id UNION ALL SELECT source_id AS id, 'in' AS dir FROM note_links WHERE target_id = $id
+      SELECT target_id AS id, 'out' AS dir 
+      FROM note_links 
+      WHERE source_id = $id 
+      UNION ALL 
+      SELECT source_id AS id, 'in' AS dir 
+      FROM note_links 
+      WHERE target_id = $id
       `);
     this.getManyTagsStmt = db.prepare(`
-      SELECT note_id, tag_name FROM note_tags
+      SELECT note_id, tag_name 
+      FROM note_tags
       WHERE note_id IN  (SELECT value FROM json_each($ids))
       `);
     this.getManyLinksStmt = db.prepare(`
@@ -175,7 +196,9 @@ class AppDB {
       WHERE id = 1
       `);
     this.getAllSettingsStmt = db.prepare(`
-        SELECT * FROM store WHERE id = 1
+        SELECT * 
+        FROM store 
+        WHERE id = 1
       `);
     this.checkNoteStmt = db.prepare(`
       SELECT 1 
@@ -246,6 +269,7 @@ class AppDB {
     db.exec(`
     CREATE INDEX IF NOT EXISTS idx_note_tags_tag_name ON note_tags(tag_name);
     CREATE INDEX IF NOT EXISTS idx_note_links_target_id ON note_links(target_id);
+    CREATE INDEX IF NOT EXISTS idx_note_created_at ON notes(created_at);
     `);
   }
 

@@ -1,3 +1,4 @@
+import db from "@electron/db/database";
 import {
   normalizeText,
   resolveAutoExportPath,
@@ -10,6 +11,7 @@ import type { AutoExportWritePayload, Note } from "@shared/schemas/note-schema";
 import type { SyncResult } from "@shared/schemas/request-schema";
 import { MAX_BYTES_FILE } from "@shared/shared-constants";
 import fs from "fs/promises";
+import path from "path";
 
 const SYNC_BUFFER = 2000; // 2 seconds to account for DB timestamp differences or OS write delays
 
@@ -69,4 +71,35 @@ async function checkSyncState(
   };
 }
 
-export { checkSyncState };
+async function checkCurrentFolderState(targetDir: string) {
+  const autoExportPath = resolveAutoExportPath(targetDir);
+  try {
+    await fs.mkdir(autoExportPath, { recursive: true });
+    const entries = await fs.readdir(autoExportPath, { withFileTypes: true });
+    const untracked: string[] = [];
+    for (const entry of entries) {
+      if (entry.isFile() && entry.name.endsWith(".md")) {
+        const joined = path.join(autoExportPath, entry.name);
+        const base = path.basename(joined, path.extname(entry.name));
+        const exists = db.checkExistence(base);
+        if (!exists) {
+          untracked.push(joined);
+        }
+      }
+    }
+    if (untracked.length > 0) {
+      mainLogger.devLog(
+        `[checkCurrentFolderState]: Untracked files found: ${untracked}`,
+      );
+    }
+    return untracked;
+  } catch (error) {
+    mainLogger.appError(
+      `[checkCurrentFolderState]: Error accessing folder ${autoExportPath}:`,
+      (error as NodeJS.ErrnoException).message,
+    );
+    return [];
+  }
+}
+
+export { checkCurrentFolderState, checkSyncState };
