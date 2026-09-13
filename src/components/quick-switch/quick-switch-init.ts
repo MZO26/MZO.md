@@ -1,3 +1,5 @@
+import { getRelatedNotes } from "@/api/api";
+import { rendererLogger } from "@/app";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { handleSelectNote, waitForFlush } from "@/notes/note-actions";
 import { listEl, switchDialog } from "@/settings/dialog-init";
@@ -19,7 +21,7 @@ function initQuickSwitcher(editor: Editor) {
       return;
     }
     const displayNotes = await getDisplayNotes();
-    currentDisplayNotes = displayNotes;
+    currentDisplayNotes = displayNotes ?? [];
     activeIndex = 0;
     if (editor.isFocused) {
       editor.commands.blur();
@@ -51,6 +53,13 @@ function initQuickSwitcher(editor: Editor) {
     }
     if (activeNote) {
       const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote);
+      const relatedNotesQuery = await getRelatedNotes({
+        id: activeNote.id,
+      });
+      const relatedNotes = relatedNotesQuery.success
+        ? relatedNotesQuery.data
+        : [];
+      rendererLogger.devLog(relatedNotes);
       for (const link of backlinks) {
         const linkedNote = noteIndex.get(link.id);
         if (!linkedNote || backlinkIds.has(linkedNote.id)) continue;
@@ -69,6 +78,15 @@ function initQuickSwitcher(editor: Editor) {
           id: linkedNote.id,
           title: linkedNote.title,
           section: "outgoing",
+        });
+      }
+      for (const note of relatedNotes) {
+        if (relatedNotes.length === 0) return;
+        if (!noteIndex.has(note.id)) continue;
+        displayNotes.push({
+          id: note.id,
+          title: note.title,
+          section: "related",
         });
       }
     }
@@ -157,6 +175,8 @@ function initQuickSwitcher(editor: Editor) {
         return `Backlinks (${count.backlink})`;
       case "outgoing":
         return `Links (${count.outgoing})`;
+      case "related":
+        return `Related (${count.related})`;
       default:
         section satisfies never;
         return "";

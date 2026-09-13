@@ -39,6 +39,7 @@ import {
   IdSchema,
   IdsSchema,
   QuerySchema,
+  RelatedNotesSchema,
   UpdateNotePayloadSchema,
 } from "@shared/schemas/note-schema";
 import {
@@ -220,6 +221,17 @@ function registerNoteIpc(win: BrowserWindow) {
       const { targetDir, isAutoExport } = resolveAutoExport();
       if (!targetDir || !isAutoExport) return null;
       return await checkSyncState(targetDir, validatedData);
+    });
+  });
+
+  ipcMain.handle(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, (e, payload: unknown) => {
+    return result(e, async () => {
+      if (
+        !checkRateLimit(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, LIMITS.READ_NORMAL)
+      )
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validatedData = validation(RelatedNotesSchema, payload);
+      return db.getRelatedNotes(validatedData.id);
     });
   });
 

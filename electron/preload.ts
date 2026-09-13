@@ -149,6 +149,8 @@ if (process.contextIsolated) {
       },
       syncRequest: (payload: SyncRequestPayload) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_SYNC, payload),
+      getRelatedNotes: (payload: { id: Id }) =>
+        ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, payload),
       getById: (id: Id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_BY_ID, id),
       getManyById: (ids: Id[]) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_MANY_BY_ID, ids),

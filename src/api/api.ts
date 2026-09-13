@@ -11,6 +11,7 @@ import type {
   Id,
   Note,
   NoteListItem,
+  RelatedNotes,
   SearchQuery,
   SearchResult,
   UpdateNotePayload,
@@ -117,6 +118,12 @@ async function syncRequest(
   return invoke(window.noteAPI.syncRequest(payload));
 }
 
+async function getRelatedNotes(payload: {
+  id: Id;
+}): Promise<Result<RelatedNotes[]>> {
+  return invoke(window.noteAPI.getRelatedNotes(payload));
+}
+
 async function databaseBackup(): Promise<Result<number>> {
   return invoke(window.noteAPI.databaseBackup());
 }
@@ -218,6 +225,7 @@ export {
   getAutoExportPath,
   getManyById,
   getNoteById,
+  getRelatedNotes,
   getSettings,
   handleZoom,
   imageWriteMany,

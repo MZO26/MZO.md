@@ -15,6 +15,7 @@ import {
   NoteFromDB,
   NoteListItemFromDB,
   OldNoteSchema,
+  RelatedNotesSchema,
   TagsSchema,
   type BoolDb,
   type DbCreateArgs,
@@ -25,6 +26,7 @@ import {
   type Note,
   type NoteListItem,
   type NoteRow,
+  type RelatedNotes,
   type Tag,
   type TagRow,
 } from "@shared/schemas/note-schema";
@@ -61,6 +63,7 @@ class AppDB {
   private updateStoreStmt!: StatementSync;
   private getAllSettingsStmt!: StatementSync;
   private checkNoteStmt!: StatementSync;
+  private getRelatedNotesStmt!: StatementSync;
   constructor() {
     this.dbPath = path.join(app.getPath("userData"), "app.db");
   }
@@ -177,6 +180,51 @@ class AppDB {
       FROM notes 
       WHERE content LIKE '%appimg:///%'
     `);
+    this.getRelatedNotesStmt = db.prepare(`
+      SELECT n.id, n.title, 
+      COUNT(l.related) * 5 + 
+      COUNT(t.tag_score) as matches
+      FROM notes n
+      LEFT JOIN (
+        SELECT l2.source_id as related
+        FROM note_links l1
+        JOIN note_links l2 
+        ON l1.target_id = l2.target_id
+        WHERE l1.source_id = $id AND l2.source_id != $id
+        UNION ALL
+        SELECT l2.target_id as related
+        FROM note_links l1
+        JOIN note_links l2 
+        ON l1.source_id = l2.source_id
+        WHERE l1.target_id = $id AND l2.target_id != $id
+      ) l ON l.related = n.id
+      LEFT JOIN (
+        SELECT t.note_id AS id, COUNT(*) AS tag_score
+        FROM note_tags t
+        WHERE t.tag_name IN (
+          SELECT tag_name 
+          FROM note_tags 
+          WHERE note_id = $id
+        )
+        AND t.note_id != $id
+        GROUP BY t.note_id
+      ) t ON t.id = n.id
+      WHERE n.id != $id
+      AND (l.related IS NOT NULL OR t.id IS NOT NULL)
+      AND n.id NOT IN (
+        SELECT source_id 
+        FROM note_links 
+        WHERE target_id = $id
+      )
+      AND n.id NOT IN (
+        SELECT target_id 
+        FROM note_links 
+        WHERE source_id = $id
+      )
+      GROUP BY n.id, n.title
+      ORDER BY matches DESC, n.title ASC
+      LIMIT 5;
+      `);
     this.updateStoreStmt = db.prepare(`
       UPDATE store SET
       "theme" = $theme,
@@ -268,6 +316,7 @@ class AppDB {
   private createIndexes(db: DatabaseSync) {
     db.exec(`
     CREATE INDEX IF NOT EXISTS idx_note_tags_tag_name ON note_tags(tag_name);
+    CREATE INDEX IF NOT EXISTS idx_note_links_links_source_id ON note_links(source_id);
     CREATE INDEX IF NOT EXISTS idx_note_links_target_id ON note_links(target_id);
     CREATE INDEX IF NOT EXISTS idx_note_created_at ON notes(created_at);
     `);
@@ -528,6 +577,14 @@ class AppDB {
   public getLinksById(id: Id): Link[] {
     const rows = this.getLinksByIdStmt.all({ $id: id }) as Link[];
     return validation(LinksSchema, rows);
+  }
+
+  public getRelatedNotes(id: Id): RelatedNotes[] {
+    const rows = this.getRelatedNotesStmt.all({
+      $id: id,
+    }) as RelatedNotes[];
+    mainLogger.devLog(rows);
+    return rows.map((r) => validation(RelatedNotesSchema, r));
   }
 
   public checkExistence(fileName: string): boolean {

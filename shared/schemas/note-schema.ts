@@ -50,6 +50,8 @@ const LinkSchema = z.object({
 
 const LinksSchema = z.array(LinkSchema).default([]);
 
+const RelatedNotesSchema = z.object({ id: IdSchema, title: TitleSchema });
+
 // Full Note Table
 const NoteTableSchema = z.object({
   id: IdSchema,
@@ -170,6 +172,7 @@ type CreateNotePayload = z.infer<typeof CreateNotePayloadSchema>;
 type CreateNotesPayload = z.infer<typeof CreateNotesPayloadsSchema>;
 type Note = z.infer<typeof NoteSchema>;
 type Id = z.infer<typeof IdSchema>;
+type RelatedNotes = z.infer<typeof RelatedNotesSchema>;
 
 export {
   AutoExportWritePayloadSchema,
@@ -193,6 +196,7 @@ export {
   OldNoteSchema,
   PlainTextSchema,
   QuerySchema,
+  RelatedNotesSchema,
   SearchResultSchema,
   SnippetSchema,
   TagRowsSchema,
@@ -215,6 +219,7 @@ export {
   type NoteListItem,
   type NoteMenuPayload,
   type NoteRow,
+  type RelatedNotes,
   type SearchQuery,
   type SearchResult,
   type Tag,

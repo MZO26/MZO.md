@@ -34,6 +34,7 @@ const IPC_CHANNELS = {
   NOTE_EXPORT_MANY: "note:note-export-many",
   NOTE_PIN: "note:note-pin",
   NOTE_PIN_MANY: "note:note-pin-many",
+  NOTE_GET_RELATED_NOTES: "note:get-related-notes",
   DB_BACKUP: "note:db-backup",
   DB_BACKUP_RESTORE: "note:db-backup-restore",
   // callbacks

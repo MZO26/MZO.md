@@ -11,6 +11,7 @@ import type {
   Note,
   NoteListItem,
   NoteMenuPayload,
+  RelatedNotes,
   SearchQuery,
   SearchResult,
   UpdateNotePayload,
@@ -107,6 +108,7 @@ declare global {
       onTriggerCopySelectionMarkdown: (callback: () => void) => () => void;
       onTriggerCopySelectionHTML: (callback: () => void) => () => void;
       syncRequest: (payload: SyncRequestPayload) => Promise<Result<SyncResult>>;
+      getRelatedNotes: (payload: { id: Id }) => Promise<Result<RelatedNotes[]>>;
       pin: (id: Id) => Promise<Result<boolean>>;
       pinMany: (ids: Id[]) => Promise<Result<boolean>>;
       databaseBackup: () => Promise<Result<number>>;
