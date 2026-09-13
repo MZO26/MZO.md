@@ -138,7 +138,7 @@ async function createWindow() {
       return;
     }
   });
-  win.once("ready-to-show", async () => {
+  win.once("ready-to-show", () => {
     win?.show();
   });
   win.webContents.on("did-finish-load", () => {
@@ -146,18 +146,21 @@ async function createWindow() {
     setTimeout(async () => {
       try {
         mainLogger.devLog("Starting post-load asset cleanup...");
-        const usedImages = db.getUsedImagesFromDatabase();
+        const usedImages = db.getUsedImages();
         await removeUnusedImages(usedImages);
       } catch (error) {
         mainLogger.appError("Failed to clean up assets", error);
       }
       if (settings["auto_export_path"]) {
         try {
-          const dirResult = await checkCurrentFolderState(
+          const readDirResult = await checkCurrentFolderState(
             settings["auto_export_path"],
           );
-          if (dirResult.length > 0) {
-            win?.webContents.send(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, dirResult);
+          if (readDirResult.length > 0) {
+            win?.webContents.send(
+              IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC,
+              readDirResult,
+            );
           }
         } catch (error) {
           mainLogger.appError("Failed to import files from folder", error);

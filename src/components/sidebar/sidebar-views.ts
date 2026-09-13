@@ -32,20 +32,16 @@ async function applyView(
     return;
   }
   stateStore.setState({ activeTag: nextTag, searchQuery: "" });
-  getUIItem("searchInput").value = "";
   await handleUpdateSettings({ active_tag: nextTag });
-  const notes = newState ?? noteStore.get("notes");
-  noteStore.setState({
-    visibleIds: computeIdsForTagView(notes, nextTag),
-  });
+  restoreSidebarScope(newState);
 }
 
-function restoreSidebarScope() {
+function restoreSidebarScope(newState?: readonly NoteListItem[]) {
   const activeTag = stateStore.get("activeTag");
   stateStore.setState({ searchQuery: "" });
   getUIItem("searchInput").value = "";
   noteStore.setState((state) => ({
-    visibleIds: computeIdsForTagView(state.notes, activeTag),
+    visibleIds: computeIdsForTagView(newState ?? state.notes, activeTag),
     searchSnippets: {},
   }));
 }

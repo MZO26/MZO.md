@@ -121,7 +121,10 @@ function initListeners() {
       "External changes detected",
     );
     if (!confirmed) return;
-    await handleImportNote({ source: "external", filePaths: dirResult });
+    const loading = createGlobalSpinner(500);
+    await loading.wrap(async () => {
+      await handleImportNote({ source: "external", filePaths: dirResult });
+    });
   });
 
   window.electronAPI.onRequestFlush(async () => {

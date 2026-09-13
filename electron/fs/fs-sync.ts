@@ -3,7 +3,7 @@ import {
   normalizeText,
   resolveAutoExportPath,
 } from "@electron/fs/fs-auto-export";
-import { getFilePath } from "@electron/fs/fs-helpers";
+import { ensureInsideDirectory, getFilePath } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { AppErrorCode } from "@shared/errors";
@@ -80,6 +80,7 @@ async function checkCurrentFolderState(targetDir: string) {
     for (const entry of entries) {
       if (entry.isFile() && entry.name.endsWith(".md")) {
         const joined = path.join(autoExportPath, entry.name);
+        ensureInsideDirectory(autoExportPath, joined);
         const base = path.basename(joined, path.extname(entry.name));
         const exists = db.checkExistence(base);
         if (!exists) {
@@ -94,9 +95,10 @@ async function checkCurrentFolderState(targetDir: string) {
     }
     return untracked;
   } catch (error) {
+    const err = error as NodeJS.ErrnoException;
     mainLogger.appError(
       `[checkCurrentFolderState]: Error accessing folder ${autoExportPath}:`,
-      (error as NodeJS.ErrnoException).message,
+      err.message,
     );
     return [];
   }

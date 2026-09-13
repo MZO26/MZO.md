@@ -557,7 +557,7 @@ class AppDB {
     return validation(OldNoteSchema, rows);
   }
 
-  public getUsedImagesFromDatabase(): string[] {
+  public getUsedImages(): string[] {
     const EXPORT_REGEX = /appimg:\/\/\/([^"' )>\s]+)/g;
     const usedImages = new Set<string>();
     for (const row of this.getImagesStmt.iterate()) {
