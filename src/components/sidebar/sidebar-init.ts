@@ -168,6 +168,25 @@ function applySidebarListeners(
       });
     }),
   );
+  window.addEventListener(
+    "mouseup",
+    createAsyncHandler(async (e: MouseEvent) => {
+      if (e.button !== 3 && e.button !== 4) return;
+      e.preventDefault();
+      const activeId = stateStore.get("activeId") as Id;
+      if (!activeId) return;
+      const recentNotes = noteStore.get("recentNotes");
+      const currentIndex = recentNotes.indexOf(activeId);
+      if (currentIndex === -1) return;
+      if (e.button === 3) {
+        const id = recentNotes[currentIndex + 1];
+        if (id) await handleSelectNote(id, { skipRecent: true });
+      } else if (e.button === 4) {
+        const id = currentIndex > 0 ? recentNotes[currentIndex - 1] : undefined;
+        if (id) await handleSelectNote(id, { skipRecent: true });
+      }
+    }),
+  );
 }
 
 export { initNotesSidebar };

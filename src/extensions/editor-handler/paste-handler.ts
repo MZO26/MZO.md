@@ -43,7 +43,6 @@ export const PasteHandler = Extension.create({
               return true;
             }
             if (!html && looksLikeMarkdown(plainText)) {
-              rendererLogger.devLog("Is markdown");
               event.preventDefault();
               const json = getMarkdownManager().parse(plainText);
               editor.commands.insertContent(json, { contentType: "json" });

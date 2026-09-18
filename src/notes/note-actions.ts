@@ -251,7 +251,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 
-async function handleSelectNote(id: Id) {
+async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   const editor = getAppItem("editor");
   const activeId = stateStore.get("activeId");
   debouncedSaveNote.flush();
@@ -286,14 +286,16 @@ async function handleSelectNote(id: Id) {
   updateToc(headings);
   updateStats();
   editor.setEditable(true, false);
-  noteStore.setState((state) => {
-    const recentNotes = state.recentNotes.filter(
-      (noteId) => noteId !== result.data.id && state.noteIndex.has(noteId),
-    );
-    return {
-      recentNotes: [result.data.id, ...recentNotes].slice(0, 5),
-    };
-  });
+  if (!options?.skipRecent) {
+    noteStore.setState((state) => {
+      const recentNotes = state.recentNotes.filter(
+        (noteId) => noteId !== result.data.id && state.noteIndex.has(noteId),
+      );
+      return {
+        recentNotes: [result.data.id, ...recentNotes].slice(0, 5),
+      };
+    });
+  }
 }
 
 async function handleDuplicateNote(note: Readonly<Note>) {

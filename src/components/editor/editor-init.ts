@@ -24,6 +24,13 @@ import { LinkWithTitle } from "@/extensions/overrides/link";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { Placeholder } from "@/extensions/placeholder";
 import { DocSearch } from "@/extensions/search-replace";
+import {
+  CodeSelectionWrapper,
+  HighlightSelectionWrapper,
+  ItalicAndBoldSelectionWrapper,
+  StrikeThroughSelectionWrapper,
+  UnderlineSelectionWrapper,
+} from "@/extensions/selection-wrappers";
 import { NoteTagHandler } from "@/extensions/tag/tag-handler";
 import { TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
@@ -200,6 +207,11 @@ function getNoteEditorExtensions() {
       katexOptions: SHARED_KATEX_OPTIONS,
     }),
     DocSearch,
+    CodeSelectionWrapper,
+    ItalicAndBoldSelectionWrapper,
+    StrikeThroughSelectionWrapper,
+    UnderlineSelectionWrapper,
+    HighlightSelectionWrapper,
   ];
 }
 
