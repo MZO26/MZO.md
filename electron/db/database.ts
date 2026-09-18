@@ -316,7 +316,6 @@ class AppDB {
   private createIndexes(db: DatabaseSync) {
     db.exec(`
     CREATE INDEX IF NOT EXISTS idx_note_tags_tag_name ON note_tags(tag_name);
-    CREATE INDEX IF NOT EXISTS idx_note_links_links_source_id ON note_links(source_id);
     CREATE INDEX IF NOT EXISTS idx_note_links_target_id ON note_links(target_id);
     CREATE INDEX IF NOT EXISTS idx_note_created_at ON notes(created_at);
     `);

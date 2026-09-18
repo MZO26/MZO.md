@@ -5,7 +5,7 @@ import {
 } from "@/extensions/mathematics/mathematics";
 import { NoteTag } from "@/extensions/tag/tag";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
-import type { Editor, JSONContent } from "@tiptap/core";
+import { type Editor, type JSONContent } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 import {
   Table,

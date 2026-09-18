@@ -1,11 +1,12 @@
 import { rendererLogger } from "@/app";
+import { getMarkdownManager } from "@/components/editor/editor-actions";
 import { processAndInsertImages } from "@/extensions/image/image";
 import {
   ALLOWED_TYPES,
   DOMPURIFY_CONFIG,
   MAX_DROP_LENGTH,
-  MAX_DROP_PASTE_CHARACTERS,
 } from "@/utils/constants";
+import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";
@@ -35,9 +36,17 @@ export const PasteHandler = Extension.create({
               );
               return true;
             }
+            const html = clipboardData.getData("text/html");
             const plainText = clipboardData.getData("text/plain") || "";
-            if (plainText.length > MAX_DROP_PASTE_CHARACTERS) {
+            if (plainText.length > MAX_CHARACTERS) {
               event.preventDefault();
+              return true;
+            }
+            if (!html && looksLikeMarkdown(plainText)) {
+              rendererLogger.devLog("Is markdown");
+              event.preventDefault();
+              const json = getMarkdownManager().parse(plainText);
+              editor.commands.insertContent(json, { contentType: "json" });
               return true;
             }
             return false;
@@ -84,3 +93,56 @@ export const SecurityCleanup = Extension.create({
     return DOMPurify.sanitize(html, DOMPURIFY_CONFIG);
   },
 });
+
+function looksLikeMarkdown(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+  const strongSignals = [
+    /^#{1,6}\s+\S/m,
+    /^```/m,
+    /!\[[^\]\n]*\]\([^)\n]+\)/,
+    /\[[^\]\n]+\]\([^)\n]+\)/,
+    /^={3,}$\vert{}^-{3,}$/m,
+  ];
+
+  if (strongSignals.some((pattern) => pattern.test(trimmed))) return true;
+
+  let matchCount = 0;
+
+  const inlinePatterns = [
+    /\*\*[^*\n]+\*\*/g,
+    /__[^_\n]+__/g,
+    /(?:^|[^\w*])\*[^*\n]+\*(?!\w)/g,
+    /(?:^|[^\w_])_[^_\n]+_(?!\w)/g,
+    /~~[^~\n]+~~/g,
+    /`[^`\n]+`/g,
+  ];
+
+  for (const pattern of inlinePatterns) {
+    const matches = trimmed.match(pattern);
+    if (matches) matchCount += matches.length;
+    if (matchCount >= 2) return true;
+  }
+
+  const lines = trimmed.split(/\r?\n/);
+
+  const blockPatterns = [
+    /^>\s?\S/,
+    /^[-*+]\s+\S/,
+    /^\d+[.)]\s+\S/,
+    /^\|.+\|$/,
+    /^(-{3,}|\*{3,}|_{3,})$/,
+  ];
+
+  for (const line of lines) {
+    for (const pattern of blockPatterns) {
+      if (pattern.test(line)) {
+        matchCount++;
+        if (matchCount >= 3) return true;
+        break;
+      }
+    }
+  }
+
+  return false;
+}

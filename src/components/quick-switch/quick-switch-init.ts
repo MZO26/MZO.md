@@ -125,7 +125,7 @@ function initQuickSwitcher(editor: Editor) {
       listEl.appendChild(span);
       return;
     }
-    let lastSection: string | null = null;
+    let lastSection: QuickSwitchDisplayNote["section"] | null = null;
     const count = getSectionCount();
     for (const [index, note] of currentDisplayNotes.entries()) {
       if (note.section !== lastSection) {

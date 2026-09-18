@@ -152,8 +152,6 @@ type AllTagsMenu = {
   close(): void;
 };
 
-// number to get keys of array (index) and then indexed access
-// has to be as const so ts doesn't infer string
 type SelectionAction =
   | "cancel"
   | "pin"

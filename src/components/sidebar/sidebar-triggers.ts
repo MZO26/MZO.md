@@ -9,10 +9,7 @@ import {
   syncRequest,
 } from "@/api/api";
 import { rendererLogger } from "@/app";
-import {
-  getCachedEditorExtensions,
-  getMarkdownManager,
-} from "@/components/editor/editor-actions";
+import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
 import {
@@ -33,7 +30,11 @@ import type {
 } from "@shared/schemas/request-schema";
 import { TABLE_ACTIONS } from "@shared/shared-constants";
 import type { TableAction } from "@shared/shared-types";
-import { Editor, generateHTML, getHTMLFromFragment } from "@tiptap/core";
+import { generateHTML } from "@tiptap/core";
+import {
+  getHTMLContentBetween,
+  getMarkdownContentBetween,
+} from "../editor/editor-content";
 
 function triggerTableMenu(action: TableAction) {
   const editor = getAppItem("editor");
@@ -180,50 +181,6 @@ async function triggerCopyRichText(id: Id) {
       "[onTriggerCopyMarkdown]: Failed to copy markdown:",
       error,
     );
-  }
-}
-
-function getHTMLContentBetween(
-  editor: Editor,
-  from: number,
-  to: number,
-): string {
-  const { doc } = editor.state;
-  const safeFrom = Math.max(0, Math.min(from, doc.content.size));
-  const safeTo = Math.max(safeFrom, Math.min(to, doc.content.size));
-  try {
-    const slice = doc.slice(safeFrom, safeTo);
-    return getHTMLFromFragment(slice.content, editor.schema);
-  } catch (error) {
-    rendererLogger.appError(
-      "[getHTMLContentBetween]: Failed to slice selection:",
-      error,
-    );
-    return "";
-  }
-}
-
-function getMarkdownContentBetween(
-  editor: Editor,
-  from: number,
-  to: number,
-): string {
-  const { doc } = editor.state;
-  const safeFrom = Math.max(0, Math.min(from, doc.content.size));
-  const safeTo = Math.max(safeFrom, Math.min(to, doc.content.size));
-  try {
-    const slice = doc.slice(safeFrom, safeTo);
-    const json = {
-      type: "doc",
-      content: slice.content.toJSON() ?? [],
-    };
-    return getMarkdownManager().serialize(json);
-  } catch (error) {
-    rendererLogger.appError(
-      "[getMarkdownContentBetween]: Failed to slice selection:",
-      error,
-    );
-    return "";
   }
 }
 
