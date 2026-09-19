@@ -106,15 +106,14 @@ class AppDB {
   }
 
   private prepareStmts(db: DatabaseSync) {
-    this.getAllNotesStmt = db.prepare(
-      `SELECT id, title, pinned, snippet, created_at, updated_at
+    this.getAllNotesStmt = db.prepare(`
+      SELECT id, title, pinned, snippet, created_at, updated_at
       FROM notes 
-      ORDER BY created_at DESC`,
-    );
+      ORDER BY created_at DESC`);
     this.getAllBackupStmt = db.prepare(`
-        SELECT * 
-        FROM notes 
-        ORDER BY created_at DESC
+      SELECT * 
+      FROM notes 
+      ORDER BY created_at DESC
       `);
     this.getNoteByIdStmt = db.prepare(`
       SELECT * 
@@ -130,10 +129,9 @@ class AppDB {
       SELECT note_id, tag_name 
       FROM note_tags
     `);
-    this.getAllLinksStmt = db.prepare(
-      `SELECT source_id, target_id 
-      FROM note_links`,
-    );
+    this.getAllLinksStmt = db.prepare(`
+      SELECT source_id, target_id 
+      FROM note_links`);
     this.getTagsByIdStmt = db.prepare(
       `SELECT tag_name 
       FROM note_tags 

@@ -83,9 +83,17 @@ type FontFamily = AppSettings["font_family"];
 type FontSize = AppSettings["font_size"];
 type LineHeight = AppSettings["line_height"];
 type CodeTheme = AppSettings["code_theme"];
-type StyleKeys = Extract<
-  keyof AppSettings,
-  "theme" | "font_family" | "font_size" | "line_height" | "code_theme"
+type AppearanceKeys = Pick<
+  AppSettings,
+  "theme" | "code_theme" | "highlight" | "note_item_display"
+>;
+type EditorKeys = Pick<
+  AppSettings,
+  "font_family" | "font_size" | "line_height" | "spellcheck"
+>;
+type GeneralKeys = Pick<
+  AppSettings,
+  "export_format" | "auto_export" | "auto_export_path"
 >;
 
 export {
@@ -94,19 +102,21 @@ export {
   StoreRowSchema,
   StoreSchema,
   type ActiveTag,
+  type AppearanceKeys,
   type AppSettings,
   type AutoExport,
   type AutoExportPath,
   type CodeTheme,
+  type EditorKeys,
   type ExportFormat,
   type FontFamily,
   type FontSize,
+  type GeneralKeys,
   type HighlightTheme,
   type LineHeight,
   type NoteItemDisplay,
   type Spellcheck,
   type StoreFromDb,
   type StoreRow,
-  type StyleKeys,
   type Theme,
 };

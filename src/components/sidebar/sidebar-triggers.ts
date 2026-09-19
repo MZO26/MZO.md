@@ -10,6 +10,10 @@ import {
 } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
+import {
+  getHTMLContentBetween,
+  getMarkdownContentBetween,
+} from "@/components/editor/editor-content";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
 import {
@@ -31,10 +35,6 @@ import type {
 import { TABLE_ACTIONS } from "@shared/shared-constants";
 import type { TableAction } from "@shared/shared-types";
 import { generateHTML } from "@tiptap/core";
-import {
-  getHTMLContentBetween,
-  getMarkdownContentBetween,
-} from "../editor/editor-content";
 
 function triggerTableMenu(action: TableAction) {
   const editor = getAppItem("editor");

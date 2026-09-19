@@ -14,11 +14,18 @@ import { QUICK_ACTIONS } from "@/utils/constants";
 import { createIconButton, requireElement } from "@/utils/dom";
 import { getUIItem } from "@/utils/registry";
 import type { AppIcons, SelectOption, SettingsCategory } from "@/utils/types";
+import type { AppSettings } from "@shared/schemas/store-schema";
 
-// blueprint for select items and their options for specified categories
-function selectBuilder<T extends string | boolean>(
-  id: string,
-  options: readonly SelectOption<T>[],
+function selectBuilder<
+  K extends {
+    [Key in keyof AppSettings]: AppSettings[Key] extends string | boolean
+      ? Key
+      : never;
+  }[keyof AppSettings], // indexed access to get union of all values inside
+  O extends AppSettings[K],
+>(
+  id: K,
+  options: readonly SelectOption<O>[],
   category: SettingsCategory,
   labelText: string,
 ) {
@@ -78,31 +85,31 @@ function createQuickActionContainer() {
 
 function buildSelects() {
   selectBuilder("theme", THEME_SETTINGS, "Appearance", "App-Theme");
-  selectBuilder("code-theme", CODE_THEME_SETTINGS, "Appearance", "Code-Theme");
+  selectBuilder("code_theme", CODE_THEME_SETTINGS, "Appearance", "Code-Theme");
   selectBuilder(
-    "highlight-theme",
+    "highlight",
     HIGHLIGHT_THEME_SETTINGS,
     "Appearance",
     "Highlight-Theme",
   );
   selectBuilder(
-    "note-item-display",
+    "note_item_display",
     NOTE_ITEM_DISPLAY_SETTINGS,
     "Appearance",
     "Note-Item-Display",
   );
-  selectBuilder("font-family", FONT_FAMILY_SETTINGS, "Editor", "Font-Family");
-  selectBuilder("font-size", FONT_SIZE_SETTINGS, "Editor", "Font-Size");
-  selectBuilder("line-height", LINE_HEIGHT_SETTINGS, "Editor", "Line-Height");
+  selectBuilder("font_family", FONT_FAMILY_SETTINGS, "Editor", "Font-Family");
+  selectBuilder("font_size", FONT_SIZE_SETTINGS, "Editor", "Font-Size");
+  selectBuilder("line_height", LINE_HEIGHT_SETTINGS, "Editor", "Line-Height");
   selectBuilder("spellcheck", SPELLCHECK_SETTINGS, "Editor", "Spellcheck");
   selectBuilder(
-    "export-format",
+    "export_format",
     EXPORT_FORMAT_SETTINGS,
     "General",
     "Bulk Export-Format",
   );
   selectBuilder(
-    "auto-export",
+    "auto_export",
     AUTO_EXPORT_SETTINGS,
     "General",
     "Auto-Export (.md)",

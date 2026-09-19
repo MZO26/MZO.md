@@ -22,19 +22,24 @@ import { settingsStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { CODE_THEME_MAP } from "@/utils/constants";
 import { getAppItem } from "@/utils/registry";
-import type { AppSettings } from "@shared/schemas/store-schema";
+import type {
+  AppearanceKeys,
+  AppSettings,
+  EditorKeys,
+  GeneralKeys,
+} from "@shared/schemas/store-schema";
 
 function initAppearanceSettings(
-  settings: AppSettings,
+  settings: AppearanceKeys,
   container: HTMLDivElement,
 ) {
   const themeSelect = container.querySelector<HTMLSelectElement>("#theme");
   const codeThemeSelect =
-    container.querySelector<HTMLSelectElement>("#code-theme");
+    container.querySelector<HTMLSelectElement>("#code_theme");
   const highlightSelect =
-    container.querySelector<HTMLSelectElement>("#highlight-theme");
+    container.querySelector<HTMLSelectElement>("#highlight");
   const noteItemSelect =
-    container.querySelector<HTMLSelectElement>("#note-item-display");
+    container.querySelector<HTMLSelectElement>("#note_item_display");
   const sidebar = getAppItem("sidebar");
   if (!codeThemeSelect || !themeSelect || !highlightSelect || !noteItemSelect) {
     return;
@@ -122,14 +127,14 @@ function initAppearanceSettings(
   );
 }
 
-function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
+function initEditorSettings(settings: EditorKeys, container: HTMLDivElement) {
   const editorWrapper = getAppItem("editorWrapper");
   const fontFamilySelect =
-    container.querySelector<HTMLSelectElement>("#font-family");
+    container.querySelector<HTMLSelectElement>("#font_family");
   const fontSizeSelect =
-    container.querySelector<HTMLSelectElement>("#font-size");
+    container.querySelector<HTMLSelectElement>("#font_size");
   const lineHeightSelect =
-    container.querySelector<HTMLSelectElement>("#line-height");
+    container.querySelector<HTMLSelectElement>("#line_height");
   const spellcheckSelect =
     container.querySelector<HTMLSelectElement>("#spellcheck");
   if (
@@ -195,11 +200,11 @@ function initEditorSettings(settings: AppSettings, container: HTMLDivElement) {
   );
 }
 
-function initGeneralSettings(settings: AppSettings, container: HTMLDivElement) {
+function initGeneralSettings(settings: GeneralKeys, container: HTMLDivElement) {
   const exportFormatSelect =
-    container.querySelector<HTMLSelectElement>("#export-format");
+    container.querySelector<HTMLSelectElement>("#export_format");
   const autoExportSelect =
-    container.querySelector<HTMLSelectElement>("#auto-export");
+    container.querySelector<HTMLSelectElement>("#auto_export");
   if (!exportFormatSelect || !autoExportSelect) return;
   exportFormatSelect.value = settings["export_format"];
   exportFormatSelect.addEventListener(
