@@ -1,6 +1,7 @@
 import {
   exportNote,
   getAutoExportPath,
+  getMetadataSuggestion,
   getNoteById,
   openAutoExportFolder,
   openInDefaultEditor,
@@ -25,9 +26,15 @@ import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { sleep } from "@/utils/async";
 import { CHAR_BASELINE, YIELD_MS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
+import { checkNoteSimilarity } from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
-import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
+import type {
+  Id,
+  Link,
+  NoteMenuPayload,
+  Tag,
+} from "@shared/schemas/note-schema";
 import type {
   ExportContent,
   OpenAutoExportPathRequest,
@@ -261,6 +268,56 @@ async function triggerSingleDelete(id: Id) {
   await handleDeleteNote(id);
 }
 
+async function triggerMetadataSuggestion(id: Id) {
+  const result = await getMetadataSuggestion(id);
+  if (!result.success) {
+    rendererLogger.appError(
+      "[onTriggerTagSuggestion]: Failed to get related tags:",
+      result.error,
+    );
+    return;
+  }
+  const similarNotes: Id[] = [];
+  const titleIndex = new Map(
+    noteStore.get("notes").map((n) => [n.title, n.id]),
+  );
+  const noteIndex = noteStore.get("noteIndex");
+  const comparison = noteIndex.get(id);
+  if (!comparison) return { tags: result.data.tags, note: result.data.note };
+  for (const index of titleIndex.entries()) {
+    if (id === index[1]) continue;
+    const similarity = checkNoteSimilarity(comparison.title, index[0]);
+    if (similarity >= 0.75) {
+      rendererLogger.devLog(`Similar note found: ${index[0]}`);
+      similarNotes.push(index[1]);
+    }
+  }
+  if (similarNotes.length === 0)
+    return {
+      tags: result.data.tags,
+      links: result.data.links,
+      note: result.data.note,
+    };
+  const updatedTags: Tag[] = [];
+  const updatedLinks: Link[] = [];
+  for (const id of similarNotes) {
+    const note = noteIndex.get(id);
+    if (!note) continue;
+    if (note.tags) updatedTags.push(...note.tags);
+    if (note.links) updatedLinks.push(...note.links);
+  }
+  const suggestedTags = [...new Set([...result.data.tags, ...updatedTags])];
+  // use map with link.id because set dedupe only works based on memory reference, not object reference
+  const mergedLinks = [...result.data.links, ...updatedLinks];
+  const suggestedLinks = Array.from(
+    new Map(mergedLinks.map((link) => [link.id, link])).values(),
+  );
+  rendererLogger.devLog(
+    `Tag suggestions after note similarity check: ${suggestedTags}\n Link suggestions after note similarity check: ${suggestedLinks}`,
+  );
+  return { tags: suggestedTags, links: suggestedLinks, note: result.data.note };
+}
+
 async function triggerPin(id: Id) {
   const result = await pin(id);
   if (!result.success) {
@@ -400,6 +457,7 @@ export {
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
   triggerDuplicate,
+  triggerMetadataSuggestion,
   triggerNoteItemMenu,
   triggerOpenAutoExportFolder,
   triggerOpenInDefaultEditor,

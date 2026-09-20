@@ -35,11 +35,13 @@ const IPC_CHANNELS = {
   NOTE_PIN: "note:note-pin",
   NOTE_PIN_MANY: "note:note-pin-many",
   NOTE_GET_RELATED_NOTES: "note:get-related-notes",
+  NOTE_GET_METADATA_SUGGESTIONS: "note:get-metadata-suggestions",
   DB_BACKUP: "note:db-backup",
   DB_BACKUP_RESTORE: "note:db-backup-restore",
   // callbacks
   THEME_CHANGED: "callback:theme-changed",
   AUTO_EXPORT_DIR_SYNC: "callback:auto-export-dir-sync",
+  TRIGGER_GET_METADATA_SUGGESTION: "callback:trigger-get-metadata-suggestion",
   TRIGGER_TABLE_ACTION: "callback:trigger-table-action",
   TRIGGER_NOTE_ITEM_ACTION: "callback:trigger-note-item-action",
   TRIGGER_EXPORT: "callback:trigger-export",

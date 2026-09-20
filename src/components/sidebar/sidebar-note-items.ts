@@ -23,7 +23,7 @@ function getSafeSnippet(snippetGenParams: SnippetGenParams) {
 function renderTags(tags: NoteListItem["tags"], container: HTMLDivElement) {
   for (const tag of tags) {
     const span = document.createElement("span");
-    span.classList.add("tag");
+    span.classList.add("tag-node");
     span.textContent = `#${tag}`;
     span.title = `#${tag}`;
     container.appendChild(span);

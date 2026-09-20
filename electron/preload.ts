@@ -85,6 +85,8 @@ if (process.contextIsolated) {
       search: (query: SearchQuery) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_SEARCH, query),
       getAll: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_NOTES),
+      getMetadataSuggestion: (id: Id) =>
+        ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_METADATA_SUGGESTIONS, id),
       getAllBackup: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_NOTES_BACKUP),
       create: (payload: CreateNotePayload) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_CREATE, payload),
@@ -105,6 +107,9 @@ if (process.contextIsolated) {
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_IMPORT, payload),
       onDirSync: (callback: (result: string[]) => void) => {
         subscribe(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, callback);
+      },
+      onTriggerMetadataSuggestion: (callback: (id: Id) => void) => {
+        subscribe(IPC_CHANNELS.TRIGGER_GET_METADATA_SUGGESTION, callback);
       },
       onTriggerExport: (
         callback: (id: Id, extension: ExportRequest["extension"]) => void,

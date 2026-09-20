@@ -162,7 +162,9 @@ function getTags(doc: JSONContent) {
 
 export {
   extractText,
+  getLinks,
   getMetadata,
+  getTags,
   snippetGenerator,
   textConverter,
   titleGenerator,

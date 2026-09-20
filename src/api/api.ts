@@ -9,11 +9,13 @@ import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
   Id,
+  Link,
   Note,
   NoteListItem,
   RelatedNotes,
   SearchQuery,
   SearchResult,
+  Tag,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type {
@@ -102,6 +104,12 @@ async function importNote(
   payload: FilePathRequest,
 ): Promise<Result<{ data: ImportRequest[]; stats: ImportStats }>> {
   return invoke(window.noteAPI.noteImport(payload));
+}
+
+async function getMetadataSuggestion(
+  id: Id,
+): Promise<Result<{ tags: Tag[]; links: Link[]; note: Note }>> {
+  return invoke(window.noteAPI.getMetadataSuggestion(id));
 }
 
 async function pin(id: Id): Promise<Result<boolean>> {
@@ -224,6 +232,7 @@ export {
   getAllSettings,
   getAutoExportPath,
   getManyById,
+  getMetadataSuggestion,
   getNoteById,
   getRelatedNotes,
   getSettings,

@@ -1,3 +1,5 @@
+import { showNotification } from "@/api/api";
+import { rendererLogger } from "@/app";
 import {
   triggerCopyFilePath,
   triggerCopyRichText,
@@ -5,6 +7,7 @@ import {
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
   triggerDuplicate,
+  triggerMetadataSuggestion,
   triggerNoteItemMenu,
   triggerOpenAutoExportFolder,
   triggerOpenInDefaultEditor,
@@ -18,10 +21,13 @@ import {
   debouncedSaveNote,
   ensureNoteSaved,
   handleImportNote,
+  waitForFlush,
 } from "@/notes/note-actions";
 import { confirmWithDialog, syncDialog } from "@/settings/dialog-init";
-import { stateStore } from "@/state/state";
+import { noteStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
+import { addActiveLinkToDoc, addActiveTagToDoc } from "@/utils/note";
+import { getAppItem } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { ExportContent } from "@shared/schemas/request-schema";
@@ -78,6 +84,58 @@ function initListeners() {
 
   window.noteAPI.onTriggerDelete(async (id: Id) => {
     await triggerSingleDelete(id);
+  });
+
+  window.noteAPI.onTriggerMetadataSuggestion(async (id: Id) => {
+    const loading = createGlobalSpinner(100);
+    await loading.wrap(async () => {
+      const result = await triggerMetadataSuggestion(id);
+      if (!result?.note || !result.links || !result.tags) {
+        rendererLogger.devLog(
+          `note: ${result?.note}, links: ${result?.links}, tags: ${result?.tags}`,
+        );
+        await showNotification("No metadata to add", "");
+        return;
+      }
+      if (
+        !Array.isArray(result.tags) ||
+        !Array.isArray(result.links) ||
+        (result.links.length === 0 && result.tags.length === 0)
+      ) {
+        await showNotification("No metadata to add", "");
+        return;
+      }
+      const current = noteStore.get("noteIndex").get(id);
+      if (!current) return;
+      const filteredTags = result.tags.filter((t) => !current.tags.includes(t));
+      let content = result.note.content;
+      const tagslotsLeft = 5 - current.tags.length;
+      let addedLinks = 0;
+      let addedTags = 0;
+      if (result.tags.length > 0 && tagslotsLeft > 0) {
+        for (const tag of filteredTags) {
+          if (addedTags >= tagslotsLeft) break;
+          content = addActiveTagToDoc(content, tag);
+          addedTags++;
+        }
+      }
+      if (result.links.length > 0) {
+        for (const link of result.links) {
+          content = addActiveLinkToDoc(content, link.id);
+          addedLinks++;
+        }
+      }
+      getAppItem("editor").commands.setContent(content, {
+        contentType: "json",
+      });
+      await waitForFlush(id);
+      addedTags + addedLinks > 0
+        ? await showNotification(
+            `Added ${addedTags} tags / ${addedLinks} Links.`,
+            "",
+          )
+        : await showNotification("No metadata available to add", "");
+    });
   });
 
   window.noteAPI.onTriggerPin(async (id: Id) => {

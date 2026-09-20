@@ -186,6 +186,7 @@ export {
   IdSchema,
   IdsSchema,
   isNoteID,
+  LinkRowSchema,
   LinksSchema,
   NoteFromDB,
   NoteListItemFromDB,

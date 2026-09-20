@@ -235,6 +235,23 @@ function registerNoteIpc(win: BrowserWindow) {
     });
   });
 
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_GET_METADATA_SUGGESTIONS,
+    (e, payload: unknown) => {
+      return result(e, async () => {
+        if (
+          !checkRateLimit(
+            IPC_CHANNELS.NOTE_GET_METADATA_SUGGESTIONS,
+            LIMITS.READ_HEAVY,
+          )
+        )
+          throw new AppBackendError(AppErrorCode.RateLimitError);
+        const validatedData = validation(IdSchema, payload);
+        return db.getMetadataSuggestions(validatedData);
+      });
+    },
+  );
+
   ipcMain.handle(IPC_CHANNELS.NOTE_IMPORT, (e, payload: unknown) => {
     return result(e, async () => {
       if (!checkRateLimit(IPC_CHANNELS.NOTE_IMPORT, LIMITS.WRITE_HEAVY))
