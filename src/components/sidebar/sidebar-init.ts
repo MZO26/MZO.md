@@ -73,7 +73,7 @@ function applySidebarListeners(
       }
       const tagBtn = e.target.closest<HTMLButtonElement>(".all-tags-btn");
       if (tagBtn) {
-        const activeId = stateStore.get("activeId") as Id;
+        const activeId = stateStore.get("activeId") as Id | null;
         await waitForFlush(activeId);
         const tags = noteStore.get("notes").flatMap((n) => n.tags);
         showTagPopover(tagBtn, tags);
@@ -173,7 +173,7 @@ function applySidebarListeners(
     createAsyncHandler(async (e: MouseEvent) => {
       if (e.button !== 3 && e.button !== 4) return;
       e.preventDefault();
-      const activeId = stateStore.get("activeId") as Id;
+      const activeId = stateStore.get("activeId") as Id | null;
       if (!activeId) return;
       const recentNotes = noteStore.get("recentNotes");
       const currentIndex = recentNotes.indexOf(activeId);

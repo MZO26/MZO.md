@@ -8,14 +8,12 @@ import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
   Id,
-  Link,
   Note,
   NoteListItem,
   NoteMenuPayload,
   RelatedNotes,
   SearchQuery,
   SearchResult,
-  Tag,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type {
@@ -73,11 +71,6 @@ declare global {
       search: (query: SearchQuery) => Promise<Result<SearchResult[]>>;
       getAll: () => Promise<Result<readonly NoteListItem[]>>;
       getAllBackup: () => Promise<Result<readonly Note[]>>;
-      getMetadataSuggestion: (
-        id: Id,
-      ) => Promise<
-        Result<{ tags: Tag[]; links: Link[]; note: Readonly<Note> }>
-      >;
       getById: (id: Id) => Promise<Result<Readonly<Note>>>;
       getManyById: (ids: Id[]) => Promise<Result<readonly Note[]>>;
       create: (payload: CreateNotePayload) => Promise<Result<NoteListItem>>;
@@ -93,7 +86,6 @@ declare global {
       selectAutoExportFolder: () => Promise<Result<string>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
       onDirSync: (callback: (result: string[]) => void) => () => void;
-      onTriggerMetadataSuggestion: (callback: (id: Id) => void) => () => void;
       onTriggerExport: (
         callback: (id: Id, extension: ExportContent["extension"]) => void,
       ) => () => void;

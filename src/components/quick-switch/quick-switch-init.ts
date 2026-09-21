@@ -1,5 +1,5 @@
-import { getRelatedNotes } from "@/api/api";
 import { rendererLogger } from "@/app";
+import { getSimilarityMatching } from "@/components/quick-switch/quick-switch-similarity";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { handleSelectNote, waitForFlush } from "@/notes/note-actions";
 import { listEl, switchDialog } from "@/settings/dialog-init";
@@ -31,7 +31,7 @@ function initQuickSwitcher(editor: Editor) {
   }
 
   async function getDisplayNotes() {
-    const activeId = stateStore.get("activeId") as Id;
+    const activeId = stateStore.get("activeId") as Id | null;
     await waitForFlush(activeId);
     const { recentNotes, noteIndex } = noteStore.getState();
     const activeNote = activeId ? noteIndex.get(activeId) : undefined;
@@ -53,12 +53,7 @@ function initQuickSwitcher(editor: Editor) {
     }
     if (activeNote) {
       const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote);
-      const relatedNotesQuery = await getRelatedNotes({
-        id: activeNote.id,
-      });
-      const relatedNotes = relatedNotesQuery.success
-        ? relatedNotesQuery.data
-        : [];
+      const relatedNotes = await getSimilarityMatching(activeNote.id);
       rendererLogger.devLog(relatedNotes);
       for (const link of backlinks) {
         const linkedNote = noteIndex.get(link.id);

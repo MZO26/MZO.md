@@ -338,12 +338,6 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_SELECT, id),
     },
     {
-      label: "Auto Add Metadata",
-      enabled: activeId !== null && activeId === id,
-      click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_GET_METADATA_SUGGESTION, id),
-    },
-    {
       label: pinned ? "Unpin Note" : "Pin to Top",
       click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_PIN, id),
     },

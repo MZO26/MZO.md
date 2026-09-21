@@ -16,7 +16,6 @@ import {
   NoteListItemFromDB,
   OldNoteSchema,
   RelatedNotesSchema,
-  TagRowsSchema,
   TagsSchema,
   type BoolDb,
   type DbCreateArgs,
@@ -38,7 +37,6 @@ import {
   type AppSettings,
   type StoreRow,
 } from "@shared/schemas/store-schema";
-import { suggestTags, tokenize } from "@shared/tokenize";
 import { app } from "electron";
 import { backup, DatabaseSync, type StatementSync } from "node:sqlite";
 import path from "path";
@@ -582,72 +580,7 @@ class AppDB {
     const rows = this.getRelatedNotesStmt.all({
       $id: id,
     }) as RelatedNotes[];
-    mainLogger.devLog(rows);
     return rows.map((r) => validation(RelatedNotesSchema, r));
-  }
-
-  public getMetadataSuggestions(id: Id) {
-    const empty = { tags: [], links: [], note: null as Note | null };
-    const currentNote = this.getById(id);
-    if (!currentNote) return empty;
-    const related = this.getRelatedNotes(id);
-    if (!related?.length) return empty;
-    const normalize = (value: string) =>
-      value.normalize("NFKC").toLocaleLowerCase().trim();
-    const currentNormalizedTags = new Set(currentNote.tags.map(normalize));
-    const tagSuggestions = new Set(suggestTags(currentNote).map(normalize));
-    const relatedTitleTokens = new Set(
-      related.flatMap((note) => tokenize(note.title)).map(normalize),
-    );
-    const ids = related.map((n) => n.id as Id);
-    const stringifiedIds = JSON.stringify(ids);
-    const tags = this.getManyTagsStmt.all({ $ids: stringifiedIds });
-    const validatedTags = validation(TagRowsSchema, tags);
-    const tagOverlap: Tag[] = [];
-    const titleSuggestions: Tag[] = [];
-    for (const tag of validatedTags) {
-      const normalizedTag = normalize(tag.tag_name);
-      if (tagSuggestions.has(normalizedTag)) {
-        tagOverlap.push(tag.tag_name);
-      }
-      if (relatedTitleTokens.has(normalizedTag)) {
-        titleSuggestions.push(tag.tag_name);
-      }
-    }
-    const currentLinks = new Set(currentNote.links.map((l) => l.id));
-    const linkMap = this.getLinkMapMany(ids);
-    const linkIds = [...linkMap.values()].flatMap((linksArray) =>
-      linksArray.map((link) => link.id),
-    );
-    const linkOverlap: Link[] = [];
-    const seen = new Set<Id>();
-    for (const link of linkIds) {
-      // prevent circular references
-      if (link === currentNote.id) continue;
-      // get links of related notes only
-      if (currentLinks.has(link)) continue;
-      // dedupe
-      if (seen.has(link)) continue;
-      const linksToPush = linkMap.get(link);
-      if (linksToPush) {
-        for (const newLink of linksToPush) {
-          if (!seen.has(newLink.id)) {
-            seen.add(newLink.id);
-            linkOverlap.push(newLink);
-          }
-        }
-      }
-    }
-    const combinedUniqueTags = [
-      ...new Set([...tagOverlap, ...titleSuggestions]),
-    ];
-    return {
-      tags: combinedUniqueTags.filter(
-        (t) => !currentNormalizedTags.has(normalize(t)),
-      ),
-      note: currentNote,
-      links: linkOverlap,
-    };
   }
 
   public checkExistence(fileName: string): boolean {

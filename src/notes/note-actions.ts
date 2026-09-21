@@ -19,7 +19,11 @@ import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import { getMetadata, titleGenerator } from "@/utils/generators";
-import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
+import {
+  addActiveTagToDoc,
+  checkNoteSize,
+  resolveDocLinks,
+} from "@/utils/note";
 import { getAppItem } from "@/utils/registry";
 import {
   type CreateNotePayload,
@@ -125,9 +129,9 @@ async function handleImportNote(request: FilePathRequest) {
 }
 
 async function handleDeleteManyNotes(ids: Id[]) {
-  const activeId = stateStore.get("activeId");
+  const activeId = stateStore.get("activeId") as Id | null;
   const deletedIds = new Set<Id>(ids);
-  const isActiveDeleted = activeId !== null && deletedIds.has(activeId as Id);
+  const isActiveDeleted = activeId !== null && deletedIds.has(activeId);
   if (isActiveDeleted) {
     debouncedSaveNote.cancel();
   }
@@ -186,7 +190,7 @@ async function handleDeleteNote(id: Id) {
 }
 
 async function handleSaveNote(id: Id, flush: boolean = false) {
-  const activeId = stateStore.get("activeId") as Id;
+  const activeId = stateStore.get("activeId") as Id | null;
   if (activeId !== id) return;
   const activeNote = noteStore.get("noteIndex").get(activeId);
   if (!activeNote) return;
@@ -273,6 +277,7 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   try {
     await checkNoteSize(result.data.content);
     recreateEditorState(editor, result.data.content);
+    resolveDocLinks(result.data);
   } catch (error) {
     rendererLogger.appError("Invalid Editor content:", error);
     editor.setEditable(false, false);

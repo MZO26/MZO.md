@@ -1,9 +1,9 @@
 import { rendererLogger } from "@/app";
+import { noteStore } from "@/state/state";
 import { sleep } from "@/utils/async";
 import { NODE_BASELINE, UNTAGGED, YIELD_MS } from "@/utils/constants";
-import { getUIItem } from "@/utils/registry";
+import { getAppItem, getUIItem } from "@/utils/registry";
 import type { Id, Note, NoteListItem } from "@shared/schemas/note-schema";
-import { tokenize } from "@shared/tokenize";
 import type { JSONContent } from "@tiptap/core";
 import { getLinks, getTags } from "./generators";
 
@@ -35,33 +35,8 @@ function compareNotes(a: NoteListItem, b: NoteListItem) {
     numeric: true,
   });
 }
-// passing undefined for locale args to use defaults
-// set sensitivity to accent for edge cases on
-// accented characters or caps vs no caps
-// numeric true recognizes numbers and correctly
-// sorts them in the title
 
-function checkNoteSimilarity(
-  titleA: Note["title"],
-  titleB: Note["title"],
-): number {
-  const setA = new Set(tokenize(titleA));
-  const setB = new Set(tokenize(titleB));
-  if (setA.size === 0 && setB.size === 0) return 1.0;
-  if (setA.size === 0 || setB.size === 0) return 0.0;
-  let intersection = 0;
-  for (const token of setA) {
-    if (setB.has(token)) intersection++;
-  }
-  const minSize = Math.min(setA.size, setB.size);
-  const containmentRatio = intersection / minSize;
-  if (containmentRatio === 1.0) {
-    return 0.85;
-  }
-  return (2 * intersection) / (setA.size + setB.size);
-}
-
-function findTagParagraphIndex(content: JSONContent[]): number {
+function findTagParagraphIdx(content: JSONContent[]): number {
   return content.findIndex(
     (node) =>
       node.type === "paragraph" &&
@@ -84,7 +59,7 @@ function addActiveTagToDoc(
     attrs: { id: normalizedTag, label: normalizedTag },
   };
   const spaceNode = { type: "text", text: " " };
-  const tagPIdx = findTagParagraphIndex(content);
+  const tagPIdx = findTagParagraphIdx(content);
   if (tagPIdx !== -1) {
     const existingPara = content[tagPIdx];
     const updatedPara = {
@@ -122,12 +97,14 @@ function addActiveLinkToDoc(
 ): JSONContent {
   if (!activeLink) return doc;
   if (hasDocLink(doc, activeLink)) return doc;
+  rendererLogger.devLog("Not found");
   const content = Array.isArray(doc.content) ? [...doc.content] : [];
   const linkNode = {
     type: "wikilink",
     attrs: { id: activeLink },
   };
   const firstIdx = findFirstParagraphIdx(content);
+  rendererLogger.devLog(firstIdx);
   if (firstIdx !== -1) {
     const para = content[firstIdx];
     const newParaContent = para?.content
@@ -161,7 +138,7 @@ function addActiveLinkToDoc(
   };
 }
 
-function findFirstParagraphIdx(content: any[]): number {
+function findFirstParagraphIdx(content: JSONContent[]): number {
   for (let i = 0; i < content.length; i++) {
     const n = content[i];
     if (n?.type === "paragraph") return i;
@@ -179,6 +156,45 @@ function hasDocLink(doc: JSONContent, linkId: Id): boolean {
   const normalized = linkId.trim().toLowerCase();
   if (!normalized) return false;
   return getLinks(doc).some((id) => id.trim().toLowerCase() === normalized);
+}
+
+function resolveDocLinks(note: Readonly<Note>) {
+  const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
+  const editor = getAppItem("editor");
+  const matchPos: { match: string; from: number; to: number; targetId: Id }[] =
+    [];
+  const currentLinks = new Set(getLinks(note.content));
+  const notes = noteStore.get("notes");
+  const titleMap = new Map(notes.map((n) => [n.title, n.id]));
+  editor.state.doc.descendants((node, pos) => {
+    if (!node.isText || !node.text) return true;
+    let match: RegExpExecArray | null = null;
+    while ((match = WIKILINK_REGEX.exec(node.text)) !== null) {
+      const title = typeof match[1] === "string" ? match[1].trim() : "";
+      if (!title) continue;
+      const targetId = titleMap.get(title);
+      if (targetId && !currentLinks.has(targetId)) {
+        matchPos.push({
+          match: title,
+          from: pos + match.index,
+          to: pos + match.index + match[0].length,
+          targetId: targetId,
+        });
+      }
+    }
+    return true;
+  });
+  if (matchPos.length === 0) return;
+  // sort in descending order to not shift indexes from
+  // top to bottom
+  matchPos.sort((a, b) => b.from - a.from);
+  for (const pos of matchPos) {
+    rendererLogger.devLog(`Replacing ${pos.targetId} with title: ${pos.match}`);
+    editor
+      .chain()
+      .insertWikiLink({ from: pos.from, to: pos.to, id: pos.targetId })
+      .run();
+  }
 }
 
 function estimateReadingTime(wordCount: number, wpm = 238) {
@@ -202,11 +218,11 @@ async function checkNoteSize(doc: JSONContent) {
 export {
   addActiveLinkToDoc,
   addActiveTagToDoc,
-  checkNoteSimilarity,
   checkNoteSize,
   compareNotes,
   estimateReadingTime,
   getExtension,
   hasNoteTag,
+  resolveDocLinks,
   updateNoteCount,
 };

@@ -77,7 +77,7 @@ function initEditor(settings: Partial<AppSettings>): Editor {
   });
   editor.on("update", ({ transaction }) => {
     if (!transaction.docChanged) return;
-    const activeId = stateStore.get("activeId") as Id;
+    const activeId = stateStore.get("activeId") as Id | null;
     if (!activeId) return;
     debouncedSaveNote(activeId, false);
   });
@@ -131,7 +131,7 @@ function getNoteEditorExtensions() {
     NoteTagHandler.configure({
       onClick: async (id: string) => {
         const normalizedTag = id?.trim().toLowerCase();
-        const activeId = stateStore.get("activeId") as Id;
+        const activeId = stateStore.get("activeId") as Id | null;
         if (!normalizedTag || !activeId) return;
         const saved = await waitForFlush(activeId);
         if (!saved) return;
