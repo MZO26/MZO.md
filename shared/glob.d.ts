@@ -103,7 +103,6 @@ declare global {
       onTriggerDuplicate: (callback: (id: Id) => void) => () => void;
       onTriggerPin: (callback: (id: Id) => void) => () => void;
       onTriggerSelect: (callback: (id: Id) => void) => () => void;
-      onTriggerSync: (callback: (id: Id) => void) => () => void;
       onTriggerCopySelectionRichText: (callback: () => void) => () => void;
       onTriggerCopySelectionMarkdown: (callback: () => void) => () => void;
       onTriggerCopySelectionHTML: (callback: () => void) => () => void;

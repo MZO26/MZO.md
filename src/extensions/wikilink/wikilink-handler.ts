@@ -1,6 +1,11 @@
+import { rendererLogger } from "@/app";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { noteStore, stateStore } from "@/state/state";
-import type { Id, NoteListItem } from "@shared/schemas/note-schema";
+import { WIKILINK_REGEX } from "@/utils/constants";
+import { getLinks } from "@/utils/generators";
+import { getAppItem } from "@/utils/registry";
+import type { Id, Note, NoteListItem } from "@shared/schemas/note-schema";
+import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
@@ -129,4 +134,45 @@ const WikilinkHandler = WikiLink.extend({
   },
 });
 
-export { WikilinkHandler };
+function hasDocLink(doc: JSONContent, linkId: Id): boolean {
+  return getLinks(doc).some((id) => id === linkId);
+}
+
+function resolveDocLinks(note: Readonly<Note>) {
+  const editor = getAppItem("editor");
+  const matchPos: { match: string; from: number; to: number; targetId: Id }[] =
+    [];
+  const currentLinks = new Set(getLinks(note.content));
+  const notes = noteStore.get("notes");
+  const titleMap = new Map(notes.map((n) => [n.title, n.id]));
+  editor.state.doc.descendants((node, pos) => {
+    if (!node.isText || !node.text) return true;
+    for (const match of node.text.matchAll(WIKILINK_REGEX)) {
+      const title = typeof match[1] === "string" ? match[1].trim() : "";
+      if (!title) continue;
+      const targetId = titleMap.get(title);
+      if (targetId && !currentLinks.has(targetId)) {
+        matchPos.push({
+          match: title,
+          from: pos + match.index,
+          to: pos + match.index + match[0].length,
+          targetId: targetId,
+        });
+      }
+    }
+    return true;
+  });
+  if (matchPos.length === 0) return;
+  // sort in descending order to not shift indexes from
+  // top to bottom
+  matchPos.sort((a, b) => b.from - a.from);
+  for (const pos of matchPos) {
+    rendererLogger.devLog(`Replacing ${pos.targetId} with title: ${pos.match}`);
+    editor
+      .chain()
+      .insertWikiLink({ from: pos.from, to: pos.to, id: pos.targetId })
+      .run();
+  }
+}
+
+export { hasDocLink, resolveDocLinks, WikilinkHandler };

@@ -51,14 +51,11 @@ const getMatchesAndDecorations = (
   const results: DocSearchRange[] = [];
   state.doc.descendants((node, pos) => {
     if (!node.isText || !node.text) return true;
-    let match: RegExpExecArray | null = null;
-    regex.lastIndex = 0;
-    while ((match = regex.exec(node.text)) !== null) {
+    for (const match of node.text.matchAll(regex)) {
       results.push({
         from: pos + match.index,
         to: pos + match.index + match[0].length,
       });
-      if (match[0].length === 0) regex.lastIndex += 1;
     }
     return true;
   });

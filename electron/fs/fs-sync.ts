@@ -57,7 +57,11 @@ async function checkSyncState(
     );
     throw new AppBackendError(AppErrorCode.InvalidData);
   }
-  const normalizedLocal = normalizeText(markdown).trimEnd();
+  const updated = markdown.replace(
+    /(?:\.\/)?assets\/([^"' )>\s]+)/g,
+    "appimg:///$1",
+  );
+  const normalizedLocal = normalizeText(updated).trimEnd();
   const normalizedDB = normalizeText(payload.markdown).trimEnd();
   if (normalizedLocal === normalizedDB) {
     mainLogger.devLog("UNCHANGED");

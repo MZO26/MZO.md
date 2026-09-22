@@ -1,11 +1,11 @@
 import { rendererLogger } from "@/app";
-import { noteStore } from "@/state/state";
 import { sleep } from "@/utils/async";
 import { NODE_BASELINE, UNTAGGED, YIELD_MS } from "@/utils/constants";
-import { getAppItem, getUIItem } from "@/utils/registry";
-import type { Id, Note, NoteListItem } from "@shared/schemas/note-schema";
+import { getUIItem } from "@/utils/registry";
+import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
-import { getLinks, getTags } from "./generators";
+import { getTags } from "./generators";
+import { hasDocLink } from "@/extensions/wikilink/wikilink-handler";
 
 function createNoteUpdater() {
   let element: HTMLDivElement | null = null;
@@ -152,51 +152,6 @@ function hasNoteTag(doc: JSONContent, tag: string): boolean {
   return getTags(doc).some((t) => t === normalized);
 }
 
-function hasDocLink(doc: JSONContent, linkId: Id): boolean {
-  const normalized = linkId.trim().toLowerCase();
-  if (!normalized) return false;
-  return getLinks(doc).some((id) => id.trim().toLowerCase() === normalized);
-}
-
-function resolveDocLinks(note: Readonly<Note>) {
-  const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
-  const editor = getAppItem("editor");
-  const matchPos: { match: string; from: number; to: number; targetId: Id }[] =
-    [];
-  const currentLinks = new Set(getLinks(note.content));
-  const notes = noteStore.get("notes");
-  const titleMap = new Map(notes.map((n) => [n.title, n.id]));
-  editor.state.doc.descendants((node, pos) => {
-    if (!node.isText || !node.text) return true;
-    let match: RegExpExecArray | null = null;
-    while ((match = WIKILINK_REGEX.exec(node.text)) !== null) {
-      const title = typeof match[1] === "string" ? match[1].trim() : "";
-      if (!title) continue;
-      const targetId = titleMap.get(title);
-      if (targetId && !currentLinks.has(targetId)) {
-        matchPos.push({
-          match: title,
-          from: pos + match.index,
-          to: pos + match.index + match[0].length,
-          targetId: targetId,
-        });
-      }
-    }
-    return true;
-  });
-  if (matchPos.length === 0) return;
-  // sort in descending order to not shift indexes from
-  // top to bottom
-  matchPos.sort((a, b) => b.from - a.from);
-  for (const pos of matchPos) {
-    rendererLogger.devLog(`Replacing ${pos.targetId} with title: ${pos.match}`);
-    editor
-      .chain()
-      .insertWikiLink({ from: pos.from, to: pos.to, id: pos.targetId })
-      .run();
-  }
-}
-
 function estimateReadingTime(wordCount: number, wpm = 238) {
   const s = Math.round((wordCount / wpm) * 60);
   const m = Math.round(s / 60);
@@ -223,6 +178,5 @@ export {
   estimateReadingTime,
   getExtension,
   hasNoteTag,
-  resolveDocLinks,
   updateNoteCount,
 };

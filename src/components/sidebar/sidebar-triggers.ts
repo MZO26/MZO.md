@@ -6,7 +6,6 @@ import {
   openInDefaultEditor,
   pin,
   showNotification,
-  syncRequest,
 } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
@@ -16,14 +15,8 @@ import {
 } from "@/components/editor/editor-content";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
-import {
-  confirmWithDialog,
-  deleteDialog,
-  syncDialog,
-} from "@/settings/dialog-init";
-import { noteStore, settingsStore, stateStore } from "@/state/state";
-import { sleep } from "@/utils/async";
-import { CHAR_BASELINE, YIELD_MS } from "@/utils/constants";
+import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
+import { noteStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
@@ -300,99 +293,6 @@ async function triggerDuplicate(id: Id) {
   );
 }
 
-const syncVersions = new Map<Id, number>();
-
-function beginSyncVersion(id: Id) {
-  if (stateStore.get("activeId") !== id) return null;
-  const next = (syncVersions.get(id) ?? 0) + 1;
-  syncVersions.set(id, next);
-  return next;
-}
-
-function isSyncVersionCurrent(id: Id, version: number) {
-  return stateStore.get("activeId") === id && syncVersions.get(id) === version;
-}
-
-function endSyncVersion(id: Id, version: number) {
-  if (syncVersions.get(id) === version) {
-    syncVersions.delete(id);
-  }
-}
-
-async function triggerSyncCheck(id: Id) {
-  const version = beginSyncVersion(id);
-  if (version == null) return;
-  try {
-    if (!isSyncVersionCurrent(id, version)) return;
-    const result = await getNoteById(id);
-    if (!result.success) {
-      rendererLogger.appError(
-        "[triggerSyncCheck]: Failed to fetch note:",
-        result.error,
-      );
-      return;
-    }
-    const targetDir = settingsStore.get("auto_export_path");
-    if (!targetDir) return;
-    const editor = getAppItem("editor");
-    const markdown = editor.getMarkdown();
-    const syncResult = await syncRequest({
-      created_at: result.data.created_at,
-      updated_at: result.data.updated_at,
-      fileName: result.data.title,
-      markdown,
-      targetDir,
-    });
-    if (!isSyncVersionCurrent(id, version)) return;
-    if (!syncResult.success) {
-      rendererLogger.appError(
-        "[triggerSyncCheck]: Failed to perform sync check:",
-        syncResult.error,
-      );
-      return;
-    }
-    const status = syncResult.data.status;
-    switch (status) {
-      case "UNCHANGED":
-        await showNotification("Sync Check", "Note is in sync");
-        break;
-      case "MISSING":
-        await showNotification(
-          "Sync Check",
-          "Note not found in target directory",
-        );
-        break;
-      case "MODIFIED": {
-        await showNotification("Sync Check", "Note is out of sync");
-        const titleEl = requireElement<HTMLSpanElement>(
-          ".sync-dialog-title",
-          syncDialog,
-        );
-        const confirmed = await confirmWithDialog(
-          syncDialog,
-          titleEl,
-          "File got modified. Update note?",
-        );
-        if (!confirmed) return;
-        if (!isSyncVersionCurrent(id, version)) return;
-        if (syncResult.data.markdown.length > CHAR_BASELINE) {
-          await sleep(YIELD_MS);
-        }
-        editor.commands.setContent(syncResult.data.markdown, {
-          emitUpdate: true,
-          contentType: "markdown",
-        });
-        break;
-      }
-      default:
-        status satisfies never;
-        break;
-    }
-  } finally {
-    endSyncVersion(id, version);
-  }
-}
-
 export {
   triggerCopyFilePath,
   triggerCopyRichText,
@@ -406,6 +306,5 @@ export {
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,
-  triggerSyncCheck,
   triggerTableMenu,
 };

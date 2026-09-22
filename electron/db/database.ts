@@ -618,8 +618,7 @@ class AppDB {
         typeof row["content"] === "string"
           ? row["content"]
           : JSON.stringify(row["content"]);
-      let match;
-      while ((match = EXPORT_REGEX.exec(text)) !== null) {
+      for (const match of text.matchAll(EXPORT_REGEX)) {
         if (match[1]) usedImages.add(match[1]);
       }
     }

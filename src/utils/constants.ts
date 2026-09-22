@@ -1,5 +1,7 @@
 import type { QuickActionConfig, SelectionActionConfig } from "@/utils/types";
 
+const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
+
 const DEBOUNCE_MS = {
   very_fast: 150,
   fast: 300,
@@ -202,5 +204,6 @@ export {
   SIDEBAR_ALL_NOTES_LIMIT,
   THEME_MAP,
   UNTAGGED,
+  WIKILINK_REGEX,
   YIELD_MS,
 };

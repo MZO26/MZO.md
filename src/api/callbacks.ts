@@ -11,7 +11,6 @@ import {
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,
-  triggerSyncCheck,
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
 import {
@@ -97,13 +96,6 @@ function initListeners() {
 
   window.noteAPI.onTriggerDuplicate(async (id: Id) => {
     await triggerDuplicate(id);
-  });
-
-  window.noteAPI.onTriggerSync(async (id: Id) => {
-    const loading = createGlobalSpinner();
-    await loading.wrap(async () => {
-      await triggerSyncCheck(id);
-    });
   });
 
   window.electronAPI.onThemeChanged(async (resolvedTheme) => {

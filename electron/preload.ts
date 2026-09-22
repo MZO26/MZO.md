@@ -135,9 +135,6 @@ if (process.contextIsolated) {
       onTriggerSelect: (callback: (id: Id) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_SELECT, callback);
       },
-      onTriggerSync: (callback: (id: Id) => void) => {
-        subscribe(IPC_CHANNELS.TRIGGER_SYNC, callback);
-      },
       onTriggerCopySelectionRichText: (callback: () => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_COPY_SELECTION_RICH_TEXT, callback);
       },
