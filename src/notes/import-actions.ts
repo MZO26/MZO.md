@@ -1,5 +1,6 @@
 import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
+import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { stateStore } from "@/state/state";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import {
@@ -8,7 +9,6 @@ import {
   titleGenerator,
   wrapAsDoc,
 } from "@/utils/generators";
-import { addActiveTagToDoc } from "@/utils/note";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
 import { AppErrorCode } from "@shared/errors";
 import { isEditorDoc } from "@shared/schemas/editor-schema";

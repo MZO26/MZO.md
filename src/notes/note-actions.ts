@@ -14,6 +14,7 @@ import { recreateEditorState } from "@/components/editor/editor-actions";
 import { updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
+import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { getTableOfContents } from "@/extensions/toc";
 import { resolveDocLinks } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
@@ -28,7 +29,7 @@ import {
 } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
 import { getMetadata, titleGenerator } from "@/utils/generators";
-import { addActiveTagToDoc, checkNoteSize } from "@/utils/note";
+import { checkNoteSize } from "@/utils/note-helpers";
 import { getAppItem } from "@/utils/registry";
 import {
   type CreateNotePayload,
@@ -75,7 +76,7 @@ async function handleCreateNote() {
       recentNotes: [result.data.id, ...recentNotes].slice(0, 5),
     };
   });
-  stateStore.setState({ activeId: result.data.id });
+  stateStore.setState({ activeId: result.data.id, hoverId: null });
   recreateEditorState(editor, editorContent);
   editor.commands.focus();
   const headings = getTableOfContents(editor);
@@ -131,6 +132,7 @@ async function handleImportNote(request: FilePathRequest) {
       noteIndex,
     };
   });
+  stateStore.setState({ hoverId: null });
 }
 
 async function handleDeleteManyNotes(ids: Id[]) {
@@ -160,9 +162,10 @@ async function handleDeleteManyNotes(ids: Id[]) {
       recentNotes: state.recentNotes.filter((id) => state.noteIndex.has(id)),
     };
   });
-  if (isActiveDeleted) {
-    stateStore.setState({ activeId: null });
-  }
+  stateStore.setState({
+    hoverId: null,
+    ...(isActiveDeleted && { activeId: null }),
+  });
 }
 
 async function handleDeleteNote(id: Id) {
@@ -189,9 +192,10 @@ async function handleDeleteNote(id: Id) {
       recentNotes: state.recentNotes.filter((noteId) => noteId !== id),
     };
   });
-  if (isActiveDeletedId) {
-    stateStore.setState({ activeId: null });
-  }
+  stateStore.setState({
+    hoverId: null,
+    ...(isActiveDeletedId && { activeId: null }),
+  });
 }
 
 async function handleSaveNote(id: Id, flush: boolean = false) {
@@ -268,7 +272,7 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
     rendererLogger.devLog("Already active. Skipping select.");
     return;
   }
-  stateStore.setState({ activeId: id });
+  stateStore.setState({ activeId: id, hoverId: null });
   editor.setEditable(false, false);
   const result = await getNoteById(id);
   if (stateStore.get("activeId") !== id) return;
@@ -346,6 +350,7 @@ async function handleDuplicateNote(note: Readonly<Note>) {
     visibleIds: [result.data.id, ...state.visibleIds],
     noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
   }));
+  stateStore.setState({ hoverId: null });
 }
 
 async function waitForFlush(id: Id | null) {

@@ -115,4 +115,9 @@ function initGlobalShortcuts() {
   });
 }
 
-export { initGlobalShortcuts, isFocusActive, isSelectionActive };
+export {
+  initGlobalShortcuts,
+  isEditorFocused,
+  isFocusActive,
+  isSelectionActive,
+};

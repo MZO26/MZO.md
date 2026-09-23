@@ -44,9 +44,14 @@ export const PasteHandler = Extension.create({
             }
             if (!html && looksLikeMarkdown(plainText)) {
               event.preventDefault();
-              const json = getMarkdownManager().parse(plainText);
-              editor.commands.insertContent(json, { contentType: "json" });
-              return true;
+              try {
+                const json = getMarkdownManager().parse(plainText);
+                editor.commands.insertContent(json, { contentType: "json" });
+                return true;
+              } catch (error) {
+                rendererLogger.appError("Failed to parse clipboard content");
+                return false;
+              }
             }
             return false;
           },

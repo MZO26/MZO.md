@@ -24,6 +24,7 @@ interface AppState {
   searchQuery: string;
   selectionMode: boolean;
   selectedIds: Set<Id>;
+  hoverId: Id | null;
   activeTag: string | null;
   focus: boolean;
 }
@@ -33,6 +34,7 @@ const STATE_STORE: AppState = {
   searchQuery: "",
   selectionMode: false,
   selectedIds: new Set<Id>(),
+  hoverId: null,
   activeTag: null,
   focus: false,
 };

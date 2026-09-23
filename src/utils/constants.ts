@@ -2,6 +2,14 @@ import type { QuickActionConfig, SelectionActionConfig } from "@/utils/types";
 
 const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
 
+const NAV_KEYS = new Set([
+  "ArrowDown",
+  "ArrowUp",
+  "Enter",
+  "Backspace",
+  "Delete",
+]);
+
 const DEBOUNCE_MS = {
   very_fast: 150,
   fast: 300,
@@ -197,6 +205,7 @@ export {
   MAX_SIZE,
   MAX_WORKER_TIMEOUT_MS,
   MIME_TO_EXT,
+  NAV_KEYS,
   NODE_BASELINE,
   QUICK_ACTIONS,
   SELECTION_ACTIONS,

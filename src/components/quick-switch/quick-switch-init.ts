@@ -4,6 +4,7 @@ import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { handleSelectNote, waitForFlush } from "@/notes/note-actions";
 import { listEl, switchDialog } from "@/settings/dialog-init";
 import { noteStore, stateStore } from "@/state/state";
+import { NAV_KEYS } from "@/utils/constants";
 import { createInfoSpan } from "@/utils/dom";
 import { registerAppEvents } from "@/utils/registry";
 import type { QuickSwitchDisplayNote } from "@/utils/types";
@@ -206,6 +207,7 @@ function initQuickSwitcher(editor: Editor) {
 
   async function handleListKeydown(event: KeyboardEvent) {
     if (!switchDialog.open) return;
+    if (!NAV_KEYS.has(event.key)) return;
     const isModifierPressed = event.metaKey || event.ctrlKey;
     switch (event.key) {
       case "ArrowDown":

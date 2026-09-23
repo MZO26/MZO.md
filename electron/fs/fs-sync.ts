@@ -1,9 +1,10 @@
 import db from "@electron/db/database";
+import { resolveAutoExportPath } from "@electron/fs/fs-auto-export";
 import {
+  ensureInsideDirectory,
+  getFilePath,
   normalizeText,
-  resolveAutoExportPath,
-} from "@electron/fs/fs-auto-export";
-import { ensureInsideDirectory, getFilePath } from "@electron/fs/fs-helpers";
+} from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { AppErrorCode } from "@shared/errors";

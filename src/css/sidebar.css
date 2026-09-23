@@ -431,7 +431,8 @@ input::-webkit-search-cancel-button {
   display: inline-block;
 }
 
-.note-item:hover:not(.is-active) {
+.note-item:hover:not(.is-active),
+.note-item.is-hovered {
   background: var(--accent-hover);
   box-shadow: var(--shadow);
 }

@@ -175,4 +175,59 @@ function resolveDocLinks(note: Readonly<Note>) {
   }
 }
 
-export { hasDocLink, resolveDocLinks, WikilinkHandler };
+function addActiveLinkToDoc(
+  doc: JSONContent,
+  activeLink: Id | null,
+): JSONContent {
+  if (!activeLink) return doc;
+  if (hasDocLink(doc, activeLink)) return doc;
+  rendererLogger.devLog("Not found");
+  const content = Array.isArray(doc.content) ? [...doc.content] : [];
+  const linkNode = {
+    type: "wikilink",
+    attrs: { id: activeLink },
+  };
+  const firstIdx = findFirstParagraphIdx(content);
+  rendererLogger.devLog(firstIdx);
+  if (firstIdx !== -1) {
+    const para = content[firstIdx];
+    const newParaContent = para?.content
+      ? [...para.content, linkNode, { type: "text", text: " " }]
+      : [linkNode, { type: "text", text: " " }];
+    const newContent = [...content];
+    newContent[firstIdx] = { ...para, content: newParaContent };
+    return { ...doc, content: newContent };
+  }
+  const linkParagraph = {
+    type: "paragraph",
+    content: [linkNode, { type: "text", text: " " }],
+  };
+  const headingBlock = { type: "heading", attrs: { level: 1 } };
+  const hrBlock = { type: "horizontalRule" };
+  const spacerParagraph = { type: "paragraph" };
+  const firstNode = content[0];
+  const hasLeadingHeading = firstNode?.type === "heading";
+  const rest = hasLeadingHeading ? content.slice(1) : content;
+  const restWithoutDuplicateHeading =
+    rest[0]?.type === "heading" ? rest.slice(1) : rest;
+  return {
+    ...doc,
+    content: [
+      hasLeadingHeading ? firstNode : headingBlock,
+      hrBlock,
+      linkParagraph,
+      spacerParagraph,
+      ...restWithoutDuplicateHeading,
+    ],
+  };
+}
+
+function findFirstParagraphIdx(content: JSONContent[]): number {
+  for (let i = 0; i < content.length; i++) {
+    const n = content[i];
+    if (n?.type === "paragraph") return i;
+  }
+  return -1;
+}
+
+export { addActiveLinkToDoc, hasDocLink, resolveDocLinks, WikilinkHandler };

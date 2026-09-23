@@ -7,7 +7,7 @@ import {
   MAX_DROP_LENGTH,
   MAX_DROP_PASTE_CHARACTERS,
 } from "@/utils/constants";
-import { getExtension } from "@/utils/note";
+import { getExtension } from "@/utils/note-helpers";
 import { MAX_BYTES_FILE } from "@shared/shared-constants";
 import { Editor, Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";

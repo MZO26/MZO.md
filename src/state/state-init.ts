@@ -1,5 +1,6 @@
 import { rendererLogger } from "@/app";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
+import { updateHover } from "@/components/sidebar/sidebar-navigation";
 import { initSelectionFooter } from "@/components/sidebar/sidebar-selection-ui";
 import {
   setFocusMode,
@@ -40,6 +41,11 @@ function initSubscriptions(sidebar: HTMLDivElement) {
       updateSelection();
     },
     shallowEq,
+  );
+
+  stateStore.subscribeSel(
+    (state) => state.hoverId,
+    (newId) => updateHover(newId),
   );
 
   stateStore.subscribeSel((state) => state.selectedIds, updateSelection);

@@ -3,7 +3,7 @@ import { updateSelectionUI } from "@/components/sidebar/sidebar-selection-ui";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { matchesActiveTag } from "@/components/sidebar/sidebar-views";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
-import { compareNotes, updateNoteCount } from "@/utils/note";
+import { compareNotes, updateNoteCount } from "@/utils/note-helpers";
 import type { SidebarParams } from "@/utils/types";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";

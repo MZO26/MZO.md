@@ -74,6 +74,12 @@ function initEditor(settings: Partial<AppSettings>): Editor {
       },
     },
     autofocus: true,
+    onFocus: () => {
+      if (stateStore.get("hoverId") !== null) {
+        rendererLogger.devLog("Resetting hover");
+        stateStore.setState({ hoverId: null });
+      }
+    },
   });
   editor.on("update", ({ transaction }) => {
     if (!transaction.docChanged) return;
@@ -81,7 +87,6 @@ function initEditor(settings: Partial<AppSettings>): Editor {
     if (!activeId) return;
     debouncedSaveNote(activeId, false);
   });
-
   return editor;
 }
 

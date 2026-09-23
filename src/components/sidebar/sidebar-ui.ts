@@ -20,7 +20,7 @@ import {
   setActiveItem,
 } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { updateNoteCount } from "@/utils/note";
+import { updateNoteCount } from "@/utils/note-helpers";
 import { getAppItem } from "@/utils/registry";
 import type { AllTagsMenu, FilterMode, SidebarParams } from "@/utils/types";
 

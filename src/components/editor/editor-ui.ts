@@ -1,7 +1,7 @@
 import { getTextMetrics } from "@/extensions/text-metrics";
 import { createTemplateCloner, isDiv } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { estimateReadingTime } from "@/utils/note";
+import { estimateReadingTime } from "@/utils/note-helpers";
 import { getAppItem, getTemplateItem, getUIItems } from "@/utils/registry";
 import type { Id } from "@shared/schemas/note-schema";
 

@@ -1,7 +1,7 @@
 import { showNotification } from "@/api/api";
 import { handleImportNote } from "@/notes/note-actions";
 import { MAX_FILE_DROPS } from "@/utils/constants";
-import { getExtension } from "@/utils/note";
+import { getExtension } from "@/utils/note-helpers";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { ALLOWED_IMPORT_EXTENSIONS } from "@shared/shared-constants";

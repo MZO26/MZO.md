@@ -22,14 +22,19 @@ import {
 } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
-import { SELECTION_ACTIONS } from "@/utils/constants";
+import { NAV_KEYS, SELECTION_ACTIONS } from "@/utils/constants";
 import { getUIItems, registerAppEvents } from "@/utils/registry";
-import { isSelectionActive } from "@/utils/shortcuts";
+import {
+  isEditorFocused,
+  isFocusActive,
+  isSelectionActive,
+} from "@/utils/shortcuts";
 import type { SelectionAction } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
+import { navigateSidebar } from "./sidebar-navigation";
 
 function initNotesSidebar(sidebar: HTMLDivElement) {
   const { searchInput, selectionFooter, sidebarHeader } = getUIItems([
@@ -168,7 +173,7 @@ function applySidebarListeners(
       });
     }),
   );
-  window.addEventListener(
+  document.addEventListener(
     "mouseup",
     createAsyncHandler(async (e: MouseEvent) => {
       if (e.button !== 3 && e.button !== 4) return;
@@ -187,6 +192,20 @@ function applySidebarListeners(
       }
     }),
   );
+  document.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (!NAV_KEYS.has(e.key)) return;
+    if (!(e.target instanceof Element)) return;
+    if (
+      isEditorFocused(e.target) ||
+      isSelectionActive() ||
+      isFocusActive() ||
+      e.target.tagName === "INPUT" ||
+      e.target.tagName === "TEXTAREA" ||
+      document.querySelector<HTMLDialogElement>("dialog[open]") !== null
+    )
+      return;
+    void navigateSidebar(e);
+  });
 }
 
 export { initNotesSidebar };

@@ -1,6 +1,7 @@
 import db from "@electron/db/database";
 import {
   getFilePath,
+  normalizeText,
   sanitizeExportString,
   writeAtomic,
 } from "@electron/fs/fs-helpers";
@@ -64,21 +65,6 @@ async function isAutoExport(id: Id): Promise<boolean> {
     );
     throw new AppBackendError(AppErrorCode.UnknownError);
   }
-}
-
-function normalizeText(content: string | null | undefined) {
-  if (!content) return "";
-  const cleaned = content
-    // strip the UTF-8 byte mark
-    .replace(/^\uFEFF/, "")
-    // for single, precomposed characters that could trigger false positives
-    .normalize("NFC")
-    // forces line-break to be \n
-    .replace(/\r\n|\r/g, "\n")
-    // remove white spaces at end of file
-    .trimEnd();
-  // to respect POSIX standard: append one empty newline at the end
-  return cleaned ? cleaned + "\n" : "";
 }
 
 async function safeRename(

@@ -1,5 +1,8 @@
 import { NoteTag } from "@/extensions/tag/tag";
 import { noteStore } from "@/state/state";
+import { UNTAGGED } from "@/utils/constants";
+import { getTags } from "@/utils/generators";
+import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
@@ -129,4 +132,65 @@ const NoteTagHandler = NoteTag.extend({
   },
 });
 
-export { NoteTagHandler };
+function findTagParagraphIdx(content: JSONContent[]): number {
+  return content.findIndex(
+    (node) =>
+      node.type === "paragraph" &&
+      Array.isArray(node.content) &&
+      node.content.some((child) => child.type === "noteTag"),
+  );
+}
+
+function hasNoteTag(doc: JSONContent, tag: string): boolean {
+  const normalized = tag.trim().toLowerCase();
+  if (!normalized) return false;
+  return getTags(doc).some((t) => t === normalized);
+}
+
+function addActiveTagToDoc(
+  doc: JSONContent,
+  activeTag: string | null,
+): JSONContent {
+  if (activeTag === null || activeTag === UNTAGGED) return doc;
+  const normalizedTag = activeTag.trim();
+  if (!normalizedTag) return doc;
+  if (hasNoteTag(doc, normalizedTag)) return doc;
+  const content = Array.isArray(doc.content) ? [...doc.content] : [];
+  const tagNode = {
+    type: "noteTag",
+    attrs: { id: normalizedTag, label: normalizedTag },
+  };
+  const spaceNode = { type: "text", text: " " };
+  const tagPIdx = findTagParagraphIdx(content);
+  if (tagPIdx !== -1) {
+    const existingPara = content[tagPIdx];
+    const updatedPara = {
+      ...existingPara,
+      content: [...(existingPara?.content ?? []), tagNode, spaceNode],
+    };
+    const newContent = [...content];
+    newContent[tagPIdx] = updatedPara;
+    return { ...doc, content: newContent };
+  }
+  const tagParagraph = { type: "paragraph", content: [tagNode, spaceNode] };
+  const headingBlock = { type: "heading", attrs: { level: 1 } };
+  const hrBlock = { type: "horizontalRule" };
+  const spacerParagraph = { type: "paragraph" };
+  const firstNode = content[0];
+  const hasLeadingHeading = firstNode?.type === "heading";
+  const rest = hasLeadingHeading ? content.slice(1) : content;
+  const restWithoutDuplicateHeading =
+    rest[0]?.type === "heading" ? rest.slice(1) : rest;
+  return {
+    ...doc,
+    content: [
+      hasLeadingHeading ? firstNode : headingBlock,
+      hrBlock,
+      tagParagraph,
+      spacerParagraph,
+      ...restWithoutDuplicateHeading,
+    ],
+  };
+}
+
+export { addActiveTagToDoc, NoteTagHandler };
