@@ -18,7 +18,11 @@ import {
   ensureNoteSaved,
   handleImportNote,
 } from "@/notes/note-actions";
-import { confirmWithDialog, syncDialog } from "@/settings/dialog-init";
+import {
+  confirmWithDialog,
+  syncDialog,
+  withDialogLock,
+} from "@/settings/dialog-init";
 import { stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { createGlobalSpinner } from "@/utils/ui";
@@ -107,10 +111,8 @@ function initListeners() {
       ".sync-dialog-title",
       syncDialog,
     );
-    const confirmed = await confirmWithDialog(
-      syncDialog,
-      titleEl,
-      "External changes detected",
+    const confirmed = await withDialogLock(() =>
+      confirmWithDialog(syncDialog, titleEl, "External changes detected"),
     );
     if (!confirmed) return;
     const loading = createGlobalSpinner(500);

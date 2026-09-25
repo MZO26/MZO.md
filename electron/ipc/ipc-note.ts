@@ -17,7 +17,7 @@ import {
   singlePDFExport,
 } from "@electron/fs/fs-export";
 import { batchImport } from "@electron/fs/fs-import";
-import { checkSyncState } from "@electron/fs/fs-sync";
+import { checkCurrentFolderState, checkSyncState } from "@electron/fs/fs-sync";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
@@ -221,6 +221,20 @@ function registerNoteIpc(win: BrowserWindow) {
       const { targetDir, isAutoExport } = resolveAutoExport();
       if (!targetDir || !isAutoExport) return null;
       return await checkSyncState(targetDir, validatedData);
+    });
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DIR_READ, (e) => {
+    return result(e, async () => {
+      if (!checkRateLimit(IPC_CHANNELS.DIR_READ, LIMITS.READ_HEAVY))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const { targetDir, isAutoExport } = resolveAutoExport();
+      if (!targetDir || !isAutoExport)
+        throw new AppBackendError(AppErrorCode.CancelledOperation);
+      const readDirResult = await checkCurrentFolderState(targetDir);
+      if (readDirResult.length > 0) {
+        win?.webContents.send(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, readDirResult);
+      }
     });
   });
 

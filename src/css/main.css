@@ -1069,8 +1069,7 @@ svg.empty-state-icon {
   box-shadow: var(--shadow);
   opacity: 0;
   visibility: hidden;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   transform: scale(0.95);
   transition:
     visibility 0.3s ease,
@@ -1082,6 +1081,10 @@ svg.empty-state-icon {
 
 .quick-switch-list {
   padding: 15px 5px;
+  height: auto;
+  max-height: 400px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .quick-switch-empty {
@@ -1094,7 +1097,7 @@ svg.empty-state-icon {
 .quick-switch-dialog-form {
   overflow: hidden;
   height: 100%;
-  padding: 20px 0 0 0;
+  padding: 10px 0 0 0;
   color: var(--text-main);
 }
 

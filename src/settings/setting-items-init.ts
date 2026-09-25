@@ -1,5 +1,6 @@
-import { selectAutoExportFolder } from "@/api/api";
+import { dirRead, getNoteById, selectAutoExportFolder } from "@/api/api";
 import { rendererLogger } from "@/app";
+import { syncCheckNote } from "@/notes/note-actions";
 import {
   CODE_THEME_SETTINGS,
   EXPORT_FORMAT_SETTINGS,
@@ -18,10 +19,11 @@ import {
   handleUpdateSettings,
   resolveTheme,
 } from "@/settings/setting-actions";
-import { settingsStore } from "@/state/state";
+import { settingsStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { CODE_THEME_MAP } from "@/utils/constants";
 import { getAppItem } from "@/utils/registry";
+import type { Id } from "@shared/schemas/note-schema";
 import type {
   AppearanceKeys,
   AppSettings,
@@ -241,6 +243,13 @@ function initGeneralSettings(settings: GeneralKeys, container: HTMLDivElement) {
           auto_export_path: result.data,
         });
         autoExportSelect.title = `Path: ${result.data}`;
+        await dirRead();
+        const activeId = stateStore.get("activeId") as Id | null;
+        if (activeId) {
+          const noteResult = await getNoteById(activeId);
+          if (!noteResult.success) return;
+          await syncCheckNote(noteResult.data);
+        }
       } else {
         await handleUpdateSettings({
           auto_export: false,

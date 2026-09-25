@@ -29,6 +29,7 @@ const IPC_CHANNELS = {
   NOTE_GET_MANY_BY_ID: "note:note-get-many-by-id",
   SELECT_AUTO_EXPORT_FOLDER: "note:select-auto-export-folder",
   NOTE_SYNC: "note:note-sync",
+  DIR_READ: "note:dir-read",
   NOTE_IMPORT: "note:note-import",
   NOTE_EXPORT: "note:note-export",
   NOTE_EXPORT_MANY: "note:note-export-many",

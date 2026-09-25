@@ -106,6 +106,7 @@ if (process.contextIsolated) {
       onDirSync: (callback: (result: string[]) => void) => {
         subscribe(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, callback);
       },
+      dirRead: () => ipcRenderer.invoke(IPC_CHANNELS.DIR_READ),
       onTriggerExport: (
         callback: (id: Id, extension: ExportRequest["extension"]) => void,
       ) => {

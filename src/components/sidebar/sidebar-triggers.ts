@@ -15,7 +15,11 @@ import {
 } from "@/components/editor/editor-content";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
-import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
+import {
+  confirmWithDialog,
+  deleteDialog,
+  withDialogLock,
+} from "@/settings/dialog-init";
 import { noteStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
@@ -245,10 +249,8 @@ async function triggerSingleDelete(id: Id) {
     ".delete-dialog-title",
     deleteDialog,
   );
-  const confirmed = await confirmWithDialog(
-    deleteDialog,
-    titleEl,
-    "Delete this note?",
+  const confirmed = await withDialogLock(() =>
+    confirmWithDialog(deleteDialog, titleEl, "Delete this note?"),
   );
   if (!confirmed) return;
   await handleDeleteNote(id);

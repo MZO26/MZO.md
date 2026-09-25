@@ -175,6 +175,7 @@ function getFilePath(
   return absoluteFilePath;
 }
 
+// doesn't check for symlinks (adds extra i/o)
 function ensureInsideDirectory(baseDir: string, absoluteFilePath: string) {
   const relative = path.relative(baseDir, absoluteFilePath);
   const isOutside =

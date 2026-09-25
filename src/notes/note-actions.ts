@@ -18,7 +18,11 @@ import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { getTableOfContents } from "@/extensions/toc";
 import { resolveDocLinks } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
-import { confirmWithDialog, syncDialog } from "@/settings/dialog-init";
+import {
+  confirmWithDialog,
+  syncDialog,
+  withDialogLock,
+} from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { debounce, sleep } from "@/utils/async";
 import {
@@ -434,10 +438,12 @@ async function syncCheckNote(note: Readonly<Note>) {
           ".sync-dialog-title",
           syncDialog,
         );
-        const confirmed = await confirmWithDialog(
-          syncDialog,
-          titleEl,
-          "File got modified. Update note?",
+        const confirmed = await withDialogLock(() =>
+          confirmWithDialog(
+            syncDialog,
+            titleEl,
+            "File got modified. Update note?",
+          ),
         );
         if (!confirmed) return;
         if (!isSyncVersionCurrent(note.id, version)) return;
@@ -470,5 +476,6 @@ export {
   handleSaveNote,
   handleSelectNote,
   isAutoExportEnabled,
+  syncCheckNote,
   waitForFlush,
 };

@@ -46,6 +46,35 @@ function confirmWithDialog(
   });
 }
 
+function createMutex() {
+  let locked = false;
+  const waiters: (() => void)[] = [];
+  async function acquire() {
+    if (!locked) {
+      locked = true;
+      return;
+    }
+    await new Promise<void>((resolve) => waiters.push(resolve));
+  }
+  function release() {
+    const next = waiters.shift();
+    if (next) next();
+    else locked = false;
+  }
+  return { acquire, release };
+}
+
+const dialogMutex = createMutex();
+
+async function withDialogLock<T>(fn: () => Promise<T>): Promise<T> {
+  await dialogMutex.acquire();
+  try {
+    return await fn();
+  } finally {
+    dialogMutex.release();
+  }
+}
+
 export const { deleteDialog } = initDeleteDialog();
 export const { syncDialog } = initSyncDialog();
 export const { settingsDialog, settingsContainer } = initSettingsDialog();
@@ -59,4 +88,5 @@ export {
   initQuickSwitchDialog,
   initSettingsDialog,
   initSyncDialog,
+  withDialogLock,
 };

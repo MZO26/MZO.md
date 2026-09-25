@@ -118,6 +118,10 @@ async function syncRequest(
   return invoke(window.noteAPI.syncRequest(payload));
 }
 
+async function dirRead(): Promise<Result<void>> {
+  return invoke(window.noteAPI.dirRead());
+}
+
 async function getRelatedNotes(payload: {
   id: Id;
 }): Promise<Result<RelatedNotes[]>> {
@@ -217,6 +221,7 @@ export {
   databaseBackupRestore,
   deleteManyNotes,
   deleteNote,
+  dirRead,
   exportManyNotes,
   exportNote,
   getAll,

@@ -86,6 +86,7 @@ declare global {
       selectAutoExportFolder: () => Promise<Result<string>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
       onDirSync: (callback: (result: string[]) => void) => () => void;
+      dirRead: () => Promise<Result<void>>;
       onTriggerExport: (
         callback: (id: Id, extension: ExportContent["extension"]) => void,
       ) => () => void;

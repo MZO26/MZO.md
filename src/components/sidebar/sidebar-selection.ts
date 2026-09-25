@@ -10,7 +10,11 @@ import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import { updateSelectionUI } from "@/components/sidebar/sidebar-selection-ui";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
-import { confirmWithDialog, deleteDialog } from "@/settings/dialog-init";
+import {
+  confirmWithDialog,
+  deleteDialog,
+  withDialogLock,
+} from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import type { SelectionAction } from "@/utils/types";
@@ -220,10 +224,12 @@ async function deleteSelection() {
   const selectedIds = stateStore.get("selectedIds");
   const ids = [...selectedIds];
   if (!Array.isArray(ids) || ids.length === 0) return;
-  const confirmed = await confirmWithDialog(
-    deleteDialog,
-    requireElement<HTMLSpanElement>(".delete-dialog-title", deleteDialog),
-    ids.length === 1 ? "Delete this note?" : `Delete ${ids.length} notes?`,
+  const confirmed = await withDialogLock(() =>
+    confirmWithDialog(
+      deleteDialog,
+      requireElement<HTMLSpanElement>(".delete-dialog-title", deleteDialog),
+      ids.length === 1 ? "Delete this note?" : `Delete ${ids.length} notes?`,
+    ),
   );
   if (!confirmed) return;
   const idsToDelete = new Set(ids);
