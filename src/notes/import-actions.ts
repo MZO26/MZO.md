@@ -1,6 +1,11 @@
 import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
+import {
+  extractFrontmatter,
+  getFrontmatterMetadata,
+} from "@/extensions/frontmatter";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
+import { addActiveLinkToDoc } from "@/extensions/wikilink/wikilink-handler";
 import { stateStore } from "@/state/state";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import {
@@ -9,6 +14,7 @@ import {
   titleGenerator,
   wrapAsDoc,
 } from "@/utils/generators";
+import type { Metadata } from "@/utils/types";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
 import { AppErrorCode } from "@shared/errors";
 import { isEditorDoc } from "@shared/schemas/editor-schema";
@@ -90,9 +96,30 @@ async function setImportedContent(
     const activeTag = stateStore.get("activeTag");
     const extensions = getCachedEditorExtensions();
     for (const file of files) {
-      const json = await normalizeFileContent(file);
+      let content = file.content;
+      let extracted: Pick<Metadata, "tags" | "links"> = { tags: [], links: [] };
+      if (file.extension === "md") {
+        const frontmatter = extractFrontmatter(file.content);
+        if (frontmatter) {
+          rendererLogger.devLog("YAML:", JSON.stringify(frontmatter.yaml));
+          content = frontmatter.body;
+          extracted = getFrontmatterMetadata(frontmatter.yaml);
+          rendererLogger.devLog(extracted);
+        }
+      }
+      const json = await normalizeFileContent({ ...file, content });
       if (!json) continue;
-      const updatedJson = addActiveTagToDoc(json, activeTag);
+      let updatedJson = addActiveTagToDoc(json, activeTag);
+      if (extracted.tags) {
+        for (const tag of extracted.tags) {
+          updatedJson = addActiveTagToDoc(updatedJson, tag);
+        }
+      }
+      if (extracted.links) {
+        for (const link of extracted.links) {
+          updatedJson = addActiveLinkToDoc(updatedJson, link);
+        }
+      }
       const text = generateText(updatedJson, extensions);
       const metadata = getMetadata(updatedJson);
       const payload: CreateNotePayload = {

@@ -254,7 +254,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
     };
   });
   // check if update changed view
-  //  if so, recompute visible ids and set active tag to null.
+  // if so, recompute visible ids and set active tag to null
   // else visible ids don't change
   if (!tagStillExists) {
     await applyView(null, updatedNotes);
@@ -327,7 +327,8 @@ async function handleDuplicateNote(note: Readonly<Note>) {
     updated_at,
     ...rest
   } = note;
-  // does not duplicate incoming links because other notes would be forced to point to this new duplicate
+  // does not duplicate incoming links because other
+  // notes would be forced to point to this new duplicate
   const outgoingLinkIds = originalLinks
     .filter((link) => link.dir === "out")
     .map((link) => link.id);
