@@ -111,6 +111,24 @@ const BLOCK_TYPES = new Set([
   "wikilink",
 ]);
 
+const MOVEABLE_BLOCKS = new Set([
+  "paragraph",
+  "heading",
+  "blockQuote",
+  "codeBlock",
+  "bulletList",
+  "orderedList",
+  "listItem",
+]);
+
+const MOVEABLE_CONTAINERS = new Set([
+  "doc",
+  "bulletList",
+  "orderedList",
+  "taskList",
+  "blockQuote",
+]);
+
 const DOMPURIFY_CONFIG = {
   FORBID_TAGS: [
     "script",
@@ -205,6 +223,8 @@ export {
   MAX_SIZE,
   MAX_WORKER_TIMEOUT_MS,
   MIME_TO_EXT,
+  MOVEABLE_BLOCKS,
+  MOVEABLE_CONTAINERS,
   NAV_KEYS,
   NODE_BASELINE,
   QUICK_ACTIONS,

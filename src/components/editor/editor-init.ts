@@ -28,6 +28,7 @@ import {
   CodeSelectionWrapper,
   HighlightSelectionWrapper,
   ItalicAndBoldSelectionWrapper,
+  KbSelectionCommands,
   StrikeThroughSelectionWrapper,
   UnderlineSelectionWrapper,
 } from "@/extensions/selection-wrappers";
@@ -217,6 +218,7 @@ function getNoteEditorExtensions() {
     StrikeThroughSelectionWrapper,
     UnderlineSelectionWrapper,
     HighlightSelectionWrapper,
+    KbSelectionCommands,
   ];
 }
 
