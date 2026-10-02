@@ -144,26 +144,26 @@ async function selectAutoExportFolder(): Promise<Result<string>> {
 
 async function getSettings<K extends keyof AppSettings>(
   key: K,
-): Promise<Result<AppSettings[K]>> {
+): Promise<Result<Readonly<AppSettings>[K]>> {
   return invoke(window.storeAPI.getSettings(key));
 }
 
-async function getAllSettings(): Promise<Result<AppSettings>> {
+async function getAllSettings(): Promise<Result<Readonly<AppSettings>>> {
   return invoke(window.storeAPI.getAllSettings());
 }
 
 async function setSettings(
-  settings: Partial<AppSettings>,
-): Promise<Result<AppSettings>> {
+  settings: Partial<Readonly<AppSettings>>,
+): Promise<Result<Readonly<AppSettings>>> {
   return invoke(window.storeAPI.setSettings(settings));
 }
 
 // electron api
 
 async function setTheme(
-  theme: Theme,
+  theme: Readonly<Theme>,
   focus?: boolean,
-): Promise<Result<Exclude<Theme, "system">>> {
+): Promise<Result<Exclude<Readonly<Theme>, "system">>> {
   return invoke(window.electronAPI.setTheme(theme, focus));
 }
 

@@ -32,7 +32,7 @@ import type {
 } from "@shared/schemas/store-schema";
 
 function initAppearanceSettings(
-  settings: AppearanceKeys,
+  settings: Readonly<AppearanceKeys>,
   container: HTMLDivElement,
 ) {
   const themeSelect = container.querySelector<HTMLSelectElement>("#theme");
@@ -129,7 +129,10 @@ function initAppearanceSettings(
   );
 }
 
-function initEditorSettings(settings: EditorKeys, container: HTMLDivElement) {
+function initEditorSettings(
+  settings: Readonly<EditorKeys>,
+  container: HTMLDivElement,
+) {
   const editorWrapper = getAppItem("editorWrapper");
   const fontFamilySelect =
     container.querySelector<HTMLSelectElement>("#font_family");
@@ -202,7 +205,10 @@ function initEditorSettings(settings: EditorKeys, container: HTMLDivElement) {
   );
 }
 
-function initGeneralSettings(settings: GeneralKeys, container: HTMLDivElement) {
+function initGeneralSettings(
+  settings: Readonly<GeneralKeys>,
+  container: HTMLDivElement,
+) {
   const exportFormatSelect =
     container.querySelector<HTMLSelectElement>("#export_format");
   const autoExportSelect =
@@ -261,7 +267,10 @@ function initGeneralSettings(settings: GeneralKeys, container: HTMLDivElement) {
   );
 }
 
-function setSelectListeners(settings: AppSettings, container: HTMLDivElement) {
+function setSelectListeners(
+  settings: Readonly<AppSettings>,
+  container: HTMLDivElement,
+) {
   initAppearanceSettings(settings, container);
   initEditorSettings(settings, container);
   initGeneralSettings(settings, container);

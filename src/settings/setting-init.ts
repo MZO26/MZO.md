@@ -16,7 +16,7 @@ import type { QuickAction } from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
 
-async function initAppSettings(settings: AppSettings) {
+async function initAppSettings(settings: Readonly<AppSettings>) {
   const buttonsContainer = createSettingsMenu();
   settingsContainer.appendChild(buttonsContainer);
   buildSelects();

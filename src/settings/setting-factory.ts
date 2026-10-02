@@ -18,11 +18,13 @@ import type { AppSettings } from "@shared/schemas/store-schema";
 
 function selectBuilder<
   K extends {
-    [Key in keyof AppSettings]: AppSettings[Key] extends string | boolean
+    [Key in keyof Readonly<AppSettings>]: Readonly<AppSettings>[Key] extends
+      | string
+      | boolean
       ? Key
       : never;
-  }[keyof AppSettings], // indexed access to get union of all values inside
-  O extends AppSettings[K],
+  }[keyof Readonly<AppSettings>], // indexed access to get union of all values inside
+  O extends Readonly<AppSettings[K]>,
 >(
   id: K,
   options: readonly SelectOption<O>[],

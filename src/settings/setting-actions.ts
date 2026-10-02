@@ -44,7 +44,7 @@ async function applyAppTheme(
 function applyLineHeight(
   editorWrapper: HTMLDivElement,
   lineHeightSelect: HTMLSelectElement,
-  val: AppSettings["line_height"],
+  val: Readonly<AppSettings["line_height"]>,
 ) {
   let current = Number(val) || 1.5;
   current = Math.max(1.4, Math.min(current, 1.6));
@@ -63,7 +63,7 @@ function applyLineHeight(
 function applyFontSize(
   editorWrapper: HTMLDivElement,
   fontSizeSelect: HTMLSelectElement,
-  val: AppSettings["font_size"],
+  val: Readonly<AppSettings["font_size"]>,
 ) {
   let current = Number(val) || 18;
   current = Math.max(16, Math.min(current, 20));
@@ -82,7 +82,7 @@ function applyFontSize(
 function applyFontFamily(
   editorWrapper: HTMLDivElement,
   fontFamilySelect: HTMLSelectElement,
-  val: AppSettings["font_family"],
+  val: Readonly<AppSettings["font_family"]>,
 ) {
   const current = val || "system";
   editorWrapper.style.setProperty("--editor-font-family", current);
@@ -96,7 +96,7 @@ function applyFontFamily(
   }
 }
 
-async function handleUpdateSettings(settings: Partial<AppSettings>) {
+async function handleUpdateSettings(settings: Partial<Readonly<AppSettings>>) {
   const result = await setSettings(settings);
   if (!result.success) {
     rendererLogger.appError(

@@ -122,7 +122,9 @@ function updateSelection() {
   });
 }
 
-function syncSettingsStore(settingsResult: Result<AppSettings>): AppSettings {
+function syncSettingsStore(
+  settingsResult: Result<AppSettings>,
+): Readonly<AppSettings> {
   if (!settingsResult?.success) {
     rendererLogger.appError(
       "[syncSettingStore]: Failed to sync settings. Using defaults.",

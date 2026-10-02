@@ -30,7 +30,10 @@ type MathOptions =
       initialValue?: string;
     };
 
-type SelectOption<T extends string | boolean> = { value: T; label: string };
+type SelectOption<T extends Readonly<string | boolean>> = {
+  value: T;
+  label: string;
+};
 
 type WorkerSuccess<T> = {
   success: true;

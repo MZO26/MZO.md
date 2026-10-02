@@ -377,7 +377,7 @@ class AppDB {
     return linkMap;
   }
 
-  public updateSettings(mergedSettings: AppSettings): void {
+  public updateSettings(mergedSettings: Readonly<AppSettings>): void {
     const encoded = {
       ...mergedSettings,
       spellcheck: DbBoolCodec.encode(mergedSettings.spellcheck),
@@ -389,7 +389,7 @@ class AppDB {
     this.updateStoreStmt.run(row);
   }
 
-  public getAllSettings(): AppSettings {
+  public getAllSettings(): Readonly<AppSettings> {
     const row = this.getAllSettingsStmt.get() as StoreRow | undefined;
     if (!row) throw new AppBackendError(AppErrorCode.DBError);
     const decoded = {
@@ -598,11 +598,13 @@ class AppDB {
     });
   }
 
-  public getOldNotes(ids: Id[]): Pick<Note, "created_at" | "title">[] {
+  public getOldNotes(
+    ids: Id[],
+  ): Pick<Readonly<Note>, "created_at" | "title">[] {
     if (ids.length === 0) return [];
     const rows = this.getOldTitleStmt.all({
       $ids: JSON.stringify(ids),
-    }) as Pick<Note, "created_at" | "title">[];
+    }) as Pick<Readonly<Note>, "created_at" | "title">[];
     if (rows.length !== ids.length) {
       throw new AppBackendError(AppErrorCode.DBError);
     }

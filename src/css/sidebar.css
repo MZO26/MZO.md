@@ -556,7 +556,10 @@ input::-webkit-search-cancel-button {
   display: flex;
   width: 100%;
   align-items: center;
-  gap: 5px;
+  gap: 2px;
+  font-size: 0.8em;
+  border-radius: 1em;
+  font-weight: 500;
   overflow: hidden;
 }
 

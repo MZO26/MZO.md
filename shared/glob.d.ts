@@ -37,15 +37,17 @@ declare global {
         body: Notification["body"],
       ) => Promise<Result<void>>;
       setTheme: (
-        theme: Theme,
+        theme: Readonly<Theme>,
         focus?: boolean,
-      ) => Promise<Result<Exclude<Theme, "system">>>;
+      ) => Promise<Result<Exclude<Readonly<Theme>, "system">>>;
       windowPin: () => Promise<Result<boolean>>;
       imageWriteMany: (
         payload: ImagePayload[],
       ) => Promise<Result<{ imageSrc: string }[]>>;
       onThemeChanged: (
-        callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
+        callback: (
+          resolvedTheme: Extract<Readonly<Theme>, "dark" | "light">,
+        ) => void,
       ) => () => void;
       showContextMenu: (menuType: MenuType, payload?: NoteMenuPayload) => void;
       onTriggerTableAction: (callback: (action: TableAction) => void) => void;
@@ -117,15 +119,15 @@ declare global {
     };
     storeAPI: {
       onSettingsChanged: (
-        callback: (settings: Partial<AppSettings>) => void,
+        callback: (settings: Partial<Readonly<AppSettings>>) => void,
       ) => () => void;
-      getSettings: <K extends keyof AppSettings>(
+      getSettings: <K extends keyof Readonly<AppSettings>>(
         key: K,
-      ) => Promise<Result<AppSettings[K]>>;
-      getAllSettings: () => Promise<Result<AppSettings>>;
+      ) => Promise<Result<Readonly<AppSettings>[K]>>;
+      getAllSettings: () => Promise<Result<Readonly<AppSettings>>>;
       setSettings: (
-        settings: Partial<AppSettings>,
-      ) => Promise<Result<AppSettings>>;
+        settings: Partial<Readonly<AppSettings>>,
+      ) => Promise<Result<Readonly<AppSettings>>>;
     };
   }
 }
