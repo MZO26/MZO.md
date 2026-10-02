@@ -109,7 +109,7 @@ const KbSelectionCommands = Extension.create({
       return this.editor
         .chain()
         .focus()
-        .command(({ tr, state }) => {
+        .command(({ tr, state, dispatch }) => {
           const { selection } = this.editor.state;
           const { $from } = selection;
           const depth = getMovableDepth($from);
@@ -129,11 +129,13 @@ const KbSelectionCommands = Extension.create({
           const cursorOffset = selection.from - blockStart;
           // get relative offset to set cursor into block
           const newCursorPos = insertPos + cursorOffset;
-          tr.delete(blockStart, blockEnd).insert(insertPos, node);
-          if (selection instanceof NodeSelection) {
-            tr.setSelection(NodeSelection.create(tr.doc, newCursorPos));
-          } else {
-            tr.setSelection(TextSelection.create(tr.doc, newCursorPos));
+          if (dispatch) {
+            tr.delete(blockStart, blockEnd).insert(insertPos, node);
+            if (selection instanceof NodeSelection) {
+              tr.setSelection(NodeSelection.create(tr.doc, newCursorPos));
+            } else {
+              tr.setSelection(TextSelection.create(tr.doc, newCursorPos));
+            }
           }
           return true;
         })
@@ -143,7 +145,7 @@ const KbSelectionCommands = Extension.create({
       return this.editor
         .chain()
         .focus()
-        .command(({ tr, state }) => {
+        .command(({ tr, state, dispatch }) => {
           const { selection } = state;
           const { empty, $from, from, to } = selection;
           if (empty) {
@@ -154,11 +156,11 @@ const KbSelectionCommands = Extension.create({
             if (!node) return false;
             const insertPos = direction === "up" ? blockStart : blockEnd;
             const slice = node.slice(0, node.content.size);
-            tr.replace(insertPos, insertPos, slice);
+            if (dispatch) tr.replace(insertPos, insertPos, slice);
           } else {
             const slice = selection.content();
             const insertPos = direction === "up" ? from : to;
-            tr.replace(insertPos, insertPos, slice);
+            if (dispatch) tr.replace(insertPos, insertPos, slice);
           }
           return true;
         })

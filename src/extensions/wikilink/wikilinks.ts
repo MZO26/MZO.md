@@ -136,12 +136,12 @@ const WikiLink = Node.create<WikiLinkOptions>({
         ({ from, to, id }) =>
         ({ tr, dispatch }) => {
           const node = this.type.create({ id });
-          tr.replaceWith(from, to, node);
-          tr.insertText(" ", from + node.nodeSize);
-          const cursorPos = from + node.nodeSize + 1;
-          tr.setSelection(TextSelection.create(tr.doc, cursorPos));
           if (dispatch) {
-            dispatch(tr);
+            tr.replaceWith(from, to, node)
+              .insertText(" ", from + node.nodeSize)
+              .setSelection(
+                TextSelection.create(tr.doc, from + node.nodeSize + 1),
+              );
           }
           return true;
         },

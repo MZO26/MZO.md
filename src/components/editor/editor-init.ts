@@ -3,7 +3,8 @@ import {
   applyView,
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
-import { ActiveCodeHighlight } from "@/extensions/codeblock-highlight";
+import { CodeblockHandler } from "@/extensions/codeblock/codeblock-handler";
+import { ActiveCodeHighlight } from "@/extensions/codeblock/codeblock-highlight";
 import { DropHandler } from "@/extensions/editor-handler/drop-handler";
 import {
   GoogleDocsCleanup,
@@ -204,6 +205,7 @@ function getNoteEditorExtensions() {
       },
     }),
     ActiveCodeHighlight,
+    CodeblockHandler,
     CustomInlineMath.configure({
       onClick: handleMathClick,
       katexOptions: SHARED_KATEX_OPTIONS,

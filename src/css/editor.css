@@ -11,6 +11,25 @@
   margin: 0 auto;
 }
 
+.mc-caret {
+  display: inline-block;
+  width: 0;
+  height: 1.1em;
+  margin: 0 -1px;
+  border-left: 2px solid currentColor;
+  vertical-align: text-bottom;
+  pointer-events: none;
+  animation: mc-blink 1s step-end infinite;
+}
+.mc-selection {
+  background: rgba(80, 140, 255, 0.3);
+}
+@keyframes mc-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .ProseMirror * {
   font-size: inherit;
   font-family: inherit;

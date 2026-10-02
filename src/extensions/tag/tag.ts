@@ -110,16 +110,15 @@ const NoteTag = Node.create<NoteTagOptions>({
           const maxPos = tr.doc.content.size;
           const safeFrom = Math.max(0, Math.min(from, maxPos));
           const safeTo = Math.max(safeFrom, Math.min(to, maxPos));
-          tr.replaceWith(safeFrom, safeTo, node);
-          tr.insertText(" ", safeFrom + node.nodeSize);
           const rawCursorPos = safeFrom + node.nodeSize + 1;
           const safeCursorPos = Math.max(
             0,
             Math.min(rawCursorPos, tr.doc.content.size),
           );
-          tr.setSelection(TextSelection.near(tr.doc.resolve(safeCursorPos)));
           if (dispatch) {
-            dispatch(tr);
+            tr.replaceWith(safeFrom, safeTo, node)
+              .insertText(" ", safeFrom + node.nodeSize)
+              .setSelection(TextSelection.near(tr.doc.resolve(safeCursorPos)));
           }
           return true;
         },
