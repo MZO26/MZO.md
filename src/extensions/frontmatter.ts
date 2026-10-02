@@ -16,9 +16,7 @@ function extractFrontmatter(source: string): {
   body: string;
 } | null {
   const match = FRONTMATTER_REGEX.exec(source);
-  if (!match) {
-    return null;
-  }
+  if (!match) return null;
   const groups = match.groups;
   const yaml = groups?.["frontmatter"];
   if (!yaml) return null;

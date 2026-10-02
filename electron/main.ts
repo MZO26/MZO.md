@@ -145,7 +145,7 @@ async function createWindow() {
     if (!settings["auto_export_path"]) return;
     if (Date.now() - focusState.lastScanEnd < 5000) return;
     mainLogger.devLog(
-      "[createWindow]: Checking auto-export folder state on window focus...",
+      "[Window-Focus-Event]: Checking auto-export folder state on window focus...",
     );
     try {
       const readDirResult = await checkCurrentFolderState(

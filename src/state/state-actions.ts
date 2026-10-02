@@ -122,9 +122,7 @@ function updateSelection() {
   });
 }
 
-function syncSettingsStore(
-  settingsResult: Result<AppSettings> | null | undefined,
-): AppSettings {
+function syncSettingsStore(settingsResult: Result<AppSettings>): AppSettings {
   if (!settingsResult?.success) {
     rendererLogger.appError(
       "[syncSettingStore]: Failed to sync settings. Using defaults.",

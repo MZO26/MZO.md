@@ -63,6 +63,7 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
     const request: FilePathRequest = {
       source: "external",
       filePaths: Array.from(validFilePaths),
+      checked: false,
     };
     const loading = createGlobalSpinner(0);
     await loading.wrap(async () => {

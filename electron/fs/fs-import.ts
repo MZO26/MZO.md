@@ -17,6 +17,7 @@ async function batchImport(filePaths: string[], checked: boolean) {
   const imagesFolder = path.join(userDataPath, "editor-images");
   await fs.mkdir(imagesFolder, { recursive: true });
   const uniqueFilePaths = new Set<string>(filePaths);
+  const filesToTrash = new Set<string>();
   let duplicateCount = 0;
   let errorCount = 0;
   const imported = await processWithLimit(
@@ -55,16 +56,17 @@ async function batchImport(filePaths: string[], checked: boolean) {
           importedFileDir,
           imagesFolder,
         );
-        try {
-          await shell.trashItem(file);
-        } catch (error) {
-          mainLogger.appError(`Failed to trash foreign file ${file}`, error);
-        }
-        return validation(ImportRequestSchema, {
+        const note = validation(ImportRequestSchema, {
           extension,
           fileName,
           content: sanitizedContent,
         });
+        if (!note) {
+          ++errorCount;
+          return null;
+        }
+        filesToTrash.add(file);
+        return note;
       } catch (error) {
         mainLogger.appError(
           `[batchImport]: Failed to read/validate file: ${file}:`,
@@ -77,6 +79,9 @@ async function batchImport(filePaths: string[], checked: boolean) {
   );
   const validNotes = imported.filter(
     (note): note is ImportRequest => note !== null,
+  );
+  await Promise.allSettled(
+    [...filesToTrash].map((file) => shell.trashItem(file)),
   );
   mainLogger.devLog(
     `[batchImport]: Successfully imported ${validNotes.length} notes.`,
