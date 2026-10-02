@@ -21,4 +21,12 @@ async function processWithLimit<T, R>(
   return results;
 }
 
-export { processWithLimit };
+function singleFlight<A extends unknown[], T>(fn: (...args: A) => Promise<T>) {
+  const state: { current: Promise<T> | null } = { current: null };
+  return (...args: A): Promise<T> =>
+    (state.current ??= fn(...args).finally(() => {
+      state.current = null;
+    }));
+}
+
+export { processWithLimit, singleFlight };

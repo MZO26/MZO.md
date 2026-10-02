@@ -6,6 +6,7 @@ import {
   normalizeText,
 } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
+import { singleFlight } from "@electron/helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { AppErrorCode } from "@shared/errors";
 import type { AutoExportWritePayload, Note } from "@shared/schemas/note-schema";
@@ -76,18 +77,23 @@ async function checkSyncState(
   };
 }
 
-async function checkCurrentFolderState(targetDir: string) {
+const seenFiles: Set<string> = new Set();
+const focusState = { lastScanEnd: 0 };
+
+const checkCurrentFolderState = singleFlight(async (targetDir: string) => {
   const autoExportPath = resolveAutoExportPath(targetDir);
   try {
     await fs.mkdir(autoExportPath, { recursive: true });
     const entries = await fs.readdir(autoExportPath, { withFileTypes: true });
     const untracked: string[] = [];
     for (const entry of entries) {
+      if (seenFiles.has(entry.name)) continue;
       if (entry.isFile() && entry.name.endsWith(".md")) {
         const joined = path.join(autoExportPath, entry.name);
         ensureInsideDirectory(autoExportPath, joined);
         const base = path.basename(joined, path.extname(entry.name));
         const exists = db.checkExistence(base);
+        mainLogger.devLog(`scan base="${base}" exists=${exists}`);
         if (!exists) {
           untracked.push(joined);
         }
@@ -98,6 +104,10 @@ async function checkCurrentFolderState(targetDir: string) {
         `[checkCurrentFolderState]: Untracked files found: ${untracked}`,
       );
     }
+    entries.forEach((e) => {
+      if (!untracked.includes(path.join(autoExportPath, e.name)))
+        seenFiles.add(e.name);
+    });
     return untracked;
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
@@ -107,6 +117,6 @@ async function checkCurrentFolderState(targetDir: string) {
     );
     return [];
   }
-}
+});
 
-export { checkCurrentFolderState, checkSyncState };
+export { checkCurrentFolderState, checkSyncState, focusState };

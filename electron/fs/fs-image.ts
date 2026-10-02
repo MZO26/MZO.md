@@ -1,8 +1,8 @@
 import { resolveAutoExportPath } from "@electron/fs/fs-auto-export";
 import { mainLogger } from "@electron/handler/permission-handler";
+import { processWithLimit } from "@electron/helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { resolveAutoExport } from "@electron/ipc/ipc-helpers";
-import { processWithLimit } from "@electron/limiter";
 import { AppErrorCode } from "@shared/errors";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import { createHash } from "crypto";

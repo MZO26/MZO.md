@@ -1,8 +1,8 @@
 import db from "@electron/db/database";
 import { sanitizeImportString } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
+import { processWithLimit } from "@electron/helpers";
 import { validation } from "@electron/ipc/ipc-validation";
-import { processWithLimit } from "@electron/limiter";
 import {
   ImportRequestSchema,
   type ImportRequest,
@@ -12,7 +12,7 @@ import { app, shell } from "electron";
 import fs from "fs/promises";
 import path from "path";
 
-async function batchImport(filePaths: string[]) {
+async function batchImport(filePaths: string[], checked: boolean) {
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
   await fs.mkdir(imagesFolder, { recursive: true });
@@ -34,11 +34,13 @@ async function batchImport(filePaths: string[]) {
           return null;
         }
         const fileName = path.basename(file, path.extname(file));
-        const exists = db.checkExistence(fileName);
-        if (exists) {
-          mainLogger.devLog(`${fileName} already exists. Skipping import`);
-          ++duplicateCount;
-          return null;
+        if (!checked) {
+          const exists = db.checkExistence(fileName);
+          if (exists) {
+            mainLogger.devLog(`${fileName} already exists. Skipping import`);
+            ++duplicateCount;
+            return null;
+          }
         }
         const extension = path.extname(file).slice(1).toLowerCase();
         const content = await fs.readFile(file, "utf8");

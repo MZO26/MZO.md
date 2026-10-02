@@ -23,7 +23,7 @@ import {
   syncDialog,
   withDialogLock,
 } from "@/settings/dialog-init";
-import { stateStore } from "@/state/state";
+import { noteStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
@@ -107,6 +107,12 @@ function initListeners() {
   });
 
   window.noteAPI.onDirSync(async (dirResult) => {
+    const known = new Set(noteStore.get("notes").map((n) => n.title));
+    const toBeImported = dirResult.filter((title) => !known.has(title));
+    if (toBeImported.length === 0) return;
+    const openDialog =
+      document.querySelector<HTMLDialogElement>("dialog[open]");
+    if (openDialog) return; // Prevent multiple dialogs from opening simultaneously
     const titleEl = requireElement<HTMLSpanElement>(
       ".sync-dialog-title",
       syncDialog,
@@ -116,9 +122,13 @@ function initListeners() {
     );
     if (!confirmed) return;
     const loading = createGlobalSpinner(500);
-    await loading.wrap(async () => {
-      await handleImportNote({ source: "external", filePaths: dirResult });
-    });
+    await loading.wrap(() =>
+      handleImportNote({
+        source: "external",
+        filePaths: toBeImported,
+        checked: true,
+      }),
+    );
   });
 
   window.electronAPI.onRequestFlush(async () => {

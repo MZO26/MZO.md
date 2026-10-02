@@ -86,7 +86,7 @@ function applySidebarListeners(
       }
       const importBtn = e.target.closest<HTMLButtonElement>(".import-btn");
       if (importBtn) {
-        const request: FilePathRequest = { source: "dialog" };
+        const request: FilePathRequest = { source: "dialog", checked: false };
         const loading = createGlobalSpinner(0);
         await loading.wrap(async () => {
           await handleImportNote(request);

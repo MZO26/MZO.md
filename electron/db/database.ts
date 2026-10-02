@@ -249,22 +249,21 @@ class AppDB {
     this.checkNoteStmt = db.prepare(`
       SELECT 1 
       FROM notes 
-      WHERE title = $title 
-      AND created_at >= $start 
+      WHERE created_at >= $start 
       AND created_at < $end 
+      AND instr(title, $title) = 1
       LIMIT 1;
       `);
   }
-
   private createTables(db: DatabaseSync) {
     db.exec(`
       CREATE TABLE IF NOT EXISTS notes (
         id TEXT PRIMARY KEY,
-        title TEXT NOT NULL CHECK(length(title) > 0),
+        title TEXT NOT NULL CHECK(length(title) > 0 AND length(title) <= 50),
         content TEXT NOT NULL,
         plain_text TEXT NOT NULL,
         pinned INTEGER NOT NULL DEFAULT 0,
-        snippet TEXT DEFAULT '',
+        snippet TEXT NOT NULL DEFAULT '' CHECK(length(snippet) <= 100),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
@@ -313,9 +312,9 @@ class AppDB {
 
   private createIndexes(db: DatabaseSync) {
     db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_note_tags_tag_name ON note_tags(tag_name);
-    CREATE INDEX IF NOT EXISTS idx_note_links_target_id ON note_links(target_id);
-    CREATE INDEX IF NOT EXISTS idx_note_created_at ON notes(created_at);
+    CREATE INDEX IF NOT EXISTS idx_note_tags_tag_name ON note_tags(tag_name, note_id);
+    CREATE INDEX IF NOT EXISTS idx_note_links_target_id ON note_links(target_id, source_id);
+    CREATE INDEX IF NOT EXISTS idx_note_created_at ON notes(created_at DESC);
     `);
   }
 

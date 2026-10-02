@@ -116,9 +116,11 @@ const FilePathRequestSchema = z.discriminatedUnion("source", [
   z.object({
     source: z.literal("external"),
     filePaths: z.array(z.string().min(1)).min(1),
+    checked: z.boolean().default(false),
   }),
   z.object({
     source: z.literal("dialog"),
+    checked: z.boolean().default(false),
   }),
 ]);
 

@@ -1,7 +1,7 @@
 import { mainLogger } from "@electron/handler/permission-handler";
+import { processWithLimit } from "@electron/helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import { processWithLimit } from "@electron/limiter";
 import { AppErrorCode } from "@shared/errors";
 import {
   FileNameSchema,

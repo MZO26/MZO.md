@@ -92,7 +92,11 @@ async function handleImportNote(request: FilePathRequest) {
   const imported = await importNote(
     request.source === "dialog"
       ? request
-      : { source: "external", filePaths: request.filePaths },
+      : {
+          source: "external",
+          filePaths: request.filePaths,
+          checked: request.checked,
+        },
   );
   if (!imported.success) {
     rendererLogger.appError(

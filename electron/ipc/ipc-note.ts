@@ -263,7 +263,7 @@ function registerNoteIpc(win: BrowserWindow) {
       if (filePaths.length === 0) {
         throw new AppBackendError(AppErrorCode.CancelledOperation);
       }
-      return await batchImport(filePaths);
+      return await batchImport(filePaths, validatedData.checked ?? false);
     });
   });
 
