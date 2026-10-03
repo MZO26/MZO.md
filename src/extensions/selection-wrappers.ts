@@ -154,13 +154,16 @@ const KbSelectionCommands = Extension.create({
             const blockEnd = $from.after(depth);
             const node = state.doc.nodeAt(blockStart);
             if (!node) return false;
-            const insertPos = direction === "up" ? blockStart : blockEnd;
-            const slice = node.slice(0, node.content.size);
-            if (dispatch) tr.replace(insertPos, insertPos, slice);
+            if (dispatch) {
+              const insertPos = direction === "up" ? blockStart : blockEnd;
+              tr.insert(insertPos, node);
+            }
           } else {
-            const slice = selection.content();
-            const insertPos = direction === "up" ? from : to;
-            if (dispatch) tr.replace(insertPos, insertPos, slice);
+            if (dispatch) {
+              const fragment = selection.content().content;
+              const insertPos = direction === "up" ? from : to;
+              tr.insert(insertPos, fragment);
+            }
           }
           return true;
         })

@@ -142,7 +142,8 @@ async function createWindow() {
     win?.show();
   });
   win.on("focus", async () => {
-    if (!settings["auto_export_path"]) return;
+    if (!settings["auto_export_path"] || settings["auto_export"] === false)
+      return;
     try {
       const readDirResult = await checkCurrentFolderState(
         settings["auto_export_path"],
@@ -167,10 +168,14 @@ async function createWindow() {
       } catch (error) {
         mainLogger.appError("Failed to clean up assets", error);
       }
-      if (!settings["auto_export_path"]) return;
+      if (!settings["auto_export_path"] || settings["auto_export"] === false)
+        return;
       try {
         const readDirResult = await checkCurrentFolderState(
           settings["auto_export_path"],
+        );
+        mainLogger.devLog(
+          "[Window-Finish-Load-Event]: Checking auto-export folder state after window load...",
         );
         if (readDirResult && readDirResult.length > 0 && !win?.isDestroyed()) {
           win?.webContents.send(
