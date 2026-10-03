@@ -62,7 +62,7 @@ import "katex/dist/katex.min.css";
 
 export const updateToc = initTableOfContents();
 
-function initEditor(settings: Partial<AppSettings>): Editor {
+function initEditor(settings: Partial<Readonly<AppSettings>>): Editor {
   const editorWrapper = requireElement<HTMLDivElement>("#editor");
   const editor = new Editor({
     element: editorWrapper,

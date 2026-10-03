@@ -14,15 +14,21 @@ import {
   getMarkdownContentBetween,
 } from "@/components/editor/editor-content";
 import { getExportContent } from "@/notes/export-actions";
-import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
+import {
+  handleDeleteNote,
+  handleDuplicateNote,
+  handleImportNote,
+} from "@/notes/note-actions";
 import {
   confirmWithDialog,
   deleteDialog,
   dialogMutex,
+  syncDialog,
 } from "@/settings/dialog-init";
 import { noteStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
+import { createGlobalSpinner } from "@/utils/ui";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
 import type {
@@ -295,12 +301,37 @@ async function triggerDuplicate(id: Id) {
   );
 }
 
+async function triggerDirSync(dirResult: string[]) {
+  const known = new Set(noteStore.get("notes").map((n) => n.title));
+  const toBeImported = dirResult.filter((title) => !known.has(title));
+  if (toBeImported.length === 0) return;
+  const openDialog = document.querySelector<HTMLDialogElement>("dialog[open]");
+  if (openDialog) return; // Prevent multiple dialogs from opening simultaneously
+  const titleEl = requireElement<HTMLSpanElement>(
+    ".sync-dialog-title",
+    syncDialog,
+  );
+  const confirmed = await dialogMutex.runExclusive(async () =>
+    confirmWithDialog(syncDialog, titleEl, "External changes detected"),
+  );
+  if (!confirmed) return;
+  const loading = createGlobalSpinner(500);
+  await loading.wrap(() =>
+    handleImportNote({
+      source: "external",
+      filePaths: toBeImported,
+      checked: true,
+    }),
+  );
+}
+
 export {
   triggerCopyFilePath,
   triggerCopyRichText,
   triggerCopySelectionHtml,
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
+  triggerDirSync,
   triggerDuplicate,
   triggerNoteItemMenu,
   triggerOpenAutoExportFolder,

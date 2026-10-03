@@ -10,7 +10,7 @@ import type {
 } from "@shared/schemas/store-schema";
 import type { ResolvedTheme, Result } from "@shared/shared-types";
 
-function resolveTheme(theme: Theme): ResolvedTheme {
+function resolveTheme(theme: Readonly<Theme>): Readonly<ResolvedTheme> {
   if (theme === "system") {
     return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
@@ -20,8 +20,8 @@ function resolveTheme(theme: Theme): ResolvedTheme {
 }
 
 async function applyAppTheme(
-  preference: Theme,
-): Promise<Result<{ theme: Theme; codeTheme: CodeTheme }>> {
+  preference: Readonly<Theme>,
+): Promise<Result<{ theme: Readonly<Theme>; codeTheme: Readonly<CodeTheme> }>> {
   const result = await setTheme(preference, isFocusActive());
   if (!result.success) {
     rendererLogger.appError(

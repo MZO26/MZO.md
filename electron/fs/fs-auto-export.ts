@@ -23,6 +23,7 @@ import {
   type DeleteAutoExportRequest,
   type WriteAutoExportRequest,
 } from "@shared/schemas/request-schema";
+import { randomUUID } from "crypto";
 import { app, shell } from "electron";
 import { constants } from "fs";
 import fs from "fs/promises";
@@ -68,12 +69,18 @@ async function isAutoExport(id: Id): Promise<boolean> {
 }
 
 async function renameViaTemp(src: string, dest: string) {
-  const temp = `${dest}.${crypto.randomUUID()}.rename-tmp`;
+  const temp = `${dest}.${randomUUID()}.rename-tmp`;
   await fs.rename(src, temp);
   try {
     await fs.rename(temp, dest);
   } catch (error) {
-    await fs.rename(temp, src).catch(() => {});
+    await fs.rename(temp, src).catch((error) => {
+      const err = error as NodeJS.ErrnoException;
+      mainLogger.appError(
+        "[renameViaTemp]: Failed to revert temp rename after failed rename",
+        err,
+      );
+    });
     throw error;
   }
 }
@@ -88,7 +95,6 @@ async function safeRename(oldPath: string, newPath: string) {
   const src = oldPath.normalize("NFC");
   const dest = newPath.normalize("NFC");
   if (src === dest) return;
-
   try {
     if (src.toLowerCase() === dest.toLowerCase()) {
       await renameViaTemp(src, dest);
@@ -96,8 +102,8 @@ async function safeRename(oldPath: string, newPath: string) {
       await fs.rename(src, dest);
     }
   } catch (error: unknown) {
-    const code = (error as NodeJS.ErrnoException).code;
-
+    const err = error as NodeJS.ErrnoException;
+    const code = err.code;
     if (code === "ENOENT") {
       mainLogger.appError(
         "[writeAutoExportFileLogic -> safeRename]: File not found",

@@ -1,18 +1,18 @@
 import { rendererLogger } from "@/app";
 
-type Debounced<T extends (...args: any[]) => void> = ((
-  ...args: Parameters<T>
+type Debounced<A extends (...args: any[]) => void> = ((
+  ...args: Parameters<A>
 ) => void) & {
   cancel: () => void;
   flush: () => void;
 };
 
-function debounce<T extends (...args: any[]) => void>(
-  fn: T,
+function debounce<A extends (...args: any[]) => void>(
+  fn: A,
   wait: number,
-): Debounced<T> {
+): Debounced<A> {
   let timer: ReturnType<typeof setTimeout> | null = null;
-  let lastArgs: Parameters<T> | null = null;
+  let lastArgs: Parameters<A> | null = null;
   function cancel() {
     if (timer !== null) clearTimeout(timer);
     timer = null;
@@ -24,7 +24,7 @@ function debounce<T extends (...args: any[]) => void>(
     cancel();
     fn(...args);
   }
-  const debounced = ((...args: Parameters<T>) => {
+  const debounced = ((...args: Parameters<A>) => {
     lastArgs = args;
     if (timer !== null) clearTimeout(timer);
     timer = setTimeout(() => {
@@ -35,7 +35,7 @@ function debounce<T extends (...args: any[]) => void>(
         fn(...argsToUse);
       }
     }, wait);
-  }) as Debounced<T>;
+  }) as Debounced<A>;
   debounced.cancel = cancel;
   debounced.flush = flush;
   return debounced;

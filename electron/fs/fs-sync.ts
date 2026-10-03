@@ -11,7 +11,7 @@ import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { AppErrorCode } from "@shared/errors";
 import type { AutoExportWritePayload, Note } from "@shared/schemas/note-schema";
 import type { SyncResult } from "@shared/schemas/request-schema";
-import { MAX_BYTES_FILE } from "@shared/shared-constants";
+import { MAX_BYTES_FILE, THROTTLE_MS } from "@shared/shared-constants";
 import fs from "fs/promises";
 import path from "path";
 
@@ -116,6 +116,6 @@ const checkCurrentFolderState = throttle(async (targetDir: string) => {
     );
     return [];
   }
-}, 5000);
+}, THROTTLE_MS);
 
 export { checkCurrentFolderState, checkSyncState };

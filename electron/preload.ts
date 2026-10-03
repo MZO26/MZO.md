@@ -28,11 +28,11 @@ import {
   type IpcRendererEvent,
 } from "electron";
 
-function subscribe<T extends unknown[]>(
+function subscribe<A extends unknown[]>(
   channel: ValueOf<typeof IPC_CHANNELS>,
-  callback: (...args: T) => void,
+  callback: (...args: A) => void,
 ): () => void {
-  const listener = (_e: IpcRendererEvent, ...args: T) => {
+  const listener = (_e: IpcRendererEvent, ...args: A) => {
     callback(...args);
   };
   ipcRenderer.on(channel, listener);
@@ -48,13 +48,15 @@ if (process.contextIsolated) {
         title: Notification["title"],
         body: Notification["body"],
       ) => ipcRenderer.invoke(IPC_CHANNELS.SHOW_NOTIFICATION, title, body),
-      setTheme: (theme: Theme, focus?: boolean) =>
+      setTheme: (theme: Readonly<Theme>, focus?: boolean) =>
         ipcRenderer.invoke(IPC_CHANNELS.SET_THEME, theme, focus),
       windowPin: () => ipcRenderer.invoke(IPC_CHANNELS.APP_PIN),
       imageWriteMany: (payload: ImagePayload[]) =>
         ipcRenderer.invoke(IPC_CHANNELS.WRITE_IMAGE, payload),
       onThemeChanged: (
-        callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
+        callback: (
+          resolvedTheme: Extract<Readonly<Theme>, "dark" | "light">,
+        ) => void,
       ) => {
         subscribe(IPC_CHANNELS.THEME_CHANGED, callback);
       },
@@ -162,10 +164,10 @@ if (process.contextIsolated) {
         ipcRenderer.send(IPC_CHANNELS.SET_ACTIVE_NOTE, id),
     });
     contextBridge.exposeInMainWorld("storeAPI", {
-      getSettings: (key: keyof AppSettings) =>
+      getSettings: (key: keyof Readonly<AppSettings>) =>
         ipcRenderer.invoke(IPC_CHANNELS.GET_SETTING, key),
       getAllSettings: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_SETTINGS),
-      setSettings: (settings: Partial<AppSettings>) =>
+      setSettings: (settings: Partial<Readonly<AppSettings>>) =>
         ipcRenderer.invoke(IPC_CHANNELS.SET_SETTING, settings),
     });
   } catch (error) {

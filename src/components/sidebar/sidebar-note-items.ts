@@ -32,7 +32,7 @@ function renderTags(tags: NoteListItem["tags"], container: HTMLDivElement) {
 
 function createNoteItem(
   note: NoteListItem,
-  display: AppSettings["note_item_display"],
+  display: Readonly<AppSettings["note_item_display"]>,
 ) {
   const item = getNoteItemClone();
   item.setAttribute("data-id", note.id);

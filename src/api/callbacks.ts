@@ -4,6 +4,7 @@ import {
   triggerCopySelectionHtml,
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
+  triggerDirSync,
   triggerDuplicate,
   triggerNoteItemMenu,
   triggerOpenAutoExportFolder,
@@ -13,18 +14,13 @@ import {
   triggerSingleExport,
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
-import { debouncedSaveNote, handleImportNote } from "@/notes/note-actions";
+import { debouncedSaveNote } from "@/notes/note-actions";
 import { ensureNoteSaved } from "@/notes/note-checks";
-import {
-  confirmWithDialog,
-  dialogMutex,
-  syncDialog,
-} from "@/settings/dialog-init";
-import { noteStore, stateStore } from "@/state/state";
-import { requireElement } from "@/utils/dom";
+import { stateStore } from "@/state/state";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { ExportContent } from "@shared/schemas/request-schema";
+import type { ResolvedTheme } from "@shared/shared-types";
 
 function initListeners() {
   window.electronAPI.onTriggerTableAction((action) => triggerTableMenu(action));
@@ -99,33 +95,14 @@ function initListeners() {
     await triggerDuplicate(id);
   });
 
-  window.electronAPI.onThemeChanged(async (resolvedTheme) => {
-    document.documentElement.dataset["theme"] = resolvedTheme;
-  });
+  window.electronAPI.onThemeChanged(
+    async (resolvedTheme: Readonly<ResolvedTheme>) => {
+      document.documentElement.dataset["theme"] = resolvedTheme;
+    },
+  );
 
   window.noteAPI.onDirSync(async (dirResult) => {
-    const known = new Set(noteStore.get("notes").map((n) => n.title));
-    const toBeImported = dirResult.filter((title) => !known.has(title));
-    if (toBeImported.length === 0) return;
-    const openDialog =
-      document.querySelector<HTMLDialogElement>("dialog[open]");
-    if (openDialog) return; // Prevent multiple dialogs from opening simultaneously
-    const titleEl = requireElement<HTMLSpanElement>(
-      ".sync-dialog-title",
-      syncDialog,
-    );
-    const confirmed = await dialogMutex.runExclusive(async () =>
-      confirmWithDialog(syncDialog, titleEl, "External changes detected"),
-    );
-    if (!confirmed) return;
-    const loading = createGlobalSpinner(500);
-    await loading.wrap(() =>
-      handleImportNote({
-        source: "external",
-        filePaths: toBeImported,
-        checked: true,
-      }),
-    );
+    await triggerDirSync(dirResult);
   });
 
   window.electronAPI.onRequestFlush(async () => {

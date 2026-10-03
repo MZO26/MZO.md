@@ -17,58 +17,6 @@ export const CodeblockHandler = Extension.create({
   name: "codeblockHandler",
 
   addKeyboardShortcuts() {
-    const indentBlock = (indentType: "forward" | "backward") => {
-      if (!this.editor.isActive("codeBlock")) return false;
-      return this.editor
-        .chain()
-        .command(({ tr, state, dispatch }) => {
-          const { empty, $from, from, to } = state.selection;
-          if (empty) {
-            if (dispatch) {
-              if (indentType === "forward") {
-                // just indent 2 spaces
-                tr.insertText("  ");
-              } else {
-                const start = Math.max(0, $from.parentOffset - 2);
-                const textBefore = $from.parent.textBetween(
-                  start,
-                  $from.parentOffset,
-                );
-                if (textBefore === "  ") {
-                  tr.delete(from - 2, from);
-                } else if (textBefore.endsWith(" ")) {
-                  tr.delete(from - 1, from);
-                }
-              }
-            }
-            return true;
-          }
-          let updated: string;
-          const text = state.doc.textBetween(from, to, "\n");
-          if (indentType === "forward") {
-            updated = text
-              .split("\n")
-              .map((line) => "  " + line)
-              .join("\n");
-          } else {
-            updated = text
-              .split("\n")
-              .map((line) => {
-                if (line.startsWith("  ")) return line.slice(2);
-                if (line.startsWith(" ")) return line.slice(1);
-                return line;
-              })
-              .join("\n");
-          }
-          if (dispatch) {
-            tr.insertText(updated, from, to).setSelection(
-              TextSelection.create(tr.doc, from, updated.length),
-            );
-          }
-          return true;
-        })
-        .run();
-    };
     const handleKey = (key: string) => () => {
       if (!this.editor.isActive("codeBlock")) return false;
       return this.editor
@@ -134,8 +82,6 @@ export const CodeblockHandler = Extension.create({
         }
         return false;
       },
-      Tab: () => indentBlock("forward"),
-      "Shift-Tab": () => indentBlock("backward"),
       Enter: () => {
         if (!this.editor.isActive("codeBlock")) return false;
         const { selection, doc } = this.editor.state;

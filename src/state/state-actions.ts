@@ -12,14 +12,14 @@ import type { Result } from "@shared/shared-types";
 let sidebarUpdatePending = false;
 let selectionUpdatePending = false;
 
-function memoize<T extends any[], R>(
-  fn: (...args: T) => R,
-  equalFn: (prev: T, next: T) => boolean = (prev, next) =>
+function memoize<A extends unknown[], R>(
+  fn: (...args: A) => R,
+  equalFn: (prev: A, next: A) => boolean = (prev, next) =>
     prev.length === next.length && next.every((val, i) => val === prev[i]),
 ) {
-  let lastArgs: T | null = null;
+  let lastArgs: A | null = null;
   let lastResult: R;
-  return (...args: T): R => {
+  return (...args: A): R => {
     if (lastArgs && equalFn(lastArgs, args)) {
       rendererLogger.devLog("Returning old result");
       return lastResult;
@@ -30,7 +30,7 @@ function memoize<T extends any[], R>(
   };
 }
 
-function shallowEq<T>(a: T, b: T): boolean {
+function shallowEq<A>(a: A, b: A): boolean {
   if (Object.is(a, b)) return true;
   if (a instanceof Map && b instanceof Map) {
     if (a.size !== b.size) return false;
@@ -55,7 +55,7 @@ function shallowEq<T>(a: T, b: T): boolean {
   ) {
     return false;
   }
-  const keysA = Object.keys(a) as Array<keyof T>;
+  const keysA = Object.keys(a) as Array<keyof A>;
   const keysB = Object.keys(b);
   if (keysA.length !== keysB.length) return false;
   for (const key of keysA) {
@@ -123,7 +123,7 @@ function updateSelection() {
 }
 
 function syncSettingsStore(
-  settingsResult: Result<AppSettings>,
+  settingsResult: Result<Readonly<AppSettings>>,
 ): Readonly<AppSettings> {
   if (!settingsResult?.success) {
     rendererLogger.appError(
@@ -146,10 +146,8 @@ function syncNoteStore(notes: readonly NoteListItem[]) {
   return sortedNotes;
 }
 
-function syncStateStore(
-  settingsResult: Result<AppSettings> | null | undefined,
-) {
-  if (!settingsResult?.success) {
+function syncStateStore(settingsResult: Result<Readonly<AppSettings>>) {
+  if (!settingsResult.success) {
     rendererLogger.appError(
       "[syncStateStore]: Failed to sync state. Using defaults.",
       settingsResult?.error,

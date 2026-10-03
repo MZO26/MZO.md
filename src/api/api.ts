@@ -157,7 +157,7 @@ async function selectAutoExportFolder(): Promise<Result<string>> {
 
 async function getSettings<K extends keyof AppSettings>(
   key: K,
-): Promise<Result<Readonly<AppSettings>[K]>> {
+): Promise<Result<Readonly<AppSettings[K]>>> {
   return invoke(window.storeAPI.getSettings(key));
 }
 
