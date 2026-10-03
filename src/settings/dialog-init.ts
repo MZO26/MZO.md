@@ -46,7 +46,7 @@ function confirmWithDialog(
   });
 }
 
-function createMutex() {
+function createMutex<T>() {
   let locked = false;
   const waiters: (() => void)[] = [];
   async function acquire() {
@@ -61,19 +61,18 @@ function createMutex() {
     if (next) next();
     else locked = false;
   }
-  return { acquire, release };
+  async function runExclusive(fn: () => Promise<T>): Promise<T> {
+    await acquire();
+    try {
+      return await fn();
+    } finally {
+      release();
+    }
+  }
+  return { acquire, release, runExclusive };
 }
 
 const dialogMutex = createMutex();
-
-async function withDialogLock<T>(fn: () => Promise<T>): Promise<T> {
-  await dialogMutex.acquire();
-  try {
-    return await fn();
-  } finally {
-    dialogMutex.release();
-  }
-}
 
 export const { deleteDialog } = initDeleteDialog();
 export const { syncDialog } = initSyncDialog();
@@ -83,10 +82,10 @@ export const { mathDialog } = initMathDialog();
 
 export {
   confirmWithDialog,
+  dialogMutex,
   initDeleteDialog,
   initMathDialog,
   initQuickSwitchDialog,
   initSettingsDialog,
   initSyncDialog,
-  withDialogLock,
 };

@@ -1,9 +1,9 @@
 import { rendererLogger } from "@/app";
+import { triggerSingleDelete } from "@/components/sidebar/sidebar-triggers";
 import { handleSelectNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { getAppItem } from "@/utils/registry";
 import { type Id } from "@shared/schemas/note-schema";
-import { triggerSingleDelete } from "./sidebar-triggers";
 
 async function navigateSidebar(e: KeyboardEvent) {
   const visibleIds = noteStore.get("visibleIds");

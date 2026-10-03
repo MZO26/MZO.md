@@ -13,7 +13,7 @@ import { handleDeleteManyNotes } from "@/notes/note-actions";
 import {
   confirmWithDialog,
   deleteDialog,
-  withDialogLock,
+  dialogMutex,
 } from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
@@ -224,7 +224,7 @@ async function deleteSelection() {
   const selectedIds = stateStore.get("selectedIds");
   const ids = [...selectedIds];
   if (!Array.isArray(ids) || ids.length === 0) return;
-  const confirmed = await withDialogLock(() =>
+  const confirmed = await dialogMutex.runExclusive(async () =>
     confirmWithDialog(
       deleteDialog,
       requireElement<HTMLSpanElement>(".delete-dialog-title", deleteDialog),

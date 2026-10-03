@@ -1,6 +1,6 @@
 import { dirRead, getNoteById, selectAutoExportFolder } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { syncCheckNote } from "@/notes/note-actions";
+import { syncCheckNote } from "@/notes/note-checks";
 import {
   CODE_THEME_SETTINGS,
   EXPORT_FORMAT_SETTINGS,

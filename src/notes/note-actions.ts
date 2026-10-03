@@ -6,7 +6,6 @@ import {
   getNoteById,
   importNote,
   showNotification,
-  syncRequest,
   updateNote,
 } from "@/api/api";
 import { rendererLogger } from "@/app";
@@ -18,20 +17,10 @@ import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { getTableOfContents } from "@/extensions/toc";
 import { resolveDocLinks } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
-import {
-  confirmWithDialog,
-  syncDialog,
-  withDialogLock,
-} from "@/settings/dialog-init";
+import { syncCheckNote } from "@/notes/note-checks";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
-import { debounce, sleep } from "@/utils/async";
-import {
-  CHAR_BASELINE,
-  DEBOUNCE_MS,
-  UNTAGGED,
-  YIELD_MS,
-} from "@/utils/constants";
-import { requireElement } from "@/utils/dom";
+import { debounce } from "@/utils/async";
+import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import { getMetadata, titleGenerator } from "@/utils/generators";
 import { checkNoteSize } from "@/utils/note-helpers";
 import { getAppItem } from "@/utils/registry";
@@ -362,117 +351,8 @@ async function handleDuplicateNote(note: Readonly<Note>) {
   stateStore.setState({ hoverId: null });
 }
 
-async function waitForFlush(id: Id | null) {
-  if (!id || stateStore.get("activeId") !== id) return;
-  const noteIndex = noteStore.get("noteIndex");
-  if (!noteIndex.has(id)) {
-    return;
-  }
-  debouncedSaveNote.cancel();
-  await handleSaveNote(id, true);
-  return stateStore.get("activeId") === id;
-}
-
-async function ensureNoteSaved(id: Id) {
-  const savedNote = await waitForFlush(id);
-  if (!savedNote) return;
-  const note = noteStore.get("noteIndex").get(id);
-  if (!note) return;
-  return {
-    created_at: note.created_at,
-    fileName: note.title,
-    extension: "md" as const,
-    updated_at: note.updated_at,
-  };
-}
-
-const syncVersions = new Map<Id, number>();
-
-function beginSyncVersion(id: Id) {
-  if (stateStore.get("activeId") !== id) return null;
-  const next = (syncVersions.get(id) ?? 0) + 1;
-  syncVersions.set(id, next);
-  return next;
-}
-
-function isSyncVersionCurrent(id: Id, version: number) {
-  return stateStore.get("activeId") === id && syncVersions.get(id) === version;
-}
-
-function endSyncVersion(id: Id, version: number) {
-  if (syncVersions.get(id) === version) {
-    syncVersions.delete(id);
-  }
-}
-
-async function syncCheckNote(note: Readonly<Note>) {
-  const version = beginSyncVersion(note.id);
-  if (version == null) return;
-  try {
-    if (!isSyncVersionCurrent(note.id, version)) return;
-    const targetDir = settingsStore.get("auto_export_path");
-    if (!targetDir) return;
-    const editor = getAppItem("editor");
-    const markdown = editor.getMarkdown();
-    const syncResult = await syncRequest({
-      created_at: note.created_at,
-      updated_at: note.updated_at,
-      fileName: note.title,
-      markdown,
-      targetDir,
-    });
-    if (!isSyncVersionCurrent(note.id, version)) return;
-    if (!syncResult.success) {
-      rendererLogger.appError(
-        "[triggerSyncCheck]: Failed to perform sync check:",
-        syncResult.error,
-      );
-      return;
-    }
-    const status = syncResult.data.status;
-    switch (status) {
-      case "UNCHANGED":
-        rendererLogger.devLog("Sync Check: Note is in sync");
-        break;
-      case "MISSING":
-        rendererLogger.devLog("Sync Check: Note not found in target directory");
-        break;
-      case "MODIFIED": {
-        rendererLogger.devLog("Sync Check: Note is out of sync");
-        const titleEl = requireElement<HTMLSpanElement>(
-          ".sync-dialog-title",
-          syncDialog,
-        );
-        const confirmed = await withDialogLock(() =>
-          confirmWithDialog(
-            syncDialog,
-            titleEl,
-            "File got modified. Update note?",
-          ),
-        );
-        if (!confirmed) return;
-        if (!isSyncVersionCurrent(note.id, version)) return;
-        if (syncResult.data.markdown.length > CHAR_BASELINE) {
-          await sleep(YIELD_MS);
-        }
-        editor.commands.setContent(syncResult.data.markdown, {
-          emitUpdate: true,
-          contentType: "markdown",
-        });
-        break;
-      }
-      default:
-        status satisfies never;
-        break;
-    }
-  } finally {
-    endSyncVersion(note.id, version);
-  }
-}
-
 export {
   debouncedSaveNote,
-  ensureNoteSaved,
   handleCreateNote,
   handleDeleteManyNotes,
   handleDeleteNote,
@@ -481,6 +361,4 @@ export {
   handleSaveNote,
   handleSelectNote,
   isAutoExportEnabled,
-  syncCheckNote,
-  waitForFlush,
 };

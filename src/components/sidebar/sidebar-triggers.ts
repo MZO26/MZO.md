@@ -18,7 +18,7 @@ import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
 import {
   confirmWithDialog,
   deleteDialog,
-  withDialogLock,
+  dialogMutex,
 } from "@/settings/dialog-init";
 import { noteStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
@@ -249,7 +249,7 @@ async function triggerSingleDelete(id: Id) {
     ".delete-dialog-title",
     deleteDialog,
   );
-  const confirmed = await withDialogLock(() =>
+  const confirmed = await dialogMutex.runExclusive(async () =>
     confirmWithDialog(deleteDialog, titleEl, "Delete this note?"),
   );
   if (!confirmed) return;

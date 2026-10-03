@@ -1,7 +1,7 @@
 import { setUpEditorMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
 import { removeUnusedImages } from "@electron/fs/fs-image";
-import { checkCurrentFolderState, focusState } from "@electron/fs/fs-sync";
+import { checkCurrentFolderState } from "@electron/fs/fs-sync";
 import { setupGlobalErrorHandling } from "@electron/handler/global-handler";
 import {
   navigationHandler,
@@ -143,15 +143,14 @@ async function createWindow() {
   });
   win.on("focus", async () => {
     if (!settings["auto_export_path"]) return;
-    if (Date.now() - focusState.lastScanEnd < 5000) return;
-    mainLogger.devLog(
-      "[Window-Focus-Event]: Checking auto-export folder state on window focus...",
-    );
     try {
       const readDirResult = await checkCurrentFolderState(
         settings["auto_export_path"],
       );
-      if (readDirResult.length > 0 && !win?.isDestroyed()) {
+      mainLogger.devLog(
+        "[Window-Focus-Event]: Checking auto-export folder state on window focus...",
+      );
+      if (readDirResult && readDirResult.length > 0 && !win?.isDestroyed()) {
         win?.webContents.send(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, readDirResult);
       }
     } catch (error) {
@@ -173,7 +172,7 @@ async function createWindow() {
         const readDirResult = await checkCurrentFolderState(
           settings["auto_export_path"],
         );
-        if (readDirResult.length > 0 && !win?.isDestroyed()) {
+        if (readDirResult && readDirResult.length > 0 && !win?.isDestroyed()) {
           win?.webContents.send(
             IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC,
             readDirResult,

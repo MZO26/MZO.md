@@ -232,9 +232,10 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!targetDir || !isAutoExport)
         throw new AppBackendError(AppErrorCode.CancelledOperation);
       const readDirResult = await checkCurrentFolderState(targetDir);
-      if (readDirResult.length > 0) {
+      if (readDirResult && readDirResult.length > 0) {
         win?.webContents.send(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, readDirResult);
       }
+      return true;
     });
   });
 

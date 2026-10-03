@@ -176,14 +176,12 @@ function setUpEditorMenu(win: BrowserWindow) {
         : null;
       pushOptionalSeparator(items);
       if (isImage) {
-        if (isImage) {
-          items.push({
-            label: "Save Image As…",
-            click: () => {
-              win.webContents.downloadURL(params.srcURL);
-            },
-          });
-        }
+        items.push({
+          label: "Save Image As…",
+          click: () => {
+            win.webContents.downloadURL(params.srcURL);
+          },
+        });
         items.push({
           label: "Copy Image",
           click: () => {

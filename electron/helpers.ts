@@ -21,12 +21,21 @@ async function processWithLimit<T, R>(
   return results;
 }
 
-function singleFlight<A extends unknown[], T>(fn: (...args: A) => Promise<T>) {
-  const state: { current: Promise<T> | null } = { current: null };
-  return (...args: A): Promise<T> =>
-    (state.current ??= fn(...args).finally(() => {
-      state.current = null;
-    }));
+function throttle<A extends unknown[], T>(
+  fn: (...args: A) => Promise<T>,
+  ms: number,
+) {
+  const state: { busy: boolean; lastEnd: number } = { busy: false, lastEnd: 0 };
+  return async (...args: A): Promise<T | undefined> => {
+    if (state.busy || Date.now() - state.lastEnd < ms) return undefined;
+    state.busy = true;
+    try {
+      return await fn(...args);
+    } finally {
+      state.busy = false;
+      state.lastEnd = Date.now();
+    }
+  };
 }
 
-export { processWithLimit, singleFlight };
+export { processWithLimit, throttle };

@@ -28,9 +28,22 @@ import type {
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { ImportStats, Result } from "@shared/shared-types";
 
-async function invoke<T>(ipcPromise: Promise<Result<T>>): Promise<Result<T>> {
+function isResult(obj: unknown): obj is Result<unknown> {
+  if (typeof obj !== "object" || obj === null || !("success" in obj))
+    return false;
+  if (obj.success === true) return "data" in obj;
+  if (obj.success === false) return "error" in obj;
+  return false;
+}
+
+async function invoke<T>(ipcPromise: Promise<unknown>): Promise<Result<T>> {
   try {
-    return await ipcPromise;
+    const result = await ipcPromise;
+    if (!isResult(result)) {
+      rendererLogger.appError("[IPC Bridge Error]: Invalid result format");
+      return { success: false, error: AppErrorCode.UnknownError };
+    }
+    return result as Result<T>;
   } catch (err: unknown) {
     rendererLogger.appError("[IPC Bridge Error]: ", err);
     return { success: false, error: AppErrorCode.UnknownError };
@@ -118,7 +131,7 @@ async function syncRequest(
   return invoke(window.noteAPI.syncRequest(payload));
 }
 
-async function dirRead(): Promise<Result<void>> {
+async function dirRead(): Promise<Result<boolean>> {
   return invoke(window.noteAPI.dirRead());
 }
 

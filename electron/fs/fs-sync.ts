@@ -6,7 +6,7 @@ import {
   normalizeText,
 } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
-import { singleFlight } from "@electron/helpers";
+import { throttle } from "@electron/helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { AppErrorCode } from "@shared/errors";
 import type { AutoExportWritePayload, Note } from "@shared/schemas/note-schema";
@@ -78,9 +78,8 @@ async function checkSyncState(
 }
 
 const seenFiles: Set<string> = new Set();
-const focusState = { lastScanEnd: 0 };
 
-const checkCurrentFolderState = singleFlight(async (targetDir: string) => {
+const checkCurrentFolderState = throttle(async (targetDir: string) => {
   const autoExportPath = resolveAutoExportPath(targetDir);
   try {
     await fs.mkdir(autoExportPath, { recursive: true });
@@ -117,6 +116,6 @@ const checkCurrentFolderState = singleFlight(async (targetDir: string) => {
     );
     return [];
   }
-});
+}, 5000);
 
-export { checkCurrentFolderState, checkSyncState, focusState };
+export { checkCurrentFolderState, checkSyncState };

@@ -13,15 +13,12 @@ import {
   triggerSingleExport,
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
-import {
-  debouncedSaveNote,
-  ensureNoteSaved,
-  handleImportNote,
-} from "@/notes/note-actions";
+import { debouncedSaveNote, handleImportNote } from "@/notes/note-actions";
+import { ensureNoteSaved } from "@/notes/note-checks";
 import {
   confirmWithDialog,
+  dialogMutex,
   syncDialog,
-  withDialogLock,
 } from "@/settings/dialog-init";
 import { noteStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
@@ -117,7 +114,7 @@ function initListeners() {
       ".sync-dialog-title",
       syncDialog,
     );
-    const confirmed = await withDialogLock(() =>
+    const confirmed = await dialogMutex.runExclusive(async () =>
       confirmWithDialog(syncDialog, titleEl, "External changes detected"),
     );
     if (!confirmed) return;

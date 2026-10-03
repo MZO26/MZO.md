@@ -67,49 +67,49 @@ async function isAutoExport(id: Id): Promise<boolean> {
   }
 }
 
-async function safeRename(
-  oldAbsoluteFilePath: string,
-  absoluteFilePath: string,
-) {
-  if (!oldAbsoluteFilePath || oldAbsoluteFilePath === absoluteFilePath) return;
-  const src = oldAbsoluteFilePath.normalize("NFC");
-  const dest = absoluteFilePath.normalize("NFC");
+async function renameViaTemp(src: string, dest: string) {
+  const temp = `${dest}.${crypto.randomUUID()}.rename-tmp`;
+  await fs.rename(src, temp);
   try {
-    const sameIgnoringCase = src.toLowerCase() === dest.toLowerCase();
-    if (sameIgnoringCase) {
-      const temp = `${dest}.${crypto.randomUUID()}.rename-tmp`;
-      await fs.rename(src, temp);
-      try {
-        await fs.rename(temp, dest);
-      } catch (error) {
-        await fs.rename(temp, src).catch(() => {});
-        throw error;
-      }
+    await fs.rename(temp, dest);
+  } catch (error) {
+    await fs.rename(temp, src).catch(() => {});
+    throw error;
+  }
+}
+
+async function moveAcrossDevices(src: string, dest: string) {
+  await fs.copyFile(src, dest);
+  await fs.unlink(src);
+}
+
+async function safeRename(oldPath: string, newPath: string) {
+  if (!oldPath) return;
+  const src = oldPath.normalize("NFC");
+  const dest = newPath.normalize("NFC");
+  if (src === dest) return;
+
+  try {
+    if (src.toLowerCase() === dest.toLowerCase()) {
+      await renameViaTemp(src, dest);
     } else {
       await fs.rename(src, dest);
     }
   } catch (error: unknown) {
-    const err = error as NodeJS.ErrnoException;
-    if (err.code === "ENOENT") {
+    const code = (error as NodeJS.ErrnoException).code;
+
+    if (code === "ENOENT") {
       mainLogger.appError(
         "[writeAutoExportFileLogic -> safeRename]: File not found",
       );
       return;
-    } else if (err.code === "EXDEV") {
-      // for cross-partition moves
-      try {
-        await fs.copyFile(src, dest);
-        await fs.unlink(src);
-      } catch (error) {
-        mainLogger.appError(
-          "[writeAutoExportFileLogic -> safeRename]: EXDEV  fallback failed",
-          error,
-        );
-        throw new AppBackendError(AppErrorCode.FileWriteError);
-      }
-    } else {
+    }
+    try {
+      if (code !== "EXDEV") throw error;
+      await moveAcrossDevices(src, dest);
+    } catch (error: unknown) {
       mainLogger.appError(
-        "[writeAutoExportFileLogic -> safeRename]: Safe rename failed",
+        "[writeAutoExportFileLogic -> safeRename]: Rename failed",
         error,
       );
       throw new AppBackendError(AppErrorCode.FileWriteError);

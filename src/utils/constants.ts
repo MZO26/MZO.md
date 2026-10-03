@@ -11,10 +11,10 @@ const NAV_KEYS = new Set([
 ]);
 
 const DEBOUNCE_MS = {
-  very_fast: 150,
+  very_fast: 200,
   fast: 300,
   normal: 500,
-  slow: 3000,
+  slow: 2000,
 } as const;
 
 const MIME_TO_EXT: Record<string, string | undefined> = {

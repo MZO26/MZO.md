@@ -69,6 +69,6 @@ const debouncedSearch = debounce((e: Event) => {
   if (!(e.target instanceof HTMLInputElement)) return;
   const value = (e.target.value ?? "").trim();
   handleSearch(value);
-}, DEBOUNCE_MS.fast);
+}, DEBOUNCE_MS.very_fast);
 
 export { debouncedSearch };

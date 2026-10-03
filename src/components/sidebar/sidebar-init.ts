@@ -1,5 +1,6 @@
 import { rendererLogger } from "@/app";
 import { setupSidebarFileDrop } from "@/components/sidebar/sidebar-file-drop";
+import { navigateSidebar } from "@/components/sidebar/sidebar-navigation";
 import { debouncedSearch } from "@/components/sidebar/sidebar-search";
 import {
   addToSelection,
@@ -18,8 +19,8 @@ import {
   handleCreateNote,
   handleImportNote,
   handleSelectNote,
-  waitForFlush,
 } from "@/notes/note-actions";
+import { waitForFlush } from "@/notes/note-checks";
 import { noteStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { NAV_KEYS, SELECTION_ACTIONS } from "@/utils/constants";
@@ -34,7 +35,6 @@ import { createGlobalSpinner } from "@/utils/ui";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
-import { navigateSidebar } from "./sidebar-navigation";
 
 function initNotesSidebar(sidebar: HTMLDivElement) {
   const { searchInput, selectionFooter, sidebarHeader } = getUIItems([

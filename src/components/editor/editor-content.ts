@@ -1,6 +1,6 @@
 import { rendererLogger } from "@/app";
+import { getMarkdownManager } from "@/components/editor/editor-actions";
 import { Editor, getHTMLFromFragment } from "@tiptap/core";
-import { getMarkdownManager } from "./editor-actions";
 
 function getHTMLContentBetween(
   editor: Editor,

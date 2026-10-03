@@ -24,8 +24,7 @@ async function result<T>(
 ): Promise<Result<T>> {
   try {
     validateSender(event);
-    const data = await action();
-    return { success: true, data };
+    return { success: true, data: await action() };
   } catch (error: unknown) {
     return handleIpcError(error);
   }
