@@ -1,8 +1,6 @@
-import { resolveAutoExportPath } from "@electron/fs/fs-auto-export";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { processWithLimit } from "@electron/helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { resolveAutoExport } from "@electron/ipc/ipc-helpers";
 import { AppErrorCode } from "@shared/errors";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import { createHash } from "crypto";
@@ -56,45 +54,26 @@ async function handleImageWriteMany(validatedData: ImagePayload[]) {
 
 async function removeUnusedImages(usedImages: string[]) {
   const usedSet = new Set(usedImages);
-  const foldersToClean: string[] = [];
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
+  await fs.mkdir(imagesFolder, { recursive: true });
   try {
-    await fs.mkdir(imagesFolder, { recursive: true });
-    foldersToClean.push(imagesFolder);
-  } catch (error) {
-    mainLogger.appError("Failed to create local images folder", error);
-  }
-  try {
-    const { targetDir } = resolveAutoExport();
-    if (targetDir) {
-      const exportPath = resolveAutoExportPath(targetDir);
-      const exportAssetsFolder = path.join(exportPath, "assets");
-      await fs.mkdir(exportAssetsFolder, { recursive: true });
-      foldersToClean.push(exportAssetsFolder);
+    const allImages = await fs.readdir(imagesFolder);
+    const unused = allImages.filter((i) => !usedSet.has(i));
+    if (unused.length === 0) {
+      mainLogger.devLog("[removeUnusedImages]: No images to clean");
+      return;
     }
+    await trashImages(unused, imagesFolder);
+    mainLogger.devLog(
+      `Successfully cleaned up ${unused.length} ${unused.length > 1 ? "images" : "image"}`,
+    );
   } catch (error) {
-    mainLogger.devLog("Auto-export folder not available for cleanup");
+    mainLogger.appError(
+      `Failed to process cleanup for folder: ${imagesFolder}`,
+      error,
+    );
   }
-  for (const folder of foldersToClean) {
-    try {
-      const allImages = await fs.readdir(folder);
-      const unused = allImages.filter((i) => !usedSet.has(i));
-      if (unused.length === 0) {
-        continue;
-      }
-      await trashImages(unused, folder);
-      mainLogger.devLog(
-        `Successfully cleaned up ${unused.length} ${unused.length > 1 ? "images" : "image"}`,
-      );
-    } catch (error) {
-      mainLogger.appError(
-        `Failed to process cleanup for folder: ${folder}`,
-        error,
-      );
-    }
-  }
-  mainLogger.devLog("Unused images cleanup completed successfully.");
 }
 
 async function trashImages(unused: string[], imagesFolder: string) {

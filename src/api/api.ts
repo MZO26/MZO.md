@@ -21,9 +21,6 @@ import type {
   ExportRequest,
   FilePathRequest,
   ImportRequest,
-  OpenAutoExportPathRequest,
-  SyncRequestPayload,
-  SyncResult,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { ImportStats, Result } from "@shared/shared-types";
@@ -125,16 +122,6 @@ async function pinMany(ids: Id[]): Promise<Result<boolean>> {
   return invoke(window.noteAPI.pinMany(ids));
 }
 
-async function syncRequest(
-  payload: SyncRequestPayload,
-): Promise<Result<SyncResult>> {
-  return invoke(window.noteAPI.syncRequest(payload));
-}
-
-async function dirRead(): Promise<Result<boolean>> {
-  return invoke(window.noteAPI.dirRead());
-}
-
 async function getRelatedNotes(payload: {
   id: Id;
 }): Promise<Result<RelatedNotes[]>> {
@@ -149,13 +136,9 @@ async function databaseBackupRestore(): Promise<Result<void>> {
   return invoke(window.noteAPI.databaseBackupRestore());
 }
 
-async function selectAutoExportFolder(): Promise<Result<string>> {
-  return invoke(window.noteAPI.selectAutoExportFolder());
-}
-
 // settings api
 
-async function getSettings<K extends keyof AppSettings>(
+async function getSettings<K extends keyof Readonly<AppSettings>>(
   key: K,
 ): Promise<Result<Readonly<AppSettings[K]>>> {
   return invoke(window.storeAPI.getSettings(key));
@@ -176,7 +159,7 @@ async function setSettings(
 async function setTheme(
   theme: Readonly<Theme>,
   focus?: boolean,
-): Promise<Result<Exclude<Readonly<Theme>, "system">>> {
+): Promise<Result<Exclude<Theme, "system">>> {
   return invoke(window.electronAPI.setTheme(theme, focus));
 }
 
@@ -201,26 +184,8 @@ async function openExternal(url: Url): Promise<Result<string | void>> {
   return invoke(window.electronAPI.openExternal(url));
 }
 
-async function openAutoExportFolder(
-  payload: OpenAutoExportPathRequest,
-): Promise<Result<boolean>> {
-  return invoke(window.electronAPI.openAutoExportFolder(payload));
-}
-
-async function openInDefaultEditor(
-  payload: OpenAutoExportPathRequest,
-): Promise<Result<boolean>> {
-  return invoke(window.electronAPI.openInDefaultEditor(payload));
-}
-
 async function openAppPath(): Promise<Result<boolean>> {
   return invoke(window.electronAPI.openAppPath());
-}
-
-async function getAutoExportPath(
-  payload: OpenAutoExportPathRequest,
-): Promise<Result<string | null>> {
-  return invoke(window.electronAPI.getAutoExportPath(payload));
 }
 
 async function pinWindow(): Promise<Result<boolean>> {
@@ -234,13 +199,11 @@ export {
   databaseBackupRestore,
   deleteManyNotes,
   deleteNote,
-  dirRead,
   exportManyNotes,
   exportNote,
   getAll,
   getAllBackup,
   getAllSettings,
-  getAutoExportPath,
   getManyById,
   getNoteById,
   getRelatedNotes,
@@ -249,17 +212,13 @@ export {
   imageWriteMany,
   importNote,
   openAppPath,
-  openAutoExportFolder,
   openExternal,
-  openInDefaultEditor,
   pin,
   pinMany,
   pinWindow,
   search,
-  selectAutoExportFolder,
   setSettings,
   setTheme,
   showNotification,
-  syncRequest,
   updateNote,
 };

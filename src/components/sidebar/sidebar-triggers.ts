@@ -1,12 +1,4 @@
-import {
-  exportNote,
-  getAutoExportPath,
-  getNoteById,
-  openAutoExportFolder,
-  openInDefaultEditor,
-  pin,
-  showNotification,
-} from "@/api/api";
+import { exportNote, getNoteById, pin, showNotification } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import {
@@ -14,27 +6,18 @@ import {
   getMarkdownContentBetween,
 } from "@/components/editor/editor-content";
 import { getExportContent } from "@/notes/export-actions";
-import {
-  handleDeleteNote,
-  handleDuplicateNote,
-  handleImportNote,
-} from "@/notes/note-actions";
+import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
 import {
   confirmWithDialog,
   deleteDialog,
   dialogMutex,
-  syncDialog,
 } from "@/settings/dialog-init";
 import { noteStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { getAppItem } from "@/utils/registry";
-import { createGlobalSpinner } from "@/utils/ui";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
-import type {
-  ExportContent,
-  OpenAutoExportPathRequest,
-} from "@shared/schemas/request-schema";
+import type { ExportContent } from "@shared/schemas/request-schema";
 import { TABLE_ACTIONS } from "@shared/shared-constants";
 import type { TableAction } from "@shared/shared-types";
 import { generateHTML } from "@tiptap/core";
@@ -106,55 +89,8 @@ async function triggerSingleExport(
   }
   await showNotification(
     "Export Complete",
-    `Exported files as .${extension.toUpperCase()}`,
+    `Exported file as .${extension.toUpperCase()}`,
   );
-}
-
-async function triggerOpenAutoExportFolder(
-  autoExportPayload: OpenAutoExportPathRequest,
-) {
-  const result = await openAutoExportFolder(autoExportPayload);
-  if (!result.success || result.data === false) {
-    await showNotification("Could not open note path", "");
-    return;
-  }
-}
-
-async function triggerOpenInDefaultEditor(
-  autoExportPayload: OpenAutoExportPathRequest,
-) {
-  const result = await openInDefaultEditor(autoExportPayload);
-  if (!result.success || result.data === false) {
-    await showNotification("Could not open note in default Editor", "");
-    return;
-  }
-}
-
-async function triggerCopyFilePath(syncPayload: OpenAutoExportPathRequest) {
-  const result = await getAutoExportPath(syncPayload);
-  if (!result.success) {
-    rendererLogger.appError(
-      "[onTriggerCopyPath]: Failed to retrieve file path:",
-      result.error,
-    );
-    await showNotification("Failed to retrieve file path", "");
-    return;
-  }
-  if (!result.data) {
-    rendererLogger.devLog("[onTriggerCopyPath]: File path was empty.");
-    await showNotification("No file path to copy", "");
-    return;
-  }
-  try {
-    await navigator.clipboard.writeText(result.data);
-    await showNotification("Copied to clipboard", "");
-  } catch (error) {
-    await showNotification("Failed to copy to clipboard", "");
-    rendererLogger.appError(
-      "[onTriggerCopyPath]: Failed to copy file path:",
-      error,
-    );
-  }
 }
 
 async function triggerCopyRichText(id: Id) {
@@ -301,41 +237,13 @@ async function triggerDuplicate(id: Id) {
   );
 }
 
-async function triggerDirSync(dirResult: string[]) {
-  const known = new Set(noteStore.get("notes").map((n) => n.title));
-  const toBeImported = dirResult.filter((title) => !known.has(title));
-  if (toBeImported.length === 0) return;
-  const openDialog = document.querySelector<HTMLDialogElement>("dialog[open]");
-  if (openDialog) return; // Prevent multiple dialogs from opening simultaneously
-  const titleEl = requireElement<HTMLSpanElement>(
-    ".sync-dialog-title",
-    syncDialog,
-  );
-  const confirmed = await dialogMutex.runExclusive(async () =>
-    confirmWithDialog(syncDialog, titleEl, "External changes detected"),
-  );
-  if (!confirmed) return;
-  const loading = createGlobalSpinner(500);
-  await loading.wrap(() =>
-    handleImportNote({
-      source: "external",
-      filePaths: toBeImported,
-      checked: true,
-    }),
-  );
-}
-
 export {
-  triggerCopyFilePath,
   triggerCopyRichText,
   triggerCopySelectionHtml,
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
-  triggerDirSync,
   triggerDuplicate,
   triggerNoteItemMenu,
-  triggerOpenAutoExportFolder,
-  triggerOpenInDefaultEditor,
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,

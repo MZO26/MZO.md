@@ -18,8 +18,6 @@ const StoreSchema = z.object({
   font_size: z.enum(["16", "18", "20"]).catch("18"),
   line_height: z.enum(["1.4", "1.5", "1.6"]).catch("1.5"),
   spellcheck: z.boolean().catch(false),
-  auto_export: z.boolean().catch(false),
-  auto_export_path: z.string().nullable().catch(null),
   export_format: z.enum(["md", "json", "html", "txt", "pdf"]).catch("md"),
   code_theme: z.enum(["focus", "balanced", "colorless"]).catch("balanced"),
   highlight: z.enum(["context", "insight", "action"]).catch("context"),
@@ -40,8 +38,6 @@ const StoreFromDbSchema = z.object({
   font_size: StoreSchema.shape["font_size"],
   line_height: StoreSchema.shape["line_height"],
   spellcheck: BoolSchema,
-  auto_export: BoolSchema,
-  auto_export_path: StoreSchema.shape["auto_export_path"],
   export_format: StoreSchema.shape["export_format"],
   code_theme: StoreSchema.shape["code_theme"],
   highlight: StoreSchema.shape.highlight,
@@ -57,8 +53,6 @@ const StoreRowSchema = z.object({
   font_size: StoreSchema.shape["font_size"],
   line_height: StoreSchema.shape["line_height"],
   spellcheck: BoolDbSchema,
-  auto_export: BoolDbSchema,
-  auto_export_path: StoreSchema.shape["auto_export_path"],
   export_format: StoreSchema.shape["export_format"],
   code_theme: StoreSchema.shape["code_theme"],
   highlight: StoreSchema.shape.highlight,
@@ -73,8 +67,6 @@ type StoreRow = z.infer<typeof StoreRowSchema>;
 type AppSettings = z.infer<typeof StoreSchema>;
 type ActiveTag = AppSettings["active_tag"];
 type Spellcheck = AppSettings["spellcheck"];
-type AutoExportPath = AppSettings["auto_export_path"];
-type AutoExport = AppSettings["auto_export"];
 type ExportFormat = AppSettings["export_format"];
 type NoteItemDisplay = AppSettings["note_item_display"];
 type HighlightTheme = AppSettings["highlight"];
@@ -91,10 +83,7 @@ type EditorKeys = Pick<
   AppSettings,
   "font_family" | "font_size" | "line_height" | "spellcheck"
 >;
-type GeneralKeys = Pick<
-  AppSettings,
-  "export_format" | "auto_export" | "auto_export_path"
->;
+type GeneralKey = Pick<AppSettings, "export_format">;
 
 export {
   DbWindowBoundsCodec,
@@ -104,14 +93,12 @@ export {
   type ActiveTag,
   type AppearanceKeys,
   type AppSettings,
-  type AutoExport,
-  type AutoExportPath,
   type CodeTheme,
   type EditorKeys,
   type ExportFormat,
   type FontFamily,
   type FontSize,
-  type GeneralKeys,
+  type GeneralKey,
   type HighlightTheme,
   type LineHeight,
   type NoteItemDisplay,

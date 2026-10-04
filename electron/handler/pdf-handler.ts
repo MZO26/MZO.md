@@ -1,5 +1,5 @@
 import type { PDFAssets } from "@shared/shared-types";
-import { app } from "electron";
+import { app, BrowserWindow } from "electron";
 import fs from "fs/promises";
 import path from "path";
 
@@ -34,4 +34,24 @@ function renderPDFCanvas(safeData: string, assets: PDFAssets) {
       `<div class="ProseMirror" id="content-root">${safeData}</div>`,
     );
 }
-export { getPDFAssets, loadPDFAssets, renderPDFCanvas };
+
+const createHiddenPdfWindow = () => {
+  const hiddenWin = new BrowserWindow({
+    show: false,
+    skipTaskbar: true,
+    focusable: false,
+    width: 1100,
+    height: 800,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      backgroundThrottling: false,
+    },
+  });
+  return hiddenWin;
+};
+
+export { createHiddenPdfWindow, getPDFAssets, loadPDFAssets, renderPDFCanvas };

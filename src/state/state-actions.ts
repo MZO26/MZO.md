@@ -1,34 +1,15 @@
 import { rendererLogger } from "@/app";
 import { updateSelectionUI } from "@/components/sidebar/sidebar-selection-ui";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
-import { matchesActiveTag } from "@/components/sidebar/sidebar-views";
+import { getSidebarParams } from "@/components/sidebar/sidebar-views";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { compareNotes, updateNoteCount } from "@/utils/note-helpers";
-import type { SidebarParams } from "@/utils/types";
-import type { Id, NoteListItem } from "@shared/schemas/note-schema";
+import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { Result } from "@shared/shared-types";
 
 let sidebarUpdatePending = false;
 let selectionUpdatePending = false;
-
-function memoize<A extends unknown[], R>(
-  fn: (...args: A) => R,
-  equalFn: (prev: A, next: A) => boolean = (prev, next) =>
-    prev.length === next.length && next.every((val, i) => val === prev[i]),
-) {
-  let lastArgs: A | null = null;
-  let lastResult: R;
-  return (...args: A): R => {
-    if (lastArgs && equalFn(lastArgs, args)) {
-      rendererLogger.devLog("Returning old result");
-      return lastResult;
-    }
-    lastArgs = args;
-    lastResult = fn(...args);
-    return lastResult;
-  };
-}
 
 function shallowEq<A>(a: A, b: A): boolean {
   if (Object.is(a, b)) return true;
@@ -69,37 +50,6 @@ function shallowEq<A>(a: A, b: A): boolean {
   return true;
 }
 
-const selectSidebarNotes = memoize(
-  (
-    visibleIds: Id[],
-    noteIndex: Map<Id, NoteListItem>,
-    activeTag: string | null,
-  ) => {
-    return visibleIds
-      .map((id) => noteIndex.get(id))
-      .filter(
-        (note): note is NoteListItem =>
-          !!note && matchesActiveTag(note, activeTag),
-      )
-      .sort(compareNotes);
-  },
-);
-
-function getSidebarParams(): SidebarParams {
-  const { searchQuery, activeTag, activeId } = stateStore.getState();
-  const { visibleIds, noteIndex, searchSnippets } = noteStore.getState();
-  const display = settingsStore.get("note_item_display");
-  const visibleNotes = selectSidebarNotes(visibleIds, noteIndex, activeTag);
-  return {
-    visibleNotes,
-    searchSnippets,
-    query: searchQuery,
-    activeTag,
-    activeId,
-    display,
-  };
-}
-
 function sidebarListener() {
   if (sidebarUpdatePending) return;
   sidebarUpdatePending = true;
@@ -125,10 +75,10 @@ function updateSelection() {
 function syncSettingsStore(
   settingsResult: Result<Readonly<AppSettings>>,
 ): Readonly<AppSettings> {
-  if (!settingsResult?.success) {
+  if (!settingsResult.success) {
     rendererLogger.appError(
       "[syncSettingStore]: Failed to sync settings. Using defaults.",
-      settingsResult?.error,
+      settingsResult.error,
     );
     return settingsStore.getState();
   }

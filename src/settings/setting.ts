@@ -1,6 +1,5 @@
 import type { ExportFormat, SelectOption } from "@/utils/types";
 import type {
-  AutoExport,
   CodeTheme,
   FontFamily,
   FontSize,
@@ -77,13 +76,7 @@ const EXPORT_FORMAT_SETTINGS: readonly SelectOption<ExportFormat>[] = [
   { value: "pdf", label: "PDF" },
 ];
 
-const AUTO_EXPORT_SETTINGS: readonly SelectOption<AutoExport>[] = [
-  { value: true, label: "Enable" },
-  { value: false, label: "Disable" },
-];
-
 export {
-  AUTO_EXPORT_SETTINGS,
   CODE_THEME_SETTINGS,
   EXPORT_FORMAT_SETTINGS,
   FONT_FAMILY_SETTINGS,

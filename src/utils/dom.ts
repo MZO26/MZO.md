@@ -1,5 +1,4 @@
-import { getTemplateItem } from "@/utils/registry";
-import type { AppIcons, TemplateRegistry } from "@/utils/types";
+import type { AppIcons } from "@/utils/types";
 import { createTooltipContent } from "@/utils/ui";
 
 function requireElement<T extends HTMLElement>(
@@ -42,40 +41,4 @@ function createInfoSpan(
   return span;
 }
 
-function createTemplateCloner<T extends Element>(
-  template: keyof TemplateRegistry,
-  fn: (node: Node | null) => node is T,
-) {
-  let cachedNode: T | null = null;
-  return function getClone(): T {
-    if (!cachedNode) {
-      const templateElement = getTemplateItem(template);
-      if (!(templateElement instanceof HTMLTemplateElement)) {
-        throw new Error(`Element '${template}' is not a template.`);
-      }
-      const templateChild = templateElement.content.firstElementChild;
-      if (!fn(templateChild)) {
-        throw new Error(`Template '${template}' is missing.`);
-      }
-      cachedNode = templateChild;
-    }
-    const clonedNode = cachedNode.cloneNode(true);
-    if (!fn(clonedNode)) {
-      throw new Error(`Failed to clone template '${template}'.`);
-    }
-    return clonedNode;
-  };
-}
-
-function isDiv(node: Node | null): node is HTMLDivElement {
-  return node instanceof HTMLDivElement;
-}
-
-export {
-  createIconButton,
-  createInfoSpan,
-  createTemplateCloner,
-  isDiv,
-  requireElement,
-  setActiveItem,
-};
+export { createIconButton, createInfoSpan, requireElement, setActiveItem };

@@ -1,8 +1,4 @@
-import {
-  AutoExportWritePayloadSchema,
-  DateSchema,
-  PlainTextSchema,
-} from "@shared/schemas/note-schema";
+import { DateSchema } from "@shared/schemas/note-schema";
 import { UNTITLED } from "@shared/shared-constants";
 import z from "zod";
 
@@ -81,20 +77,6 @@ const ExportRequestSchema = z.discriminatedUnion("extension", [
   PdfSchema,
 ]);
 
-const WriteAutoExportRequestSchema = MdSchema.extend({
-  oldFileName: FileNameSchema.optional(),
-});
-
-const DeleteAutoExportRequestSchema = MdSchema.omit({
-  content: true,
-});
-
-const AutoExportRequestSchema = MdSchema.extend({ updated_at: DateSchema });
-
-const OpenAutoExportPathSchema = AutoExportRequestSchema.omit({
-  content: true,
-});
-
 const ExportItemSchema = z.discriminatedUnion("extension", [
   HtmlSchema,
   MdSchema,
@@ -124,56 +106,40 @@ const FilePathRequestSchema = z.discriminatedUnion("source", [
   }),
 ]);
 
-const SyncRequestPayloadSchema = AutoExportWritePayloadSchema.extend({
-  updated_at: DateSchema,
-});
-
-const SyncResultSchema = z.discriminatedUnion("status", [
-  z.object({ status: z.literal("MISSING") }),
-  z.object({ status: z.literal("UNCHANGED") }),
+const ExistenceImportCheckSchema = z.discriminatedUnion("status", [
   z.object({
-    status: z.literal("MODIFIED"),
-    markdown: PlainTextSchema,
-    appContent: PlainTextSchema,
+    status: z.literal("exists"),
+    fileName: z.string(),
+    content: z.string(),
+  }),
+  z.object({
+    status: z.literal("missing"),
+    fileName: z.string(),
+    content: z.string(),
   }),
 ]);
 
-type SyncResult = z.infer<typeof SyncResultSchema>;
 type ExportContent = z.infer<typeof ExportItemSchema>;
 type ImportContent = z.infer<typeof ImportRequestSchema>;
 type FilePathRequest = z.infer<typeof FilePathRequestSchema>;
-type SyncRequestPayload = z.infer<typeof SyncRequestPayloadSchema>;
-type OpenAutoExportPathRequest = z.infer<typeof OpenAutoExportPathSchema>;
-type AutoExportRequest = z.infer<typeof AutoExportRequestSchema>;
-type WriteAutoExportRequest = z.infer<typeof WriteAutoExportRequestSchema>;
-type DeleteAutoExportRequest = z.infer<typeof DeleteAutoExportRequestSchema>;
 type ExportManyRequest = z.infer<typeof ExportManyRequestSchema>;
 type ImportRequest = z.infer<typeof ImportRequestSchema>;
 type ExportRequest = z.infer<typeof ExportRequestSchema>;
+type ExistenceImportCheck = z.infer<typeof ExistenceImportCheckSchema>;
 
 export {
-  AutoExportRequestSchema,
-  DeleteAutoExportRequestSchema,
+  ExistenceImportCheckSchema,
   ExportManyRequestSchema,
   ExportRequestSchema,
   FileNameSchema,
   FilePathRequestSchema,
   ImportRequestSchema,
-  OpenAutoExportPathSchema,
   StringContentSchema,
-  SyncRequestPayloadSchema,
-  SyncResultSchema,
-  WriteAutoExportRequestSchema,
-  type AutoExportRequest,
-  type DeleteAutoExportRequest,
+  type ExistenceImportCheck,
   type ExportContent,
   type ExportManyRequest,
   type ExportRequest,
   type FilePathRequest,
   type ImportContent,
   type ImportRequest,
-  type OpenAutoExportPathRequest,
-  type SyncRequestPayload,
-  type SyncResult,
-  type WriteAutoExportRequest,
 };

@@ -26,7 +26,7 @@ async function setupLocalImageProtocol() {
     await fs.mkdir(imagesDir, { recursive: true });
     realImagesDir = await fs.realpath(imagesDir);
   } catch (setupError) {
-    console.warn(
+    mainLogger.appError(
       "Failed to initialize image directory. Images will not load.",
       setupError,
     );

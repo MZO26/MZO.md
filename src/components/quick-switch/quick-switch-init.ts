@@ -1,8 +1,7 @@
 import { rendererLogger } from "@/app";
 import { getSimilarityMatching } from "@/components/quick-switch/quick-switch-similarity";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
-import { handleSelectNote } from "@/notes/note-actions";
-import { waitForFlush } from "@/notes/note-checks";
+import { handleSelectNote, waitForFlush } from "@/notes/note-actions";
 import { listEl, switchDialog } from "@/settings/dialog-init";
 import { noteStore, stateStore } from "@/state/state";
 import { NAV_KEYS } from "@/utils/constants";

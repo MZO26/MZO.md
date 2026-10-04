@@ -1,6 +1,6 @@
 import { NotesSearch } from "@electron/db/fts";
 import { Transactions } from "@electron/db/transactions";
-import { parseFilenameToDate } from "@electron/fs/fs-helpers";
+import { EXPORT_REGEX } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
@@ -14,7 +14,6 @@ import {
   LinksSchema,
   NoteFromDB,
   NoteListItemFromDB,
-  OldNoteSchema,
   RelatedNotesSchema,
   TagsSchema,
   type BoolDb,
@@ -56,13 +55,11 @@ class AppDB {
   private getLinksByIdStmt!: StatementSync;
   private getManyTagsStmt!: StatementSync;
   private getManyLinksStmt!: StatementSync;
-  private getOldTitleStmt!: StatementSync;
   private getImagesStmt!: StatementSync;
   private togglePinStmt!: StatementSync;
   private toggleManyPinStmt!: StatementSync;
   private updateStoreStmt!: StatementSync;
   private getAllSettingsStmt!: StatementSync;
-  private checkNoteStmt!: StatementSync;
   private getRelatedNotesStmt!: StatementSync;
   constructor() {
     this.dbPath = path.join(app.getPath("userData"), "app.db");
@@ -168,11 +165,6 @@ class AppDB {
       WHERE id IN (SELECT value FROM json_each($ids))
       RETURNING id
       `);
-    this.getOldTitleStmt = db.prepare(`
-      SELECT created_at, title 
-      FROM notes
-      WHERE id IN (SELECT value FROM json_each($ids))
-      `);
     this.getImagesStmt = db.prepare(`
       SELECT content 
       FROM notes 
@@ -230,8 +222,6 @@ class AppDB {
       "font_size" = $font_size,
       "line_height" = $line_height,
       "spellcheck" = $spellcheck,
-      "auto_export" = $auto_export,
-      "auto_export_path" = $auto_export_path,
       "export_format" = $export_format,
       "code_theme" = $code_theme,
       "highlight" = $highlight,
@@ -245,14 +235,6 @@ class AppDB {
         SELECT * 
         FROM store 
         WHERE id = 1
-      `);
-    this.checkNoteStmt = db.prepare(`
-      SELECT 1 
-      FROM notes 
-      WHERE created_at >= $start 
-      AND created_at < $end 
-      AND instr(title, $title) = 1
-      LIMIT 1;
       `);
   }
   private createTables(db: DatabaseSync) {
@@ -296,8 +278,6 @@ class AppDB {
       font_size TEXT NOT NULL DEFAULT '18',
       line_height TEXT NOT NULL DEFAULT '1.5',
       spellcheck INTEGER NOT NULL DEFAULT 0,
-      auto_export INTEGER NOT NULL DEFAULT 0,
-      auto_export_path TEXT,
       export_format TEXT NOT NULL DEFAULT 'md',
       code_theme TEXT NOT NULL DEFAULT 'balanced',
       highlight TEXT NOT NULL DEFAULT 'context',
@@ -381,7 +361,6 @@ class AppDB {
     const encoded = {
       ...mergedSettings,
       spellcheck: DbBoolCodec.encode(mergedSettings.spellcheck),
-      auto_export: DbBoolCodec.encode(mergedSettings.auto_export),
       toolbar_collapsed: DbBoolCodec.encode(mergedSettings.toolbar_collapsed),
       window_bounds: DbWindowBoundsCodec.encode(mergedSettings.window_bounds),
     };
@@ -395,7 +374,6 @@ class AppDB {
     const decoded = {
       ...row,
       spellcheck: DbBoolCodec.decode(row.spellcheck),
-      auto_export: DbBoolCodec.decode(row.auto_export),
       toolbar_collapsed: DbBoolCodec.decode(row.toolbar_collapsed),
       window_bounds: DbWindowBoundsCodec.decode(row.window_bounds),
     };
@@ -582,37 +560,7 @@ class AppDB {
     return rows.map((r) => validation(RelatedNotesSchema, r));
   }
 
-  public checkExistence(fileName: string): boolean {
-    const parsedData = parseFilenameToDate(fileName);
-    if (!parsedData) return false;
-    const { title, date } = parsedData;
-    // gets milliseconds for the parsed date
-    const start = date.toISOString();
-    // appends one second as buffer for creation date since ms are not in filenames
-    const endDate = new Date(date.getTime() + 1000);
-    const end = endDate.toISOString();
-    return !!this.checkNoteStmt.get({
-      $title: title,
-      $start: start,
-      $end: end,
-    });
-  }
-
-  public getOldNotes(
-    ids: Id[],
-  ): Pick<Readonly<Note>, "created_at" | "title">[] {
-    if (ids.length === 0) return [];
-    const rows = this.getOldTitleStmt.all({
-      $ids: JSON.stringify(ids),
-    }) as Pick<Readonly<Note>, "created_at" | "title">[];
-    if (rows.length !== ids.length) {
-      throw new AppBackendError(AppErrorCode.DBError);
-    }
-    return validation(OldNoteSchema, rows);
-  }
-
   public getUsedImages(): string[] {
-    const EXPORT_REGEX = /appimg:\/\/\/([^"' )>\s]+)/g;
     const usedImages = new Set<string>();
     for (const row of this.getImagesStmt.iterate()) {
       const text =

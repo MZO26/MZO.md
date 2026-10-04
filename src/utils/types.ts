@@ -83,44 +83,6 @@ type ImageCompressionPayload = {
 
 type EditorContentType = NonNullable<SetContentOptions["contentType"]>;
 
-interface AppRegistry {
-  ui: Partial<UIRegistry>;
-  core: Partial<CoreRegistry>;
-  template: Partial<TemplateRegistry>;
-}
-
-interface CoreRegistry {
-  editor: Editor;
-  appContainer: HTMLDivElement;
-  sidebar: HTMLDivElement;
-  sidebarContainer: HTMLDivElement;
-  editorWrapper: HTMLDivElement;
-  editorContainer: HTMLDivElement;
-}
-
-interface UIRegistry {
-  wordCountEl: HTMLSpanElement;
-  charCountEl: HTMLSpanElement;
-  readingTime: HTMLSpanElement;
-  searchInput: HTMLInputElement;
-  sidebarHeader: HTMLDivElement;
-  sidebarFooter: HTMLDivElement;
-  selectionFooter: HTMLDivElement;
-  quickActionContainer: HTMLDivElement;
-}
-
-interface TemplateRegistry {
-  // editor empty state template and view
-  editorEmptyStateTemplate: HTMLTemplateElement;
-  editorView: HTMLDivElement;
-  // sidebar empty state template
-  sidebarEmptyStateTemplate: HTMLTemplateElement;
-  // note item template
-  noteItemTemplate: HTMLTemplateElement;
-  // tags popover template
-  tagsPopoverTemplate: HTMLTemplateElement;
-}
-
 type SidebarParams = {
   visibleNotes: readonly NoteListItem[];
   searchSnippets: Record<Id, string>;
@@ -206,8 +168,6 @@ export type {
   ActionMap,
   AllTagsMenu,
   AppIcons,
-  AppRegistry,
-  CoreRegistry,
   EditorContentType,
   ExportFormat,
   FilterMode,
@@ -227,9 +187,7 @@ export type {
   SettingsCategory,
   SidebarParams,
   SnippetGenParams,
-  TemplateRegistry,
   ToolbarItem,
-  UIRegistry,
   WorkerRequest,
   WorkerResult,
 };

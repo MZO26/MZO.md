@@ -107,62 +107,16 @@ async function sanitizeImportString(
   return internalContent;
 }
 
-function getSafeLocalDateString(date: Date) {
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  const YYYY = date.getUTCFullYear();
-  const MM = pad(date.getUTCMonth() + 1);
-  const DD = pad(date.getUTCDate());
-  const HH = pad(date.getUTCHours());
-  const mm = pad(date.getUTCMinutes());
-  const ss = pad(date.getUTCSeconds());
-  return `${YYYY}-${MM}-${DD}_${HH}-${mm}-${ss}`;
-}
-
-function parseFilenameToDate(
-  filename: string,
-): { title: string; date: Date } | null {
-  const match = filename.match(
-    /^(.+)_(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})$/,
-  );
-  if (!match) return null;
-  // first match is the full string
-  // second match is title
-  const [, title, year, month, day, hour, minute, second] = match;
-  if (!title || !year || !month || !day || !hour || !minute || !second) {
-    return null;
-  }
-  const date = new Date(
-    Date.UTC(
-      Number(year),
-      Number(month) - 1, // month is 0 indexed
-      Number(day),
-      Number(hour),
-      Number(minute),
-      Number(second),
-    ),
-  );
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-  const trimmed = title.trim();
-  if (trimmed.length === 0) return null;
-  const safeTitle = trimmed.length > 50 ? trimmed.slice(0, 50) : trimmed;
-  return { title: safeTitle, date };
-}
-
 function getFilePath(
   targetDirectory: string,
   payload: {
     fileName: string;
-    created_at: string;
     extension: ExportContent["extension"];
   },
 ) {
   const extension = payload.extension ?? "md";
-  const creationDate = new Date(payload.created_at);
-  const safeDate = getSafeLocalDateString(creationDate);
   const safeTitle = validation(FileNameSchema, payload.fileName);
-  const newFileName = `${safeTitle}_${safeDate}.${extension}`;
+  const newFileName = `${safeTitle}.${extension}`;
   const absoluteFilePath = path.resolve(targetDirectory, newFileName);
   // security check
   ensureInsideDirectory(targetDirectory, absoluteFilePath);
@@ -181,27 +135,10 @@ function ensureInsideDirectory(baseDir: string, absoluteFilePath: string) {
   }
 }
 
-function normalizeText(content: string | null | undefined) {
-  if (!content) return "";
-  const cleaned = content
-    // strip the UTF-8 byte mark
-    .replace(/^\uFEFF/, "")
-    // for single, precomposed characters that could trigger false positives
-    .normalize("NFC")
-    // forces line-break to be \n
-    .replace(/\r\n|\r/g, "\n")
-    // remove white spaces at end of file
-    .trimEnd();
-  // to respect POSIX standard: append one empty newline at the end
-  return cleaned ? cleaned + "\n" : "";
-}
-
 export {
   ensureInsideDirectory,
+  EXPORT_REGEX,
   getFilePath,
-  getSafeLocalDateString,
-  normalizeText,
-  parseFilenameToDate,
   sanitizeExportString,
   sanitizeImportString,
   writeAtomic,

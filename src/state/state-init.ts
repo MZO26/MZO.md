@@ -21,7 +21,6 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     (activeId) => {
       handleEditorEmptyState(activeId);
       if (!activeId) return;
-      window.noteAPI.setActiveNote(activeId);
       const noteElement = sidebar.querySelector<HTMLDivElement>(
         `.note-item[data-id="${CSS.escape(activeId)}"]`,
       );

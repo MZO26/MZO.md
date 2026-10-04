@@ -1,5 +1,5 @@
+import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { AppErrorCode } from "@shared/errors";
-import { AppBackendError } from "./ipc/ipc-error-handler";
 
 async function processWithLimit<T, R>(
   items: readonly T[],
@@ -24,21 +24,4 @@ async function processWithLimit<T, R>(
   return results;
 }
 
-function throttle<A extends unknown[], T>(
-  fn: (...args: A) => Promise<T>,
-  ms: number,
-) {
-  const state: { busy: boolean; lastEnd: number } = { busy: false, lastEnd: 0 };
-  return async (...args: A): Promise<T | undefined> => {
-    if (state.busy || Date.now() - state.lastEnd < ms) return undefined;
-    state.busy = true;
-    try {
-      return await fn(...args);
-    } finally {
-      state.busy = false;
-      state.lastEnd = Date.now();
-    }
-  };
-}
-
-export { processWithLimit, throttle };
+export { processWithLimit };

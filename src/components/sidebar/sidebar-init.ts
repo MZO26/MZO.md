@@ -19,8 +19,8 @@ import {
   handleCreateNote,
   handleImportNote,
   handleSelectNote,
+  waitForFlush,
 } from "@/notes/note-actions";
-import { waitForFlush } from "@/notes/note-checks";
 import { noteStore, stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { NAV_KEYS, SELECTION_ACTIONS } from "@/utils/constants";

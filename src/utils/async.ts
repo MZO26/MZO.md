@@ -62,4 +62,14 @@ function createAsyncHandler<T extends Event>(
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export { createAsyncHandler, debounce, sleep };
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+async function waitForPaint(frames = 2): Promise<void> {
+  for (let i = 0; i < frames; i++) {
+    await nextFrame();
+  }
+}
+
+export { createAsyncHandler, debounce, sleep, waitForPaint };

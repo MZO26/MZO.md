@@ -38,8 +38,11 @@ import { TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
 import { WikilinkHandler } from "@/extensions/wikilink/wikilink-handler";
 import { WikiLinkPreview } from "@/extensions/wikilink/wikilink-preview";
-import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
-import { waitForFlush } from "@/notes/note-checks";
+import {
+  debouncedSaveNote,
+  handleSelectNote,
+  waitForFlush,
+} from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { NODE_BASELINE, SHARED_KATEX_OPTIONS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";

@@ -1,13 +1,8 @@
 import { setUpNoteMenu, setUpTableMenu } from "@electron/context-menu";
-import {
-  getFilePath,
-  resolveAutoExportPath,
-} from "@electron/fs/fs-auto-export";
 import { handleImageWriteMany } from "@electron/fs/fs-image";
 import { processUrl } from "@electron/handler/navigation-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { resolveAutoExport } from "@electron/ipc/ipc-helpers";
 import {
   checkRateLimit,
   LIMITS,
@@ -23,7 +18,6 @@ import {
 } from "@shared/schemas/electron-schema";
 import { ImagePayloadsSchema } from "@shared/schemas/image-schema";
 import { NoteMenuPayloadSchema } from "@shared/schemas/note-schema";
-import { OpenAutoExportPathSchema } from "@shared/schemas/request-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
 import {
   app,
@@ -33,7 +27,6 @@ import {
   Notification,
   shell,
 } from "electron";
-import fs from "fs/promises";
 
 function registerElectronIpc(win: BrowserWindow) {
   ipcMain.on(
@@ -74,80 +67,6 @@ function registerElectronIpc(win: BrowserWindow) {
         default:
           decision satisfies never;
           return "block";
-      }
-    });
-  });
-
-  // opens note in default editor
-  ipcMain.handle(IPC_CHANNELS.OPEN_DEFAULT_EDITOR, (e, payload: unknown) => {
-    return result(e, async () => {
-      if (
-        !checkRateLimit(IPC_CHANNELS.OPEN_DEFAULT_EDITOR, LIMITS.READ_LIGHT)
-      ) {
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      }
-      const { targetDir, isAutoExport } = resolveAutoExport();
-      if (!targetDir || !isAutoExport) return false;
-      const validatedData = validation(OpenAutoExportPathSchema, payload);
-      const autoExportPath = resolveAutoExportPath(targetDir);
-      await fs.mkdir(autoExportPath, { recursive: true });
-      const filePath = getFilePath(autoExportPath, validatedData);
-      const error = await shell.openPath(filePath);
-      return error === "";
-    });
-  });
-
-  // opens auto-export directory and shows note
-  ipcMain.handle(
-    IPC_CHANNELS.OPEN_AUTO_EXPORT_FOLDER,
-    (e, payload: unknown) => {
-      return result(e, async () => {
-        if (
-          !checkRateLimit(
-            IPC_CHANNELS.OPEN_AUTO_EXPORT_FOLDER,
-            LIMITS.READ_LIGHT,
-          )
-        )
-          throw new AppBackendError(AppErrorCode.RateLimitError);
-        const { targetDir, isAutoExport } = resolveAutoExport();
-        if (!targetDir || !isAutoExport) return false;
-        const validatedData = validation(OpenAutoExportPathSchema, payload);
-        if (!validatedData.updated_at) return false;
-        const autoExportPath = resolveAutoExportPath(targetDir);
-        await fs.mkdir(autoExportPath, { recursive: true });
-        const filePath = getFilePath(autoExportPath, validatedData);
-        try {
-          await fs.access(filePath, fs.constants.R_OK);
-          shell.showItemInFolder(filePath);
-          return true;
-        } catch (error) {
-          const err = error as NodeJS.ErrnoException;
-          if (err.code === "ENOENT") return false;
-          else throw new AppBackendError(AppErrorCode.InvalidData);
-        }
-      });
-    },
-  );
-
-  // returns absolute file path ready to copy
-  ipcMain.handle(IPC_CHANNELS.GET_AUTO_EXPORT_PATH, (e, payload: unknown) => {
-    return result(e, async () => {
-      if (!checkRateLimit(IPC_CHANNELS.GET_AUTO_EXPORT_PATH, LIMITS.READ_LIGHT))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      const { targetDir, isAutoExport } = resolveAutoExport();
-      if (!targetDir || !isAutoExport) return null;
-      const validatedData = validation(OpenAutoExportPathSchema, payload);
-      if (!validatedData.updated_at) return null;
-      const autoExportPath = resolveAutoExportPath(targetDir);
-      await fs.mkdir(autoExportPath, { recursive: true });
-      const filePath = getFilePath(autoExportPath, validatedData);
-      try {
-        await fs.access(filePath, fs.constants.R_OK);
-        return filePath;
-      } catch (error) {
-        const err = error as NodeJS.ErrnoException;
-        if (err.code === "ENOENT") return null;
-        else throw new AppBackendError(AppErrorCode.InvalidData);
       }
     });
   });

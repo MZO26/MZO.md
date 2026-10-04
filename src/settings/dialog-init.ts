@@ -11,11 +11,6 @@ function initSettingsDialog() {
   return { settingsDialog, settingsContainer };
 }
 
-function initSyncDialog() {
-  const syncDialog = requireElement<HTMLDialogElement>("#sync-dialog");
-  return { syncDialog };
-}
-
 function initQuickSwitchDialog() {
   const switchDialog = requireElement<HTMLDialogElement>(
     ".quick-switch-dialog",
@@ -75,7 +70,6 @@ function createMutex<T>() {
 const dialogMutex = createMutex();
 
 export const { deleteDialog } = initDeleteDialog();
-export const { syncDialog } = initSyncDialog();
 export const { settingsDialog, settingsContainer } = initSettingsDialog();
 export const { switchDialog, listEl } = initQuickSwitchDialog();
 export const { mathDialog } = initMathDialog();
@@ -87,5 +81,4 @@ export {
   initMathDialog,
   initQuickSwitchDialog,
   initSettingsDialog,
-  initSyncDialog,
 };

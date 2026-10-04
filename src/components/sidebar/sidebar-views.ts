@@ -1,9 +1,11 @@
 import { rendererLogger } from "@/app";
 import { handleUpdateSettings } from "@/settings/setting-actions";
-import { noteStore, stateStore } from "@/state/state";
+import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
+import { compareNotes } from "@/utils/note-helpers";
 import { getUIItem } from "@/utils/registry";
-import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { SidebarParams } from "@/utils/types";
+import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 
 function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
   if (activeTag === null) return true;
@@ -18,6 +20,30 @@ function computeIdsForTagView(
   return notes
     .filter((note) => matchesActiveTag(note, tag))
     .map((note) => note.id);
+}
+
+function selectSidebarNotes(
+  visibleIds: Id[],
+  noteIndex: Map<Id, NoteListItem>,
+  activeTag: string | null,
+): NoteListItem[] {
+  const result: NoteListItem[] = [];
+  if (activeTag === null) {
+    for (const id of visibleIds) {
+      const note = noteIndex.get(id);
+      // map returns undefined if key is missing
+      if (note !== undefined) {
+        result.push(note);
+      }
+    }
+  } else {
+    for (const id of visibleIds) {
+      const note = noteIndex.get(id);
+      if (note !== undefined && matchesActiveTag(note, activeTag))
+        result.push(note);
+    }
+  }
+  return result.sort(compareNotes);
 }
 
 async function applyView(
@@ -46,9 +72,25 @@ function restoreSidebarScope(newState?: readonly NoteListItem[]) {
   }));
 }
 
+function getSidebarParams(): SidebarParams {
+  const { searchQuery, activeTag, activeId } = stateStore.getState();
+  const { visibleIds, noteIndex, searchSnippets } = noteStore.getState();
+  const display = settingsStore.get("note_item_display");
+  const visibleNotes = selectSidebarNotes(visibleIds, noteIndex, activeTag);
+  return {
+    visibleNotes,
+    searchSnippets,
+    query: searchQuery,
+    activeTag,
+    activeId,
+    display,
+  };
+}
+
 export {
   applyView,
   computeIdsForTagView,
+  getSidebarParams,
   matchesActiveTag,
   restoreSidebarScope,
 };

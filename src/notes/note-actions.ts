@@ -17,8 +17,7 @@ import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { getTableOfContents } from "@/extensions/toc";
 import { resolveDocLinks } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
-import { syncCheckNote } from "@/notes/note-checks";
-import { noteStore, settingsStore, stateStore } from "@/state/state";
+import { noteStore, stateStore } from "@/state/state";
 import { debounce } from "@/utils/async";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import { getMetadata, titleGenerator } from "@/utils/generators";
@@ -32,10 +31,6 @@ import {
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { EMPTY_DOC, UNTITLED } from "@shared/shared-constants";
-
-function isAutoExportEnabled() {
-  return settingsStore.get("auto_export") ?? false;
-}
 
 async function handleCreateNote() {
   const editor = getAppItem("editor");
@@ -200,11 +195,9 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
   if (activeId !== id) return;
   const activeNote = noteStore.get("noteIndex").get(activeId);
   if (!activeNote) return;
-  const autoExportEnabled = isAutoExportEnabled();
   const editor = getAppItem("editor");
   const content = editor.getJSON();
   const text = editor.getText();
-  const markdown = autoExportEnabled ? editor.getMarkdown() : undefined;
   const metaData = getMetadata(content);
   const newTitle = titleGenerator(content);
   const payload: UpdateNotePayload = {
@@ -213,7 +206,6 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
     content,
     plain_text: text,
     ...metaData,
-    ...(autoExportEnabled && markdown !== undefined ? { markdown } : {}),
   };
   const result = await updateNote(payload, flush);
   if (!result.success) {
@@ -261,6 +253,17 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 
+async function waitForFlush(id: Id | null) {
+  if (!id || stateStore.get("activeId") !== id) return;
+  const noteIndex = noteStore.get("noteIndex");
+  if (!noteIndex.has(id)) {
+    return;
+  }
+  debouncedSaveNote.cancel();
+  await handleSaveNote(id, true);
+  return stateStore.get("activeId") === id;
+}
+
 async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   const editor = getAppItem("editor");
   const activeId = stateStore.get("activeId");
@@ -297,7 +300,6 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   updateToc(headings);
   updateStats();
   editor.setEditable(true, false);
-  if (isAutoExportEnabled()) await syncCheckNote(result.data);
   if (!options?.skipRecent) {
     noteStore.setState((state) => {
       const recentNotes = state.recentNotes.filter(
@@ -311,8 +313,6 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
 }
 
 async function handleDuplicateNote(note: Readonly<Note>) {
-  const editor = getAppItem("editor");
-  const isAutoExport = isAutoExportEnabled();
   const {
     id: originalId,
     links: originalLinks,
@@ -325,12 +325,8 @@ async function handleDuplicateNote(note: Readonly<Note>) {
   const outgoingLinkIds = originalLinks
     .filter((link) => link.dir === "out")
     .map((link) => link.id);
-  const markdown = isAutoExport
-    ? editor.markdown?.serialize(note.content)
-    : undefined;
   const data: CreateNotePayload = {
     ...rest,
-    ...(isAutoExport && markdown !== undefined ? { markdown } : {}),
     links: outgoingLinkIds,
     pinned: false,
   };
@@ -360,5 +356,5 @@ export {
   handleImportNote,
   handleSaveNote,
   handleSelectNote,
-  isAutoExportEnabled,
+  waitForFlush,
 };

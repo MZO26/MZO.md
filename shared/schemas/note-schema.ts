@@ -110,7 +110,7 @@ const UpdateNotePayloadSchema = NoteSchema.omit({
   pinned: true,
   created_at: true,
   updated_at: true,
-}).extend({ links: LinkPayloadSchema, markdown: PlainTextSchema.optional() });
+}).extend({ links: LinkPayloadSchema });
 
 // Everything gets written to DB.
 const CreateTransactionSchema = NoteToDBSchema;
@@ -122,7 +122,6 @@ const UpdateTransactionSchema = NoteToDBSchema.omit({
 
 const DbUpdateSchema = UpdateNotePayloadSchema.omit({
   content: true,
-  markdown: true,
 }).extend({ content: z.string() });
 
 const DbCreateSchema = CreateNotePayloadSchema.omit({
@@ -140,14 +139,6 @@ const NoteMenuPayloadSchema = z.object({
   pinned: BoolSchema.optional(),
 });
 
-const AutoExportWritePayloadSchema = z.object({
-  created_at: DateSchema,
-  fileName: TitleSchema,
-  markdown: PlainTextSchema,
-  targetDir: z.string(),
-  oldFileName: z.string().optional(),
-});
-
 function isNoteID(id: unknown): id is Id {
   return typeof id === "string" && id.length === 36;
 }
@@ -159,7 +150,6 @@ type SearchQuery = z.infer<typeof QuerySchema>;
 type SearchResult = z.infer<typeof SearchResultSchema>;
 type NoteMenuPayload = z.infer<typeof NoteMenuPayloadSchema>;
 type NoteListItem = z.infer<typeof NoteListItemFromDB>;
-type AutoExportWritePayload = z.infer<typeof AutoExportWritePayloadSchema>;
 type NoteRow = z.infer<typeof NoteTableSchema>;
 type TagRow = z.infer<typeof TagRowSchema>;
 type LinkRow = z.infer<typeof LinkRowSchema>;
@@ -175,7 +165,6 @@ type Id = z.infer<typeof IdSchema>;
 type RelatedNotes = z.infer<typeof RelatedNotesSchema>;
 
 export {
-  AutoExportWritePayloadSchema,
   BoolDbSchema,
   BoolSchema,
   CreateNotePayloadSchema,
@@ -206,7 +195,6 @@ export {
   TitleSchema,
   UpdateNotePayloadSchema,
   UpdateTransactionSchema,
-  type AutoExportWritePayload,
   type BoolDb,
   type CreateNotePayload,
   type CreateNotesPayload,

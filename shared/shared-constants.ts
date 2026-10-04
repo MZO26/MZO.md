@@ -57,14 +57,12 @@ const APP_EVENTS = {
   OPEN_SETTINGS: "app:open-settings",
 } as const;
 
-const DEFAULT_SETTINGS: AppSettings = {
+const DEFAULT_SETTINGS: Readonly<AppSettings> = {
   theme: "system",
   font_family: "system",
   font_size: "18",
   line_height: "1.5",
   spellcheck: false,
-  auto_export: false,
-  auto_export_path: null,
   export_format: "md",
   code_theme: "balanced",
   highlight: "context",

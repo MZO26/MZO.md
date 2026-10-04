@@ -1,17 +1,9 @@
 import db from "@electron/db/database";
 import { mainLogger } from "@electron/handler/permission-handler";
-import { settingsService } from "@electron/handler/settings-handler";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { AppErrorCode } from "@shared/errors";
 import { app } from "electron";
 import fs from "fs/promises";
-
-function resolveAutoExport() {
-  const settings = settingsService.getSettings();
-  const isAutoExport = settings["auto_export"] === true;
-  const targetDir = isAutoExport ? settings["auto_export_path"] : null;
-  return { targetDir, isAutoExport };
-}
 
 async function restoreFromBackupPath(backupPath: string) {
   const stat = await fs.stat(backupPath);
@@ -36,11 +28,13 @@ async function restoreFromBackupPath(backupPath: string) {
       app.exit(0);
     });
   } catch (error) {
-    await fs.rm(tmpPath, { force: true }).catch(() => {});
+    await fs.rm(tmpPath, { force: true }).catch((error) => {
+      mainLogger.appError("[DB-Restore]: Failed to remove tmpPath", error);
+    });
     db.open();
     mainLogger.appError("[DB-Restore] Error during restore:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }
 }
 
-export { resolveAutoExport, restoreFromBackupPath };
+export { restoreFromBackupPath };

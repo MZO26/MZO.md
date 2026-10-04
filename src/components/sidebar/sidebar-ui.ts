@@ -14,15 +14,14 @@ import {
 import {
   createIconButton,
   createInfoSpan,
-  createTemplateCloner,
-  isDiv,
   requireElement,
   setActiveItem,
 } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
 import { updateNoteCount } from "@/utils/note-helpers";
-import { getAppItem } from "@/utils/registry";
+import { createTemplateCloner, getAppItem } from "@/utils/registry";
 import type { AllTagsMenu, FilterMode, SidebarParams } from "@/utils/types";
+import { isDiv } from "@/utils/ui";
 
 const tagsPopoverClone = createTemplateCloner("tagsPopoverTemplate", isDiv);
 

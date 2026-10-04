@@ -37,17 +37,15 @@ declare global {
         body: Notification["body"],
       ) => Promise<Result<void>>;
       setTheme: (
-        theme: Readonly<Theme>,
+        theme: Theme,
         focus?: boolean,
-      ) => Promise<Result<Exclude<Readonly<Theme>, "system">>>;
+      ) => Promise<Result<Exclude<Theme, "system">>>;
       windowPin: () => Promise<Result<boolean>>;
       imageWriteMany: (
         payload: ImagePayload[],
       ) => Promise<Result<{ imageSrc: string }[]>>;
       onThemeChanged: (
-        callback: (
-          resolvedTheme: Extract<Readonly<Theme>, "dark" | "light">,
-        ) => void,
+        callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
       ) => () => void;
       showContextMenu: (menuType: MenuType, payload?: NoteMenuPayload) => void;
       onTriggerTableAction: (callback: (action: TableAction) => void) => void;
@@ -123,7 +121,7 @@ declare global {
       ) => () => void;
       getSettings: <K extends keyof Readonly<AppSettings>>(
         key: K,
-      ) => Promise<Result<Readonly<AppSettings>[K]>>;
+      ) => Promise<Result<Readonly<AppSettings[K]>>>;
       getAllSettings: () => Promise<Result<Readonly<AppSettings>>>;
       setSettings: (
         settings: Partial<Readonly<AppSettings>>,

@@ -1,4 +1,3 @@
-import { getSafeLocalDateString } from "@electron/fs/fs-helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppErrorCode } from "@shared/errors";
@@ -11,7 +10,7 @@ import path from "path";
 
 async function handleImportDialog(win: BrowserWindow) {
   const { canceled, filePaths } = await dialog.showOpenDialog(win, {
-    title: "Import note",
+    title: "Import notes",
     properties: ["openFile", "multiSelections"],
     filters: [
       {
@@ -32,10 +31,9 @@ async function handleImportDialog(win: BrowserWindow) {
 }
 
 async function handleDBBackupDialog(win: BrowserWindow) {
-  const timestamp = getSafeLocalDateString(new Date());
   const defaultPath = path.join(
     app.getPath("documents"),
-    `db-backup-${timestamp}.sqlite`,
+    `db-backup-${Date.now()}.sqlite`,
   );
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
     title: "Backup database",
@@ -65,10 +63,8 @@ async function handleDBRestoreDialog(win: BrowserWindow) {
 
 async function handleExportDialog(win: BrowserWindow, data: ExportRequest) {
   const extension = data.extension ?? "md";
-  const creationDate = new Date(data.created_at);
-  const safeDate = getSafeLocalDateString(creationDate);
   const safeTitle = validation(FileNameSchema, data.fileName);
-  const fileName = `${safeTitle}_${safeDate}.${extension}`;
+  const fileName = `${safeTitle}.${extension}`;
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
     title: "Export Note",
     defaultPath: fileName,
@@ -84,7 +80,7 @@ async function handleExportDialog(win: BrowserWindow, data: ExportRequest) {
 
 async function handleExportManyDialog(win: BrowserWindow) {
   const { canceled, filePaths } = await dialog.showOpenDialog(win, {
-    title: "Select Folder for Export",
+    title: "Export Notes",
     buttonLabel: "Export Here",
     properties: ["openDirectory", "createDirectory", "promptToCreate"],
   });

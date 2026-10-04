@@ -1,38 +1,11 @@
-import { isAutoExport } from "@electron/fs/fs-auto-export";
 import { mainLogger } from "@electron/handler/permission-handler";
-import { settingsService } from "@electron/handler/settings-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import {
-  checkRateLimit,
-  LIMITS,
-  validation,
-} from "@electron/ipc/ipc-validation";
-import { AppErrorCode } from "@shared/errors";
 import { ExternalUrlSchema } from "@shared/schemas/electron-schema";
-import {
-  IdSchema,
-  type Id,
-  type NoteMenuPayload,
-} from "@shared/schemas/note-schema";
+import { type NoteMenuPayload } from "@shared/schemas/note-schema";
 import { TABLE_ACTIONS } from "@shared/shared-constants";
-import { clipboard, ipcMain, Menu, shell, type BrowserWindow } from "electron";
-
-let activeId: Id | null = null;
+import { clipboard, Menu, shell, type BrowserWindow } from "electron";
 
 const MAX_SPELLING_SUGGESTIONS = 4;
-
-ipcMain.on(IPC_CHANNELS.SET_ACTIVE_NOTE, (_e, id: unknown) => {
-  try {
-    if (!checkRateLimit(IPC_CHANNELS.SET_ACTIVE_NOTE, LIMITS.READ_LIGHT))
-      throw new AppBackendError(AppErrorCode.RateLimitError);
-    const validatedId = validation(IdSchema, id);
-    activeId = validatedId;
-  } catch (error: unknown) {
-    mainLogger.appError(`[IPC Bridge Error]: ${id} is not a valid UUID`, error);
-    activeId = null;
-  }
-});
 
 function pushOptionalSeparator(items: Electron.MenuItemConstructorOptions[]) {
   const last = items[items.length - 1];
@@ -307,8 +280,6 @@ function setUpTableMenu(win: BrowserWindow) {
 
 async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
   const { id, pinned } = payload;
-  const settings = settingsService.getSettings();
-  const hasAutoExportedFile = await isAutoExport(id);
   const noteItemMenu = Menu.buildFromTemplate([
     {
       label: "Copy...",
@@ -317,16 +288,6 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
           label: "Rich Text",
           click: () =>
             win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT, id),
-        },
-        {
-          label: "File Path",
-          enabled:
-            activeId !== null &&
-            activeId === id &&
-            settings["auto_export"] === true &&
-            hasAutoExportedFile,
-          visible: settings["auto_export"] === true,
-          click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_PATH, id),
         },
       ],
     },
@@ -373,28 +334,6 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
             win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "pdf"),
         },
       ],
-    },
-    {
-      label: "Show in Folder",
-      enabled:
-        activeId !== null &&
-        activeId === id &&
-        settings["auto_export"] === true &&
-        hasAutoExportedFile,
-      visible: settings["auto_export"] === true,
-      click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_SHOW_IN_FOLDER, id),
-    },
-    {
-      label: "Open in Editor",
-      enabled:
-        activeId !== null &&
-        activeId === id &&
-        settings["auto_export"] === true &&
-        hasAutoExportedFile,
-      visible: settings["auto_export"] === true,
-      click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_OPEN_DEFAULT_EDITOR, id),
     },
     { type: "separator" },
     {

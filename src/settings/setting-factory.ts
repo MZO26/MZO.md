@@ -1,5 +1,4 @@
 import {
-  AUTO_EXPORT_SETTINGS,
   CODE_THEME_SETTINGS,
   EXPORT_FORMAT_SETTINGS,
   FONT_FAMILY_SETTINGS,
@@ -16,18 +15,13 @@ import { getUIItem } from "@/utils/registry";
 import type { AppIcons, SelectOption, SettingsCategory } from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
-function selectBuilder<
-  K extends {
-    [Key in keyof Readonly<AppSettings>]: Readonly<AppSettings>[Key] extends
-      | string
-      | boolean
-      ? Key
-      : never;
-  }[keyof Readonly<AppSettings>], // indexed access to get union of all values inside
-  O extends Readonly<AppSettings[K]>,
->(
+type StringOrBoolKeys<T> = {
+  [K in keyof T]: T[K] extends string | boolean ? K : never;
+}[keyof T];
+
+function selectBuilder<K extends StringOrBoolKeys<AppSettings>>(
   id: K,
-  options: readonly SelectOption<O>[],
+  options: readonly SelectOption<AppSettings[K]>[],
   category: SettingsCategory,
   labelText: string,
 ) {
@@ -109,12 +103,6 @@ function buildSelects() {
     EXPORT_FORMAT_SETTINGS,
     "General",
     "Bulk Export-Format",
-  );
-  selectBuilder(
-    "auto_export",
-    AUTO_EXPORT_SETTINGS,
-    "General",
-    "Auto-Export (.md)",
   );
 }
 

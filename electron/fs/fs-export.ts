@@ -1,10 +1,16 @@
-import { getFilePath } from "@electron/fs/fs-auto-export";
-import { sanitizeExportString, writeAtomic } from "@electron/fs/fs-helpers";
-import { getPDFAssets, renderPDFCanvas } from "@electron/handler/pdf-handler";
+import {
+  getFilePath,
+  sanitizeExportString,
+  writeAtomic,
+} from "@electron/fs/fs-helpers";
+import {
+  createHiddenPdfWindow,
+  getPDFAssets,
+  renderPDFCanvas,
+} from "@electron/handler/pdf-handler";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { processWithLimit } from "@electron/helpers";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { createHiddenPdfWindow } from "@electron/win";
 import { AppErrorCode } from "@shared/errors";
 import type { ExportContent } from "@shared/schemas/request-schema";
 import type { PDFAssets } from "@shared/shared-types";
@@ -29,32 +35,74 @@ async function singleExport(filePath: string, data: string) {
 }
 
 async function batchExport(folder: string, payload: ExportContent[]) {
+  if (payload.length === 0) return [];
+  const uniqueExtensions = new Set(
+    payload.map((c) => c.extension.toLowerCase()),
+  );
+  if (uniqueExtensions.size > 1) {
+    const list = Array.from(uniqueExtensions).join(", ");
+    mainLogger.appError(
+      `[batchExport]: Only one extension allowed and ${uniqueExtensions.size} were given: ${list})}`,
+    );
+    throw new AppBackendError(AppErrorCode.ExportError);
+  }
   const absoluteTargetFolder = path.resolve(folder);
-  await fs.mkdir(folder, { recursive: true });
+  await fs.mkdir(absoluteTargetFolder, { recursive: true });
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
   const assetsDir = path.join(absoluteTargetFolder, "assets");
-  await fs.mkdir(assetsDir, { recursive: true });
-  const exported = await processWithLimit(
-    payload,
-    3,
-    async (item: ExportContent) => {
-      try {
-        const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
-        const portableContent = await sanitizeExportString(
-          item.content,
-          assetsDir,
-          imagesFolder,
-        );
-        await writeAtomic(absoluteFilePath, portableContent);
-        return absoluteFilePath;
-      } catch (error) {
-        mainLogger.appError("[batchExport]: Error while exporting:", error);
-        return null;
-      }
-    },
-  );
-  return exported.filter((item) => item !== null);
+  const isPdf = uniqueExtensions.has("pdf");
+  const limit = isPdf ? 1 : 3;
+  let hiddenWin: BrowserWindow | null = null;
+  let pdfAssets: PDFAssets | null = null;
+  try {
+    if (isPdf) {
+      pdfAssets = await getPDFAssets();
+      hiddenWin = createHiddenPdfWindow();
+    } else {
+      await fs.mkdir(assetsDir, { recursive: true });
+    }
+    const exported = await processWithLimit(
+      payload,
+      limit,
+      async (item: ExportContent): Promise<string | null> => {
+        try {
+          const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
+          if (isPdf && item.extension === "pdf") {
+            if (!pdfAssets || !hiddenWin || hiddenWin.isDestroyed()) {
+              mainLogger.appError(
+                "[batchExport]: Failed to access pdf printing requirements",
+              );
+              throw new AppBackendError(AppErrorCode.CancelledOperation);
+            }
+            return await exportPDFNote({
+              win: hiddenWin,
+              landscape: item.landscape,
+              filePath: absoluteFilePath,
+              html: item.content,
+              assets: pdfAssets,
+            });
+          }
+          const portableContent = await sanitizeExportString(
+            item.content,
+            assetsDir,
+            imagesFolder,
+          );
+          await writeAtomic(absoluteFilePath, portableContent);
+          return absoluteFilePath;
+        } catch (error) {
+          mainLogger.appError("[batchExport]: Error while exporting:", error);
+          return null;
+        }
+      },
+    );
+    return exported.filter((item): item is string => item !== null);
+  } finally {
+    if (hiddenWin && !hiddenWin.isDestroyed()) {
+      hiddenWin.destroy();
+      hiddenWin = null;
+    }
+  }
 }
 
 async function exportPDFNote(params: {
@@ -72,10 +120,8 @@ async function exportPDFNote(params: {
   };
   const htmlString = renderPDFCanvas(html, assets);
   const encoded = Buffer.from(htmlString, "utf8").toString("base64");
-  // converts htmlString into bytes using utf8 encoding (Buffer is Node.js's raw byte array). toString(base64) then takes those bytes and encodes them as base64 which only allows A-Z a-z 0-9 + / = chars.
   if (win && !win.isDestroyed() && !win.webContents.isDestroyed())
     await win.loadURL(`data:text/html;base64,${encoded}`);
-  // data:text/html tells chrome parse as html and base64 tells chrome to decode before parsing with the exact html bytes. Base64 is required to load the css correctly because chrome expects URL's to have URL-encoded content.
   const pdfBuffer = await win.webContents.printToPDF(pdfOptions);
   await writeAtomic(filePath, pdfBuffer).catch((error) => {
     mainLogger.appError("[exportPDFNote]: Error writing PDF file:", error);
@@ -109,35 +155,4 @@ async function singlePDFExport(
   }
 }
 
-async function batchPDFExport(
-  folder: string,
-  payload: Extract<ExportContent, { extension: "pdf" }>[],
-) {
-  await fs.mkdir(folder, { recursive: true });
-  const absoluteTargetFolder = path.resolve(folder);
-  const assets = await getPDFAssets();
-  let hiddenWin = createHiddenPdfWindow();
-  try {
-    const exported = await processWithLimit(payload, 1, async (item) => {
-      const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
-      const filePath = await exportPDFNote({
-        win: hiddenWin,
-        landscape: item.landscape,
-        filePath: absoluteFilePath,
-        html: item.content,
-        assets,
-      });
-      return filePath;
-    });
-    return exported.filter((item) => item !== null);
-  } catch (error) {
-    mainLogger.appError("[batchPDFExport]: Error while exporting:", error);
-    throw new AppBackendError(AppErrorCode.ExportError);
-  } finally {
-    if (hiddenWin && !hiddenWin.isDestroyed()) {
-      hiddenWin.destroy();
-    }
-  }
-}
-
-export { batchExport, batchPDFExport, singleExport, singlePDFExport };
+export { batchExport, singleExport, singlePDFExport };

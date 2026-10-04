@@ -1,6 +1,4 @@
-import { dirRead, getNoteById, selectAutoExportFolder } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { syncCheckNote } from "@/notes/note-checks";
 import {
   CODE_THEME_SETTINGS,
   EXPORT_FORMAT_SETTINGS,
@@ -19,16 +17,15 @@ import {
   handleUpdateSettings,
   resolveTheme,
 } from "@/settings/setting-actions";
-import { settingsStore, stateStore } from "@/state/state";
+import { settingsStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/async";
 import { CODE_THEME_MAP } from "@/utils/constants";
 import { getAppItem } from "@/utils/registry";
-import type { Id } from "@shared/schemas/note-schema";
 import type {
   AppearanceKeys,
   AppSettings,
   EditorKeys,
-  GeneralKeys,
+  GeneralKey,
 } from "@shared/schemas/store-schema";
 
 function initAppearanceSettings(
@@ -206,14 +203,12 @@ function initEditorSettings(
 }
 
 function initGeneralSettings(
-  settings: Readonly<GeneralKeys>,
+  settings: Readonly<GeneralKey>,
   container: HTMLDivElement,
 ) {
   const exportFormatSelect =
     container.querySelector<HTMLSelectElement>("#export_format");
-  const autoExportSelect =
-    container.querySelector<HTMLSelectElement>("#auto_export");
-  if (!exportFormatSelect || !autoExportSelect) return;
+  if (!exportFormatSelect) return;
   exportFormatSelect.value = settings["export_format"];
   exportFormatSelect.addEventListener(
     "change",
@@ -225,44 +220,6 @@ function initGeneralSettings(
       );
       if (!match) return;
       await handleUpdateSettings({ export_format: match.value });
-    }),
-  );
-
-  const autoExportPath = settings["auto_export_path"];
-  ((autoExportSelect.title = autoExportPath
-    ? `Path: ${autoExportPath}`
-    : "No path selected."),
-    (autoExportSelect.value = settings["auto_export"] ? "true" : "false"));
-  autoExportSelect.addEventListener(
-    "change",
-    createAsyncHandler(async (e) => {
-      if (!(e.target instanceof HTMLSelectElement)) return;
-      const enabled = e.target.value === "true";
-      if (enabled) {
-        const result = await selectAutoExportFolder();
-        if (!result.success) {
-          e.target.value = "false";
-          return;
-        }
-        await handleUpdateSettings({
-          auto_export: true,
-          auto_export_path: result.data,
-        });
-        autoExportSelect.title = `Path: ${result.data}`;
-        await dirRead();
-        const activeId = stateStore.get("activeId") as Id | null;
-        if (activeId) {
-          const noteResult = await getNoteById(activeId);
-          if (!noteResult.success) return;
-          await syncCheckNote(noteResult.data);
-        }
-      } else {
-        await handleUpdateSettings({
-          auto_export: false,
-          auto_export_path: null,
-        });
-        autoExportSelect.title = "No path selected.";
-      }
     }),
   );
 }

@@ -1,21 +1,16 @@
 import {
-  triggerCopyFilePath,
   triggerCopyRichText,
   triggerCopySelectionHtml,
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
-  triggerDirSync,
   triggerDuplicate,
   triggerNoteItemMenu,
-  triggerOpenAutoExportFolder,
-  triggerOpenInDefaultEditor,
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
 import { debouncedSaveNote } from "@/notes/note-actions";
-import { ensureNoteSaved } from "@/notes/note-checks";
 import { stateStore } from "@/state/state";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
@@ -34,24 +29,6 @@ function initListeners() {
       await triggerSingleExport(id, extension);
     },
   );
-
-  window.noteAPI.onTriggerPath(async (id: Id) => {
-    const autoExportPayload = await ensureNoteSaved(id);
-    if (!autoExportPayload) return;
-    await triggerOpenAutoExportFolder(autoExportPayload);
-  });
-
-  window.noteAPI.onTriggerDefaultEditor(async (id: Id) => {
-    const autoExportPayload = await ensureNoteSaved(id);
-    if (!autoExportPayload) return;
-    await triggerOpenInDefaultEditor(autoExportPayload);
-  });
-
-  window.noteAPI.onTriggerCopyPath(async (id: Id) => {
-    const syncPayload = await ensureNoteSaved(id);
-    if (!syncPayload) return;
-    await triggerCopyFilePath(syncPayload);
-  });
 
   window.noteAPI.onTriggerCopyRichText(async (id: Id) => {
     const loading = createGlobalSpinner();
@@ -100,10 +77,6 @@ function initListeners() {
       document.documentElement.dataset["theme"] = resolvedTheme;
     },
   );
-
-  window.noteAPI.onDirSync(async (dirResult) => {
-    await triggerDirSync(dirResult);
-  });
 
   window.electronAPI.onRequestFlush(async () => {
     debouncedSaveNote.flush();

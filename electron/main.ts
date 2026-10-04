@@ -1,7 +1,6 @@
 import { setUpEditorMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
 import { removeUnusedImages } from "@electron/fs/fs-image";
-import { checkCurrentFolderState } from "@electron/fs/fs-sync";
 import { setupGlobalErrorHandling } from "@electron/handler/global-handler";
 import {
   navigationHandler,
@@ -141,23 +140,6 @@ async function createWindow() {
   win.once("ready-to-show", () => {
     win?.show();
   });
-  win.on("focus", async () => {
-    if (!settings["auto_export_path"] || settings["auto_export"] === false)
-      return;
-    try {
-      const readDirResult = await checkCurrentFolderState(
-        settings["auto_export_path"],
-      );
-      mainLogger.devLog(
-        "[Window-Focus-Event]: Checking auto-export folder state on window focus...",
-      );
-      if (readDirResult && readDirResult.length > 0 && !win?.isDestroyed()) {
-        win?.webContents.send(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, readDirResult);
-      }
-    } catch (error) {
-      mainLogger.appError("Failed to import files from folder", error);
-    }
-  });
   win.webContents.on("did-finish-load", () => {
     win?.webContents.setZoomFactor(1.1);
     setTimeout(async () => {
@@ -167,24 +149,6 @@ async function createWindow() {
         await removeUnusedImages(usedImages);
       } catch (error) {
         mainLogger.appError("Failed to clean up assets", error);
-      }
-      if (!settings["auto_export_path"] || settings["auto_export"] === false)
-        return;
-      try {
-        const readDirResult = await checkCurrentFolderState(
-          settings["auto_export_path"],
-        );
-        mainLogger.devLog(
-          "[Window-Finish-Load-Event]: Checking auto-export folder state after window load...",
-        );
-        if (readDirResult && readDirResult.length > 0 && !win?.isDestroyed()) {
-          win?.webContents.send(
-            IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC,
-            readDirResult,
-          );
-        }
-      } catch (error) {
-        mainLogger.appError("Failed to import files from folder", error);
       }
     }, 1000);
   });

@@ -16,8 +16,6 @@ import type {
   ExportManyRequest,
   ExportRequest,
   FilePathRequest,
-  OpenAutoExportPathRequest,
-  SyncRequestPayload,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { TableAction, ValueOf } from "@shared/shared-types";
@@ -48,15 +46,13 @@ if (process.contextIsolated) {
         title: Notification["title"],
         body: Notification["body"],
       ) => ipcRenderer.invoke(IPC_CHANNELS.SHOW_NOTIFICATION, title, body),
-      setTheme: (theme: Readonly<Theme>, focus?: boolean) =>
+      setTheme: (theme: Theme, focus?: boolean) =>
         ipcRenderer.invoke(IPC_CHANNELS.SET_THEME, theme, focus),
       windowPin: () => ipcRenderer.invoke(IPC_CHANNELS.APP_PIN),
       imageWriteMany: (payload: ImagePayload[]) =>
         ipcRenderer.invoke(IPC_CHANNELS.WRITE_IMAGE, payload),
       onThemeChanged: (
-        callback: (
-          resolvedTheme: Extract<Readonly<Theme>, "dark" | "light">,
-        ) => void,
+        callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
       ) => {
         subscribe(IPC_CHANNELS.THEME_CHANGED, callback);
       },
@@ -75,12 +71,6 @@ if (process.contextIsolated) {
         ipcRenderer.invoke(IPC_CHANNELS.APP_ZOOM, action),
       openExternal: (url: Url) =>
         ipcRenderer.invoke(IPC_CHANNELS.OPEN_EXTERNAL, url),
-      openAutoExportFolder: (payload: OpenAutoExportPathRequest) =>
-        ipcRenderer.invoke(IPC_CHANNELS.OPEN_AUTO_EXPORT_FOLDER, payload),
-      openInDefaultEditor: (payload: OpenAutoExportPathRequest) =>
-        ipcRenderer.invoke(IPC_CHANNELS.OPEN_DEFAULT_EDITOR, payload),
-      getAutoExportPath: (payload: OpenAutoExportPathRequest) =>
-        ipcRenderer.invoke(IPC_CHANNELS.GET_AUTO_EXPORT_PATH, payload),
       openAppPath: () => ipcRenderer.invoke(IPC_CHANNELS.OPEN_APP_PATH),
     });
     contextBridge.exposeInMainWorld("noteAPI", {
@@ -97,18 +87,12 @@ if (process.contextIsolated) {
       delete: (id: Id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_DELETE, id),
       deleteMany: (ids: Id[]) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_DELETE_MANY, ids),
-      selectAutoExportFolder: () =>
-        ipcRenderer.invoke(IPC_CHANNELS.SELECT_AUTO_EXPORT_FOLDER),
       noteExport: (payload: ExportRequest) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_EXPORT, payload),
       noteExportMany: (payload: ExportManyRequest) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_EXPORT_MANY, payload),
       noteImport: (payload: FilePathRequest) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_IMPORT, payload),
-      onDirSync: (callback: (result: string[]) => void) => {
-        subscribe(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, callback);
-      },
-      dirRead: () => ipcRenderer.invoke(IPC_CHANNELS.DIR_READ),
       onTriggerExport: (
         callback: (id: Id, extension: ExportRequest["extension"]) => void,
       ) => {
@@ -117,14 +101,8 @@ if (process.contextIsolated) {
       onTriggerPath: (callback: (id: Id) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_SHOW_IN_FOLDER, callback);
       },
-      onTriggerDefaultEditor: (callback: (id: Id) => void) => {
-        subscribe(IPC_CHANNELS.TRIGGER_OPEN_DEFAULT_EDITOR, callback);
-      },
       onTriggerCopyRichText: (callback: (id: Id) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT, callback);
-      },
-      onTriggerCopyPath: (callback: (id: Id) => void) => {
-        subscribe(IPC_CHANNELS.TRIGGER_COPY_PATH, callback);
       },
       onTriggerDelete: (callback: (id: Id) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_DELETE, callback);
@@ -147,8 +125,6 @@ if (process.contextIsolated) {
       onTriggerCopySelectionHTML: (callback: () => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_COPY_SELECTION_HTML, callback);
       },
-      syncRequest: (payload: SyncRequestPayload) =>
-        ipcRenderer.invoke(IPC_CHANNELS.NOTE_SYNC, payload),
       getRelatedNotes: (payload: { id: Id }) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, payload),
       getById: (id: Id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_BY_ID, id),

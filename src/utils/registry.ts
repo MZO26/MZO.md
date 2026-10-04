@@ -1,13 +1,46 @@
 import { initEditor } from "@/components/editor/editor-init";
 import { requireElement } from "@/utils/dom";
-import type {
-  AppRegistry,
-  CoreRegistry,
-  TemplateRegistry,
-  UIRegistry,
-} from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { AppEvent } from "@shared/shared-types";
+import type { Editor } from "@tiptap/core";
+
+interface AppRegistry {
+  ui: Partial<UIRegistry>;
+  core: Partial<CoreRegistry>;
+  template: Partial<TemplateRegistry>;
+}
+
+interface CoreRegistry {
+  editor: Editor;
+  appContainer: HTMLDivElement;
+  sidebar: HTMLDivElement;
+  sidebarContainer: HTMLDivElement;
+  editorWrapper: HTMLDivElement;
+  editorContainer: HTMLDivElement;
+}
+
+interface UIRegistry {
+  wordCountEl: HTMLSpanElement;
+  charCountEl: HTMLSpanElement;
+  readingTime: HTMLSpanElement;
+  searchInput: HTMLInputElement;
+  sidebarHeader: HTMLDivElement;
+  sidebarFooter: HTMLDivElement;
+  selectionFooter: HTMLDivElement;
+  quickActionContainer: HTMLDivElement;
+}
+
+interface TemplateRegistry {
+  // editor empty state template and view
+  editorEmptyStateTemplate: HTMLTemplateElement;
+  editorView: HTMLDivElement;
+  // sidebar empty state template
+  sidebarEmptyStateTemplate: HTMLTemplateElement;
+  // note item template
+  noteItemTemplate: HTMLTemplateElement;
+  // tags popover template
+  tagsPopoverTemplate: HTMLTemplateElement;
+}
 
 // set settings to empty object to avoid undefined errors, will be populated in app.ts on startup
 const registry = {
@@ -158,7 +191,33 @@ function initTemplateRegistry() {
   });
 }
 
+function createTemplateCloner<T extends Element>(
+  template: keyof TemplateRegistry,
+  fn: (node: Node | null) => node is T,
+) {
+  let cachedNode: T | null = null;
+  return function getClone(): T {
+    if (!cachedNode) {
+      const templateElement = getTemplateItem(template);
+      if (!(templateElement instanceof HTMLTemplateElement)) {
+        throw new Error(`Element '${template}' is not a template.`);
+      }
+      const templateChild = templateElement.content.firstElementChild;
+      if (!fn(templateChild)) {
+        throw new Error(`Template '${template}' is missing.`);
+      }
+      cachedNode = templateChild;
+    }
+    const clonedNode = cachedNode.cloneNode(true);
+    if (!fn(clonedNode)) {
+      throw new Error(`Failed to clone template '${template}'.`);
+    }
+    return clonedNode;
+  };
+}
+
 export {
+  createTemplateCloner,
   getAppItem,
   getAppItems,
   getTemplateItem,

@@ -1,8 +1,5 @@
 import db from "@electron/db/database";
-import {
-  deleteAutoExportFile,
-  writeAutoExportFile,
-} from "@electron/fs/fs-auto-export";
+import { restoreFromBackupPath } from "@electron/fs/fs-backup";
 import {
   handleDBBackupDialog,
   handleDBRestoreDialog,
@@ -12,18 +9,12 @@ import {
 } from "@electron/fs/fs-dialog";
 import {
   batchExport,
-  batchPDFExport,
   singleExport,
   singlePDFExport,
 } from "@electron/fs/fs-export";
 import { batchImport } from "@electron/fs/fs-import";
-import { checkCurrentFolderState, checkSyncState } from "@electron/fs/fs-sync";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import {
-  resolveAutoExport,
-  restoreFromBackupPath,
-} from "@electron/ipc/ipc-helpers";
 import {
   checkRateLimit,
   LIMITS,
@@ -46,9 +37,8 @@ import {
   ExportManyRequestSchema,
   ExportRequestSchema,
   FilePathRequestSchema,
-  SyncRequestPayloadSchema,
 } from "@shared/schemas/request-schema";
-import { BrowserWindow, dialog, ipcMain } from "electron";
+import { BrowserWindow, ipcMain } from "electron";
 
 function registerNoteIpc(win: BrowserWindow) {
   ipcMain.handle(IPC_CHANNELS.GET_ALL_NOTES, (e) => {
@@ -124,23 +114,7 @@ function registerNoteIpc(win: BrowserWindow) {
           ...validatedData,
           content: DbContentCodec.encode(validatedData.content),
         };
-        const { markdown, ...dbPayload } = noteData;
-        const { targetDir, isAutoExport } = resolveAutoExport();
-        const oldTitle =
-          isAutoExport && targetDir
-            ? db.getOldNotes([validatedData.id])
-            : undefined;
-        const result = db.update(dbPayload);
-        if (!isAutoExport || !targetDir) return result;
-        if (!markdown) return result;
-        await writeAutoExportFile({
-          created_at: result.created_at,
-          fileName: result.title,
-          markdown: markdown,
-          targetDir: targetDir,
-          oldFileName: oldTitle?.[0]?.title,
-        });
-        return result;
+        return db.update(noteData);
       });
     },
   );
@@ -150,12 +124,7 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit(IPC_CHANNELS.NOTE_DELETE, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
-      const { targetDir, isAutoExport } = resolveAutoExport();
-      const oldNote = db.getOldNotes([validatedData]);
-      const result = db.delete(validatedData);
-      if (!isAutoExport || !targetDir) return result;
-      await deleteAutoExportFile(targetDir, oldNote);
-      return result;
+      return db.delete(validatedData);
     });
   });
 
@@ -164,12 +133,7 @@ function registerNoteIpc(win: BrowserWindow) {
       if (!checkRateLimit(IPC_CHANNELS.NOTE_DELETE_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, ids);
-      const { targetDir, isAutoExport } = resolveAutoExport();
-      const oldNotes = db.getOldNotes(validatedData);
-      const result = db.deleteMany(validatedData);
-      if (!isAutoExport || !targetDir) return result;
-      await deleteAutoExportFile(targetDir, oldNotes);
-      return result;
+      return db.deleteMany(validatedData);
     });
   });
 
@@ -188,54 +152,6 @@ function registerNoteIpc(win: BrowserWindow) {
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, id);
       return db.getManyById(validatedData);
-    });
-  });
-
-  ipcMain.handle(IPC_CHANNELS.SELECT_AUTO_EXPORT_FOLDER, (e) => {
-    return result(e, async () => {
-      if (
-        !checkRateLimit(
-          IPC_CHANNELS.SELECT_AUTO_EXPORT_FOLDER,
-          LIMITS.READ_LIGHT,
-        )
-      )
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      const result = await dialog.showOpenDialog(win, {
-        title: "Select Auto Export Directory",
-        buttonLabel: "Choose Folder",
-        properties: ["openDirectory", "createDirectory"],
-      });
-      if (result.canceled || result.filePaths.length === 0) {
-        throw new AppBackendError(AppErrorCode.CancelledOperation);
-      }
-      return result.filePaths[0];
-    });
-  });
-
-  ipcMain.handle(IPC_CHANNELS.NOTE_SYNC, (e, payload: unknown) => {
-    return result(e, async () => {
-      if (!checkRateLimit(IPC_CHANNELS.NOTE_SYNC, LIMITS.READ_LIGHT))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      const validatedData = validation(SyncRequestPayloadSchema, payload);
-      if (!validatedData.updated_at) return null;
-      const { targetDir, isAutoExport } = resolveAutoExport();
-      if (!targetDir || !isAutoExport) return null;
-      return await checkSyncState(targetDir, validatedData);
-    });
-  });
-
-  ipcMain.handle(IPC_CHANNELS.DIR_READ, (e) => {
-    return result(e, async () => {
-      if (!checkRateLimit(IPC_CHANNELS.DIR_READ, LIMITS.READ_HEAVY))
-        throw new AppBackendError(AppErrorCode.RateLimitError);
-      const { targetDir, isAutoExport } = resolveAutoExport();
-      if (!targetDir || !isAutoExport)
-        throw new AppBackendError(AppErrorCode.CancelledOperation);
-      const readDirResult = await checkCurrentFolderState(targetDir);
-      if (readDirResult && readDirResult.length > 0) {
-        win?.webContents.send(IPC_CHANNELS.AUTO_EXPORT_DIR_SYNC, readDirResult);
-      }
-      return true;
     });
   });
 
@@ -264,7 +180,7 @@ function registerNoteIpc(win: BrowserWindow) {
       if (filePaths.length === 0) {
         throw new AppBackendError(AppErrorCode.CancelledOperation);
       }
-      return await batchImport(filePaths, validatedData.checked ?? false);
+      return await batchImport(filePaths);
     });
   });
 
@@ -274,10 +190,6 @@ function registerNoteIpc(win: BrowserWindow) {
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ExportManyRequestSchema, payload);
       const selectedFolder = await handleExportManyDialog(win);
-      const isPdf = validatedData.every((item) => item.extension === "pdf");
-      if (isPdf) {
-        return await batchPDFExport(selectedFolder, validatedData);
-      }
       return await batchExport(selectedFolder, validatedData);
     });
   });
