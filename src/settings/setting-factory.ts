@@ -19,7 +19,7 @@ type StringOrBoolKeys<T> = {
   [K in keyof T]: T[K] extends string | boolean ? K : never;
 }[keyof T];
 
-function selectBuilder<K extends StringOrBoolKeys<AppSettings>>(
+function selectBuilder<K extends StringOrBoolKeys<Readonly<AppSettings>>>(
   id: K,
   options: readonly SelectOption<AppSettings[K]>[],
   category: SettingsCategory,

@@ -1,5 +1,8 @@
+import {
+  isInsideDirectory,
+  isInsideDirectorySync,
+} from "@electron/fs/fs-helpers";
 import { IS_DEV_MAIN, mainLogger } from "@electron/handler/permission-handler";
-import type { UrlDecision } from "@shared/shared-types";
 import { app, net, protocol, shell, type BrowserWindow } from "electron";
 import fs from "fs/promises";
 import path from "path";
@@ -47,19 +50,16 @@ async function setupLocalImageProtocol() {
         .replace(/\/+$/, "");
       const fileName = decodeURIComponent(rawPath);
       const intendedPath = path.resolve(realImagesDir, fileName);
-      const realFilePath = await fs.realpath(intendedPath);
-      const relative = path.relative(realImagesDir, realFilePath);
-      const isOutside =
-        relative === ".." ||
-        relative.startsWith(`..${path.sep}`) ||
-        path.isAbsolute(relative);
+      const isOutside = await isInsideDirectory(realImagesDir, intendedPath, {
+        skipBaseRealpath: true,
+      });
       if (isOutside) {
         return new Response("Forbidden", {
           status: 403,
           headers: { "Content-Type": "text/plain" },
         });
       }
-      return net.fetch(pathToFileURL(realFilePath).toString());
+      return net.fetch(pathToFileURL(intendedPath).toString());
     } catch (error) {
       return new Response("Image not found", {
         status: 404,
@@ -69,7 +69,7 @@ async function setupLocalImageProtocol() {
   });
 }
 
-function processUrl(url: string): UrlDecision {
+function processUrl(url: string) {
   try {
     const parsedUrl = new URL(url);
     const isLocalhost =
@@ -81,11 +81,7 @@ function processUrl(url: string): UrlDecision {
     if (parsedUrl.protocol === "file:") {
       const requestedPath = path.resolve(fileURLToPath(url));
       const appDir = path.resolve(app.getAppPath());
-      const relative = path.relative(appDir, requestedPath);
-      const isOutside =
-        relative === ".." ||
-        relative.startsWith(`..${path.sep}`) ||
-        path.isAbsolute(relative);
+      const isOutside = isInsideDirectorySync(appDir, requestedPath);
       isSafeLocalFile = !isOutside;
     }
     if (isWebProtocol && !isLocalhost) {
@@ -108,9 +104,9 @@ function processUrl(url: string): UrlDecision {
   }
 }
 
-function navigationHandler(win: BrowserWindow) {
+async function navigationHandler(win: BrowserWindow) {
   win.webContents.setWindowOpenHandler(({ url }) => {
-    const decision = processUrl(url);
+    const decision = void processUrl(url);
     if (decision === "external") {
       void shell.openExternal(url);
     }
@@ -118,7 +114,7 @@ function navigationHandler(win: BrowserWindow) {
   });
 
   win.webContents.on("will-navigate", (e, url) => {
-    const decision = processUrl(url);
+    const decision = void processUrl(url);
     if (decision === "external") {
       e.preventDefault();
       void shell.openExternal(url);
@@ -130,7 +126,7 @@ function navigationHandler(win: BrowserWindow) {
   });
 
   win.webContents.on("will-redirect", (e, url) => {
-    const decision = processUrl(url);
+    const decision = void processUrl(url);
     if (decision === "external") {
       e.preventDefault();
       void shell.openExternal(url);
@@ -142,7 +138,7 @@ function navigationHandler(win: BrowserWindow) {
   });
 
   win.webContents.on("will-frame-navigate", (e) => {
-    const decision = processUrl(e.url);
+    const decision = void processUrl(e.url);
     if (decision === "external") {
       e.preventDefault();
       void shell.openExternal(e.url);
@@ -154,8 +150,17 @@ function navigationHandler(win: BrowserWindow) {
   });
 
   win.webContents.session.on("will-download", (e, item) => {
-    e.preventDefault();
-    mainLogger.devLog(`Blocked attempt to download: ${item.getURL()}`);
+    const url = item.getURL();
+    const decision = void processUrl(url);
+    if (decision === "external") {
+      e.preventDefault();
+      void shell.openExternal(url);
+      return;
+    }
+    if (decision === "block") {
+      e.preventDefault();
+      mainLogger.devLog(`Blocked attempt to download: ${url}`);
+    }
   });
 
   win.webContents.on("will-attach-webview", (e) => {

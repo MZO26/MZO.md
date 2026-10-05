@@ -136,8 +136,6 @@ if (process.contextIsolated) {
       databaseBackup: () => ipcRenderer.invoke(IPC_CHANNELS.DB_BACKUP),
       databaseBackupRestore: () =>
         ipcRenderer.invoke(IPC_CHANNELS.DB_BACKUP_RESTORE),
-      setActiveNote: (id: Id) =>
-        ipcRenderer.send(IPC_CHANNELS.SET_ACTIVE_NOTE, id),
     });
     contextBridge.exposeInMainWorld("storeAPI", {
       getSettings: (key: keyof Readonly<AppSettings>) =>

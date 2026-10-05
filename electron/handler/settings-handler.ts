@@ -6,7 +6,7 @@ import type { AppSettings } from "@shared/schemas/store-schema";
 class SettingsService {
   private cache: Readonly<AppSettings> | undefined = undefined;
 
-  public async initialize(): Promise<void> {
+  public async initialize() {
     this.cache = db.getAllSettings();
   }
 

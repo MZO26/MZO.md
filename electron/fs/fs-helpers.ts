@@ -7,7 +7,7 @@ import {
   FileNameSchema,
   type ExportContent,
 } from "@shared/schemas/request-schema";
-import fs from "fs/promises";
+import fs from "fs";
 import { randomUUID } from "node:crypto";
 import { open, rename, unlink } from "node:fs/promises";
 import path from "path";
@@ -17,8 +17,8 @@ const IMPORT_REGEX = /(?:\.\/)?assets\/([^"' )>\s]+)/g;
 
 async function writeAtomic(
   targetPath: string,
-  content: string | Buffer | Uint8Array,
-): Promise<void> {
+  content: string | Buffer<ArrayBufferLike>,
+) {
   const tempPath = `${targetPath}.${randomUUID()}.tmp`;
   try {
     const file = await open(tempPath, "wx");
@@ -54,7 +54,11 @@ async function sanitizeExportString(
       const internalPath = path.join(internalImgDir, fileName);
       const exportPath = path.join(assetsDir, fileName);
       try {
-        await fs.copyFile(internalPath, exportPath, fs.constants.COPYFILE_EXCL);
+        await fs.promises.copyFile(
+          internalPath,
+          exportPath,
+          fs.constants.COPYFILE_EXCL,
+        );
       } catch (error: unknown) {
         const err = error as NodeJS.ErrnoException;
         if (err.code === "EEXIST") return;
@@ -88,7 +92,7 @@ async function sanitizeImportString(
       const sourceImagePath = path.join(importedFileDir, "assets", fileName);
       const destImagePath = path.join(internalImgDir, fileName);
       try {
-        await fs.copyFile(
+        await fs.promises.copyFile(
           sourceImagePath,
           destImagePath,
           fs.constants.COPYFILE_EXCL,
@@ -107,7 +111,7 @@ async function sanitizeImportString(
   return internalContent;
 }
 
-function getFilePath(
+async function getFilePath(
   targetDirectory: string,
   payload: {
     fileName: string;
@@ -118,27 +122,66 @@ function getFilePath(
   const safeTitle = validation(FileNameSchema, payload.fileName);
   const newFileName = `${safeTitle}.${extension}`;
   const absoluteFilePath = path.resolve(targetDirectory, newFileName);
-  // security check
-  ensureInsideDirectory(targetDirectory, absoluteFilePath);
+  // throwing security check
+  await assertInsideDirectory(targetDirectory, absoluteFilePath);
   return absoluteFilePath;
 }
 
 // doesn't check for symlinks (adds extra i/o)
-function ensureInsideDirectory(baseDir: string, absoluteFilePath: string) {
-  const relative = path.relative(baseDir, absoluteFilePath);
-  const isOutside =
-    relative === ".." ||
-    relative.startsWith(`..${path.sep}`) ||
-    path.isAbsolute(relative);
-  if (isOutside) {
-    throw new AppBackendError(AppErrorCode.FileWriteError);
+async function isInsideDirectory(
+  baseDir: string,
+  absoluteFilePath: string,
+  options?: { skipBaseRealpath?: boolean },
+) {
+  try {
+    const basePath = options?.skipBaseRealpath
+      ? baseDir
+      : await fs.promises.realpath(baseDir);
+    const targetPath = await fs.promises.realpath(absoluteFilePath);
+    const relative = path.relative(basePath, targetPath);
+    const isOutside =
+      relative === ".." ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative);
+    return isOutside;
+  } catch (error) {
+    return false;
+  }
+}
+function isInsideDirectorySync(
+  baseDir: string,
+  absoluteFilePath: string,
+  options?: { skipBaseRealpath?: boolean },
+): boolean {
+  try {
+    const basePath = options?.skipBaseRealpath
+      ? baseDir
+      : fs.realpathSync(baseDir);
+    const targetPath = fs.realpathSync(absoluteFilePath);
+    const relative = path.relative(basePath, targetPath);
+    return !(
+      relative === ".." ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative)
+    );
+  } catch {
+    return false;
   }
 }
 
+async function assertInsideDirectory(
+  baseDir: string,
+  absoluteFilePath: string,
+) {
+  const inside = await isInsideDirectory(baseDir, absoluteFilePath);
+  if (!inside) throw new AppBackendError(AppErrorCode.FileWriteError);
+}
+
 export {
-  ensureInsideDirectory,
   EXPORT_REGEX,
   getFilePath,
+  isInsideDirectory,
+  isInsideDirectorySync,
   sanitizeExportString,
   sanitizeImportString,
   writeAtomic,

@@ -573,7 +573,7 @@ input::-webkit-search-cancel-button {
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.82em;
   min-width: 0;
   padding: 4px 0;
 }

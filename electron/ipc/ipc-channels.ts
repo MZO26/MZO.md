@@ -49,7 +49,6 @@ const IPC_CHANNELS = {
   TRIGGER_COPY_SELECTION_HTML: "callback:copy-selection-html",
   // messages
   CONFIRM_FLUSH: "message:confirm-flush",
-  SET_ACTIVE_NOTE: "message:set-active-note",
 } as const;
 
 export { IPC_CHANNELS };

@@ -8,8 +8,6 @@ const MAX_SEARCH_LENGTH = 100;
 
 const MIN_SEARCH_LENGTH = 2;
 
-const THROTTLE_MS = 5000;
-
 const UNTITLED = "Untitled";
 
 const EMPTY_DOC = {
@@ -189,6 +187,5 @@ export {
   SIDEBAR_FILTER_MODES,
   STOPWORDS,
   TABLE_ACTIONS,
-  THROTTLE_MS,
   UNTITLED,
 };

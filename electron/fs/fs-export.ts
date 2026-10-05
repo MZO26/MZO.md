@@ -67,7 +67,10 @@ async function batchExport(folder: string, payload: ExportContent[]) {
       limit,
       async (item: ExportContent): Promise<string | null> => {
         try {
-          const absoluteFilePath = getFilePath(absoluteTargetFolder, item);
+          const absoluteFilePath = await getFilePath(
+            absoluteTargetFolder,
+            item,
+          );
           if (isPdf && item.extension === "pdf") {
             if (!pdfAssets || !hiddenWin || hiddenWin.isDestroyed()) {
               mainLogger.appError(

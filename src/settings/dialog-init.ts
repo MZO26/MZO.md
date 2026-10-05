@@ -28,7 +28,7 @@ function confirmWithDialog(
   dialog: HTMLDialogElement,
   titleEl: HTMLElement,
   title: string,
-): Promise<boolean> {
+) {
   titleEl.textContent = title;
   dialog.returnValue = "";
   dialog.showModal();

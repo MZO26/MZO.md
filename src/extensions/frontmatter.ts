@@ -26,8 +26,6 @@ function extractFrontmatter(source: string): {
   };
 }
 
-// for example tags: [workout, core]
-
 function parseInlineArray(value: string) {
   const trimmed = value.trim();
   if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
@@ -43,9 +41,7 @@ function parseInlineArray(value: string) {
 }
 
 function unquote(value: string): string {
-  if (value.length < 2) {
-    return value;
-  }
+  if (value.length < 2) return value;
   const isDoubleQuoted = value.startsWith('"') && value.endsWith('"');
   const isSingleQuoted = value.startsWith("'") && value.endsWith("'");
   if (isDoubleQuoted || isSingleQuoted) {
