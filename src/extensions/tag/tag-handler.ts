@@ -76,34 +76,29 @@ const NoteTagHandler = NoteTag.extend({
           if (!match) return null;
           const rawQuery = match[1];
           if (!rawQuery) return null;
-          const normalizedQuery =
-            typeof rawQuery === "string" ? rawQuery.trim().toLowerCase() : "";
+          const normalizedQuery = rawQuery.trim().toLowerCase();
           if (!normalizedQuery) return null;
-          let bestMatch: string | null = null;
-          let exactMatchFound = false;
           const notes = noteStore.get("notes");
-          for (const note of notes) {
+          let tagMatch: string | null = null;
+          loop: for (const note of notes) {
+            if (!note.tags) continue;
             for (const tag of note.tags) {
               if (tag === normalizedQuery) {
-                bestMatch = tag;
-                exactMatchFound = true;
-                break;
+                tagMatch = tag;
+                break loop;
               }
-              if (
-                tag.startsWith(normalizedQuery) &&
-                (bestMatch === null || tag.length < bestMatch.length)
-              ) {
-                bestMatch = tag;
+              if (tag.startsWith(normalizedQuery)) {
+                // get shortest valid path
+                if (!tagMatch || tag.length < tagMatch.length) tagMatch = tag;
               }
             }
-            if (exactMatchFound) break;
           }
-          if (!bestMatch) return null;
+          if (!tagMatch) return null;
           return {
             from: $head.pos - rawQuery.length - 1,
             to: $head.pos,
-            autocompleteText: bestMatch.slice(rawQuery.length),
-            tagId: bestMatch,
+            autocompleteText: tagMatch.slice(rawQuery.length),
+            tagId: tagMatch,
           };
         },
       },

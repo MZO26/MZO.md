@@ -88,9 +88,7 @@ function applySidebarListeners(
       if (importBtn) {
         const request: FilePathRequest = { source: "dialog", checked: false };
         const loading = createGlobalSpinner(0);
-        await loading.wrap(async () => {
-          await handleImportNote(request);
-        });
+        await loading.wrap(() => handleImportNote(request));
         return;
       }
     }),
@@ -168,9 +166,7 @@ function applySidebarListeners(
         return;
       }
       const loading = createGlobalSpinner();
-      await loading.wrap(async () => {
-        await handleSelectNote(id);
-      });
+      await loading.wrap(() => handleSelectNote(id));
     }),
   );
   document.addEventListener(

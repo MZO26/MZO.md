@@ -72,4 +72,31 @@ async function waitForPaint(frames = 2): Promise<void> {
   }
 }
 
-export { createAsyncHandler, debounce, sleep, waitForPaint };
+// mainly for worker markdown parse evaluation
+
+function withPerformanceLog<A extends unknown[], T>(
+  fn: (...args: A) => Promise<T>,
+) {
+  return async (...args: A): Promise<T> => {
+    // same label for time and timeEnd
+    const timerLabel = `Invoking function ${fn.name}`;
+    rendererLogger.time(timerLabel);
+    try {
+      const data = await fn(...args);
+      rendererLogger.timeEnd(timerLabel);
+      return data;
+    } catch (error) {
+      rendererLogger.timeEnd(timerLabel);
+      rendererLogger.appError(`Error invoking function ${fn.name}`, error);
+      throw error;
+    }
+  };
+}
+
+export {
+  createAsyncHandler,
+  debounce,
+  sleep,
+  waitForPaint,
+  withPerformanceLog,
+};

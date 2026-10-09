@@ -54,7 +54,7 @@ type WorkerResult<T, E = WorkerErrorCode> = WorkerSuccess<T> | WorkerFailure<E>;
 
 type Action = {
   type?: "action";
-  run: (args?: Editor | null) => void;
+  run: (args?: Editor) => void;
   isActive?: (args: Editor) => boolean;
   isDisabled?: (args: Editor) => boolean;
   icon: AppIcons;

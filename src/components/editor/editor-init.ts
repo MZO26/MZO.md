@@ -113,9 +113,7 @@ function getNoteEditorExtensions() {
           return;
         }
         const loading = createGlobalSpinner();
-        await loading.wrap(async () => {
-          await handleSelectNote(id);
-        });
+        await loading.wrap(() => handleSelectNote(id));
         restoreSidebarScope();
       },
     }),

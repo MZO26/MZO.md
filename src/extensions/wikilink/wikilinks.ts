@@ -179,13 +179,15 @@ const WikiLink = Node.create<WikiLinkOptions>({
         getAttributes: (match) => {
           const rawTitle = typeof match[1] === "string" ? match[1].trim() : "";
           if (!rawTitle) return false;
+          const normalizedTitle = rawTitle.toLowerCase();
           const targetNote = noteStore
             .get("notes")
-            .find((n) => n.title.toLowerCase() === rawTitle.toLowerCase());
-          if (!targetNote) return false;
-          return {
-            id: targetNote.id,
-          };
+            .find((n) => n.title.toLowerCase() === normalizedTitle);
+          return targetNote
+            ? {
+                id: targetNote.id,
+              }
+            : false;
         },
       }),
     ];

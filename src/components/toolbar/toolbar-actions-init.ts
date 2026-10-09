@@ -167,7 +167,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     icon: "Link",
   },
   image: {
-    run: (editor) => editor && promptImageUpload(editor),
+    run: async (editor) => editor && (await promptImageUpload(editor)),
     isActive: (editor) => editor?.isActive("image"),
     icon: "Image",
   },

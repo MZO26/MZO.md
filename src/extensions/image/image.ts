@@ -6,13 +6,9 @@ import { compressImageInWorker } from "@/utils/workers/worker-init";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type { Editor } from "@tiptap/core";
 
-async function processAndInsertImages(files: File[], editor: Editor | null) {
-  if (!editor) return;
+async function processAndInsertImages(files: File[], editor: Editor) {
   const validFiles = files.filter(
-    (file) =>
-      ALLOWED_TYPES.includes(file.type) &&
-      file.size <= MAX_SIZE &&
-      file.type.startsWith("image/"),
+    (file) => file.size <= MAX_SIZE && ALLOWED_TYPES.includes(file.type),
   );
   if (validFiles.length === 0) return;
   try {
@@ -63,8 +59,7 @@ async function processAndInsertImages(files: File[], editor: Editor | null) {
   }
 }
 
-async function promptImageUpload(editor: Editor | null) {
-  if (!editor) return;
+async function promptImageUpload(editor: Editor) {
   const input = document.createElement("input");
   input.type = "file";
   input.accept = "image/jpeg,image/png,image/gif,image/webp";

@@ -138,8 +138,8 @@ function initEditorSearch(
 
   function goNext() {
     if (editor.commands.docSearchNext()) {
-      void scrollToSelection(editor, editorWrapper).catch(
-        rendererLogger.appError,
+      void scrollToSelection(editor, editorWrapper).catch((error) =>
+        rendererLogger.appError("Failed to scroll to selection", error),
       );
       updateCount();
     }

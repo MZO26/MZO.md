@@ -14,7 +14,7 @@ function registerIpc(win: BrowserWindow) {
   registerSettingsIpc(win);
 }
 
-export function withErrorHandling<A extends unknown[], T>(
+function withErrorHandling<A extends unknown[], T>(
   fn: (...args: A) => Promise<T>,
 ) {
   return async (...args: A): Promise<Result<T>> => {
@@ -112,4 +112,11 @@ function validation<T extends z.ZodType>(schema: T, payload: unknown) {
   return result.data;
 }
 
-export { LIMITS, checkRateLimit, registerIpc, validateSender, validation };
+export {
+  LIMITS,
+  checkRateLimit,
+  registerIpc,
+  validateSender,
+  validation,
+  withErrorHandling,
+};

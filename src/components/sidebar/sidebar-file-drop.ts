@@ -66,9 +66,7 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
       checked: false,
     };
     const loading = createGlobalSpinner(0);
-    await loading.wrap(async () => {
-      await handleImportNote(request);
-    });
+    await loading.wrap(() => handleImportNote(request));
   }
 
   sidebar.addEventListener("dragover", handleDragOver);

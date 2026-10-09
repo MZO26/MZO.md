@@ -16,6 +16,7 @@ import type { Editor } from "@tiptap/core";
 function initQuickSwitcher(editor: Editor) {
   let activeIndex = 0;
   let currentDisplayNotes: QuickSwitchDisplayNote[] = [];
+
   async function toggleSwitcher() {
     if (switchDialog.open) {
       switchDialog.close();
@@ -199,9 +200,7 @@ function initQuickSwitcher(editor: Editor) {
       return;
     }
     const loading = createGlobalSpinner();
-    await loading.wrap(async () => {
-      await handleSelectNote(activeNote.id);
-    });
+    await loading.wrap(() => handleSelectNote(activeNote.id));
     restoreSidebarScope();
   }
 

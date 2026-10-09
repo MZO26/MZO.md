@@ -103,10 +103,19 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
   function filter(query: string) {
     const notes = noteStore.get("notes");
     const normalizedQuery = query.toLowerCase();
+    if (!normalizedQuery) {
+      const allTags: string[] = [];
+      for (const note of notes) {
+        if (note.tags) allTags.push(...note.tags);
+      }
+      render(allTags);
+      return;
+    }
     const matches: string[] = [];
     for (const note of notes) {
-      for (const tag of note.tags ?? []) {
-        if (!normalizedQuery || tag.toLowerCase().includes(normalizedQuery)) {
+      if (!note.tags) continue;
+      for (const tag of note.tags) {
+        if (tag.toLowerCase().includes(normalizedQuery)) {
           matches.push(tag);
         }
       }
@@ -134,7 +143,7 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
       const tagElement = e.target.closest<HTMLSpanElement>(".tag");
       const tag = tagElement?.dataset["tag"];
       if (tag) {
-        const normalizedTag = tag?.trim().toLowerCase();
+        const normalizedTag = tag.trim().toLowerCase();
         if (normalizedTag) await applyView(tag);
         close();
       }

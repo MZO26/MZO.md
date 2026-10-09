@@ -33,14 +33,14 @@ function isResult(obj: unknown): obj is Result<unknown> {
   return false;
 }
 
-async function invoke<T>(ipcPromise: Promise<unknown>): Promise<Result<T>> {
+async function invoke<T>(promise: Promise<Result<T>>): Promise<Result<T>> {
   try {
-    const result = await ipcPromise;
+    const result = await promise;
     if (!isResult(result)) {
       rendererLogger.appError("[IPC Bridge Error]: Invalid result format");
       return { success: false, error: AppErrorCode.UnknownError };
     }
-    return result as Result<T>;
+    return result;
   } catch (err: unknown) {
     rendererLogger.appError("[IPC Bridge Error]: ", err);
     return { success: false, error: AppErrorCode.UnknownError };

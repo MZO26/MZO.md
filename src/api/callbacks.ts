@@ -32,9 +32,7 @@ function initListeners() {
 
   window.noteAPI.onTriggerCopyRichText(async (id: Id) => {
     const loading = createGlobalSpinner();
-    await loading.wrap(async () => {
-      await triggerCopyRichText(id);
-    });
+    await loading.wrap(() => triggerCopyRichText(id));
   });
 
   window.noteAPI.onTriggerCopySelectionRichText(async () => {
@@ -73,7 +71,7 @@ function initListeners() {
   });
 
   window.electronAPI.onThemeChanged(
-    async (resolvedTheme: Readonly<ResolvedTheme>) => {
+    (resolvedTheme: Readonly<ResolvedTheme>) => {
       document.documentElement.dataset["theme"] = resolvedTheme;
     },
   );

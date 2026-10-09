@@ -7,6 +7,7 @@ import {
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { addActiveLinkToDoc } from "@/extensions/wikilink/wikilink-handler";
 import { stateStore } from "@/state/state";
+import { withPerformanceLog } from "@/utils/async";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import type { Metadata } from "@/utils/generators";
 import {
@@ -54,7 +55,9 @@ async function normalizeFileContent(
       }
       case "md": {
         try {
-          const response = await workOnMarkdownParsing(content);
+          const response = await withPerformanceLog(async () =>
+            workOnMarkdownParsing(content),
+          )();
           if (!response.success) {
             rendererLogger.appError(
               "[normalizeFileContent]: Worker failed to parse Markdown:",

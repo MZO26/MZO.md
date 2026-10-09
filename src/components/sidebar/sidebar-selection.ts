@@ -74,9 +74,7 @@ async function getSelectionAction(
       break;
     case "export":
       const loading = createGlobalSpinner();
-      await loading.wrap(async () => {
-        await exportSelection([...selectedIds]);
-      });
+      await loading.wrap(() => exportSelection([...selectedIds]));
       break;
     case "copy-rich-text":
       await copyRichTextSelection([...selectedIds]);

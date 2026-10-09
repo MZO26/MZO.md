@@ -108,11 +108,8 @@ function looksLikeMarkdown(text: string): boolean {
     /\[[^\]\n]+\]\([^)\n]+\)/,
     /^={3,}$\vert{}^-{3,}$/m,
   ];
-
   if (strongSignals.some((pattern) => pattern.test(trimmed))) return true;
-
   let matchCount = 0;
-
   const inlinePatterns = [
     /\*\*[^*\n]+\*\*/g,
     /__[^_\n]+__/g,
@@ -121,15 +118,12 @@ function looksLikeMarkdown(text: string): boolean {
     /~~[^~\n]+~~/g,
     /`[^`\n]+`/g,
   ];
-
   for (const pattern of inlinePatterns) {
     const matches = trimmed.match(pattern);
     if (matches) matchCount += matches.length;
     if (matchCount >= 2) return true;
   }
-
   const lines = trimmed.split(/\r?\n/);
-
   const blockPatterns = [
     /^>\s?\S/,
     /^[-*+]\s+\S/,
@@ -137,7 +131,6 @@ function looksLikeMarkdown(text: string): boolean {
     /^\|.+\|$/,
     /^(-{3,}|\*{3,}|_{3,})$/,
   ];
-
   for (const line of lines) {
     for (const pattern of blockPatterns) {
       if (pattern.test(line)) {
@@ -147,6 +140,5 @@ function looksLikeMarkdown(text: string): boolean {
       }
     }
   }
-
   return false;
 }

@@ -391,7 +391,7 @@ class AppDB {
   public create(payload: DbCreateArgs): NoteListItem {
     const id = crypto.randomUUID() as Id;
     const now = new Date().toISOString();
-    let { tags, links, images, ...rest } = payload;
+    const { tags, links, images, ...rest } = payload;
     const uniqueTags = [...new Set(tags)].slice(0, 5);
     const uniqueLinks = [...new Set(links)];
     const uniqueImages = [...new Set(images)];
@@ -439,7 +439,7 @@ class AppDB {
     result: NoteListItem;
     imageDiff: string[];
   } {
-    let { tags, links, images, ...rest } = payload;
+    const { tags, links, images, ...rest } = payload;
     const now = new Date().toISOString();
     const uniqueTags = [...new Set(tags)].slice(0, 5);
     const uniqueLinks = [...new Set(links)];
