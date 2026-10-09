@@ -8,13 +8,13 @@ import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { addActiveLinkToDoc } from "@/extensions/wikilink/wikilink-handler";
 import { stateStore } from "@/state/state";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
+import type { Metadata } from "@/utils/generators";
 import {
   getMetadata,
   textConverter,
   titleGenerator,
   wrapAsDoc,
 } from "@/utils/generators";
-import type { Metadata } from "@/utils/types";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
 import { AppErrorCode } from "@shared/errors";
 import { isEditorDoc } from "@shared/schemas/editor-schema";

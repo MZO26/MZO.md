@@ -1,7 +1,6 @@
+import { processWithLimit } from "@electron/concurrent";
 import { mainLogger } from "@electron/handler/permission-handler";
-import { processWithLimit } from "@electron/helpers";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import { createHash } from "crypto";
 import { app, shell } from "electron";
@@ -52,32 +51,12 @@ async function handleImageWriteMany(validatedData: ImagePayload[]) {
   return prepared.map((item) => item.imageSrc);
 }
 
-async function removeUnusedImages(usedImages: string[]) {
-  const usedSet = new Set(usedImages);
+async function removeUnusedImages(hashes: string[]) {
+  if (!hashes || hashes.length === 0) return;
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
   await fs.mkdir(imagesFolder, { recursive: true });
-  try {
-    const allImages = await fs.readdir(imagesFolder);
-    const unused = allImages.filter((i) => !usedSet.has(i));
-    if (unused.length === 0) {
-      mainLogger.devLog("[removeUnusedImages]: No images to clean");
-      return;
-    }
-    await trashImages(unused, imagesFolder);
-    mainLogger.devLog(
-      `Successfully cleaned up ${unused.length} ${unused.length > 1 ? "images" : "image"}`,
-    );
-  } catch (error) {
-    mainLogger.appError(
-      `Failed to process cleanup for folder: ${imagesFolder}`,
-      error,
-    );
-  }
-}
-
-async function trashImages(unused: string[], imagesFolder: string) {
-  await processWithLimit(unused, 5, async (file) => {
+  await processWithLimit(hashes, 5, async (file) => {
     const filePath = path.join(imagesFolder, file);
     try {
       await shell.trashItem(filePath);
@@ -87,6 +66,9 @@ async function trashImages(unused: string[], imagesFolder: string) {
       mainLogger.appError(`Failed to delete image: ${file}`, error);
     }
   });
+  mainLogger.devLog(
+    `Cleaned up ${hashes.length} ${hashes.length > 1 ? "images" : "image"}`,
+  );
 }
 
 export { handleImageWriteMany, removeUnusedImages };

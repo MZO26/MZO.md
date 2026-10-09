@@ -1,6 +1,5 @@
 import { mainLogger } from "@electron/handler/permission-handler";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import type { SearchQuery, SearchResult } from "@shared/schemas/note-schema";
 import { MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 import type { DatabaseSync, StatementSync } from "node:sqlite";

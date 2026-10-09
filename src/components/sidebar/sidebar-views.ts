@@ -1,11 +1,14 @@
 import { rendererLogger } from "@/app";
+import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { handleUpdateSettings } from "@/settings/setting-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
-import { compareNotes } from "@/utils/note-helpers";
+import { compareNotes, updateNoteCount } from "@/utils/note-helpers";
 import { getUIItem } from "@/utils/registry";
 import type { SidebarParams } from "@/utils/types";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
+
+let sidebarUpdatePending = false;
 
 function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
   if (activeTag === null) return true;
@@ -17,9 +20,13 @@ function computeIdsForTagView(
   notes: readonly NoteListItem[],
   tag: string | null,
 ) {
-  return notes
-    .filter((note) => matchesActiveTag(note, tag))
-    .map((note) => note.id);
+  const ids: Id[] = [];
+  for (const note of notes) {
+    if (matchesActiveTag(note, tag)) {
+      ids.push(note.id);
+    }
+  }
+  return ids;
 }
 
 function selectSidebarNotes(
@@ -87,10 +94,23 @@ function getSidebarParams(): SidebarParams {
   };
 }
 
+function sidebarListener() {
+  if (sidebarUpdatePending) return;
+  sidebarUpdatePending = true;
+  queueMicrotask(() => {
+    sidebarUpdatePending = false;
+    const next = getSidebarParams();
+    updateNoteCount(next.visibleNotes.length);
+    rendererLogger.devLog("Sidebar change");
+    handleSidebarChange(next);
+  });
+}
+
 export {
   applyView,
   computeIdsForTagView,
   getSidebarParams,
   matchesActiveTag,
   restoreSidebarScope,
+  sidebarListener,
 };

@@ -1,7 +1,6 @@
 import db from "@electron/db/database";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import {
   DbBoolCodec,
   NoteListItemFromDB,
@@ -13,6 +12,20 @@ import {
 } from "@shared/schemas/note-schema";
 import { DatabaseSync, type StatementSync } from "node:sqlite";
 
+type UpdateTransactionLogicArgs = {
+  noteParams: Omit<UpdateTransaction, "tags" | "links" | "images">;
+  safeTags: string[];
+  safeLinks: string[];
+  safeImages: string[];
+};
+
+type CreateTransactionLogicArgs = {
+  noteParams: Omit<CreateTransaction, "tags" | "links" | "images">;
+  safeTags: string[];
+  safeLinks: string[];
+  safeImages: string[];
+};
+
 class Transactions {
   private db: DatabaseSync;
   private createNoteStmt!: StatementSync;
@@ -23,6 +36,8 @@ class Transactions {
   private insertManyTagsStmt!: StatementSync;
   private insertManyLinksStmt!: StatementSync;
   private deleteManyNotesStmt!: StatementSync;
+  private insertManyImagesStmt!: StatementSync;
+  private deleteImagesStmt!: StatementSync;
   constructor(dbConnection: DatabaseSync) {
     this.db = dbConnection;
   }
@@ -58,6 +73,14 @@ class Transactions {
       DELETE FROM note_links 
       WHERE source_id = $source_id
     `);
+    this.deleteImagesStmt = this.db.prepare(`
+      DELETE FROM note_images
+      WHERE note_id = $note_id
+      AND image_hash IN (
+        SELECT j.value 
+        FROM json_each($image_hash) j
+      )
+      `);
     this.insertManyTagsStmt = this.db.prepare(`
       INSERT INTO note_tags (note_id, tag_name)
       SELECT $note_id, j.value
@@ -69,11 +92,16 @@ class Transactions {
       FROM json_each($links) j
       WHERE EXISTS (SELECT 1 FROM notes WHERE id = j.value)
     `);
+    this.insertManyImagesStmt = this.db.prepare(`
+      INSERT INTO note_images (note_id, image_hash)
+      SELECT $note_id, j.value
+      FROM json_each($image_hash) j
+      `);
   }
 
   private savepointCounter = 0;
 
-  private transaction<T>(fn: () => T extends Promise<any> ? never : T): T {
+  private transaction<T>(fn: () => T extends Promise<unknown> ? never : T): T {
     if (this.db.isTransaction) {
       const savepoint = `sp_${++this.savepointCounter}`;
       this.db.exec(`SAVEPOINT ${savepoint}`);
@@ -114,28 +142,35 @@ class Transactions {
   private runCreateManyLogic(paramsArr: CreateTransaction[]) {
     const results = [];
     for (const params of paramsArr) {
-      const { tags, links, ...noteParams } = params;
+      const { tags, links, images, ...noteParams } = params;
       const safeTags = tags ?? [];
       const safeLinks = links ?? [];
+      const safeImages = images ?? [];
       const result = this.createNoteStmt.get(noteParams) as
         | Omit<NoteRow, "content" | "plain_text">
         | undefined;
       if (!result) {
         throw new AppBackendError(AppErrorCode.DBError);
       }
+      if (safeImages.length > 0) {
+        this.insertManyImagesStmt.run({
+          $note_id: result.id,
+          $image_hash: JSON.stringify(safeImages),
+        });
+      }
       if (safeLinks.length > 0) {
         this.insertManyLinksStmt.run({
-          $source_id: result.id as Id,
+          $source_id: result.id,
           $links: JSON.stringify(safeLinks),
         });
       }
       if (safeTags.length > 0) {
         this.insertManyTagsStmt.run({
-          $note_id: result.id as Id,
+          $note_id: result.id,
           $tags: JSON.stringify(safeTags),
         });
       }
-      results.push({ row: result, safeTags, safeLinks });
+      results.push({ row: result, safeTags, safeLinks, safeImages });
     }
     return results;
   }
@@ -149,6 +184,7 @@ class Transactions {
       validation(NoteListItemFromDB, {
         ...result.row,
         pinned: DbBoolCodec.decode(result.row.pinned),
+        images: result.safeImages,
         tags: result.safeTags,
         links: result.safeLinks
           .filter((id) => id !== result.row.id)
@@ -157,38 +193,46 @@ class Transactions {
     );
   }
 
-  private runCreateLogic(
-    noteParams: Omit<CreateTransaction, "tags" | "links">,
-    safeTags: string[],
-    safeLinks: string[],
-  ) {
+  private runCreateLogic({
+    noteParams,
+    safeImages,
+    safeLinks,
+    safeTags,
+  }: CreateTransactionLogicArgs) {
     const result = this.createNoteStmt.get(noteParams) as
       | Omit<NoteRow, "content" | "plain_text">
       | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
+    if (safeImages.length > 0) {
+      this.insertManyImagesStmt.run({
+        $note_id: result.id,
+        $image_hash: JSON.stringify(safeImages),
+      });
+    }
     if (safeLinks.length > 0) {
       this.insertManyLinksStmt.run({
         $source_id: result.id,
-        $links: JSON.stringify(safeLinks ?? []),
+        $links: JSON.stringify(safeLinks),
       });
     }
     if (safeTags.length > 0) {
       this.insertManyTagsStmt.run({
         $note_id: result.id,
-        $tags: JSON.stringify(safeTags ?? []),
+        $tags: JSON.stringify(safeTags),
       });
     }
     return result;
   }
 
   public safeCreate(params: CreateTransaction): NoteListItem {
-    const { tags, links, ...noteParams } = params;
+    const { tags, links, images, ...noteParams } = params;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];
+    const safeImages = images ?? [];
     const result = this.transaction(() =>
-      this.runCreateLogic(noteParams, safeTags, safeLinks),
+      this.runCreateLogic({ noteParams, safeTags, safeLinks, safeImages }),
     );
     const allLinks = db.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== params.id);
@@ -197,6 +241,7 @@ class Transactions {
       pinned: DbBoolCodec.decode(result.pinned),
       tags: safeTags,
       links: validLinks,
+      images: safeImages,
     });
   }
 
@@ -209,11 +254,12 @@ class Transactions {
     return this.transaction(() => this.runDeleteLogic(id));
   }
 
-  private runUpdateLogic(
-    noteParams: Omit<UpdateTransaction, "tags" | "links">,
-    safeTags: string[],
-    safeLinks: string[],
-  ) {
+  private runUpdateLogic({
+    noteParams,
+    safeImages,
+    safeLinks,
+    safeTags,
+  }: UpdateTransactionLogicArgs) {
     const result = this.updateNoteStmt.get(noteParams) as
       | Omit<NoteRow, "content" | "plain_text">
       | undefined;
@@ -234,24 +280,54 @@ class Transactions {
         $tags: JSON.stringify(safeTags ?? []),
       });
     }
-    return result;
+    const images = db.getUsedImages(noteParams.id);
+    if (images.length === 0 && safeImages.length === 0)
+      return { result, diff: new Set() };
+    const seen = new Set<string>(images);
+    const hashes = [];
+    for (const image of safeImages) {
+      if (!seen.has(image)) hashes.push(image);
+    }
+    if (hashes.length > 0) {
+      this.insertManyImagesStmt.run({
+        $note_id: noteParams.id,
+        $image_hash: JSON.stringify(hashes),
+      });
+    }
+    const diff = seen.difference(new Set<string>(safeImages));
+    if (diff.size > 0) {
+      this.deleteImagesStmt.run({
+        $note_id: noteParams.id,
+        $image_hash: JSON.stringify([...diff]),
+      });
+    }
+    return { result, diff: diff ?? new Set() };
   }
 
-  public safeUpdate(params: UpdateTransaction): NoteListItem {
-    const { tags, links, ...noteParams } = params;
+  public safeUpdate(params: UpdateTransaction): {
+    result: NoteListItem;
+    imageDiff: string[];
+  } {
+    const { tags, links, images, ...noteParams } = params;
     const safeTags = tags ?? [];
     const safeLinks = links ?? [];
-    const result = this.transaction(() =>
-      this.runUpdateLogic(noteParams, safeTags, safeLinks),
+    const safeImages = images ?? [];
+    const { result, diff } = this.transaction(() =>
+      this.runUpdateLogic({ noteParams, safeTags, safeLinks, safeImages }),
     );
     const allLinks = db.getLinksById(result.id) ?? [];
     const validLinks = allLinks.filter((l) => l.id !== result.id);
-    return validation(NoteListItemFromDB, {
-      ...result,
-      pinned: DbBoolCodec.decode(result.pinned),
-      tags: safeTags,
-      links: validLinks,
-    });
+    const validHashes = Array.from(diff).filter((h) => typeof h === "string");
+    return {
+      result: validation(NoteListItemFromDB, {
+        ...result,
+        pinned: DbBoolCodec.decode(result.pinned),
+        tags: safeTags,
+        links: validLinks,
+        images: safeImages,
+      }),
+      imageDiff: validHashes,
+    };
   }
 }
 

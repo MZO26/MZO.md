@@ -1,6 +1,5 @@
 import db from "@electron/db/database";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
 class SettingsService {

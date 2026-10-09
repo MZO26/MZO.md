@@ -68,12 +68,6 @@ type ToolbarItem = Action | Divider;
 
 type ActionMap = Record<string, ToolbarItem>;
 
-type Metadata = {
-  snippet: string;
-  tags: string[];
-  links: Id[];
-};
-
 type ImageCompressionPayload = {
   buffer: ArrayBuffer;
   mimeType: string;
@@ -144,9 +138,9 @@ type QuickActionConfig = {
 
 type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
 
-type MappedMatches = (Omit<SearchResult, "search_match"> & {
+type MappedMatches = Omit<SearchResult, "search_match"> & {
   snippet: string;
-})[];
+};
 
 type ImageContent = (
   | {
@@ -176,7 +170,6 @@ export type {
   LinkAttributes,
   MappedMatches,
   MathOptions,
-  Metadata,
   QuickAction,
   QuickActionConfig,
   QuickSwitchDisplayNote,

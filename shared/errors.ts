@@ -1,3 +1,13 @@
+class AppBackendError extends Error {
+  constructor(
+    public readonly code: AppErrorCode,
+    message?: string,
+  ) {
+    super(message || code);
+    this.name = "AppBackendError";
+  }
+}
+
 enum WorkerErrorCode {
   InitializeError = "INIT_ERROR",
   CompressionError = "COMPRESSION_FAILED",
@@ -38,4 +48,10 @@ const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   [AppErrorCode.ExportError]: "Export failed.",
 };
 
-export { AppErrorCode, ERROR_MESSAGES, WORKER_ERROR_MESSAGES, WorkerErrorCode };
+export {
+  AppBackendError,
+  AppErrorCode,
+  ERROR_MESSAGES,
+  WORKER_ERROR_MESSAGES,
+  WorkerErrorCode,
+};

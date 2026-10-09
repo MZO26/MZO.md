@@ -1,6 +1,6 @@
 import { noteStore } from "@/state/state";
 import { WIKILINK_REGEX } from "@/utils/constants";
-import type { Metadata } from "@/utils/types";
+import type { Metadata } from "@/utils/generators";
 import type { Id, Tag } from "@shared/schemas/note-schema";
 
 const FRONTMATTER_REGEX =

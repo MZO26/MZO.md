@@ -12,16 +12,17 @@ import {
   singleExport,
   singlePDFExport,
 } from "@electron/fs/fs-export";
+import { removeUnusedImages } from "@electron/fs/fs-image";
 import { batchImport } from "@electron/fs/fs-import";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
   checkRateLimit,
   LIMITS,
-  result,
+  validateSender,
   validation,
+  withErrorHandling,
 } from "@electron/ipc/ipc-validation";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import { DbContentCodec } from "@shared/schemas/editor-schema";
 import {
   CreateNotePayloadSchema,
@@ -41,34 +42,41 @@ import {
 import { BrowserWindow, ipcMain } from "electron";
 
 function registerNoteIpc(win: BrowserWindow) {
-  ipcMain.handle(IPC_CHANNELS.GET_ALL_NOTES, (e) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.GET_ALL_NOTES,
+    withErrorHandling(async (e) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.GET_ALL_NOTES, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       return db.getAll();
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.GET_ALL_NOTES_BACKUP, (e) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.GET_ALL_NOTES_BACKUP,
+    withErrorHandling(async (e) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.GET_ALL_NOTES_BACKUP, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       return db.getAllBackup();
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_SEARCH, (e, query: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_SEARCH,
+    withErrorHandling(async (e, query: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_SEARCH, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(QuerySchema, query);
-      const result = db.getSearch().search(validatedData);
-      return result;
-    });
-  });
+      return db.getSearch().search(validatedData);
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_CREATE, (e, payload: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_CREATE,
+    withErrorHandling(async (e, payload: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_CREATE, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(CreateNotePayloadSchema, payload);
@@ -78,11 +86,13 @@ function registerNoteIpc(win: BrowserWindow) {
         content: DbContentCodec.encode(validatedData.content),
       };
       return db.create(noteData);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_CREATE_MANY, (e, payloads: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_CREATE_MANY,
+    withErrorHandling(async (e, payloads: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_CREATE_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(CreateNotesPayloadsSchema, payloads);
@@ -92,82 +102,97 @@ function registerNoteIpc(win: BrowserWindow) {
         content: DbContentCodec.encode(data.content),
       }));
       return db.createMany(noteData);
-    });
-  });
+    }),
+  );
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_UPDATE,
-    (e, payload: unknown, flush: unknown) => {
-      return result(e, async () => {
-        if (!flush) {
-          if (!checkRateLimit(IPC_CHANNELS.NOTE_UPDATE, LIMITS.WRITE_LIGHT))
-            throw new AppBackendError(AppErrorCode.RateLimitError);
-        } else {
-          if (
-            !checkRateLimit(IPC_CHANNELS.NOTE_UPDATE_FLUSH, LIMITS.WRITE_FLUSH)
-          ) {
-            throw new AppBackendError(AppErrorCode.RateLimitError);
-          }
+    withErrorHandling(async (e, payload: unknown, flush: unknown) => {
+      validateSender(e);
+      if (!flush) {
+        if (!checkRateLimit(IPC_CHANNELS.NOTE_UPDATE, LIMITS.WRITE_LIGHT))
+          throw new AppBackendError(AppErrorCode.RateLimitError);
+      } else {
+        if (
+          !checkRateLimit(IPC_CHANNELS.NOTE_UPDATE_FLUSH, LIMITS.WRITE_FLUSH)
+        ) {
+          throw new AppBackendError(AppErrorCode.RateLimitError);
         }
-        const validatedData = validation(UpdateNotePayloadSchema, payload);
-        const noteData = {
-          ...validatedData,
-          content: DbContentCodec.encode(validatedData.content),
-        };
-        return db.update(noteData);
-      });
-    },
+      }
+      const validatedData = validation(UpdateNotePayloadSchema, payload);
+      const noteData = {
+        ...validatedData,
+        content: DbContentCodec.encode(validatedData.content),
+      };
+      const { result, imageDiff } = db.update(noteData);
+      if (imageDiff && imageDiff.length > 0) {
+        await removeUnusedImages(imageDiff);
+      }
+      return result;
+    }),
   );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_DELETE, (e, id: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_DELETE,
+    withErrorHandling(async (e, id: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_DELETE, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
       return db.delete(validatedData);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_DELETE_MANY, (e, ids: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_DELETE_MANY,
+    withErrorHandling(async (e, ids: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_DELETE_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, ids);
       return db.deleteMany(validatedData);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_GET_BY_ID, (e, id: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_GET_BY_ID,
+    withErrorHandling(async (e, id: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_GET_BY_ID, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
       return db.getById(validatedData);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_GET_MANY_BY_ID, (e, id: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_GET_MANY_BY_ID,
+    withErrorHandling(async (e, id: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_GET_MANY_BY_ID, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, id);
       return db.getManyById(validatedData);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, (e, payload: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_GET_RELATED_NOTES,
+    withErrorHandling(async (e, payload: unknown) => {
+      validateSender(e);
       if (
         !checkRateLimit(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, LIMITS.READ_NORMAL)
       )
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(RelatedNotesSchema, payload);
       return db.getRelatedNotes(validatedData.id);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_IMPORT, (e, payload: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_IMPORT,
+    withErrorHandling(async (e, payload: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_IMPORT, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(FilePathRequestSchema, payload);
@@ -181,21 +206,25 @@ function registerNoteIpc(win: BrowserWindow) {
         throw new AppBackendError(AppErrorCode.CancelledOperation);
       }
       return await batchImport(filePaths);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_EXPORT_MANY, (e, payload: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_EXPORT_MANY,
+    withErrorHandling(async (e, payload: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_EXPORT_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ExportManyRequestSchema, payload);
       const selectedFolder = await handleExportManyDialog(win);
       return await batchExport(selectedFolder, validatedData);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_EXPORT, (e, payload: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_EXPORT,
+    withErrorHandling(async (e, payload: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_EXPORT, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ExportRequestSchema, payload);
@@ -208,45 +237,53 @@ function registerNoteIpc(win: BrowserWindow) {
         return await singlePDFExport(filePath, data, validatedData.landscape);
       }
       return await singleExport(filePath, data);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_PIN, (e, id: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_PIN,
+    withErrorHandling(async (e, id: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_PIN, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdSchema, id);
       return db.togglePin(validatedData);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.NOTE_PIN_MANY, (e, ids: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.NOTE_PIN_MANY,
+    withErrorHandling(async (e, ids: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_PIN_MANY, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(IdsSchema, ids);
       return db.toggleManyPins(validatedData);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.DB_BACKUP, (e) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.DB_BACKUP,
+    withErrorHandling(async (e) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.DB_BACKUP, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const filePath = await handleDBBackupDialog(win);
       return await db.backupDb(filePath);
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.DB_BACKUP_RESTORE, (e) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.DB_BACKUP_RESTORE,
+    withErrorHandling(async (e) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.DB_BACKUP_RESTORE, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const backupPath = await handleDBRestoreDialog(win);
       if (!backupPath) throw new AppBackendError(AppErrorCode.InvalidData);
       return await restoreFromBackupPath(backupPath);
-    });
-  });
+    }),
+  );
 }
 
 export { registerNoteIpc };

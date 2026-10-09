@@ -23,6 +23,8 @@ import type { Id } from "@shared/schemas/note-schema";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { generateHTML, generateText } from "@tiptap/core";
 
+let selectionUpdatePending = false;
+
 function setSelectionMode(enabled: boolean) {
   const prevSelectedIds = stateStore.get("selectedIds");
   const nextSelectedIds = enabled
@@ -242,6 +244,16 @@ async function deleteSelection() {
   });
 }
 
+function updateSelection() {
+  if (selectionUpdatePending) return;
+  selectionUpdatePending = true;
+  queueMicrotask(() => {
+    selectionUpdatePending = false;
+    const next = stateStore.getState();
+    updateSelectionUI(next);
+  });
+}
+
 export {
   addToSelection,
   copyRichTextSelection,
@@ -251,4 +263,5 @@ export {
   pinSelection,
   selectAllVisibleNotes,
   setSelectionMode,
+  updateSelection,
 };

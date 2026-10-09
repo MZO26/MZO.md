@@ -178,4 +178,50 @@ function withLogger<T extends object>(store: Store<T>): Store<T> {
   };
 }
 
-export { noteStore, settingsStore, stateStore, type AppState, type NoteStore };
+function shallowEq<A>(a: A, b: A): boolean {
+  if (Object.is(a, b)) return true;
+  if (a instanceof Map && b instanceof Map) {
+    if (a.size !== b.size) return false;
+    for (const [key, value] of a) {
+      if (!b.has(key) || !Object.is(value, b.get(key))) return false;
+    }
+    return true;
+  }
+  if (a instanceof Set && b instanceof Set) {
+    if (a.size !== b.size) return false;
+    for (const value of a) {
+      if (!b.has(value)) return false;
+    }
+    return true;
+  }
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  if (
+    typeof a !== "object" ||
+    a === null ||
+    typeof b !== "object" ||
+    b === null
+  ) {
+    return false;
+  }
+  const keysA = Object.keys(a) as Array<keyof A>;
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  for (const key of keysA) {
+    if (
+      !Object.prototype.hasOwnProperty.call(b, key) ||
+      !Object.is(a[key], b[key])
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export {
+  noteStore,
+  settingsStore,
+  shallowEq,
+  stateStore,
+  type AppState,
+  type NoteStore,
+};

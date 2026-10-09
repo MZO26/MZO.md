@@ -1,4 +1,5 @@
 import { EditorDocSchema } from "@shared/schemas/editor-schema";
+import { DbImageSchema, ImageHashSchema } from "@shared/schemas/image-schema";
 import { MAX_SEARCH_LENGTH, UNTITLED } from "@shared/shared-constants";
 import { z } from "zod";
 
@@ -19,6 +20,11 @@ const BoolDbSchema = z.union([z.literal(0), z.literal(1)]);
 const DbBoolCodec = z.codec(BoolDbSchema, BoolSchema, {
   decode: (val) => val === 1,
   encode: (val) => (val ? 1 : 0),
+});
+
+const ImageRowSchema = z.object({
+  note_id: IdSchema,
+  image_hash: ImageHashSchema,
 });
 
 const PlainTextSchema = z.string().default("");
@@ -68,13 +74,10 @@ const NoteTableSchema = z.object({
 const NoteSchema = NoteTableSchema.extend({
   content: EditorDocSchema,
   tags: TagsSchema,
+  images: DbImageSchema,
   links: LinksSchema,
   pinned: BoolSchema,
 });
-
-const OldNoteSchema = z.array(
-  NoteSchema.pick({ created_at: true, title: true }),
-);
 
 // Full Array of Note Objects
 const NotesSchema = z.array(NoteSchema);
@@ -92,6 +95,7 @@ const NoteListItemFromDB = NoteFromDB.omit({
 
 // Payload Evaluation: Expects content to be stringified and converts booleans to 0 or 1 for DB
 const NoteToDBSchema = NoteTableSchema.extend({
+  images: DbImageSchema,
   links: LinkPayloadSchema,
   tags: TagsSchema,
 });
@@ -163,6 +167,7 @@ type CreateNotesPayload = z.infer<typeof CreateNotesPayloadsSchema>;
 type Note = z.infer<typeof NoteSchema>;
 type Id = z.infer<typeof IdSchema>;
 type RelatedNotes = z.infer<typeof RelatedNotesSchema>;
+type ImageRow = z.infer<typeof ImageRowSchema>;
 
 export {
   BoolDbSchema,
@@ -174,6 +179,7 @@ export {
   DbBoolCodec,
   IdSchema,
   IdsSchema,
+  ImageRowSchema,
   isNoteID,
   LinkRowSchema,
   LinksSchema,
@@ -183,7 +189,6 @@ export {
   NoteSchema,
   NotesSchema,
   NoteToDBSchema,
-  OldNoteSchema,
   PlainTextSchema,
   QuerySchema,
   RelatedNotesSchema,
@@ -202,6 +207,7 @@ export {
   type DbCreateArgs,
   type DbUpdateArgs,
   type Id,
+  type ImageRow,
   type Link,
   type LinkRow,
   type Note,

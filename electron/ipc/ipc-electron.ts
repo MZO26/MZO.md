@@ -2,15 +2,15 @@ import { setUpNoteMenu, setUpTableMenu } from "@electron/context-menu";
 import { handleImageWriteMany } from "@electron/fs/fs-image";
 import { processUrl } from "@electron/handler/navigation-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import {
   checkRateLimit,
   LIMITS,
-  result,
+  validateSender,
   validation,
+  withErrorHandling,
 } from "@electron/ipc/ipc-validation";
 import { getTitleBarOverlay, initTheme } from "@electron/titlebar";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import {
   ExternalUrlSchema,
   MenuTypeSchema,
@@ -31,28 +31,29 @@ import {
 function registerElectronIpc(win: BrowserWindow) {
   ipcMain.on(
     IPC_CHANNELS.SHOW_CONTEXT_MENU,
-    (e, type: unknown, payload: unknown) => {
-      return result(e, async () => {
-        if (!checkRateLimit(IPC_CHANNELS.SHOW_CONTEXT_MENU, LIMITS.READ_LIGHT))
-          throw new AppBackendError(AppErrorCode.RateLimitError);
-        if (!win) return;
-        const validMenuType = validation(MenuTypeSchema, type);
-        let menu: Menu;
-        if (validMenuType === "table") {
-          menu = setUpTableMenu(win);
-        } else if (validMenuType === "note") {
-          const validatedData = validation(NoteMenuPayloadSchema, payload);
-          menu = await setUpNoteMenu(win, validatedData);
-        } else {
-          return;
-        }
-        menu.popup({ window: win });
-      });
-    },
+    withErrorHandling(async (e, type: unknown, payload: unknown) => {
+      validateSender(e);
+      if (!checkRateLimit(IPC_CHANNELS.SHOW_CONTEXT_MENU, LIMITS.READ_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      if (!win) return;
+      const validMenuType = validation(MenuTypeSchema, type);
+      let menu: Menu;
+      if (validMenuType === "table") {
+        menu = setUpTableMenu(win);
+      } else if (validMenuType === "note") {
+        const validatedData = validation(NoteMenuPayloadSchema, payload);
+        menu = await setUpNoteMenu(win, validatedData);
+      } else {
+        return;
+      }
+      menu.popup({ window: win });
+    }),
   );
 
-  ipcMain.handle(IPC_CHANNELS.OPEN_EXTERNAL, (e, url: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.OPEN_EXTERNAL,
+    withErrorHandling(async (e, url: unknown) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.OPEN_EXTERNAL, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ExternalUrlSchema, url);
@@ -68,41 +69,44 @@ function registerElectronIpc(win: BrowserWindow) {
           decision satisfies never;
           return "block";
       }
-    });
-  });
+    }),
+  );
 
-  ipcMain.handle(IPC_CHANNELS.OPEN_APP_PATH, (e) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.OPEN_APP_PATH,
+    withErrorHandling(async (e) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.OPEN_APP_PATH, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const userDataPath = app.getPath("userData");
       const error = await shell.openPath(userDataPath);
       if (error === "") return true;
       else return false;
-    });
-  });
+    }),
+  );
 
   ipcMain.handle(
     IPC_CHANNELS.SET_THEME,
-    (e, theme: unknown, focus?: unknown) => {
-      return result(e, async () => {
-        if (!checkRateLimit(IPC_CHANNELS.SET_THEME, LIMITS.WRITE_LIGHT))
-          throw new AppBackendError(AppErrorCode.RateLimitError);
-        const validTheme = validation(StoreSchema.shape["theme"], theme);
-        const resolvedTheme = initTheme(validTheme);
-        const isFocus = typeof focus === "boolean" && focus === true;
-        const windowTheme = getTitleBarOverlay(resolvedTheme, isFocus);
-        for (const window of BrowserWindow.getAllWindows()) {
-          window.setBackgroundColor(windowTheme.backgroundColor);
-          window.setTitleBarOverlay?.(windowTheme.overlayOptions);
-        }
-        return resolvedTheme;
-      });
-    },
+    withErrorHandling(async (e, theme: unknown, focus?: unknown) => {
+      validateSender(e);
+      if (!checkRateLimit(IPC_CHANNELS.SET_THEME, LIMITS.WRITE_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validTheme = validation(StoreSchema.shape["theme"], theme);
+      const resolvedTheme = initTheme(validTheme);
+      const isFocus = typeof focus === "boolean" && focus === true;
+      const windowTheme = getTitleBarOverlay(resolvedTheme, isFocus);
+      for (const window of BrowserWindow.getAllWindows()) {
+        window.setBackgroundColor(windowTheme.backgroundColor);
+        window.setTitleBarOverlay?.(windowTheme.overlayOptions);
+      }
+      return resolvedTheme;
+    }),
   );
 
-  ipcMain.handle(IPC_CHANNELS.APP_PIN, (e) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.APP_PIN,
+    withErrorHandling(async (e) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.APP_PIN, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       if (win && !win.isDestroyed()) {
@@ -120,32 +124,33 @@ function registerElectronIpc(win: BrowserWindow) {
         return nextState;
       }
       return false;
-    });
-  });
+    }),
+  );
 
   ipcMain.handle(
     IPC_CHANNELS.SHOW_NOTIFICATION,
-    (e, title: unknown, body: unknown) => {
-      return result(e, async () => {
-        if (!checkRateLimit(IPC_CHANNELS.SHOW_NOTIFICATION, LIMITS.READ_LIGHT))
-          throw new AppBackendError(AppErrorCode.RateLimitError);
-        const validNotif = validation(NotificationSchema, { title, body });
-        if (Notification.isSupported()) {
-          const notif = new Notification(validNotif);
-          notif.show();
-        }
-      });
-    },
+    withErrorHandling(async (e, title: unknown, body: unknown) => {
+      validateSender(e);
+      if (!checkRateLimit(IPC_CHANNELS.SHOW_NOTIFICATION, LIMITS.READ_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      const validNotif = validation(NotificationSchema, { title, body });
+      if (Notification.isSupported()) {
+        const notif = new Notification(validNotif);
+        notif.show();
+      }
+    }),
   );
 
-  ipcMain.handle(IPC_CHANNELS.WRITE_IMAGE, (e, payload: unknown) => {
-    return result(e, async () => {
+  ipcMain.handle(
+    IPC_CHANNELS.WRITE_IMAGE,
+    withErrorHandling(async (e, payload) => {
+      validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.WRITE_IMAGE, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(ImagePayloadsSchema, payload);
       return await handleImageWriteMany(validatedData);
-    });
-  });
+    }),
+  );
 }
 
 export { registerElectronIpc };

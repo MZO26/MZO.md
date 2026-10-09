@@ -1,6 +1,6 @@
+import { processWithLimit } from "@electron/concurrent";
 import { sanitizeImportString } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
-import { processWithLimit } from "@electron/helpers";
 import { validation } from "@electron/ipc/ipc-validation";
 import {
   ImportRequestSchema,

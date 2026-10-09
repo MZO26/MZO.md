@@ -1,14 +1,21 @@
 import { BLOCK_TYPES } from "@/utils/constants";
-import type { Metadata } from "@/utils/types";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import { UNTITLED } from "@shared/shared-constants";
 import { type JSONContent } from "@tiptap/core";
+
+type Metadata = {
+  snippet: string;
+  tags: string[];
+  links: Id[];
+  images: string[];
+};
 
 function getMetadata(content: JSONContent): Metadata {
   return {
     snippet: snippetGenerator(content),
     links: getLinks(content),
     tags: getTags(content),
+    images: getImages(content),
   };
 }
 
@@ -136,11 +143,33 @@ function getLinks(doc: JSONContent) {
   return Array.from(seen);
 }
 
-function getTags(doc: JSONContent) {
+function getImages(doc: JSONContent) {
   if (!doc || !Array.isArray(doc.content) || doc.content.length === 0)
     return [];
   const seen = new Set<string>();
   const stack: JSONContent[] = [...doc.content];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!node || typeof node !== "object") continue;
+    if (node.type === "image" && typeof node.attrs?.["src"] === "string") {
+      const src = node.attrs["src"];
+      const hash = src.replace("appimg:///", "");
+      if (hash) seen.add(hash);
+    }
+    if (Array.isArray(node.content)) {
+      for (const child of node.content) {
+        stack.push(child);
+      }
+    }
+  }
+  return Array.from(seen);
+}
+
+function getTags(doc: JSONContent) {
+  if (!doc || !Array.isArray(doc.content) || doc.content.length === 0)
+    return [];
+  const seen = new Set<string>();
+  const stack: JSONContent[] = [...doc.content].reverse();
   while (stack.length > 0) {
     if (seen.size === 5) break;
     const node = stack.pop();
@@ -152,8 +181,11 @@ function getTags(doc: JSONContent) {
       }
     }
     if (Array.isArray(node.content)) {
-      for (const child of node.content) {
-        stack.push(child);
+      // reverse to get tags from top to bottom order
+      for (let i = node.content.length - 1; i >= 0; i--) {
+        const content = node.content[i];
+        if (!content) continue;
+        stack.push(content);
       }
     }
   }
@@ -162,6 +194,7 @@ function getTags(doc: JSONContent) {
 
 export {
   extractText,
+  getImages,
   getLinks,
   getMetadata,
   getTags,
@@ -169,4 +202,5 @@ export {
   textConverter,
   titleGenerator,
   wrapAsDoc,
+  type Metadata,
 };

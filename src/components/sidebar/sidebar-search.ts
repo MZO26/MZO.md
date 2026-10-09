@@ -34,18 +34,20 @@ async function handleSearch(searchInput: SearchQuery) {
     rendererLogger.appError("[handleSearch]: Failed to search:", result.error);
     return;
   }
-  const data = result.data.map((row) => {
-    const { search_match, ...rest } = row;
-    return {
-      ...rest,
+  const data: MappedMatches[] = [];
+  for (const row of result.data) {
+    data.push({
+      id: row.id,
+      title: row.title,
       snippet: row.search_match,
-    };
-  });
+      rank: row.rank,
+    });
+  }
   computeSearchResult(data, noteStore.get("noteIndex"), activeTag);
 }
 
 function computeSearchResult(
-  matches: MappedMatches,
+  matches: MappedMatches[],
   noteIndex: Map<Id, NoteListItem>,
   activeTag: string | null,
 ) {

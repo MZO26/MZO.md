@@ -1,7 +1,6 @@
 import db from "@electron/db/database";
 import { mainLogger } from "@electron/handler/permission-handler";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import { app } from "electron";
 import fs from "fs/promises";
 

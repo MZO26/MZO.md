@@ -6,13 +6,13 @@ import { initQuickSwitcher } from "@/components/quick-switch/quick-switch-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { initToolbar, initTopToolbar } from "@/components/toolbar/toolbar-init";
 import { initAppSettings } from "@/settings/setting-init";
+import "@/state/state-init";
+import { initSubscriptions } from "@/state/state-init";
 import {
   syncNoteStore,
   syncSettingsStore,
   syncStateStore,
-} from "@/state/state-actions";
-import "@/state/state-init";
-import { initSubscriptions } from "@/state/state-init";
+} from "@/state/state-sync";
 import { startAppClock } from "@/utils/date";
 import { renderIcons } from "@/utils/icons";
 import {

@@ -1,3 +1,4 @@
+import { processWithLimit } from "@electron/concurrent";
 import {
   getFilePath,
   sanitizeExportString,
@@ -9,9 +10,7 @@ import {
   renderPDFCanvas,
 } from "@electron/handler/pdf-handler";
 import { mainLogger } from "@electron/handler/permission-handler";
-import { processWithLimit } from "@electron/helpers";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import type { ExportContent } from "@shared/schemas/request-schema";
 import type { PDFAssets } from "@shared/shared-types";
 import type { BrowserWindow, PrintToPDFOptions } from "electron";

@@ -1,16 +1,12 @@
 import { IS_DEV_MAIN, mainLogger } from "@electron/handler/permission-handler";
 import type { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { registerElectronIpc } from "@electron/ipc/ipc-electron";
-import {
-  AppBackendError,
-  handleIpcError,
-} from "@electron/ipc/ipc-error-handler";
 import { registerNoteIpc } from "@electron/ipc/ipc-note";
 import { registerSettingsIpc } from "@electron/ipc/ipc-settings";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import type { Result, ValueOf } from "@shared/shared-types";
 import { BrowserWindow, app, type IpcMainInvokeEvent } from "electron";
-import z from "zod";
+import z, { ZodError } from "zod";
 
 function registerIpc(win: BrowserWindow) {
   registerElectronIpc(win);
@@ -18,16 +14,33 @@ function registerIpc(win: BrowserWindow) {
   registerSettingsIpc(win);
 }
 
-async function result<T>(
-  event: IpcMainInvokeEvent,
-  action: () => Promise<T>,
-): Promise<Result<T>> {
-  try {
-    validateSender(event);
-    return { success: true, data: await action() };
-  } catch (error: unknown) {
-    return handleIpcError(error);
-  }
+export function withErrorHandling<A extends unknown[], T>(
+  fn: (...args: A) => Promise<T>,
+) {
+  return async (...args: A): Promise<Result<T>> => {
+    try {
+      const data = await fn(...args);
+      return { success: true, data };
+    } catch (error: unknown) {
+      if (error instanceof AppBackendError) {
+        return {
+          success: false,
+          error: error.code,
+        };
+      }
+      if (error instanceof ZodError) {
+        return {
+          success: false,
+          error: AppErrorCode.InvalidData,
+        };
+      }
+      mainLogger.appError("[IPC Unknown Error]:", error);
+      return {
+        success: false,
+        error: AppErrorCode.UnknownError,
+      };
+    }
+  };
 }
 
 function validateSender(event: IpcMainInvokeEvent) {
@@ -91,7 +104,7 @@ function validation<T extends z.ZodType>(schema: T, payload: unknown) {
   const result = schema.safeParse(payload);
   if (!result.success) {
     mainLogger.appError(
-      "[IPC Validation]: Validation failed:",
+      "[Validation]: Validation failed:",
       z.prettifyError(result.error),
     );
     throw result.error;
@@ -99,11 +112,4 @@ function validation<T extends z.ZodType>(schema: T, payload: unknown) {
   return result.data;
 }
 
-export {
-  LIMITS,
-  checkRateLimit,
-  registerIpc,
-  result,
-  validateSender,
-  validation,
-};
+export { LIMITS, checkRateLimit, registerIpc, validateSender, validation };

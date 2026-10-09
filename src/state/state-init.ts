@@ -1,17 +1,14 @@
 import { rendererLogger } from "@/app";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { updateHover } from "@/components/sidebar/sidebar-navigation";
+import { updateSelection } from "@/components/sidebar/sidebar-selection";
 import { initSelectionFooter } from "@/components/sidebar/sidebar-selection-ui";
+import { sidebarListener } from "@/components/sidebar/sidebar-views";
 import {
   setFocusMode,
   setToolbarCollapsed,
 } from "@/components/toolbar/toolbar-features";
-import { noteStore, settingsStore, stateStore } from "@/state/state";
-import {
-  shallowEq,
-  sidebarListener,
-  updateSelection,
-} from "@/state/state-actions";
+import { noteStore, settingsStore, shallowEq, stateStore } from "@/state/state";
 import { setActiveItem } from "@/utils/dom";
 import { APP_EVENTS } from "@shared/shared-constants";
 
@@ -86,6 +83,7 @@ function initSubscriptions(sidebar: HTMLDivElement) {
       for (const id of next.visibleIds) {
         const prevNote = prev.noteIndex.get(id);
         const nextNote = next.noteIndex.get(id);
+        if (prevNote === nextNote) continue;
         if (!prevNote || !nextNote) return false;
         const hasChanged = SIDEBAR_KEYS.some(
           (key) => !shallowEq(prevNote[key], nextNote[key]),

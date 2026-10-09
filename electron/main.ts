@@ -1,6 +1,5 @@
 import { setUpEditorMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
-import { removeUnusedImages } from "@electron/fs/fs-image";
 import { setupGlobalErrorHandling } from "@electron/handler/global-handler";
 import {
   navigationHandler,
@@ -142,15 +141,6 @@ async function createWindow() {
   });
   win.webContents.on("did-finish-load", () => {
     win?.webContents.setZoomFactor(1.1);
-    setTimeout(async () => {
-      try {
-        mainLogger.devLog("Starting post-load asset cleanup...");
-        const usedImages = db.getUsedImages();
-        await removeUnusedImages(usedImages);
-      } catch (error) {
-        mainLogger.appError("Failed to clean up assets", error);
-      }
-    }, 1000);
   });
 }
 

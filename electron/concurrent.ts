@@ -1,5 +1,4 @@
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 
 async function processWithLimit<T, R>(
   items: readonly T[],

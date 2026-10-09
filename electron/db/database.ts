@@ -1,16 +1,15 @@
 import { NotesSearch } from "@electron/db/fts";
 import { Transactions } from "@electron/db/transactions";
-import { EXPORT_REGEX } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
-import { AppBackendError } from "@electron/ipc/ipc-error-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import { AppErrorCode } from "@shared/errors";
+import { AppBackendError, AppErrorCode } from "@shared/errors";
 import { DbContentCodec } from "@shared/schemas/editor-schema";
 import {
   BoolSchema,
   CreateTransactionSchema,
   DbBoolCodec,
   IdsSchema,
+  ImageRowSchema,
   LinksSchema,
   NoteFromDB,
   NoteListItemFromDB,
@@ -20,6 +19,7 @@ import {
   type DbCreateArgs,
   type DbUpdateArgs,
   type Id,
+  type ImageRow,
   type Link,
   type LinkRow,
   type Note,
@@ -166,9 +166,9 @@ class AppDB {
       RETURNING id
       `);
     this.getImagesStmt = db.prepare(`
-      SELECT content 
-      FROM notes 
-      WHERE content LIKE '%appimg:///%'
+      SELECT note_id, image_hash
+      FROM note_images
+      WHERE note_id = $note_id
     `);
     this.getRelatedNotesStmt = db.prepare(`
       SELECT n.id, n.title, 
@@ -268,6 +268,14 @@ class AppDB {
         FOREIGN KEY(target_id) REFERENCES notes(id) ON DELETE CASCADE,
         UNIQUE(source_id, target_id)
       )
+      `);
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS note_images (
+        note_id TEXT NOT NULL,
+        image_hash TEXT NOT NULL,
+        FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE,
+        UNIQUE(note_id, image_hash)
+        );
       `);
 
     db.exec(`
@@ -383,14 +391,16 @@ class AppDB {
   public create(payload: DbCreateArgs): NoteListItem {
     const id = crypto.randomUUID() as Id;
     const now = new Date().toISOString();
-    let { tags, links, ...rest } = payload;
+    let { tags, links, images, ...rest } = payload;
     const uniqueTags = [...new Set(tags)].slice(0, 5);
     const uniqueLinks = [...new Set(links)];
+    const uniqueImages = [...new Set(images)];
     const dbPayload = {
       id,
       ...rest,
       tags: uniqueTags,
       links: uniqueLinks,
+      images: uniqueImages,
       created_at: now,
       updated_at: now,
     };
@@ -405,14 +415,16 @@ class AppDB {
     const dbContents = [];
     for (const payload of payloads) {
       const id = crypto.randomUUID() as Id;
-      const { tags, links, ...rest } = payload;
+      const { tags, links, images, ...rest } = payload;
       const uniqueTags = [...new Set(tags)].slice(0, 5);
       const uniqueLinks = [...new Set(links)];
+      const uniqueImages = [...new Set(images)];
       const dbPayload = {
         id,
         ...rest,
         tags: uniqueTags,
         links: uniqueLinks,
+        images: uniqueImages,
         created_at: now,
         updated_at: now,
       };
@@ -423,15 +435,20 @@ class AppDB {
     return result;
   }
 
-  public update(payload: DbUpdateArgs): NoteListItem {
-    let { tags, links, ...rest } = payload;
+  public update(payload: DbUpdateArgs): {
+    result: NoteListItem;
+    imageDiff: string[];
+  } {
+    let { tags, links, images, ...rest } = payload;
     const now = new Date().toISOString();
     const uniqueTags = [...new Set(tags)].slice(0, 5);
     const uniqueLinks = [...new Set(links)];
+    const uniqueImages = [...new Set(images)];
     const dbPayload = {
       ...rest,
       tags: uniqueTags,
       links: uniqueLinks,
+      images: uniqueImages,
       updated_at: now,
     };
     const result = this.getTransactions().safeUpdate(dbPayload);
@@ -560,18 +577,11 @@ class AppDB {
     return rows.map((r) => validation(RelatedNotesSchema, r));
   }
 
-  public getUsedImages(): string[] {
-    const usedImages = new Set<string>();
-    for (const row of this.getImagesStmt.iterate()) {
-      const text =
-        typeof row["content"] === "string"
-          ? row["content"]
-          : JSON.stringify(row["content"]);
-      for (const match of text.matchAll(EXPORT_REGEX)) {
-        if (match[1]) usedImages.add(match[1]);
-      }
-    }
-    return Array.from(usedImages);
+  public getUsedImages(id: Id) {
+    const row = this.getImagesStmt.all({
+      $note_id: id,
+    }) as ImageRow[];
+    return row.map((r) => validation(ImageRowSchema, r).image_hash);
   }
 
   public getSearch(): NotesSearch {
