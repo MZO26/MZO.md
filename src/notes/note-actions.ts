@@ -15,34 +15,43 @@ import { updateStats } from "@/components/editor/editor-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { getTableOfContents } from "@/extensions/toc";
-import { resolveDocLinks } from "@/extensions/wikilink/wikilink-handler";
+import {
+  addHeadingToDoc,
+  resolveDocLinks,
+} from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { debounce } from "@/utils/async";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
-import { getMetadata, titleGenerator } from "@/utils/generators";
+import { extractText, getMetadata, titleGenerator } from "@/utils/generators";
+import { debounce } from "@/utils/helpers";
 import { checkNoteSize } from "@/utils/note-helpers";
 import { getAppItem } from "@/utils/registry";
 import {
   type CreateNotePayload,
   type Id,
   type Note,
+  type NoteListItem,
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { EMPTY_DOC, UNTITLED } from "@shared/shared-constants";
 
-async function handleCreateNote() {
+async function handleCreateNote(options?: {
+  activeTitle?: NoteListItem["title"];
+  shouldNavigate?: boolean;
+}) {
   const editor = getAppItem("editor");
   const activeTag = stateStore.get("activeTag");
-  const editorContent = addActiveTagToDoc(EMPTY_DOC, activeTag);
-  const text = editor.getText();
+  let editorContent = addActiveTagToDoc(EMPTY_DOC, activeTag);
+  if (options?.activeTitle)
+    editorContent = addHeadingToDoc(editorContent, options.activeTitle);
+  const text = extractText(editorContent);
   const metadata = getMetadata(editorContent);
   const payload: CreateNotePayload = {
     content: editorContent,
     plain_text: text,
     ...metadata,
-    title: UNTITLED,
+    title: options?.activeTitle ?? UNTITLED,
     pinned: false,
   };
   const result = await createNote(payload);
@@ -64,12 +73,15 @@ async function handleCreateNote() {
       recentNotes: [result.data.id, ...recentNotes].slice(0, 5),
     };
   });
-  stateStore.setState({ activeId: result.data.id, hoverId: null });
-  recreateEditorState(editor, editorContent);
-  editor.commands.focus();
-  const headings = getTableOfContents(editor);
-  updateToc(headings);
-  updateStats();
+  if (options?.shouldNavigate) {
+    stateStore.setState({ activeId: result.data.id, hoverId: null });
+    recreateEditorState(editor, editorContent);
+    editor.commands.focus();
+    const headings = getTableOfContents(editor);
+    updateToc(headings);
+    updateStats();
+  }
+  return result.data.id;
 }
 
 async function handleImportNote(request: FilePathRequest) {

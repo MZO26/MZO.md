@@ -8,9 +8,9 @@ import {
   createSettingsMenu,
 } from "@/settings/setting-factory";
 import { setSelectListeners } from "@/settings/setting-items-init";
-import { createAsyncHandler } from "@/utils/async";
 import { QUICK_ACTIONS } from "@/utils/constants";
 import { requireElement, setActiveItem } from "@/utils/dom";
+import { createAsyncHandler } from "@/utils/helpers";
 import { registerAppEvents } from "@/utils/registry";
 import type { QuickAction } from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";

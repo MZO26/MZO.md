@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { compressImage } from "@/extensions/image/image-utils";
+import { compressImage } from "@/extensions/overrides/image/image-utils";
 import type { ImageCompressionPayload, WorkerRequest } from "@/utils/types";
 import { handleWorkerError } from "@/utils/workers/worker-factory";
 import type { Id } from "@shared/schemas/note-schema";

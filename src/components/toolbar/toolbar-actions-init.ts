@@ -1,5 +1,5 @@
-import { promptImageUpload } from "@/extensions/image/image";
-import { openMathDialog } from "@/extensions/mathematics/mathematics-dialog";
+import { promptImageUpload } from "@/extensions/overrides/image/image";
+import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
 import type { ActionMap } from "@/utils/types";
 import { APP_EVENTS } from "@shared/shared-constants";
 

@@ -3,8 +3,6 @@ import {
   applyView,
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
-import { CodeblockHandler } from "@/extensions/codeblock/codeblock-handler";
-import { ActiveCodeHighlight } from "@/extensions/codeblock/codeblock-highlight";
 import { DropHandler } from "@/extensions/editor-handler/drop-handler";
 import {
   GoogleDocsCleanup,
@@ -15,13 +13,15 @@ import {
 import { MasterShortcuts } from "@/extensions/editor-shortcuts";
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
+import { CodeblockHandler } from "@/extensions/overrides/codeblock/codeblock-handler";
+import { ActiveCodeHighlight } from "@/extensions/overrides/codeblock/codeblock-highlight";
+import { CustomHeading } from "@/extensions/overrides/headings";
+import { LinkWithTitle } from "@/extensions/overrides/link";
 import {
   CustomBlockMath,
   CustomInlineMath,
-} from "@/extensions/mathematics/mathematics";
-import { handleMathClick } from "@/extensions/mathematics/mathematics-dialog";
-import { CustomHeading } from "@/extensions/overrides/headings";
-import { LinkWithTitle } from "@/extensions/overrides/link";
+} from "@/extensions/overrides/mathematics/mathematics";
+import { handleMathClick } from "@/extensions/overrides/mathematics/mathematics-dialog";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { Placeholder } from "@/extensions/placeholder";
 import { DocSearch } from "@/extensions/search-replace";
@@ -36,7 +36,10 @@ import {
 import { NoteTagHandler } from "@/extensions/tag/tag-handler";
 import { TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
-import { WikilinkHandler } from "@/extensions/wikilink/wikilink-handler";
+import {
+  resolveGhostLink,
+  WikilinkHandler,
+} from "@/extensions/wikilink/wikilink-handler";
 import { WikiLinkPreview } from "@/extensions/wikilink/wikilink-preview";
 import {
   debouncedSaveNote,
@@ -105,8 +108,18 @@ function getNoteEditorExtensions() {
     CustomUnderline,
     Highlight,
     WikilinkHandler.configure({
-      onClick: async (id) => {
-        if (!isNoteID(id)) return;
+      onClick: async (id, title) => {
+        if (!id || !isNoteID(id)) {
+          const activeId = stateStore.get("activeId") as Id | null;
+          if (!activeId) return;
+          // don't navigate right away to update
+          // wikilink to an active one
+          const noteId = await resolveGhostLink(title);
+          if (!noteId) return;
+          await handleSelectNote(noteId);
+          restoreSidebarScope();
+          return;
+        }
         const noteExists = noteStore.get("noteIndex").has(id);
         if (!noteExists) {
           rendererLogger.devLog("[Wikilink configure]: Note not found.");

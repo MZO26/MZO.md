@@ -2,6 +2,8 @@ import { NoteTag } from "@/extensions/tag/tag";
 import { noteStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
 import { getTags } from "@/utils/generators";
+import { memoize } from "@/utils/helpers";
+import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -61,9 +63,7 @@ const NoteTagHandler = NoteTag.extend({
           _oldEditorState,
           newEditorState,
         ): TagAutocompleteState | null => {
-          if (!tr.docChanged && !tr.selectionSet) {
-            return pluginState;
-          }
+          if (!tr.docChanged && !tr.selectionSet) return pluginState;
           const { selection } = newEditorState;
           if (!selection.empty) return null;
           const $head = selection.$head;
@@ -72,6 +72,7 @@ const NoteTagHandler = NoteTag.extend({
             lookbackStart,
             $head.parentOffset,
           );
+          if (textBefore.lastIndexOf("#") === -1) return null;
           const match = textBefore.match(/(?:^|\s)#([\p{L}\p{N}_-]+)$/u);
           if (!match) return null;
           const rawQuery = match[1];
@@ -80,17 +81,11 @@ const NoteTagHandler = NoteTag.extend({
           if (!normalizedQuery) return null;
           const notes = noteStore.get("notes");
           let tagMatch: string | null = null;
-          loop: for (const note of notes) {
-            if (!note.tags) continue;
-            for (const tag of note.tags) {
-              if (tag === normalizedQuery) {
-                tagMatch = tag;
-                break loop;
-              }
-              if (tag.startsWith(normalizedQuery)) {
-                // get shortest valid path
-                if (!tagMatch || tag.length < tagMatch.length) tagMatch = tag;
-              }
+          const preFiltered = getSortedTags(notes);
+          for (const tag of preFiltered) {
+            if (tag.toLowerCase().startsWith(normalizedQuery)) {
+              tagMatch = tag;
+              break;
             }
           }
           if (!tagMatch) return null;
@@ -105,9 +100,8 @@ const NoteTagHandler = NoteTag.extend({
       props: {
         decorations(state) {
           const pluginState = tagAutocompleteKey.getState(state);
-          if (!pluginState || !pluginState.autocompleteText) {
+          if (!pluginState || !pluginState.autocompleteText)
             return DecorationSet.empty;
-          }
           return DecorationSet.create(state.doc, [
             Decoration.widget(
               pluginState.to,
@@ -127,65 +121,52 @@ const NoteTagHandler = NoteTag.extend({
   },
 });
 
-function findTagParagraphIdx(content: JSONContent[]): number {
-  return content.findIndex(
-    (node) =>
-      node.type === "paragraph" &&
-      Array.isArray(node.content) &&
-      node.content.some((child) => child.type === "noteTag"),
-  );
-}
-
-function hasNoteTag(doc: JSONContent, tag: string): boolean {
-  const normalized = tag.trim().toLowerCase();
-  if (!normalized) return false;
-  return getTags(doc).some((t) => t === normalized);
-}
+const getSortedTags = memoize((notes: readonly NoteListItem[]) => {
+  const tagSet = new Set<string>();
+  for (const note of notes) {
+    if (note.tags) {
+      for (const tag of note.tags) {
+        tagSet.add(tag);
+      }
+    }
+  }
+  return Array.from(tagSet).sort((a, b) => a.length - b.length);
+});
 
 function addActiveTagToDoc(
   doc: JSONContent,
   activeTag: string | null,
 ): JSONContent {
-  if (activeTag === null || activeTag === UNTAGGED) return doc;
-  const normalizedTag = activeTag.trim();
-  if (!normalizedTag) return doc;
-  if (hasNoteTag(doc, normalizedTag)) return doc;
-  const content = Array.isArray(doc.content) ? [...doc.content] : [];
+  if (!activeTag || activeTag === UNTAGGED) return doc;
+  const normalizedTag = activeTag.trim().toLowerCase();
+  if (!normalizedTag || getTags(doc).some((t) => t === normalizedTag))
+    return doc;
   const tagNode = {
     type: "noteTag",
     attrs: { id: normalizedTag, label: normalizedTag },
   };
   const spaceNode = { type: "text", text: " " };
-  const tagPIdx = findTagParagraphIdx(content);
+  const content = [...(doc.content ?? [])];
+  const tagPIdx = content.findIndex(
+    (node) =>
+      node.type === "paragraph" &&
+      Array.isArray(node.content) &&
+      node.content.some((child) => child.type === "noteTag"),
+  );
   if (tagPIdx !== -1) {
-    const existingPara = content[tagPIdx];
-    const updatedPara = {
-      ...existingPara,
-      content: [...(existingPara?.content ?? []), tagNode, spaceNode],
+    content[tagPIdx] = {
+      ...content[tagPIdx],
+      content: [...(content[tagPIdx]?.content || []), tagNode, spaceNode],
     };
-    const newContent = [...content];
-    newContent[tagPIdx] = updatedPara;
-    return { ...doc, content: newContent };
+  } else {
+    const tagParagraph = { type: "paragraph", content: [tagNode, spaceNode] };
+    if (content[0]?.type === "heading") {
+      content.splice(1, 0, tagParagraph);
+    } else {
+      content.unshift(tagParagraph);
+    }
   }
-  const tagParagraph = { type: "paragraph", content: [tagNode, spaceNode] };
-  const headingBlock = { type: "heading", attrs: { level: 1 } };
-  const hrBlock = { type: "horizontalRule" };
-  const spacerParagraph = { type: "paragraph" };
-  const firstNode = content[0];
-  const hasLeadingHeading = firstNode?.type === "heading";
-  const rest = hasLeadingHeading ? content.slice(1) : content;
-  const restWithoutDuplicateHeading =
-    rest[0]?.type === "heading" ? rest.slice(1) : rest;
-  return {
-    ...doc,
-    content: [
-      hasLeadingHeading ? firstNode : headingBlock,
-      hrBlock,
-      tagParagraph,
-      spacerParagraph,
-      ...restWithoutDuplicateHeading,
-    ],
-  };
+  return { ...doc, content };
 }
 
 export { addActiveTagToDoc, NoteTagHandler };

@@ -73,11 +73,10 @@ export const WikiLinkPreview = Extension.create({
       if (!targetNote) {
         element.textContent = "Note not found";
       } else {
+        const normalizedTargetTitle = targetNote.title.toLowerCase();
         const duplicates = noteStore
           .get("notes")
-          .filter(
-            (n) => n.title.toLowerCase() === targetNote.title.toLowerCase(),
-          );
+          .filter((n) => n.title.toLowerCase() === normalizedTargetTitle);
         if (duplicates.length > 1) {
           element.textContent = `Warning: ${duplicates.length} notes named "${targetNote.title}".`;
         } else {

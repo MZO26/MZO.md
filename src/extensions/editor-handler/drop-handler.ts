@@ -1,6 +1,6 @@
 import { rendererLogger } from "@/app";
 import { isValidExtension } from "@/components/sidebar/sidebar-file-drop";
-import { processAndInsertImages } from "@/extensions/image/image";
+import { processAndInsertImages } from "@/extensions/overrides/image/image";
 import { normalizeFileContent } from "@/notes/import-actions";
 import {
   ALLOWED_TYPES,

@@ -12,8 +12,8 @@ import {
   setWindowTop,
 } from "@/components/toolbar/toolbar-features";
 import { stateStore } from "@/state/state";
-import { createAsyncHandler } from "@/utils/async";
 import { requireElement } from "@/utils/dom";
+import { createAsyncHandler } from "@/utils/helpers";
 import { registerAppEvents } from "@/utils/registry";
 import { isFocusActive } from "@/utils/shortcuts";
 import { APP_EVENTS } from "@shared/shared-constants";

@@ -41,7 +41,7 @@ async function batchExport(folder: string, payload: ExportContent[]) {
   if (uniqueExtensions.size > 1) {
     const list = Array.from(uniqueExtensions).join(", ");
     mainLogger.appError(
-      `[batchExport]: Only one extension allowed and ${uniqueExtensions.size} were given: ${list})}`,
+      `[batchExport]: Only one extension allowed and ${uniqueExtensions.size} were given: ${list}}`,
     );
     throw new AppBackendError(AppErrorCode.ExportError);
   }

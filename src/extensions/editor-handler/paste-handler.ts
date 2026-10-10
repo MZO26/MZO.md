@@ -1,6 +1,6 @@
 import { rendererLogger } from "@/app";
 import { getMarkdownManager } from "@/components/editor/editor-actions";
-import { processAndInsertImages } from "@/extensions/image/image";
+import { processAndInsertImages } from "@/extensions/overrides/image/image";
 import {
   ALLOWED_TYPES,
   DOMPURIFY_CONFIG,

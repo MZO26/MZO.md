@@ -18,8 +18,8 @@ import {
   resolveTheme,
 } from "@/settings/setting-actions";
 import { settingsStore } from "@/state/state";
-import { createAsyncHandler } from "@/utils/async";
 import { CODE_THEME_MAP } from "@/utils/constants";
+import { createAsyncHandler } from "@/utils/helpers";
 import { getAppItem } from "@/utils/registry";
 import type {
   AppearanceKeys,

@@ -5,8 +5,8 @@ import {
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
-import { debounce } from "@/utils/async";
 import { DEBOUNCE_MS } from "@/utils/constants";
+import { debounce } from "@/utils/helpers";
 import type { MappedMatches } from "@/utils/types";
 import {
   isNoteID,

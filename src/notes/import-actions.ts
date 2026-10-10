@@ -7,7 +7,6 @@ import {
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { addActiveLinkToDoc } from "@/extensions/wikilink/wikilink-handler";
 import { stateStore } from "@/state/state";
-import { withPerformanceLog } from "@/utils/async";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import type { Metadata } from "@/utils/generators";
 import {
@@ -16,6 +15,7 @@ import {
   titleGenerator,
   wrapAsDoc,
 } from "@/utils/generators";
+import { withPerformanceLog } from "@/utils/helpers";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
 import { AppErrorCode } from "@shared/errors";
 import { isEditorDoc } from "@shared/schemas/editor-schema";

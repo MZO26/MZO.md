@@ -5,7 +5,6 @@ import {
 } from "@/components/sidebar/sidebar-note-items";
 import { applyView } from "@/components/sidebar/sidebar-views";
 import { noteStore } from "@/state/state";
-import { createAsyncHandler, debounce } from "@/utils/async";
 import {
   DEBOUNCE_MS,
   SIDEBAR_ALL_NOTES_LIMIT,
@@ -17,6 +16,7 @@ import {
   requireElement,
   setActiveItem,
 } from "@/utils/dom";
+import { createAsyncHandler, debounce } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { updateNoteCount } from "@/utils/note-helpers";
 import { createTemplateCloner, getAppItem } from "@/utils/registry";

@@ -33,7 +33,7 @@ function selectSidebarNotes(
   visibleIds: Id[],
   noteIndex: Map<Id, NoteListItem>,
   activeTag: string | null,
-): NoteListItem[] {
+): readonly NoteListItem[] {
   const result: NoteListItem[] = [];
   if (activeTag === null) {
     for (const id of visibleIds) {

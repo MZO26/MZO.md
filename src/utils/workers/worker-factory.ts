@@ -1,30 +1,7 @@
 import { MAX_WORKER_TIMEOUT_MS } from "@/utils/constants";
 import type { WorkerResult } from "@/utils/types";
-import { WorkerErrorCode } from "@shared/errors";
+import { handleWorkerError, WorkerErrorCode } from "@shared/errors";
 import type { Id } from "@shared/schemas/note-schema";
-
-class WorkerTaskError extends Error {
-  constructor(
-    public readonly code: WorkerErrorCode,
-    message?: string,
-  ) {
-    super(message || code);
-    this.name = "WorkerTaskError";
-  }
-}
-
-function handleWorkerError(err: unknown): {
-  success: false;
-  error: WorkerErrorCode;
-} {
-  if (err instanceof WorkerTaskError) {
-    return { success: false, error: err.code };
-  }
-  return {
-    success: false,
-    error: WorkerErrorCode.UnknownError,
-  };
-}
 
 function createWorker<T, R>(worker: Worker | null) {
   return function work(
@@ -76,4 +53,4 @@ function createWorker<T, R>(worker: Worker | null) {
   };
 }
 
-export { createWorker, handleWorkerError, WorkerTaskError };
+export { createWorker, handleWorkerError };

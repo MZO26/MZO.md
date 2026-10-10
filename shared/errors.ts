@@ -8,6 +8,29 @@ class AppBackendError extends Error {
   }
 }
 
+class WorkerTaskError extends Error {
+  constructor(
+    public readonly code: WorkerErrorCode,
+    message?: string,
+  ) {
+    super(message || code);
+    this.name = "WorkerTaskError";
+  }
+}
+
+function handleWorkerError(err: unknown): {
+  success: false;
+  error: WorkerErrorCode;
+} {
+  if (err instanceof WorkerTaskError) {
+    return { success: false, error: err.code };
+  }
+  return {
+    success: false,
+    error: WorkerErrorCode.UnknownError,
+  };
+}
+
 enum WorkerErrorCode {
   InitializeError = "INIT_ERROR",
   CompressionError = "COMPRESSION_FAILED",
@@ -52,6 +75,7 @@ export {
   AppBackendError,
   AppErrorCode,
   ERROR_MESSAGES,
+  handleWorkerError,
   WORKER_ERROR_MESSAGES,
   WorkerErrorCode,
 };

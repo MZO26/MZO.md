@@ -100,7 +100,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
         ({ editor, state, dispatch }: CommandProps) => {
           editor.storage.docSearch.query = query;
           const tr = state.tr;
-          if (dispatch) dispatch(tr.setMeta("docSearchRefresh", true));
+          if (dispatch) tr.setMeta("docSearchRefresh", true);
           return true;
         },
       docSearchSetReplacement:
@@ -118,7 +118,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           storage.results = [];
           storage.activeIndex = -1;
           const tr = state.tr;
-          if (dispatch) dispatch(tr.setMeta("docSearchRefresh", true));
+          if (dispatch) tr.setMeta("docSearchRefresh", true);
           return true;
         },
       docSearchNext:
@@ -131,9 +131,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           if (!result) return false;
           const { from, to } = result;
           if (dispatch)
-            dispatch(
-              state.tr.setSelection(TextSelection.create(state.doc, from, to)),
-            );
+            state.tr.setSelection(TextSelection.create(state.doc, from, to));
           return true;
         },
       docSearchPrev:
@@ -151,9 +149,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           const { from, to } = result;
           const tr = state.tr;
           if (dispatch)
-            dispatch(
-              tr.setSelection(TextSelection.create(state.doc, from, to)),
-            );
+            tr.setSelection(TextSelection.create(state.doc, from, to));
           return true;
         },
       docSearchReplaceCurrent:
@@ -165,7 +161,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           if (!result) return false;
           const { from, to } = result;
           const tr = state.tr;
-          if (dispatch) dispatch(tr.insertText(storage.replacement, from, to));
+          if (dispatch) tr.insertText(storage.replacement, from, to);
           return true;
         },
       docSearchReplaceAll:
@@ -179,9 +175,8 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
             const result = results[i];
             if (!result) return false;
             const { from, to } = result;
-            tr.insertText(storage.replacement, from, to);
+            if (dispatch) tr.insertText(storage.replacement, from, to);
           }
-          if (dispatch) dispatch(tr);
           return true;
         },
     };

@@ -77,6 +77,8 @@ async function waitForPaint(frames = 2): Promise<void> {
 function withPerformanceLog<A extends unknown[], T>(
   fn: (...args: A) => Promise<T>,
 ) {
+  // return adress without wrapper callback
+  if (!import.meta.env.DEV) return fn;
   return async (...args: A): Promise<T> => {
     // same label for time and timeEnd
     const timerLabel = `Invoking function ${fn.name}`;
@@ -93,9 +95,28 @@ function withPerformanceLog<A extends unknown[], T>(
   };
 }
 
+function memoize<A extends unknown[], R>(
+  fn: (...args: A) => R,
+  equalFn: (prev: A, next: A) => boolean = (prev, next) =>
+    prev.length === next.length && next.every((val, i) => val === prev[i]),
+) {
+  let lastArgs: A | null = null;
+  let lastResult: R;
+  return (...args: A): R => {
+    if (lastArgs && equalFn(lastArgs, args)) {
+      rendererLogger.devLog("Returning old result");
+      return lastResult;
+    }
+    lastArgs = args;
+    lastResult = fn(...args);
+    return lastResult;
+  };
+}
+
 export {
   createAsyncHandler,
   debounce,
+  memoize,
   sleep,
   waitForPaint,
   withPerformanceLog,

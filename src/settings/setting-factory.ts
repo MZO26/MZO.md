@@ -15,11 +15,11 @@ import { getUIItem } from "@/utils/registry";
 import type { AppIcons, SelectOption, SettingsCategory } from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
-type StringOrBoolKeys<T> = {
+type ValidSelectKeys<T> = {
   [K in keyof T]: T[K] extends string | boolean ? K : never;
 }[keyof T];
 
-function selectBuilder<K extends StringOrBoolKeys<Readonly<AppSettings>>>(
+function selectBuilder<K extends ValidSelectKeys<Readonly<AppSettings>>>(
   id: K,
   options: readonly SelectOption<AppSettings[K]>[],
   category: SettingsCategory,

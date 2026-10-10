@@ -22,8 +22,8 @@ import {
   waitForFlush,
 } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { createAsyncHandler } from "@/utils/async";
 import { NAV_KEYS, SELECTION_ACTIONS } from "@/utils/constants";
+import { createAsyncHandler } from "@/utils/helpers";
 import { getUIItems, registerAppEvents } from "@/utils/registry";
 import {
   isEditorFocused,
@@ -46,7 +46,8 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
   setupSidebarFileDrop(sidebar);
   registerAppEvents(document, {
     [APP_EVENTS.TOGGLE_SIDEBAR]: toggleSidebar,
-    [APP_EVENTS.CREATE_NEW_NOTE]: handleCreateNote,
+    [APP_EVENTS.CREATE_NEW_NOTE]: async () =>
+      await handleCreateNote({ shouldNavigate: true }),
     [APP_EVENTS.FOCUS_GLOBAL_SEARCH]: () => searchInput.focus(),
     [APP_EVENTS.SET_SELECTION_MODE]: () =>
       setSelectionMode(!isSelectionActive()),
@@ -73,14 +74,14 @@ function applySidebarListeners(
       if (!(e.target instanceof Element)) return;
       const addNoteBtn = e.target.closest<HTMLButtonElement>(".add-note-btn");
       if (addNoteBtn) {
-        await handleCreateNote();
+        await handleCreateNote({ shouldNavigate: true });
         return;
       }
       const tagBtn = e.target.closest<HTMLButtonElement>(".all-tags-btn");
       if (tagBtn) {
         const activeId = stateStore.get("activeId") as Id | null;
         await waitForFlush(activeId);
-        const tags = noteStore.get("notes").flatMap((n) => n.tags);
+        const tags = noteStore.get("notes").flatMap((n) => n.tags ?? []);
         showTagPopover(tagBtn, tags);
         return;
       }

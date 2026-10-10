@@ -1,5 +1,6 @@
 import { noteStore } from "@/state/state";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
+import { UNTITLED } from "@shared/shared-constants";
 import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
@@ -9,7 +10,7 @@ const PASTE_REGEX = /\[\[([^\]]+)\]\]/g;
 const EXACT_UUID_REGEX = new RegExp(`^${UUID_PATTERN}$`, "i");
 
 export interface WikiLinkOptions {
-  onClick: (id: Id) => void | Promise<void>;
+  onClick: (id: Id | null, title: string) => void | Promise<void>;
 }
 
 declare module "@tiptap/core" {
@@ -18,7 +19,8 @@ declare module "@tiptap/core" {
       insertWikiLink: (options: {
         from: number;
         to: number;
-        id: Id;
+        id: Id | null;
+        title: string;
       }) => ReturnType;
     };
   }
@@ -46,35 +48,33 @@ const WikiLink = Node.create<WikiLinkOptions>({
           ?.replace(/[\[\]]/g, "")
           .trim() || "",
     },
+    title: {
+      default: null,
+      parseHTML: (el) =>
+        el.getAttribute("data-title") || el.textContent?.trim() || "",
+    },
   }),
-
   parseHTML: () => [
     {
       tag: "span[data-wikilink]",
-      getAttrs: (el) => {
-        const id =
-          el
-            .getAttribute("data-id")
-            ?.replace(/[\[\]]/g, "")
-            .trim() || "";
-        return EXACT_UUID_REGEX.test(id) ? null : false;
-      },
     },
   ],
 
   renderHTML({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
+    const title = node.attrs?.["title"] || "";
     const validId = isNoteID(id);
-    const title = validId
+    const existingTitle = validId
       ? noteStore.get("noteIndex").get(id)?.title
       : undefined;
-    const display = title || id;
+    const display = existingTitle || title || UNTITLED;
     return [
       "span",
       mergeAttributes({
         "data-wikilink": "",
         "data-id": id,
-        class: "wikilink",
+        "data-title": display,
+        class: validId ? "wikilink" : "wikilink ghost-link",
       }),
       display ? `[[${display}]]` : "",
     ];
@@ -103,39 +103,53 @@ const WikiLink = Node.create<WikiLinkOptions>({
 
   parseMarkdown(token, _helpers) {
     const text = String(token.text ?? "").trim();
-    if (!text) {
-      return { type: "text", text: token.raw || "" };
-    }
+    if (!text) return { type: "text", text: token.raw || "" };
     if (EXACT_UUID_REGEX.test(text)) {
-      return { type: "wikilink", attrs: { id: text } };
+      const isNoteId = isNoteID(text);
+      const display = isNoteId
+        ? (noteStore.get("noteIndex").get(text)?.title ?? UNTITLED)
+        : UNTITLED;
+      return { type: "wikilink", attrs: { id: text as Id, title: display } };
     }
+    const normalized = text.toLowerCase();
     const foundNote = noteStore
       .get("notes")
-      .find((n) => n.title.toLowerCase() === text.toLowerCase());
+      .find((n) => n.title.toLowerCase() === normalized);
     if (foundNote && isNoteID(foundNote.id)) {
-      return { type: "wikilink", attrs: { id: foundNote.id } };
+      return {
+        type: "wikilink",
+        attrs: { id: foundNote.id, title: foundNote.title },
+      };
     }
-    return { type: "text", text: token.raw || "" };
+    return { type: "wikilink", attrs: { id: null, title: text } };
   },
+
   renderText({ node }) {
     const id = String(node.attrs?.["id"] ?? "").trim();
-    if (!id || !isNoteID(id)) return "";
-    const title = noteStore.get("noteIndex").get(id)?.title;
-    return title ? `[[${title}]]` : `[[${id}]]`;
+    const title = node.attrs?.["title"] || "";
+    const existingTitle = isNoteID(id)
+      ? noteStore.get("noteIndex").get(id)?.title
+      : undefined;
+    const display = existingTitle ?? title ?? UNTITLED;
+    return display ? `[[${display}]]` : "";
   },
+
   renderMarkdown(node) {
     const id = String(node.attrs?.["id"] ?? "").trim();
-    if (!id || !isNoteID(id)) return "";
-    const title = noteStore.get("noteIndex").get(id)?.title;
-    return title ? `[[${title}]]` : `[[${id}]]`;
+    const title = node.attrs?.["title"] ?? "";
+    const existingTitle = isNoteID(id)
+      ? noteStore.get("noteIndex").get(id)?.title
+      : undefined;
+    const display = existingTitle || title || UNTITLED;
+    return display ? `[[${display}]]` : "";
   },
 
   addCommands() {
     return {
       insertWikiLink:
-        ({ from, to, id }) =>
+        ({ from, to, id, title }) =>
         ({ tr, dispatch }) => {
-          const node = this.type.create({ id });
+          const node = this.type.create({ id, title });
           if (dispatch) {
             tr.replaceWith(from, to, node)
               .insertText(" ", from + node.nodeSize)
@@ -155,15 +169,16 @@ const WikiLink = Node.create<WikiLinkOptions>({
         handler: ({ range, match, commands }) => {
           const rawTitle = typeof match[1] === "string" ? match[1].trim() : "";
           if (!rawTitle) return null;
+          const normalizedTitle = rawTitle.toLowerCase();
           const targetNote = noteStore
             .get("notes")
-            .find((n) => n.title.toLowerCase() === rawTitle.toLowerCase());
-          if (!targetNote) return null;
+            .find((n) => n.title.toLowerCase() === normalizedTitle);
           if (range.from < 0 || range.to < range.from) return null;
           commands.insertWikiLink({
             from: range.from,
             to: range.to,
-            id: targetNote.id,
+            id: targetNote ? targetNote.id : null,
+            title: targetNote ? targetNote.title : rawTitle || UNTITLED,
           });
           return;
         },
@@ -183,11 +198,10 @@ const WikiLink = Node.create<WikiLinkOptions>({
           const targetNote = noteStore
             .get("notes")
             .find((n) => n.title.toLowerCase() === normalizedTitle);
-          return targetNote
-            ? {
-                id: targetNote.id,
-              }
-            : false;
+          return {
+            id: targetNote ? targetNote.id : null,
+            title: targetNote ? targetNote.title : rawTitle || UNTITLED,
+          };
         },
       }),
     ];

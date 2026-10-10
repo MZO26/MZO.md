@@ -1,10 +1,13 @@
 import { rendererLogger } from "@/app";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
+import { handleCreateNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { WIKILINK_REGEX } from "@/utils/constants";
 import { getLinks } from "@/utils/generators";
+import { memoize } from "@/utils/helpers";
 import { getAppItem } from "@/utils/registry";
 import type { Id, Note, NoteListItem } from "@shared/schemas/note-schema";
+import { UNTITLED } from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -14,6 +17,7 @@ type AutocompleteState = {
   to: number;
   autocompleteText: string;
   noteId: Id;
+  title: string;
 };
 
 const autocompleteKey = new PluginKey<AutocompleteState>(
@@ -34,6 +38,7 @@ const WikilinkHandler = WikiLink.extend({
             from: state.from,
             to: state.to,
             id: state.noteId,
+            title: state.title,
           })
           .run();
       },
@@ -45,10 +50,12 @@ const WikilinkHandler = WikiLink.extend({
         key: wikilinkClickHandlerKey,
         props: {
           handleClickOn: (_view, _pos, node, _nodePos, event) => {
-            if (node.type.name !== this.name || !node.attrs["id"]) return false;
+            if (node.type.name !== this.name) return false;
             event.preventDefault();
             event.stopPropagation();
-            void this.options.onClick?.(node.attrs["id"]);
+            const id = node.attrs["id"] || null;
+            const title = node.attrs["title"] || "";
+            void this.options.onClick?.(id, title);
             return true;
           },
         },
@@ -64,9 +71,7 @@ const WikilinkHandler = WikiLink.extend({
             _oldEditorState,
             newEditorState,
           ): AutocompleteState | null => {
-            if (!tr.docChanged && !tr.selectionSet) {
-              return pluginState;
-            }
+            if (!tr.docChanged && !tr.selectionSet) return pluginState;
             const { selection } = newEditorState;
             if (!selection.empty) return null;
             const $head = selection.$head;
@@ -75,29 +80,22 @@ const WikilinkHandler = WikiLink.extend({
               lookbackStart,
               $head.parentOffset,
             );
-            const match = textBefore.match(/\[\[([^\]]*)$/);
-            if (!match) return null;
-            const rawQuery = match[1];
-            if (!rawQuery) return null;
-            const normalizedQuery =
-              typeof rawQuery === "string" ? rawQuery.trim().toLowerCase() : "";
+            const openBracketIdx = textBefore.lastIndexOf("[[");
+            if (openBracketIdx === -1) return null;
+            const rawQuery = textBefore.slice(openBracketIdx + 2);
+            if (rawQuery.includes("]")) return null;
+            const normalizedQuery = rawQuery.trim().toLowerCase();
             if (!normalizedQuery) return null;
             const notes = noteStore.get("notes");
             const currentId = stateStore.get("activeId");
+            const preFiltered = getSortedNotes(notes);
             let bestMatch: NoteListItem | null = null;
-            for (const note of notes) {
+            for (const note of preFiltered) {
               if (note.id === currentId) continue;
               const normalizedTitle = note.title.toLowerCase();
-              if (normalizedTitle === normalizedQuery) {
+              if (normalizedTitle.startsWith(normalizedQuery)) {
                 bestMatch = note;
                 break;
-              }
-              if (
-                normalizedTitle.startsWith(normalizedQuery) &&
-                (bestMatch === null ||
-                  note.title.length < bestMatch.title.length)
-              ) {
-                bestMatch = note;
               }
             }
             if (!bestMatch) return null;
@@ -106,6 +104,7 @@ const WikilinkHandler = WikiLink.extend({
               to: $head.pos,
               autocompleteText: bestMatch.title.slice(rawQuery.length) + "]]",
               noteId: bestMatch.id,
+              title: bestMatch.title,
             };
           },
         },
@@ -134,8 +133,42 @@ const WikilinkHandler = WikiLink.extend({
   },
 });
 
-function hasDocLink(doc: JSONContent, linkId: Id): boolean {
-  return getLinks(doc).some((id) => id === linkId);
+const getSortedNotes = memoize((notes: readonly NoteListItem[]) => {
+  return [...notes].sort((a, b) => a.title.length - b.title.length);
+});
+
+async function resolveGhostLink(title: Note["title"]) {
+  const noteId = await handleCreateNote({
+    activeTitle: title,
+    shouldNavigate: false,
+  });
+  if (!noteId) return;
+  const editor = getAppItem("editor");
+  const normalizedTitle = title.toLowerCase();
+  editor.commands.command(({ tr, state, dispatch }) => {
+    let modified = false;
+    state.doc.descendants((node, currentPos) => {
+      if (node.type.name === "wikilink") {
+        const nodeId = node.attrs?.["id"];
+        const nodeTitle = node.attrs?.["title"];
+        if (
+          !nodeId &&
+          typeof nodeTitle === "string" &&
+          nodeTitle.toLowerCase() === normalizedTitle
+        ) {
+          if (dispatch) {
+            tr.setNodeMarkup(currentPos, undefined, {
+              id: noteId,
+              title: nodeTitle,
+            });
+            modified = true;
+          }
+        }
+      }
+    });
+    return modified;
+  });
+  return noteId;
 }
 
 function resolveDocLinks(note: Readonly<Note>) {
@@ -163,14 +196,17 @@ function resolveDocLinks(note: Readonly<Note>) {
     return true;
   });
   if (matchPos.length === 0) return;
-  // sort in descending order to not shift indexes from
-  // top to bottom
   matchPos.sort((a, b) => b.from - a.from);
   for (const pos of matchPos) {
     rendererLogger.devLog(`Replacing ${pos.targetId} with title: ${pos.match}`);
     editor
       .chain()
-      .insertWikiLink({ from: pos.from, to: pos.to, id: pos.targetId })
+      .insertWikiLink({
+        from: pos.from,
+        to: pos.to,
+        id: pos.targetId,
+        title: pos.match,
+      })
       .run();
   }
 }
@@ -179,55 +215,43 @@ function addActiveLinkToDoc(
   doc: JSONContent,
   activeLink: Id | null,
 ): JSONContent {
-  if (!activeLink) return doc;
-  if (hasDocLink(doc, activeLink)) return doc;
-  rendererLogger.devLog("Not found");
-  const content = Array.isArray(doc.content) ? [...doc.content] : [];
-  const linkNode = {
-    type: "wikilink",
-    attrs: { id: activeLink },
-  };
-  const firstIdx = findFirstParagraphIdx(content);
-  rendererLogger.devLog(firstIdx);
-  if (firstIdx !== -1) {
-    const para = content[firstIdx];
-    const newParaContent = para?.content
-      ? [...para.content, linkNode, { type: "text", text: " " }]
-      : [linkNode, { type: "text", text: " " }];
-    const newContent = [...content];
-    newContent[firstIdx] = { ...para, content: newParaContent };
-    return { ...doc, content: newContent };
+  if (!activeLink || getLinks(doc).some((id) => id === activeLink)) return doc;
+  const title = noteStore.get("noteIndex").get(activeLink)?.title ?? UNTITLED;
+  const linkNode = { type: "wikilink", attrs: { id: activeLink, title } };
+  const spaceNode = { type: "text", text: " " };
+  const content = [...(doc.content ?? [])];
+  const pIdx = content.findIndex((n) => n.type === "paragraph");
+  if (pIdx !== -1) {
+    content[pIdx] = {
+      ...content[pIdx],
+      content: [...(content[pIdx]?.content ?? []), linkNode, spaceNode],
+    };
+  } else {
+    content.push({ type: "paragraph", content: [linkNode, spaceNode] });
   }
-  const linkParagraph = {
-    type: "paragraph",
-    content: [linkNode, { type: "text", text: " " }],
-  };
-  const headingBlock = { type: "heading", attrs: { level: 1 } };
-  const hrBlock = { type: "horizontalRule" };
-  const spacerParagraph = { type: "paragraph" };
-  const firstNode = content[0];
-  const hasLeadingHeading = firstNode?.type === "heading";
-  const rest = hasLeadingHeading ? content.slice(1) : content;
-  const restWithoutDuplicateHeading =
-    rest[0]?.type === "heading" ? rest.slice(1) : rest;
-  return {
-    ...doc,
-    content: [
-      hasLeadingHeading ? firstNode : headingBlock,
-      hrBlock,
-      linkParagraph,
-      spacerParagraph,
-      ...restWithoutDuplicateHeading,
-    ],
-  };
+  return { ...doc, content };
 }
 
-function findFirstParagraphIdx(content: JSONContent[]): number {
-  for (let i = 0; i < content.length; i++) {
-    const n = content[i];
-    if (n?.type === "paragraph") return i;
+function addHeadingToDoc(doc: JSONContent, titleText: string): JSONContent {
+  if (!titleText) return doc;
+  const content = [...(doc.content || [])];
+  const headingNode = {
+    type: "heading",
+    attrs: { level: 1 },
+    content: [{ type: "text", text: titleText }],
+  };
+  if (content[0]?.type === "heading") {
+    content[0] = headingNode;
+  } else {
+    content.unshift(headingNode);
   }
-  return -1;
+  return { ...doc, content };
 }
 
-export { addActiveLinkToDoc, hasDocLink, resolveDocLinks, WikilinkHandler };
+export {
+  addActiveLinkToDoc,
+  addHeadingToDoc,
+  resolveDocLinks,
+  resolveGhostLink,
+  WikilinkHandler,
+};

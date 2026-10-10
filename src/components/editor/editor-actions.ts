@@ -2,7 +2,7 @@ import { Highlight } from "@/extensions/highlight";
 import {
   CustomBlockMath,
   CustomInlineMath,
-} from "@/extensions/mathematics/mathematics";
+} from "@/extensions/overrides/mathematics/mathematics";
 import { NoteTag } from "@/extensions/tag/tag";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { type Editor, type JSONContent } from "@tiptap/core";

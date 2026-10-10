@@ -1,6 +1,6 @@
 import { rendererLogger } from "@/app";
-import { sleep } from "@/utils/async";
 import { NODE_BASELINE, YIELD_MS } from "@/utils/constants";
+import { sleep } from "@/utils/helpers";
 import { getUIItem } from "@/utils/registry";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
