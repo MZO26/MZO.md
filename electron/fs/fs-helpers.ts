@@ -13,6 +13,36 @@ import path from "path";
 
 const EXPORT_REGEX = /appimg:\/\/\/([^"' )>\s]+)/g;
 const IMPORT_REGEX = /(?:\.\/)?assets\/([^"' )>\s]+)/g;
+const RETRYABLE_ERRORS = new Set(["EBUSY", "EPERM", "EACCES"]);
+
+function withRetry<A extends unknown[], T>(
+  fn: (...args: A) => Promise<T>,
+  retries: number = 2,
+) {
+  if (!Number.isInteger(retries) || retries <= 0) return fn;
+  return async (...args: A): Promise<T> => {
+    const start = 100;
+    const gr = 1.5;
+    for (let i = 0; i <= retries; i++) {
+      try {
+        return await fn(...args);
+      } catch (error: unknown) {
+        const err = error as NodeJS.ErrnoException;
+        if (i < retries && err.code && RETRYABLE_ERRORS.has(err.code)) {
+          mainLogger.devLog(
+            `Encountered ${err.code} during operation. Retrying...`,
+          );
+          const timeout = start * Math.pow(gr, i);
+          await new Promise((resolve) => setTimeout(resolve, timeout));
+          continue;
+        }
+        throw error;
+      }
+    }
+    mainLogger.appError("[withRetry]: Encountered unknown error");
+    throw new AppBackendError(AppErrorCode.UnknownError);
+  };
+}
 
 async function writeAtomic(
   targetPath: string,
@@ -34,7 +64,7 @@ async function writeAtomic(
       if (err.code !== "ENOENT")
         mainLogger.appError("[writeAtomic]: Failed to delete temp file", err);
     });
-    throw new AppBackendError(AppErrorCode.FileWriteError);
+    throw error;
   }
 }
 
@@ -126,7 +156,6 @@ async function getFilePath(
   return absoluteFilePath;
 }
 
-// doesn't check for symlinks (adds extra i/o)
 async function isInsideDirectory(
   baseDir: string,
   absoluteFilePath: string,
@@ -163,7 +192,7 @@ function isInsideDirectorySync(
       relative.startsWith(`..${path.sep}`) ||
       path.isAbsolute(relative)
     );
-  } catch {
+  } catch (error) {
     return false;
   }
 }
@@ -183,5 +212,6 @@ export {
   isInsideDirectorySync,
   sanitizeExportString,
   sanitizeImportString,
+  withRetry,
   writeAtomic,
 };

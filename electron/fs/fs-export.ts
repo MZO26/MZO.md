@@ -2,6 +2,7 @@ import { processWithLimit } from "@electron/concurrent";
 import {
   getFilePath,
   sanitizeExportString,
+  withRetry,
   writeAtomic,
 } from "@electron/fs/fs-helpers";
 import {
@@ -27,10 +28,12 @@ async function singleExport(filePath: string, data: string) {
     absoluteTargetFolder,
     imagesFolder,
   );
-  await writeAtomic(filePath, portableContent).catch((error) => {
-    mainLogger.appError("[singleExport]: Error writing file:", error);
+  try {
+    await withRetry(writeAtomic)(filePath, portableContent);
+  } catch (error) {
     throw new AppBackendError(AppErrorCode.FileWriteError);
-  });
+  }
+  return filePath;
 }
 
 async function batchExport(folder: string, payload: ExportContent[]) {
@@ -52,6 +55,14 @@ async function batchExport(folder: string, payload: ExportContent[]) {
   const assetsDir = path.join(absoluteTargetFolder, "assets");
   const isPdf = uniqueExtensions.has("pdf");
   const limit = isPdf ? 1 : 3;
+  const fileMap = new Map<string, number>();
+  const updatedPayload: ExportContent[] = [];
+  for (const p of payload) {
+    const count = fileMap.get(p.fileName) ?? 0;
+    fileMap.set(p.fileName, count + 1);
+    const fileName = count === 0 ? p.fileName : `${p.fileName}(${count})`;
+    updatedPayload.push({ ...p, fileName });
+  }
   let hiddenWin: BrowserWindow | null = null;
   let pdfAssets: PDFAssets | null = null;
   try {
@@ -62,7 +73,7 @@ async function batchExport(folder: string, payload: ExportContent[]) {
       await fs.mkdir(assetsDir, { recursive: true });
     }
     const exported = await processWithLimit(
-      payload,
+      updatedPayload,
       limit,
       async (item: ExportContent): Promise<string | null> => {
         try {
@@ -125,10 +136,11 @@ async function exportPDFNote(params: {
   if (win && !win.isDestroyed() && !win.webContents.isDestroyed())
     await win.loadURL(`data:text/html;base64,${encoded}`);
   const pdfBuffer = await win.webContents.printToPDF(pdfOptions);
-  await writeAtomic(filePath, pdfBuffer).catch((error) => {
-    mainLogger.appError("[exportPDFNote]: Error writing PDF file:", error);
+  try {
+    await withRetry(writeAtomic)(filePath, pdfBuffer);
+  } catch (error) {
     throw new AppBackendError(AppErrorCode.FileWriteError);
-  });
+  }
   return filePath;
 }
 

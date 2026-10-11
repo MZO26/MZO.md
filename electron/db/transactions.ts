@@ -6,6 +6,7 @@ import {
   NoteListItemFromDB,
   type CreateTransaction,
   type Id,
+  type Link,
   type NoteListItem,
   type NoteRow,
   type UpdateTransaction,
@@ -175,22 +176,28 @@ class Transactions {
     return results;
   }
 
-  public safeCreateMany(paramsArr: CreateTransaction[]): NoteListItem[] {
+  public safeCreateMany(paramsArr: CreateTransaction[]) {
     if (paramsArr.length === 0) return [];
     const dbResults = this.transaction(() => {
       return this.runCreateManyLogic(paramsArr);
     });
-    return dbResults.map((result) =>
-      validation(NoteListItemFromDB, {
+    const results: NoteListItem[] = [];
+    for (const result of dbResults) {
+      const links: Link[] = [];
+      for (const linkId of result.safeLinks) {
+        if (linkId === result.row.id) continue;
+        links.push({ id: linkId, dir: "out" });
+      }
+      const validatedItem = validation(NoteListItemFromDB, {
         ...result.row,
         pinned: DbBoolCodec.decode(result.row.pinned),
         images: result.safeImages,
         tags: result.safeTags,
-        links: result.safeLinks
-          .filter((id) => id !== result.row.id)
-          .map((id) => ({ id, dir: "out" })),
-      }),
-    );
+        links: links,
+      });
+      results.push(validatedItem);
+    }
+    return results;
   }
 
   private runCreateLogic({

@@ -21,7 +21,7 @@ function syncSettingsStore(
 }
 
 function syncNoteStore(notes: readonly NoteListItem[]) {
-  const sortedNotes = [...notes].sort(compareNotes);
+  const sortedNotes = notes.toSorted(compareNotes);
   noteStore.setState({
     notes: sortedNotes,
     visibleIds: sortedNotes.map((n) => n.id),

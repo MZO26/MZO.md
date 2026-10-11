@@ -55,9 +55,9 @@ async function normalizeFileContent(
       }
       case "md": {
         try {
-          const response = await withPerformanceLog(async () =>
-            workOnMarkdownParsing(content),
-          )();
+          const response = await withPerformanceLog(workOnMarkdownParsing)(
+            content,
+          );
           if (!response.success) {
             rendererLogger.appError(
               "[normalizeFileContent]: Worker failed to parse Markdown:",

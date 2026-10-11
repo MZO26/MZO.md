@@ -3,7 +3,7 @@ import { noteStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
 import { getTags } from "@/utils/generators";
 import { memoize } from "@/utils/helpers";
-import type { NoteListItem } from "@shared/schemas/note-schema";
+import type { NoteListItem, Tag } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -18,7 +18,7 @@ interface TagAutocompleteState {
 const tagAutocompleteKey = new PluginKey<TagAutocompleteState>(
   "tagAutocomplete",
 );
-const tagClickHandlerKey = new PluginKey<null>("tagClickHandler");
+const tagClickHandlerKey = new PluginKey("tagClickHandler");
 
 const NoteTagHandler = NoteTag.extend({
   addKeyboardShortcuts() {
@@ -122,7 +122,7 @@ const NoteTagHandler = NoteTag.extend({
 });
 
 const getSortedTags = memoize((notes: readonly NoteListItem[]) => {
-  const tagSet = new Set<string>();
+  const tagSet = new Set<Tag>();
   for (const note of notes) {
     if (note.tags) {
       for (const tag of note.tags) {
@@ -143,7 +143,7 @@ function addActiveTagToDoc(
     return doc;
   const tagNode = {
     type: "noteTag",
-    attrs: { id: normalizedTag, label: normalizedTag },
+    attrs: { id: normalizedTag },
   };
   const spaceNode = { type: "text", text: " " };
   const content = [...(doc.content ?? [])];

@@ -134,7 +134,7 @@ const WikilinkHandler = WikiLink.extend({
 });
 
 const getSortedNotes = memoize((notes: readonly NoteListItem[]) => {
-  return [...notes].sort((a, b) => a.title.length - b.title.length);
+  return notes.toSorted((a, b) => a.title.length - b.title.length);
 });
 
 async function resolveGhostLink(title: Note["title"]) {

@@ -50,7 +50,7 @@ function selectSidebarNotes(
         result.push(note);
     }
   }
-  return result.sort(compareNotes);
+  return result.toSorted(compareNotes);
 }
 
 async function applyView(

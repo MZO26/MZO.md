@@ -7,6 +7,8 @@ import { app, shell } from "electron";
 import fs from "fs/promises";
 import path from "path";
 
+type UniqueImageWrite = { filePath: string; imageBuffer: Buffer };
+
 async function handleImageWriteMany(validatedData: ImagePayload[]) {
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");
@@ -22,10 +24,7 @@ async function handleImageWriteMany(validatedData: ImagePayload[]) {
       imageBuffer,
     };
   });
-  const uniqueWrites = new Map<
-    string,
-    { filePath: string; imageBuffer: Buffer }
-  >();
+  const uniqueWrites = new Map<string, UniqueImageWrite>();
   for (const item of prepared) {
     if (!uniqueWrites.has(item.fileName)) {
       uniqueWrites.set(item.fileName, {
@@ -37,7 +36,7 @@ async function handleImageWriteMany(validatedData: ImagePayload[]) {
   await processWithLimit(
     [...uniqueWrites.values()],
     5,
-    async ({ filePath, imageBuffer }) => {
+    async ({ filePath, imageBuffer }: UniqueImageWrite) => {
       try {
         await fs.writeFile(filePath, imageBuffer, { flag: "wx" });
       } catch (error: unknown) {
