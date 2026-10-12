@@ -1,29 +1,3 @@
-import { requireElement } from "@/utils/dom";
-
-function initDeleteDialog() {
-  const deleteDialog = requireElement<HTMLDialogElement>("#delete-dialog");
-  return { deleteDialog };
-}
-
-function initSettingsDialog() {
-  const settingsDialog = requireElement<HTMLDialogElement>(".settings-modal");
-  const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
-  return { settingsDialog, settingsContainer };
-}
-
-function initQuickSwitchDialog() {
-  const switchDialog = requireElement<HTMLDialogElement>(
-    ".quick-switch-dialog",
-  );
-  const listEl = requireElement<HTMLDivElement>(".quick-switch-list");
-  return { switchDialog, listEl };
-}
-
-function initMathDialog() {
-  const mathDialog = requireElement<HTMLDialogElement>(".math-dialog");
-  return { mathDialog };
-}
-
 function confirmWithDialog(
   dialog: HTMLDialogElement,
   titleEl: HTMLElement,
@@ -69,16 +43,4 @@ function createMutex<T>() {
 
 const dialogMutex = createMutex();
 
-export const { deleteDialog } = initDeleteDialog();
-export const { settingsDialog, settingsContainer } = initSettingsDialog();
-export const { switchDialog, listEl } = initQuickSwitchDialog();
-export const { mathDialog } = initMathDialog();
-
-export {
-  confirmWithDialog,
-  dialogMutex,
-  initDeleteDialog,
-  initMathDialog,
-  initQuickSwitchDialog,
-  initSettingsDialog,
-};
+export { confirmWithDialog, dialogMutex };

@@ -49,7 +49,7 @@ import {
 import { noteStore, stateStore } from "@/state/state";
 import { NODE_BASELINE, SHARED_KATEX_OPTIONS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
-import { getAppItem } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
@@ -90,6 +90,7 @@ function initEditor(settings: Partial<Readonly<AppSettings>>): Editor {
     if (!transaction.docChanged) return;
     const activeId = stateStore.get("activeId") as Id | null;
     if (!activeId) return;
+    if (!stateStore.get("isDirty")) stateStore.setState({ isDirty: true });
     debouncedSaveNote(activeId, false);
   });
   return editor;
@@ -149,9 +150,9 @@ function getNoteEditorExtensions() {
     NoteTagHandler.configure({
       onClick: async (id: string) => {
         const normalizedTag = id?.trim().toLowerCase();
-        const activeId = stateStore.get("activeId") as Id | null;
+        const { activeId, isDirty } = stateStore.getState();
         if (!normalizedTag || !activeId) return;
-        const saved = await waitForFlush(activeId);
+        const saved = isDirty ? await waitForFlush(activeId) : true;
         if (!saved) return;
         await applyView(normalizedTag);
       },
@@ -195,7 +196,7 @@ function getNoteEditorExtensions() {
       openOnClick: false,
       defaultProtocol: "https",
       shouldAutoLink: () => {
-        const editor = getAppItem("editor");
+        const { editor } = useCore("editor");
         if (!editor) return true;
         return editor.state.doc.childCount <= NODE_BASELINE;
       },

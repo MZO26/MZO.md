@@ -1,13 +1,11 @@
-import { mathDialog } from "@/settings/dialog-init";
-import { requireElement } from "@/utils/dom";
-import { getAppItem } from "@/utils/registry";
+import { useCore, useDialog } from "@/utils/registry";
 import type { MathOptions } from "@/utils/types";
 import type { Editor } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 
-const input = requireElement<HTMLTextAreaElement>("#math-input");
 function openMathDialog(editor: Editor, options: MathOptions) {
-  input.value = options.initialValue ?? "";
+  const { mathDialog, mathInput } = useDialog("mathDialog", "mathInput");
+  mathInput.value = options.initialValue ?? "";
   mathDialog.showModal();
   mathDialog.addEventListener(
     "close",
@@ -16,20 +14,20 @@ function openMathDialog(editor: Editor, options: MathOptions) {
       editor.chain().focus();
       if (options.mode === "insert") {
         if (options.type === "inline") {
-          editor.commands.insertInlineMath({ latex: input.value });
+          editor.commands.insertInlineMath({ latex: mathInput.value });
         } else {
-          editor.commands.insertBlockMath({ latex: input.value });
+          editor.commands.insertBlockMath({ latex: mathInput.value });
         }
         return;
       }
       if (options.type === "inline") {
         editor.commands.updateInlineMath({
-          latex: input.value,
+          latex: mathInput.value,
           pos: options.pos,
         });
       } else {
         editor.commands.updateBlockMath({
-          latex: input.value,
+          latex: mathInput.value,
           pos: options.pos,
         });
       }
@@ -39,7 +37,7 @@ function openMathDialog(editor: Editor, options: MathOptions) {
 }
 
 function handleMathClick(node: ProseMirrorNode, pos: number) {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   openMathDialog(editor, {
     mode: "update",
     type: node.type.name === "inlineMath" ? "inline" : "block",

@@ -20,7 +20,7 @@ import {
 import { settingsStore } from "@/state/state";
 import { CODE_THEME_MAP } from "@/utils/constants";
 import { createAsyncHandler } from "@/utils/helpers";
-import { getAppItem } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 import type {
   AppearanceKeys,
   AppSettings,
@@ -39,7 +39,7 @@ function initAppearanceSettings(
     container.querySelector<HTMLSelectElement>("#highlight");
   const noteItemSelect =
     container.querySelector<HTMLSelectElement>("#note_item_display");
-  const sidebar = getAppItem("sidebar");
+  const { sidebar } = useCore("sidebar");
   if (!codeThemeSelect || !themeSelect || !highlightSelect || !noteItemSelect) {
     return;
   }
@@ -130,7 +130,7 @@ function initEditorSettings(
   settings: Readonly<EditorKeys>,
   container: HTMLDivElement,
 ) {
-  const editorWrapper = getAppItem("editorWrapper");
+  const { editorWrapper } = useCore("editorWrapper");
   const fontFamilySelect =
     container.querySelector<HTMLSelectElement>("#font_family");
   const fontSizeSelect =
@@ -187,7 +187,7 @@ function initEditorSettings(
   );
 
   const enabled = settings["spellcheck"] === true;
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   editor.view.dom.spellcheck = enabled;
   spellcheckSelect.value = enabled ? "true" : "false";
   spellcheckSelect.addEventListener(

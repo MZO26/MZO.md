@@ -10,13 +10,10 @@ import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import { updateSelectionUI } from "@/components/sidebar/sidebar-selection-ui";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
-import {
-  confirmWithDialog,
-  deleteDialog,
-  dialogMutex,
-} from "@/settings/dialog-init";
+import { confirmWithDialog, dialogMutex } from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
+import { useDialog } from "@/utils/registry";
 import type { SelectionAction } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
@@ -221,6 +218,7 @@ async function pinSelection(selectedIds: Id[]) {
 }
 
 async function deleteSelection() {
+  const { deleteDialog } = useDialog("deleteDialog");
   const selectedIds = stateStore.get("selectedIds");
   const ids = [...selectedIds];
   if (!Array.isArray(ids) || ids.length === 0) return;

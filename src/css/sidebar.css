@@ -303,7 +303,8 @@ body.is-dragging * {
 
 .search-input,
 .search-input-editor,
-.replace-input-editor {
+.replace-input-editor,
+.search-input-quick-switch {
   flex: 1;
   background: transparent;
   border: none;
@@ -321,7 +322,8 @@ body.is-dragging * {
 
 .search-input::placeholder,
 .search-input-editor::placeholder,
-.replace-input-editor::placeholder {
+.replace-input-editor::placeholder,
+.search-input-quick-switch::placeholder {
   color: var(--text-muted);
   font-weight: 500;
 }

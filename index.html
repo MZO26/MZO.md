@@ -127,6 +127,15 @@
         <button class="quick-switch-close-btn" value="cancel">
           <i data-lucide="x" class="quick-switch-close-icon"></i>
         </button>
+        <div class="input-wrapper">
+          <input
+            type="search"
+            class="search-input-quick-switch"
+            placeholder="Filter notes or create a new one..."
+            title="Filter notes or create a new one"
+            autofocus
+          />
+        </div>
         <div class="quick-switch-list"></div>
       </form>
     </dialog>
@@ -149,27 +158,6 @@
             autofocus
           >
             Confirm Delete
-          </button>
-        </div>
-      </form>
-    </dialog>
-    <dialog id="sync-dialog" class="sync-dialog">
-      <form method="dialog" class="sync-dialog-form" novalidate>
-        <button class="sync-close-btn" value="cancel">
-          <i data-lucide="x" class="sync-close-icon"></i>
-        </button>
-        <div class="sync-dialog-header">
-          <span class="sync-dialog-title"></span>
-        </div>
-        <div class="sync-dialog-content">
-          <p class="sync-dialog-description">Load external changes?</p>
-          <button
-            value="confirm"
-            class="sync-confirm-btn"
-            id="confirm-sync-btn"
-            autofocus
-          >
-            Confirm
           </button>
         </div>
       </form>

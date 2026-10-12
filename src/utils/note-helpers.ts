@@ -1,14 +1,14 @@
 import { rendererLogger } from "@/app";
 import { NODE_BASELINE, YIELD_MS } from "@/utils/constants";
 import { sleep } from "@/utils/helpers";
-import { getUIItem } from "@/utils/registry";
+import { useUI } from "@/utils/registry";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
 
 function createNoteUpdater() {
   let element: HTMLDivElement | null = null;
   return function updateNoteCount(count: number) {
-    const sidebarFooter = getUIItem("sidebarFooter");
+    const { sidebarFooter } = useUI("sidebarFooter");
     element ??= sidebarFooter.querySelector<HTMLDivElement>(".note-count");
     if (!element) return;
     element.textContent = `${count} ${count === 1 ? "note" : "notes"}`;

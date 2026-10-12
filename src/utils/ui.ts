@@ -1,4 +1,5 @@
 import { requireElement } from "@/utils/dom";
+import { useTemplates, type TemplateRegistry } from "./registry";
 
 function createTooltipContent(baseText: string) {
   return baseText
@@ -31,4 +32,34 @@ function isDiv(node: Node | null): node is HTMLDivElement {
   return node instanceof HTMLDivElement;
 }
 
-export { createGlobalSpinner, createTooltipContent, isDiv };
+function createTemplateCloner<T extends Element>(
+  template: keyof TemplateRegistry,
+  fn: (node: Node | null) => node is T,
+) {
+  let cachedNode: T | null = null;
+  return function getClone(): T {
+    if (!cachedNode) {
+      const { [template]: templateElement } = useTemplates(template);
+      if (!(templateElement instanceof HTMLTemplateElement)) {
+        throw new Error(`Element '${template}' is not a template.`);
+      }
+      const templateChild = templateElement.content.firstElementChild;
+      if (!fn(templateChild)) {
+        throw new Error(`Template '${template}' is missing.`);
+      }
+      cachedNode = templateChild;
+    }
+    const clonedNode = cachedNode.cloneNode(true);
+    if (!fn(clonedNode)) {
+      throw new Error(`Failed to clone template '${template}'.`);
+    }
+    return clonedNode;
+  };
+}
+
+export {
+  createGlobalSpinner,
+  createTemplateCloner,
+  createTooltipContent,
+  isDiv,
+};

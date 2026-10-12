@@ -4,7 +4,7 @@ import { handleUpdateSettings } from "@/settings/setting-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
 import { compareNotes, updateNoteCount } from "@/utils/note-helpers";
-import { getUIItem } from "@/utils/registry";
+import { useUI } from "@/utils/registry";
 import type { SidebarParams } from "@/utils/types";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 
@@ -72,7 +72,8 @@ async function applyView(
 function restoreSidebarScope(newState?: readonly NoteListItem[]) {
   const activeTag = stateStore.get("activeTag");
   stateStore.setState({ searchQuery: "" });
-  getUIItem("searchInput").value = "";
+  const { searchInput } = useUI("searchInput");
+  searchInput.value = "";
   noteStore.setState((state) => ({
     visibleIds: computeIdsForTagView(newState ?? state.notes, activeTag),
     searchSnippets: {},

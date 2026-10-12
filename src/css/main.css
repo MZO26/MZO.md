@@ -89,8 +89,7 @@
 }
 
 .quick-switch-dialog,
-.delete-dialog,
-.sync-dialog {
+.delete-dialog {
   width: 350px;
   border: none;
   user-select: none;
@@ -114,8 +113,7 @@
 .math-dialog[open],
 .quick-switch-dialog[open],
 .settings-modal[open],
-.delete-dialog[open],
-.sync-dialog[open] {
+.delete-dialog[open] {
   opacity: 1;
   transform: scale(1);
   visibility: visible;
@@ -125,8 +123,7 @@
   .math-dialog[open],
   .quick-switch-dialog[open],
   .settings-modal[open],
-  .delete-dialog[open],
-  .sync-dialog[open] {
+  .delete-dialog[open] {
     opacity: 0;
     transform: scale(0.95);
     visibility: hidden;
@@ -137,7 +134,6 @@
   .math-dialog[open]::backdrop,
   .settings-modal[open]::backdrop,
   .delete-dialog[open]::backdrop,
-  .sync-dialog[open]::backdrop,
   .quick-switch-dialog[open]::backdrop {
     opacity: 0;
     visibility: hidden;
@@ -147,8 +143,7 @@
 .math-dialog::backdrop,
 .quick-switch-dialog::backdrop,
 .settings-modal::backdrop,
-.delete-dialog::backdrop,
-.sync-dialog::backdrop {
+.delete-dialog::backdrop {
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(6px);
   opacity: 0;
@@ -163,7 +158,6 @@
 .math-dialog[open]::backdrop,
 .settings-modal[open]::backdrop,
 .delete-dialog[open]::backdrop,
-.sync-dialog[open]::backdrop,
 .quick-switch-dialog[open]::backdrop {
   opacity: 1;
   visibility: visible;
@@ -171,7 +165,6 @@
 
 .math-dialog-form,
 .delete-dialog-form,
-.sync-dialog-form,
 .quick-switch-dialog-form {
   display: flex;
   flex-direction: column;
@@ -181,15 +174,13 @@
 .math-close-btn,
 .quick-switch-close-btn,
 .delete-close-btn,
-.sync-close-btn {
+.close-setting-modal-btn {
   position: absolute;
-  top: 8px;
-  right: 14px;
   z-index: 2;
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--text-main);
+  color: var(--text-muted);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -198,13 +189,18 @@
   transition: background-color 0.2s ease;
 }
 
+.math-close-btn,
+.delete-close-btn {
+  top: 8px;
+  right: 14px;
+}
+
 .quick-switch-close-btn {
-  top: 4px;
-  right: 10px;
+  top: 0px;
+  right: 0px;
 }
 
 .close-setting-modal-btn {
-  position: absolute;
   top: 10px;
   right: 3px;
 }
@@ -212,8 +208,7 @@
 .close-setting-modal-btn:hover,
 .math-close-btn:hover,
 .quick-switch-close-btn:hover,
-.delete-close-btn:hover,
-.sync-close-btn:hover {
+.delete-close-btn:hover {
   background: transparent;
   outline: none;
   box-shadow: none;
@@ -222,15 +217,13 @@
 
 .match-close-icon,
 .quick-switch-close-icon,
-.delete-close-icon,
-.sync-close-icon {
+.delete-close-icon {
   width: 18px;
   height: 18px;
 }
 
 .math-dialog-header,
-.delete-dialog-header,
-.sync-dialog-header {
+.delete-dialog-header {
   display: flex;
   width: 100%;
   align-items: center;
@@ -242,14 +235,12 @@
   border-radius: 18px 18px 0 0;
 }
 
-.delete-dialog-title,
-.sync-dialog-title {
+.delete-dialog-title {
   font-weight: 700;
 }
 
 .math-dialog-content,
-.delete-dialog-content,
-.sync-dialog-content {
+.delete-dialog-content {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -258,8 +249,7 @@
   gap: 16px;
 }
 
-.delete-dialog-description,
-.sync-dialog-description {
+.delete-dialog-description {
   text-align: center;
   margin: 0;
   font-size: 14px;
@@ -267,8 +257,7 @@
 }
 
 .math-confirm-btn,
-.delete-confirm-btn,
-.sync-confirm-btn {
+.delete-confirm-btn {
   width: 100%;
   color: var(--text-main);
   border: var(--border-color);
@@ -335,14 +324,6 @@
 .delete-confirm-btn:focus-within {
   color: #ffffff;
   background-color: #ef4444;
-}
-
-.sync-confirm-btn:hover,
-.sync-confirm-btn:active,
-.sync-confirm-btn.is-active,
-.sync-confirm-btn:focus-within {
-  box-shadow: var(--shadow);
-  background-color: var(--tag-bg);
 }
 
 .settings-quick-actions {
@@ -862,7 +843,7 @@ svg.empty-state-icon {
   box-shadow: var(--shadow);
   font-size: 0.8rem;
   z-index: 5;
-  width: 230px;
+  width: 300px;
   max-height: calc(100vh - 200px);
   overflow-y: auto;
   overflow-x: hidden;
@@ -1063,7 +1044,6 @@ svg.empty-state-icon {
 .quick-switch-dialog {
   width: 400px;
   height: fit-content;
-  padding: 5px 0;
   background: var(--bg-sidebar);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
@@ -1077,6 +1057,11 @@ svg.empty-state-icon {
     transform 0.3s ease,
     display 0.3s allow-discrete,
     overlay 0.3s allow-discrete;
+}
+
+.quick-switch-dialog .input-wrapper {
+  max-width: 370px;
+  margin: 20px auto 0px auto;
 }
 
 .quick-switch-list {
@@ -1179,6 +1164,10 @@ svg.empty-state-icon {
     grid-template-columns:
       clamp(0px, var(--sidebar-width, 250px), 320px)
       minmax(0, 1fr);
+  }
+
+  .toc {
+    width: 230px;
   }
 
   #datetime-display {

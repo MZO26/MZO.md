@@ -2,7 +2,7 @@ import { rendererLogger } from "@/app";
 import { triggerSingleDelete } from "@/components/sidebar/sidebar-triggers";
 import { handleSelectNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { getAppItem } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 import { type Id } from "@shared/schemas/note-schema";
 
 async function navigateSidebar(e: KeyboardEvent) {
@@ -46,7 +46,7 @@ async function navigateSidebar(e: KeyboardEvent) {
 }
 
 function updateHover(activeId: Id | null) {
-  const sidebar = getAppItem("sidebar");
+  const { sidebar } = useCore("sidebar");
   const items = [...sidebar.querySelectorAll<HTMLDivElement>(".note-item")];
   for (const item of items) {
     const isHovered = item.dataset["id"] === activeId;

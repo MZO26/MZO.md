@@ -2,7 +2,7 @@ import { rendererLogger } from "@/app";
 import { SELECTION_ACTIONS } from "@/utils/constants";
 import { createIconButton } from "@/utils/dom";
 import { renderIcons } from "@/utils/icons";
-import { getAppItem, getUIItem } from "@/utils/registry";
+import { useCore, useUI } from "@/utils/registry";
 import type { SelectionAction, SelectionParams } from "@/utils/types";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
 
@@ -25,7 +25,7 @@ function getActionLabel(actionId: SelectionAction, selectedCount: number) {
 }
 
 function initSelectionFooter() {
-  const selectionFooter = getUIItem("selectionFooter");
+  const { selectionFooter } = useUI("selectionFooter");
   if (selectionFooter.dataset["initialized"] === "true") {
     rendererLogger.devLog("No rebuild of selection footer");
     return;
@@ -44,7 +44,7 @@ function initSelectionFooter() {
 
 function updateSelectionFooter(selectedIds: Set<Id>, selectionMode: boolean) {
   const selectedCount = selectedIds.size;
-  const selectionFooter = getUIItem("selectionFooter");
+  const { selectionFooter } = useUI("selectionFooter");
   selectionFooter.classList.toggle("collapsed", !selectionMode);
   for (const action of SELECTION_ACTIONS) {
     const button = selectionFooter.querySelector<HTMLButtonElement>(
@@ -59,7 +59,7 @@ function updateSelectionFooter(selectedIds: Set<Id>, selectionMode: boolean) {
 
 function updateSelectionUI(selectionParams: SelectionParams) {
   const { selectionMode, selectedIds } = selectionParams;
-  const sidebar = getAppItem("sidebar");
+  const { sidebar } = useCore("sidebar");
   sidebar.classList.toggle("selection-mode", selectionMode);
   const noteItems = sidebar.querySelectorAll<HTMLDivElement>(".note-item");
   for (const item of noteItems) {

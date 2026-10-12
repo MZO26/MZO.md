@@ -7,14 +7,10 @@ import {
 } from "@/components/editor/editor-content";
 import { getExportContent } from "@/notes/export-actions";
 import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
-import {
-  confirmWithDialog,
-  deleteDialog,
-  dialogMutex,
-} from "@/settings/dialog-init";
+import { confirmWithDialog, dialogMutex } from "@/settings/dialog-init";
 import { noteStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
-import { getAppItem } from "@/utils/registry";
+import { useCore, useDialog } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
 import type { ExportContent } from "@shared/schemas/request-schema";
@@ -23,7 +19,7 @@ import type { TableAction } from "@shared/shared-types";
 import { generateHTML } from "@tiptap/core";
 
 function triggerTableMenu(action: TableAction) {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   const chain = editor.chain().focus();
   switch (action) {
     case TABLE_ACTIONS.ADD_ROW_BEFORE:
@@ -54,7 +50,7 @@ function triggerTableMenu(action: TableAction) {
 }
 
 function triggerNoteItemMenu(payload: NoteMenuPayload) {
-  const sidebar = getAppItem("sidebar");
+  const { sidebar } = useCore("sidebar");
   const noteElement = sidebar.querySelector<HTMLDivElement>(
     `.note-item[data-id="${CSS.escape(payload.id)}"]`,
   );
@@ -124,7 +120,7 @@ async function triggerCopyRichText(id: Id) {
 }
 
 async function triggerCopySelectionHtml() {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   if (!editor) return;
   const { state } = editor;
   const { from, to } = state.selection;
@@ -142,7 +138,7 @@ async function triggerCopySelectionHtml() {
 }
 
 async function triggerCopySelectionMarkdown() {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   if (!editor) return;
   const { from, to } = editor.state.selection;
   if (from === to) return;
@@ -159,7 +155,7 @@ async function triggerCopySelectionMarkdown() {
 }
 
 async function triggerCopySelectionRichText() {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   if (!editor) return;
   const { state } = editor;
   const { from, to } = state.selection;
@@ -187,6 +183,7 @@ async function triggerCopySelectionRichText() {
 }
 
 async function triggerSingleDelete(id: Id) {
+  const { deleteDialog } = useDialog("deleteDialog");
   const titleEl = requireElement<HTMLSpanElement>(
     ".delete-dialog-title",
     deleteDialog,

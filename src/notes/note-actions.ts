@@ -25,7 +25,7 @@ import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import { extractText, getMetadata, titleGenerator } from "@/utils/generators";
 import { debounce } from "@/utils/helpers";
 import { checkNoteSize } from "@/utils/note-helpers";
-import { getAppItem } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 import {
   type CreateNotePayload,
   type Id,
@@ -40,7 +40,7 @@ async function handleCreateNote(options?: {
   activeTitle?: NoteListItem["title"];
   shouldNavigate?: boolean;
 }) {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   const activeTag = stateStore.get("activeTag");
   let editorContent = addActiveTagToDoc(EMPTY_DOC, activeTag);
   if (options?.activeTitle)
@@ -207,7 +207,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
   if (activeId !== id) return;
   const activeNote = noteStore.get("noteIndex").get(activeId);
   if (!activeNote) return;
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   const content = editor.getJSON();
   const text = editor.getText();
   const metaData = getMetadata(content);
@@ -250,6 +250,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
       noteIndex,
     };
   });
+  stateStore.setState({ isDirty: false });
   // check if update changed view
   // if so, recompute visible ids and set active tag to null
   // else visible ids don't change
@@ -266,10 +267,15 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 
 async function waitForFlush(id: Id | null) {
-  if (!id || stateStore.get("activeId") !== id) return;
+  if (!id || stateStore.get("activeId") !== id) return false;
   const noteIndex = noteStore.get("noteIndex");
   if (!noteIndex.has(id)) {
-    return;
+    const isCurrentlyActive = stateStore.get("activeId") === id;
+    stateStore.setState({
+      isDirty: false,
+      ...(isCurrentlyActive && { activeId: null }),
+    });
+    return false;
   }
   debouncedSaveNote.cancel();
   await handleSaveNote(id, true);
@@ -277,7 +283,7 @@ async function waitForFlush(id: Id | null) {
 }
 
 async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   const activeId = stateStore.get("activeId");
   debouncedSaveNote.flush();
   if (activeId === id) {

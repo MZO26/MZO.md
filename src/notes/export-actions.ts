@@ -3,7 +3,7 @@ import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import { DOMPURIFY_CONFIG, NODE_BASELINE } from "@/utils/constants";
 import { titleGenerator } from "@/utils/generators";
-import { getAppItem } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 import { AppErrorCode } from "@shared/errors";
 import type { Id, Note } from "@shared/schemas/note-schema";
 import type {
@@ -76,7 +76,7 @@ async function getBatchExportContent(
         };
       }
       case "md": {
-        const editor = getAppItem("editor");
+        const { editor } = useCore("editor");
         return {
           success: true,
           data: notes.map((note) => ({
@@ -155,7 +155,7 @@ async function getExportContent(
       };
     }
     case "md": {
-      const editor = getAppItem("editor");
+      const { editor } = useCore("editor");
       return {
         success: true,
         data: {

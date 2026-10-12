@@ -1,6 +1,6 @@
 import { pinWindow } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getAppItem } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 
 const widths = ["comfortable", "normal", "wide"] as const;
 
@@ -31,12 +31,12 @@ async function setWindowTop(toggleBtn: HTMLButtonElement) {
 }
 
 function setFocusMode(focus: boolean) {
-  const appContainer = getAppItem("appContainer");
+  const { appContainer } = useCore("appContainer");
   appContainer.classList.toggle("focus", focus);
 }
 
 function setToolbarCollapsed(collapsed: boolean) {
-  const appContainer = getAppItem("appContainer");
+  const { appContainer } = useCore("appContainer");
   appContainer.classList.toggle("toolbar-collapsed", collapsed);
 }
 

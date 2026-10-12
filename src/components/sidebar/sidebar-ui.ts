@@ -19,9 +19,9 @@ import {
 import { createAsyncHandler, debounce } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { updateNoteCount } from "@/utils/note-helpers";
-import { createTemplateCloner, getAppItem } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 import type { AllTagsMenu, FilterMode, SidebarParams } from "@/utils/types";
-import { isDiv } from "@/utils/ui";
+import { createTemplateCloner, isDiv } from "@/utils/ui";
 
 const tagsPopoverClone = createTemplateCloner("tagsPopoverTemplate", isDiv);
 
@@ -226,7 +226,7 @@ const getSidebarEmptyStateClone = createTemplateCloner(
 let emptyStateClone: HTMLDivElement | null = null;
 
 function renderSidebarEmptyState(sidebarParams: SidebarParams) {
-  const sidebar = getAppItem("sidebar");
+  const { sidebar } = useCore("sidebar");
   if (!emptyStateClone) {
     emptyStateClone = getSidebarEmptyStateClone();
     renderIcons(emptyStateClone);
@@ -260,7 +260,7 @@ function setSidebarState(element: HTMLDivElement, collapsed: boolean) {
 }
 
 function toggleSidebar() {
-  const appContainer = getAppItem("appContainer");
+  const { appContainer } = useCore("appContainer");
   const collapsed = appContainer.classList.contains("collapsed");
   setSidebarState(appContainer, !collapsed);
 }
@@ -274,7 +274,7 @@ function handleSidebarChange(sidebarParams: SidebarParams) {
 }
 
 function renderNoteList(sidebarParams: SidebarParams) {
-  const sidebar = getAppItem("sidebar");
+  const { sidebar } = useCore("sidebar");
   const {
     visibleNotes: notes,
     query: searchQuery,
@@ -324,7 +324,7 @@ function renderNoteList(sidebarParams: SidebarParams) {
 function resizeSidebar() {
   const minWidth = 0;
   const maxWidth = 420;
-  const sidebarContainer = getAppItem("sidebarContainer");
+  const { sidebarContainer } = useCore("sidebarContainer");
   const resizer = requireElement<HTMLDivElement>(
     ".resizer-sidebar",
     sidebarContainer,

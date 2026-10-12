@@ -24,7 +24,7 @@ import {
 import { noteStore, stateStore } from "@/state/state";
 import { NAV_KEYS, SELECTION_ACTIONS } from "@/utils/constants";
 import { createAsyncHandler } from "@/utils/helpers";
-import { getUIItems, registerAppEvents } from "@/utils/registry";
+import { registerAppEvents, useUI } from "@/utils/registry";
 import {
   isEditorFocused,
   isFocusActive,
@@ -37,11 +37,11 @@ import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 function initNotesSidebar(sidebar: HTMLDivElement) {
-  const { searchInput, selectionFooter, sidebarHeader } = getUIItems([
+  const { searchInput, selectionFooter, sidebarHeader } = useUI(
     "searchInput",
     "selectionFooter",
     "sidebarHeader",
-  ]);
+  );
   applySidebarListeners(sidebar, sidebarHeader, searchInput, selectionFooter);
   setupSidebarFileDrop(sidebar);
   registerAppEvents(document, {
@@ -79,8 +79,8 @@ function applySidebarListeners(
       }
       const tagBtn = e.target.closest<HTMLButtonElement>(".all-tags-btn");
       if (tagBtn) {
-        const activeId = stateStore.get("activeId") as Id | null;
-        await waitForFlush(activeId);
+        const { activeId, isDirty } = stateStore.getState();
+        if (activeId && isDirty) await waitForFlush(activeId);
         const tags = noteStore.get("notes").flatMap((n) => n.tags ?? []);
         showTagPopover(tagBtn, tags);
         return;

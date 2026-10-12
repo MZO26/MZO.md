@@ -2,39 +2,133 @@ import { rendererLogger } from "@/app";
 import { getSimilarityMatching } from "@/components/quick-switch/quick-switch-similarity";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { handleSelectNote, waitForFlush } from "@/notes/note-actions";
-import { listEl, switchDialog } from "@/settings/dialog-init";
 import { noteStore, stateStore } from "@/state/state";
-import { NAV_KEYS } from "@/utils/constants";
+import { DEBOUNCE_MS, NAV_KEYS } from "@/utils/constants";
 import { createInfoSpan } from "@/utils/dom";
-import { registerAppEvents } from "@/utils/registry";
+import { debounce, waitForPaint } from "@/utils/helpers";
+import { registerAppEvents, useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayNote } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
-import type { Id, Link, NoteListItem } from "@shared/schemas/note-schema";
-import { APP_EVENTS } from "@shared/shared-constants";
+import {
+  isNoteID,
+  type Id,
+  type Link,
+  type NoteListItem,
+  type SearchQuery,
+} from "@shared/schemas/note-schema";
+import { APP_EVENTS, MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import type { Editor } from "@tiptap/core";
 
-function initQuickSwitcher(editor: Editor) {
-  let activeIndex = 0;
-  let currentDisplayNotes: QuickSwitchDisplayNote[] = [];
+type QuickSwitchState = {
+  activeIndex: number;
+  currentDisplayNotes: readonly QuickSwitchDisplayNote[];
+  lastQuery: SearchQuery;
+  currentQueryId: number;
+};
 
-  async function toggleSwitcher() {
-    if (switchDialog.open) {
-      switchDialog.close();
-      return;
-    }
-    const displayNotes = await getDisplayNotes();
-    currentDisplayNotes = displayNotes ?? [];
-    activeIndex = 0;
-    if (editor.isFocused) {
-      editor.commands.blur();
-    }
-    switchDialog.showModal();
+function initQuickSwitcher(editor: Editor) {
+  const qsState: QuickSwitchState = {
+    activeIndex: 0,
+    currentDisplayNotes: [],
+    lastQuery: "",
+    currentQueryId: 0,
+  };
+  const { switchDialog, switchListEl, switchListSearchInput } = useDialog(
+    "switchDialog",
+    "switchListEl",
+    "switchListSearchInput",
+  );
+
+  async function setDisplayNotes(notes: readonly QuickSwitchDisplayNote[]) {
+    qsState.currentDisplayNotes = [...notes];
+    qsState.activeIndex = 0;
     renderTitleList();
   }
 
-  async function getDisplayNotes() {
+  function resetQuickSwitchState() {
+    qsState.activeIndex = 0;
+    qsState.currentDisplayNotes = [];
+    qsState.lastQuery = "";
+    qsState.currentQueryId = 0;
+  }
+
+  async function toggleSwitcher() {
+    const { activeId, isDirty } = stateStore.getState();
+    if (activeId && isDirty) await waitForFlush(activeId);
+    if (switchDialog.open) {
+      switchListSearchInput.value = "";
+      resetQuickSwitchState();
+      switchDialog.close();
+      return;
+    }
+    resetQuickSwitchState();
+    switchListSearchInput.value = "";
+    const defaults = (await computeDisplayNotes()) ?? [];
+    setDisplayNotes(defaults);
+    if (editor.isFocused) editor.commands.blur();
+    switchDialog.showModal();
+    // wait for visibility transition to focus correctly
+    await waitForPaint();
+    switchListSearchInput.focus();
+  }
+
+  async function filterTitles(query: SearchQuery) {
+    const nextQuery = query.trim();
+    const queryId = ++qsState.currentQueryId;
+    if (!nextQuery || nextQuery.length > MAX_SEARCH_LENGTH) {
+      qsState.lastQuery = "";
+      const defaults = (await computeDisplayNotes()) ?? [];
+      if (queryId !== qsState.currentQueryId) return;
+      await setDisplayNotes(defaults);
+      return;
+    }
+    if (nextQuery === qsState.lastQuery) return;
+    qsState.lastQuery = nextQuery;
+    const result = computeTitleFilterResults(nextQuery);
+    if (result.length === 0) {
+      const defaults = (await computeDisplayNotes()) ?? [];
+      console.log("CACHE CHECK:", defaults);
+      if (queryId !== qsState.currentQueryId) return;
+      await setDisplayNotes(defaults);
+      return;
+    }
+    await setDisplayNotes(result);
+  }
+
+  function computeTitleFilterResults(query: SearchQuery) {
+    const notes = noteStore.get("notes");
+    const results: { id: Id; title: NoteListItem["title"]; score: number }[] =
+      [];
+    const normalizedQuery = query.toLowerCase();
+    for (const note of notes) {
+      const normalized = note.title.toLowerCase();
+      const index = normalized.indexOf(normalizedQuery);
+      if (index === -1) continue;
+      let score: number = 3;
+      if (normalized === normalizedQuery) score = 0;
+      else if (index === 0) score = 1;
+      else if (normalized[index - 1] === " ") score = 2;
+      results.push({ id: note.id, title: note.title, score });
+    }
+    results.sort((a, b) => a.score - b.score);
+    const limit = Math.min(results.length, 15);
+    const displayNotes: QuickSwitchDisplayNote[] = [];
+    for (let i = 0; i < limit; i++) {
+      const r = results[i];
+      if (!r || !isNoteID(r.id)) continue;
+      displayNotes.push({
+        id: r.id,
+        title: r.title,
+        section: "search",
+      });
+    }
+    rendererLogger.devLog(qsState.currentDisplayNotes);
+    return displayNotes;
+  }
+
+  async function computeDisplayNotes() {
     const activeId = stateStore.get("activeId") as Id | null;
-    await waitForFlush(activeId);
+    const displayNotes: QuickSwitchDisplayNote[] = [];
     const { recentNotes, noteIndex } = noteStore.getState();
     const activeNote = activeId ? noteIndex.get(activeId) : undefined;
     // recent ids are already computed
@@ -43,7 +137,6 @@ function initQuickSwitcher(editor: Editor) {
     // recomputed and manually put together
     const backlinkIds = new Set<Id>();
     const outgoingIds = new Set<Id>();
-    const displayNotes: QuickSwitchDisplayNote[] = [];
     for (const id of recentNotes) {
       const note = noteIndex.get(id);
       if (!note || !recentIds.has(id)) continue;
@@ -105,7 +198,7 @@ function initQuickSwitcher(editor: Editor) {
   }
 
   function getSectionCount() {
-    const count = currentDisplayNotes.reduce(
+    const count = qsState.currentDisplayNotes.reduce(
       (acc, note) => {
         acc[note.section] = (acc[note.section] ?? 0) + 1;
         return acc;
@@ -116,41 +209,41 @@ function initQuickSwitcher(editor: Editor) {
   }
 
   function renderTitleList() {
-    listEl.replaceChildren();
-    if (currentDisplayNotes.length === 0) {
+    switchListEl.replaceChildren();
+    if (qsState.currentDisplayNotes.length === 0) {
       const span = createInfoSpan("No notes to display.", "quick-switch-empty");
-      listEl.appendChild(span);
+      switchListEl.appendChild(span);
       return;
     }
     let lastSection: QuickSwitchDisplayNote["section"] | null = null;
     const count = getSectionCount();
-    for (const [index, note] of currentDisplayNotes.entries()) {
+    for (const [index, note] of qsState.currentDisplayNotes.entries()) {
       if (note.section !== lastSection) {
         const header = document.createElement("div");
         header.className = "quick-switch-section-header";
         header.textContent = getSectionLabel(note.section, count);
-        listEl.appendChild(header);
+        switchListEl.appendChild(header);
         lastSection = note.section;
       }
       const optionEl = document.createElement("div");
       optionEl.className =
-        index === activeIndex
+        index === qsState.activeIndex
           ? "quick-switch-item active"
           : "quick-switch-item";
       optionEl.dataset["index"] = String(index);
       const titleEl = createInfoSpan(note.title);
       optionEl.appendChild(titleEl);
       optionEl.title = note.title;
-      listEl.appendChild(optionEl);
+      switchListEl.appendChild(optionEl);
     }
   }
 
   function updateSelection() {
     const items = [
-      ...listEl.querySelectorAll<HTMLDivElement>(".quick-switch-item"),
+      ...switchListEl.querySelectorAll<HTMLDivElement>(".quick-switch-item"),
     ];
     for (const [index, item] of items.entries()) {
-      const isActive = index === activeIndex;
+      const isActive = index === qsState.activeIndex;
       item.classList.toggle("active", isActive);
       if (isActive) {
         item.scrollIntoView({
@@ -174,6 +267,8 @@ function initQuickSwitcher(editor: Editor) {
         return `Links (${count.outgoing})`;
       case "related":
         return `Related (${count.related})`;
+      case "search":
+        return `Matching (${count.search})`;
       default:
         section satisfies never;
         return "";
@@ -181,20 +276,20 @@ function initQuickSwitcher(editor: Editor) {
   }
 
   function move(delta: number) {
-    if (!currentDisplayNotes.length) return;
-    let nextIndex = activeIndex + delta;
-    const maxIndex = currentDisplayNotes.length - 1;
+    if (!qsState.currentDisplayNotes.length) return;
+    let nextIndex = qsState.activeIndex + delta;
+    const maxIndex = qsState.currentDisplayNotes.length - 1;
     if (nextIndex < 0) {
       nextIndex = maxIndex;
     } else if (nextIndex > maxIndex) {
       nextIndex = 0;
     }
-    activeIndex = nextIndex;
+    qsState.activeIndex = nextIndex;
     updateSelection();
   }
 
   async function selectActive() {
-    const activeNote = currentDisplayNotes[activeIndex];
+    const activeNote = qsState.currentDisplayNotes[qsState.activeIndex];
     switchDialog.close();
     if (!activeNote || stateStore.get("activeId") === activeNote.id) {
       return;
@@ -212,7 +307,7 @@ function initQuickSwitcher(editor: Editor) {
       case "ArrowDown":
         event.preventDefault();
         if (isModifierPressed) {
-          activeIndex = currentDisplayNotes.length - 1;
+          qsState.activeIndex = qsState.currentDisplayNotes.length - 1;
           updateSelection();
         } else {
           move(1);
@@ -221,7 +316,7 @@ function initQuickSwitcher(editor: Editor) {
       case "ArrowUp":
         event.preventDefault();
         if (isModifierPressed) {
-          activeIndex = 0;
+          qsState.activeIndex = 0;
           updateSelection();
         } else {
           move(-1);
@@ -247,12 +342,19 @@ function initQuickSwitcher(editor: Editor) {
     if (!(event.target instanceof Element)) return;
     const optionEl = event.target.closest<HTMLDivElement>("[data-index]");
     if (!optionEl?.dataset["index"]) return;
-    activeIndex = Number(optionEl.dataset["index"]);
+    qsState.activeIndex = Number(optionEl.dataset["index"]);
     selectActive();
   }
 
+  const debouncedTitleFilter = debounce((e: Event) => {
+    if (!(e.target instanceof HTMLInputElement)) return;
+    const value = (e.target.value ?? "").trim();
+    filterTitles(value);
+  }, DEBOUNCE_MS.very_fast);
+
+  switchListSearchInput.addEventListener("input", debouncedTitleFilter);
   document.addEventListener("keydown", handleListKeydown);
-  listEl.addEventListener("click", handleListClick);
+  switchListEl.addEventListener("click", handleListClick);
   document.addEventListener("keydown", handleDocumentKeydown);
   registerAppEvents(document, {
     // [] for computed keys to be evaluated correctly

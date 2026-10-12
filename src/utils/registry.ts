@@ -8,6 +8,7 @@ interface AppRegistry {
   ui: Partial<UIRegistry>;
   core: Partial<CoreRegistry>;
   template: Partial<TemplateRegistry>;
+  dialog: Partial<DialogRegistry>;
 }
 
 interface CoreRegistry {
@@ -42,95 +43,52 @@ interface TemplateRegistry {
   tagsPopoverTemplate: HTMLTemplateElement;
 }
 
+interface DialogRegistry {
+  // delete dialog
+  deleteDialog: HTMLDialogElement;
+  // settings dialog
+  settingsDialog: HTMLDialogElement;
+  settingsContainer: HTMLDivElement;
+  // quick switcher dialog
+  switchDialog: HTMLDialogElement;
+  switchListEl: HTMLDivElement;
+  switchListSearchInput: HTMLInputElement;
+  // math dialog
+  mathDialog: HTMLDialogElement;
+  mathInput: HTMLTextAreaElement;
+}
+
 // set settings to empty object to avoid undefined errors, will be populated in app.ts on startup
 const registry = {
   core: {},
   ui: {},
   template: {},
+  dialog: {},
 } as AppRegistry;
 
-const setAppItems = (obj: Partial<CoreRegistry>) => {
-  if (!registry.core) registry.core = {};
-  Object.assign(registry.core, obj);
-};
-
-const getAppItem = <K extends keyof CoreRegistry>(key: K): CoreRegistry[K] => {
-  const item = registry.core[key];
-  if (!item) {
-    throw new Error(`Element "${key}" is missing from the registry.`);
-  }
-  return item;
-};
-
-const setUIItems = (obj: Partial<UIRegistry>) => {
-  if (!registry.ui) registry.ui = {};
-  Object.assign(registry.ui, obj);
-};
-
-const setTemplateItems = (obj: Partial<TemplateRegistry>) => {
-  if (!registry.template) registry.template = {};
-  Object.assign(registry.template, obj);
-};
-
-const getTemplateItems = <K extends keyof TemplateRegistry>(
-  keys: K[],
-): Pick<TemplateRegistry, K> => {
-  const result = {} as Pick<TemplateRegistry, K>;
-  for (const key of keys) {
-    const item = registry.template[key];
-    if (!item) {
-      throw new Error(`Element "${key}" is missing from the registry.`);
+function fromRegistry<T extends keyof AppRegistry>(registryKey: T) {
+  return function <K extends keyof AppRegistry[T]>(
+    ...keys: K[]
+  ): Required<Pick<AppRegistry[T], K>> {
+    const result = {} as Required<Pick<AppRegistry[T], K>>;
+    const entryObject = registry[registryKey];
+    for (const key of keys) {
+      const item = entryObject[key];
+      if (!item)
+        throw new Error(
+          `Element "${String(key)}" is missing from the registry.`,
+        );
+      result[key] = item;
     }
-    result[key] = item;
-  }
-  return result;
-};
+    return result;
+  };
+}
 
-const getTemplateItem = <K extends keyof TemplateRegistry>(
-  key: K,
-): TemplateRegistry[K] => {
-  const item = registry.template[key];
-  if (!item) {
-    throw new Error(`Element "${key}" is missing from the registry.`);
-  }
-  return item;
-};
-
-const getUIItem = <K extends keyof UIRegistry>(key: K): UIRegistry[K] => {
-  const item = registry.ui[key];
-  if (!item) {
-    throw new Error(`Element "${key}" is missing from the registry.`);
-  }
-  return item;
-};
-
-const getAppItems = <K extends keyof CoreRegistry>(
-  keys: K[],
-): Pick<CoreRegistry, K> => {
-  const result = {} as Pick<CoreRegistry, K>;
-  for (const key of keys) {
-    const item = registry.core[key];
-    if (!item) {
-      throw new Error(`Element "${key}" is missing from the registry.`);
-    }
-    result[key] = item;
-  }
-  return result;
-};
-
-const getUIItems = <K extends keyof UIRegistry>(
-  keys: K[],
-): Pick<UIRegistry, K> => {
-  const result = {} as Pick<UIRegistry, K>;
-  for (const key of keys) {
-    const item = registry.ui[key];
-    if (!item) {
-      throw new Error(`Element "${key}" is missing from the registry.`);
-    }
-    result[key] = item;
-  }
-  return result;
-};
+function toRegistry<T extends keyof AppRegistry>(registryKey: T) {
+  return function (entries: Partial<AppRegistry[T]>): void {
+    Object.assign(registry[registryKey], entries);
+  };
+}
 
 function registerAppEvents(
   target: EventTarget,
@@ -145,8 +103,8 @@ function registerAppEvents(
   }
 }
 
-function initCoreRegistry(settings: AppSettings) {
-  setAppItems({
+function initCoreRegistry(settings: Readonly<AppSettings>) {
+  toRegistry("core")({
     appContainer: requireElement<HTMLDivElement>(".app-container"),
     sidebar: requireElement<HTMLDivElement>(".notes-container"),
     sidebarContainer: requireElement<HTMLDivElement>(".sidebar-container"),
@@ -157,7 +115,7 @@ function initCoreRegistry(settings: AppSettings) {
 }
 
 function initUIRegistry() {
-  setUIItems({
+  toRegistry("ui")({
     wordCountEl: requireElement<HTMLSpanElement>("#word-count"),
     charCountEl: requireElement<HTMLSpanElement>("#char-count"),
     readingTime: requireElement<HTMLSpanElement>("#reading-time"),
@@ -174,7 +132,7 @@ function initUIRegistry() {
 }
 
 function initTemplateRegistry() {
-  setTemplateItems({
+  toRegistry("template")({
     editorEmptyStateTemplate: requireElement<HTMLTemplateElement>(
       "#editor-empty-state-template",
     ),
@@ -191,44 +149,41 @@ function initTemplateRegistry() {
   });
 }
 
-function createTemplateCloner<T extends Element>(
-  template: keyof TemplateRegistry,
-  fn: (node: Node | null) => node is T,
-) {
-  let cachedNode: T | null = null;
-  return function getClone(): T {
-    if (!cachedNode) {
-      const templateElement = getTemplateItem(template);
-      if (!(templateElement instanceof HTMLTemplateElement)) {
-        throw new Error(`Element '${template}' is not a template.`);
-      }
-      const templateChild = templateElement.content.firstElementChild;
-      if (!fn(templateChild)) {
-        throw new Error(`Template '${template}' is missing.`);
-      }
-      cachedNode = templateChild;
-    }
-    const clonedNode = cachedNode.cloneNode(true);
-    if (!fn(clonedNode)) {
-      throw new Error(`Failed to clone template '${template}'.`);
-    }
-    return clonedNode;
-  };
+function initDialogRegistry() {
+  toRegistry("dialog")({
+    deleteDialog: requireElement<HTMLDialogElement>("#delete-dialog"),
+    settingsContainer: requireElement<HTMLDivElement>(".settings-content"),
+    settingsDialog: requireElement<HTMLDialogElement>(".settings-modal"),
+    switchDialog: requireElement<HTMLDialogElement>(".quick-switch-dialog"),
+    switchListSearchInput: requireElement<HTMLInputElement>(
+      ".search-input-quick-switch",
+    ),
+    switchListEl: requireElement<HTMLDivElement>(".quick-switch-list"),
+    mathDialog: requireElement<HTMLDialogElement>(".math-dialog"),
+    mathInput: requireElement<HTMLTextAreaElement>("#math-input"),
+  });
 }
 
+const useCore = fromRegistry("core");
+const useUI = fromRegistry("ui");
+const useTemplates = fromRegistry("template");
+const useDialog = fromRegistry("dialog");
+
 export {
-  createTemplateCloner,
-  getAppItem,
-  getAppItems,
-  getTemplateItem,
-  getTemplateItems,
-  getUIItem,
-  getUIItems,
+  fromRegistry,
   initCoreRegistry,
+  initDialogRegistry,
   initTemplateRegistry,
   initUIRegistry,
   registerAppEvents,
-  setAppItems,
-  setUIItems,
+  toRegistry,
+  useCore,
+  useDialog,
+  useTemplates,
+  useUI,
   type AppRegistry,
+  type CoreRegistry,
+  type DialogRegistry,
+  type TemplateRegistry,
+  type UIRegistry,
 };

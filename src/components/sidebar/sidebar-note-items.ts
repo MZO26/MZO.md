@@ -1,9 +1,8 @@
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import { formatNoteDate } from "@/utils/date";
 import { renderIcons } from "@/utils/icons";
-import { createTemplateCloner } from "@/utils/registry";
 import type { SnippetGenParams } from "@/utils/types";
-import { isDiv } from "@/utils/ui";
+import { createTemplateCloner, isDiv } from "@/utils/ui";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { UNTITLED } from "@shared/shared-constants";

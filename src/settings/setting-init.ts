@@ -1,5 +1,4 @@
 import { rendererLogger } from "@/app";
-import { settingsContainer, settingsDialog } from "@/settings/dialog-init";
 import { getQuickAction } from "@/settings/quick-actions";
 import { applyAppTheme } from "@/settings/setting-actions";
 import {
@@ -11,13 +10,17 @@ import { setSelectListeners } from "@/settings/setting-items-init";
 import { QUICK_ACTIONS } from "@/utils/constants";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { createAsyncHandler } from "@/utils/helpers";
-import { registerAppEvents } from "@/utils/registry";
+import { registerAppEvents, useDialog } from "@/utils/registry";
 import type { QuickAction } from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 async function initAppSettings(settings: Readonly<AppSettings>) {
   const buttonsContainer = createSettingsMenu();
+  const { settingsContainer, settingsDialog } = useDialog(
+    "settingsContainer",
+    "settingsDialog",
+  );
   settingsContainer.appendChild(buttonsContainer);
   buildSelects();
   setSelectListeners(settings, settingsContainer);

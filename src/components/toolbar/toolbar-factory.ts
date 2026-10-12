@@ -1,7 +1,7 @@
 import { handleUpdateSettings } from "@/settings/setting-actions";
 import { settingsStore } from "@/state/state";
 import { createIconButton } from "@/utils/dom";
-import { getAppItem, registerAppEvents } from "@/utils/registry";
+import { registerAppEvents, useCore } from "@/utils/registry";
 import type { Action, ActionMap, ToolbarItem } from "@/utils/types";
 import { APP_EVENTS } from "@shared/shared-constants";
 import type { Editor } from "@tiptap/core";
@@ -68,7 +68,7 @@ function updateActiveStates(
 }
 
 function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   container.replaceChildren();
   const { fragment, buttonMap } = createToolbarFragment(actions);
   container.appendChild(fragment);
@@ -98,7 +98,7 @@ function buildTopToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
 }
 
 function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   container.addEventListener("click", (e) => {
     if (!(e.target instanceof Element)) return;
     const btn = e.target.closest<HTMLButtonElement>("[data-action]");

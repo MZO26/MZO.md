@@ -99,7 +99,7 @@ type SelectionParams = {
 };
 
 type QuickSwitchDisplayNote = Pick<NoteListItem, "id" | "title"> & {
-  section: "recent" | "backlink" | "outgoing" | "related";
+  section: "search" | "recent" | "backlink" | "outgoing" | "related";
 };
 
 type AllTagsMenu = {

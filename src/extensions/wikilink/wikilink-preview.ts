@@ -2,7 +2,7 @@ import { renderTags } from "@/components/sidebar/sidebar-note-items";
 import { noteStore, stateStore } from "@/state/state";
 import { formatNoteDate } from "@/utils/date";
 import { createInfoSpan } from "@/utils/dom";
-import { getAppItem } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 import {
   isNoteID,
   type Id,
@@ -50,7 +50,7 @@ export const WikiLinkPreview = Extension.create({
   },
 
   onCreate() {
-    const editor = getAppItem("editorWrapper");
+    const { editorWrapper } = useCore("editorWrapper");
     const element = document.createElement("div");
     element.className = "wikilink-preview hidden";
     document.body.appendChild(element);
@@ -114,21 +114,21 @@ export const WikiLinkPreview = Extension.create({
       },
     };
     this.storage.handlers = handlers;
-    editor.addEventListener("pointerover", handlers.over);
-    editor.addEventListener("pointerout", handlers.out);
-    editor.addEventListener("pointerdown", handlers.down);
+    editorWrapper.addEventListener("pointerover", handlers.over);
+    editorWrapper.addEventListener("pointerout", handlers.out);
+    editorWrapper.addEventListener("pointerdown", handlers.down);
     element.addEventListener("pointerover", handlers.over);
     element.addEventListener("pointerout", handlers.out);
   },
 
   onDestroy() {
-    const editor = getAppItem("editorWrapper");
+    const { editorWrapper } = useCore("editorWrapper");
     const { wikilink, timer, handlers } = this.storage;
     window.clearTimeout(timer);
     if (handlers) {
-      editor.removeEventListener("pointerover", handlers.over);
-      editor.removeEventListener("pointerout", handlers.out);
-      editor.removeEventListener("pointerdown", handlers.down);
+      editorWrapper.removeEventListener("pointerover", handlers.over);
+      editorWrapper.removeEventListener("pointerout", handlers.out);
+      editorWrapper.removeEventListener("pointerdown", handlers.down);
       if (wikilink) {
         wikilink.removeEventListener("pointerover", handlers.over);
         wikilink.removeEventListener("pointerout", handlers.out);

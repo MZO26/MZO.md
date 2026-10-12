@@ -1,4 +1,4 @@
-import { createIcons } from "lucide";
+import { ChevronDown, ChevronRight, ChevronUp, createIcons } from "lucide";
 
 import {
   AppWindow,
@@ -6,23 +6,17 @@ import {
   ArrowDownFromLine,
   ArrowLeftFromLine,
   Bold,
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
   Code,
   CodeXml,
   Database,
   DatabaseBackup,
   Download,
-  FileCheck,
   FileClock,
   FileQuestion,
   FileSymlink,
   FileUp,
   Focus,
   FolderCog,
-  FolderDown,
-  GitCompareArrows,
   Grid2x2,
   Heading1,
   Heading2,
@@ -60,14 +54,13 @@ import {
 } from "lucide";
 
 const APP_ICONS = {
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Database,
   FileSymlink,
   Replace,
   ReplaceAll,
-  ChevronDown,
-  ChevronUp,
-  ChevronRight,
-  FileCheck,
   FolderCog,
   FileUp,
   SearchX,
@@ -83,7 +76,6 @@ const APP_ICONS = {
   SquareSigma,
   Trash2,
   SlidersHorizontal,
-  GitCompareArrows,
   Tag,
   TagX,
   Search,
@@ -115,7 +107,6 @@ const APP_ICONS = {
   ArrowLeftFromLine,
   ArrowDownFromLine,
   Palette,
-  FolderDown,
 } as const;
 
 function renderIcons(scope: Document | HTMLElement = document): void {

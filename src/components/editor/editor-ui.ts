@@ -1,13 +1,8 @@
 import { getTextMetrics } from "@/extensions/text-metrics";
 import { renderIcons } from "@/utils/icons";
 import { estimateReadingTime } from "@/utils/note-helpers";
-import {
-  createTemplateCloner,
-  getAppItem,
-  getTemplateItem,
-  getUIItems,
-} from "@/utils/registry";
-import { isDiv } from "@/utils/ui";
+import { useCore, useTemplates, useUI } from "@/utils/registry";
+import { createTemplateCloner, isDiv } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
 
 const getEditorEmptyStateClone = createTemplateCloner(
@@ -16,8 +11,8 @@ const getEditorEmptyStateClone = createTemplateCloner(
 );
 
 function handleEditorEmptyState(activeId: Id | null) {
-  const editorContainer = getAppItem("editorContainer");
-  const editorView = getTemplateItem("editorView");
+  const { editorContainer } = useCore("editorContainer");
+  const { editorView } = useTemplates("editorView");
   const topToolbar = editorContainer.querySelector<HTMLDivElement>(
     ".toolbar-hover-zone",
   );
@@ -39,12 +34,12 @@ function handleEditorEmptyState(activeId: Id | null) {
 }
 
 function updateStats() {
-  const editor = getAppItem("editor");
-  const { wordCountEl, charCountEl, readingTime } = getUIItems([
+  const { editor } = useCore("editor");
+  const { wordCountEl, charCountEl, readingTime } = useUI(
     "wordCountEl",
     "charCountEl",
     "readingTime",
-  ]);
+  );
   const { characters, words } = getTextMetrics(editor);
   charCountEl.textContent =
     characters === 1 ? "1 character" : `${characters} characters`;

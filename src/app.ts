@@ -16,10 +16,11 @@ import {
 import { startAppClock } from "@/utils/date";
 import { renderIcons } from "@/utils/icons";
 import {
-  getAppItems,
   initCoreRegistry,
+  initDialogRegistry,
   initTemplateRegistry,
   initUIRegistry,
+  useCore,
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { createLogger } from "@shared/log";
@@ -41,14 +42,15 @@ async function initApp() {
   initCoreRegistry(settings);
   initTemplateRegistry();
   initUIRegistry();
+  initDialogRegistry();
   const { editor, editorWrapper, editorContainer, appContainer, sidebar } =
-    getAppItems([
+    useCore(
       "editor",
       "editorWrapper",
       "editorContainer",
       "appContainer",
       "sidebar",
-    ]);
+    );
   initSubscriptions(sidebar);
   syncStateStore(settingsResult);
   syncNoteStore(notesResult.data);

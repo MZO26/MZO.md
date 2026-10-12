@@ -5,7 +5,7 @@ import { noteStore, stateStore } from "@/state/state";
 import { WIKILINK_REGEX } from "@/utils/constants";
 import { getLinks } from "@/utils/generators";
 import { memoize } from "@/utils/helpers";
-import { getAppItem } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 import type { Id, Note, NoteListItem } from "@shared/schemas/note-schema";
 import { UNTITLED } from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
@@ -143,7 +143,7 @@ async function resolveGhostLink(title: Note["title"]) {
     shouldNavigate: false,
   });
   if (!noteId) return;
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   const normalizedTitle = title.toLowerCase();
   editor.commands.command(({ tr, state, dispatch }) => {
     let modified = false;
@@ -172,7 +172,7 @@ async function resolveGhostLink(title: Note["title"]) {
 }
 
 function resolveDocLinks(note: Readonly<Note>) {
-  const editor = getAppItem("editor");
+  const { editor } = useCore("editor");
   const matchPos: { match: string; from: number; to: number; targetId: Id }[] =
     [];
   const currentLinks = new Set(getLinks(note.content));

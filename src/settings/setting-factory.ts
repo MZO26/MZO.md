@@ -11,7 +11,7 @@ import {
 } from "@/settings/setting";
 import { QUICK_ACTIONS } from "@/utils/constants";
 import { createIconButton, requireElement } from "@/utils/dom";
-import { getUIItem } from "@/utils/registry";
+import { useUI } from "@/utils/registry";
 import type { AppIcons, SelectOption, SettingsCategory } from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";
 
@@ -61,7 +61,7 @@ function createSettingsMenu() {
 }
 
 function createQuickActionContainer() {
-  const quickActionContainer = getUIItem("quickActionContainer");
+  const { quickActionContainer } = useUI("quickActionContainer");
   const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
   const row = document.createElement("div");
   row.className = "settings-row";
