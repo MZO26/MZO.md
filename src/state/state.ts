@@ -30,7 +30,7 @@ interface AppState {
   focus: boolean;
 }
 
-const STATE_STORE: AppState = {
+const STATE_STORE: Readonly<AppState> = {
   activeId: null,
   isDirty: false,
   searchQuery: "",
@@ -49,7 +49,7 @@ interface NoteStore {
   searchSnippets: Record<Id, string>;
 }
 
-const NOTE_STORE: NoteStore = {
+const NOTE_STORE: Readonly<NoteStore> = {
   notes: [],
   visibleIds: [],
   noteIndex: new Map<Id, NoteListItem>(),
@@ -74,11 +74,13 @@ const settingsStore = isDev
   ? withLogger(SETTINGS_STORE_BASE)
   : SETTINGS_STORE_BASE;
 
-function keysOf<T extends object>(obj: T): (keyof T)[] {
+function keysOf<T extends Record<string, unknown>>(obj: T): (keyof T)[] {
   return Object.keys(obj) as (keyof T)[];
 }
 
-function createStore<T extends object>(initialState: T): Store<T> {
+function createStore<T extends Record<string, unknown>>(
+  initialState: T,
+): Store<T> {
   let isUpdating = false;
   let state = { ...initialState };
   const listeners = new Set<

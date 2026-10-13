@@ -98,9 +98,17 @@ type SelectionParams = {
   selectedIds: Set<Id>;
 };
 
-type QuickSwitchDisplayNote = Pick<NoteListItem, "id" | "title"> & {
-  section: "search" | "recent" | "backlink" | "outgoing" | "related";
-};
+type QuickSwitchDisplayNote =
+  | (Pick<NoteListItem, "id" | "title"> & {
+      section:
+        | "search"
+        | "create"
+        | "recent"
+        | "backlink"
+        | "outgoing"
+        | "related";
+    })
+  | { title: string; section: "create" };
 
 type AllTagsMenu = {
   popover: HTMLDivElement;

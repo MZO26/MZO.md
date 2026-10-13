@@ -12,9 +12,9 @@ function createGlobalSpinner(showDelay: number = 200) {
   const spinner = requireElement<HTMLDivElement>(".app-loading");
   return {
     async wrap<T>(
-      task: Promise<T> | (() => Promise<T>),
+      task: () => T | Promise<T>,
       delay = showDelay,
-    ): Promise<T> {
+    ): Promise<Awaited<T>> {
       const showTimer = setTimeout(() => {
         spinner.hidden = false;
       }, delay);

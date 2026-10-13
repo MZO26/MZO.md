@@ -11,9 +11,9 @@ const NAV_KEYS = new Set([
 ]);
 
 const DEBOUNCE_MS = {
-  very_fast: 200,
-  fast: 300,
-  normal: 500,
+  very_fast: 100,
+  fast: 200,
+  normal: 300,
   slow: 2000,
 } as const;
 

@@ -58,19 +58,23 @@ interface DialogRegistry {
   mathInput: HTMLTextAreaElement;
 }
 
+type RegistryState = {
+  [K in keyof AppRegistry]: Partial<AppRegistry[K]>;
+};
+
 // set settings to empty object to avoid undefined errors, will be populated in app.ts on startup
-const registry = {
+const registry: RegistryState = {
   core: {},
   ui: {},
   template: {},
   dialog: {},
-} as AppRegistry;
+};
 
 function fromRegistry<T extends keyof AppRegistry>(registryKey: T) {
   return function <K extends keyof AppRegistry[T]>(
     ...keys: K[]
-  ): Required<Pick<AppRegistry[T], K>> {
-    const result = {} as Required<Pick<AppRegistry[T], K>>;
+  ): Required<Readonly<Pick<AppRegistry[T], K>>> {
+    const result = {} as Partial<Pick<AppRegistry[T], K>>;
     const entryObject = registry[registryKey];
     for (const key of keys) {
       const item = entryObject[key];
@@ -80,13 +84,13 @@ function fromRegistry<T extends keyof AppRegistry>(registryKey: T) {
         );
       result[key] = item;
     }
-    return result;
+    return result as Required<Readonly<Pick<AppRegistry[T], K>>>;
   };
 }
 
 function toRegistry<T extends keyof AppRegistry>(registryKey: T) {
-  return function (entries: Partial<AppRegistry[T]>): void {
-    Object.assign(registry[registryKey], entries);
+  return function (...entries: readonly AppRegistry[T][]): void {
+    Object.assign(registry[registryKey], ...entries);
   };
 }
 

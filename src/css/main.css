@@ -1074,8 +1074,8 @@ svg.empty-state-icon {
 
 .quick-switch-empty {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: left;
+  margin: 5px 15px;
   font-weight: 700;
 }
 

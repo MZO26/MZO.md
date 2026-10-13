@@ -1,7 +1,11 @@
 import { rendererLogger } from "@/app";
 import { getSimilarityMatching } from "@/components/quick-switch/quick-switch-similarity";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
-import { handleSelectNote, waitForFlush } from "@/notes/note-actions";
+import {
+  handleCreateNote,
+  handleSelectNote,
+  waitForFlush,
+} from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, NAV_KEYS } from "@/utils/constants";
 import { createInfoSpan } from "@/utils/dom";
@@ -87,12 +91,16 @@ function initQuickSwitcher(editor: Editor) {
     const result = computeTitleFilterResults(nextQuery);
     if (result.length === 0) {
       const defaults = (await computeDisplayNotes()) ?? [];
-      console.log("CACHE CHECK:", defaults);
       if (queryId !== qsState.currentQueryId) return;
-      await setDisplayNotes(defaults);
+      await setDisplayNotes([
+        ...defaults,
+        ...(nextQuery.length > 0
+          ? [{ title: nextQuery, section: "create" as const }]
+          : []),
+      ]);
       return;
     }
-    await setDisplayNotes(result);
+    await setDisplayNotes([...result, { title: nextQuery, section: "create" }]);
   }
 
   function computeTitleFilterResults(query: SearchQuery) {
@@ -122,7 +130,6 @@ function initQuickSwitcher(editor: Editor) {
         section: "search",
       });
     }
-    rendererLogger.devLog(qsState.currentDisplayNotes);
     return displayNotes;
   }
 
@@ -131,10 +138,7 @@ function initQuickSwitcher(editor: Editor) {
     const displayNotes: QuickSwitchDisplayNote[] = [];
     const { recentNotes, noteIndex } = noteStore.getState();
     const activeNote = activeId ? noteIndex.get(activeId) : undefined;
-    // recent ids are already computed
     const recentIds = new Set(recentNotes);
-    // backlinks and outgoing ones do need to be
-    // recomputed and manually put together
     const backlinkIds = new Set<Id>();
     const outgoingIds = new Set<Id>();
     for (const id of recentNotes) {
@@ -269,6 +273,8 @@ function initQuickSwitcher(editor: Editor) {
         return `Related (${count.related})`;
       case "search":
         return `Matching (${count.search})`;
+      case "create":
+        return `Create new note`;
       default:
         section satisfies never;
         return "";
@@ -291,9 +297,16 @@ function initQuickSwitcher(editor: Editor) {
   async function selectActive() {
     const activeNote = qsState.currentDisplayNotes[qsState.activeIndex];
     switchDialog.close();
-    if (!activeNote || stateStore.get("activeId") === activeNote.id) {
+    if (!activeNote) return;
+    if (activeNote.section === "create") {
+      await handleCreateNote({
+        activeTitle: activeNote.title,
+        shouldNavigate: true,
+      });
+      restoreSidebarScope();
       return;
     }
+    if (stateStore.get("activeId") === activeNote.id) return;
     const loading = createGlobalSpinner();
     await loading.wrap(() => handleSelectNote(activeNote.id));
     restoreSidebarScope();

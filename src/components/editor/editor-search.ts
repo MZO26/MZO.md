@@ -239,7 +239,7 @@ function initEditorSearch(
   const debouncedSearch = debounce(() => {
     syncQuery();
     updateButtons();
-  }, DEBOUNCE_MS.fast);
+  }, DEBOUNCE_MS.normal);
 
   input.addEventListener("input", debouncedSearch);
 
