@@ -10,6 +10,7 @@ import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, NAV_KEYS } from "@/utils/constants";
 import { createInfoSpan } from "@/utils/dom";
 import { debounce, waitForPaint } from "@/utils/helpers";
+import { normalizeText } from "@/utils/note-helpers";
 import { registerAppEvents, useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayNote } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
@@ -22,6 +23,8 @@ import {
 } from "@shared/schemas/note-schema";
 import { APP_EVENTS, MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import type { Editor } from "@tiptap/core";
+
+const WORD_BOUNDARY = /[\s\-_/:.|()[\]{}]/;
 
 type QuickSwitchState = {
   activeIndex: number;
@@ -72,7 +75,7 @@ function initQuickSwitcher(editor: Editor) {
     if (editor.isFocused) editor.commands.blur();
     switchDialog.showModal();
     // wait for visibility transition to focus correctly
-    await waitForPaint();
+    await waitForPaint(3);
     switchListSearchInput.focus();
   }
 
@@ -104,26 +107,53 @@ function initQuickSwitcher(editor: Editor) {
   }
 
   function computeTitleFilterResults(query: SearchQuery) {
+    const normalizedQuery = normalizeText(query);
+    if (!normalizedQuery) return [];
+    const tokens = normalizedQuery.split(/\s+/);
     const notes = noteStore.get("notes");
-    const results: { id: Id; title: NoteListItem["title"]; score: number }[] =
-      [];
-    const normalizedQuery = query.toLowerCase();
+    const results: {
+      id: Id;
+      title: NoteListItem["title"];
+      score: number;
+      index: number;
+      updatedAtMs: number;
+    }[] = [];
     for (const note of notes) {
-      const normalized = note.title.toLowerCase();
+      if (!isNoteID(note.id)) continue;
+      const normalized = normalizeText(note.title);
       const index = normalized.indexOf(normalizedQuery);
-      if (index === -1) continue;
-      let score: number = 3;
+      if (index === -1 && !tokens.every((t) => normalized.includes(t)))
+        continue;
+      let score: number = 4;
       if (normalized === normalizedQuery) score = 0;
       else if (index === 0) score = 1;
-      else if (normalized[index - 1] === " ") score = 2;
-      results.push({ id: note.id, title: note.title, score });
+      else if (index > 0 && WORD_BOUNDARY.test(normalized[index - 1] ?? ""))
+        score = 2;
+      else {
+        const titleWords = normalized.split(WORD_BOUNDARY);
+        if (tokens.every((t) => titleWords.some((w) => w.startsWith(t))))
+          score = 3;
+      }
+      results.push({
+        id: note.id,
+        title: note.title,
+        score,
+        index: index === -1 ? 999 : index,
+        updatedAtMs: Date.parse(note.updated_at),
+      });
     }
-    results.sort((a, b) => a.score - b.score);
+    results.sort(
+      (a, b) =>
+        a.score - b.score ||
+        a.index - b.index ||
+        a.title.length - b.title.length ||
+        b.updatedAtMs - a.updatedAtMs,
+    );
     const limit = Math.min(results.length, 15);
     const displayNotes: QuickSwitchDisplayNote[] = [];
     for (let i = 0; i < limit; i++) {
       const r = results[i];
-      if (!r || !isNoteID(r.id)) continue;
+      if (!r) continue;
       displayNotes.push({
         id: r.id,
         title: r.title,

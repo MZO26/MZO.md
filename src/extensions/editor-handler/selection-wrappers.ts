@@ -2,6 +2,7 @@ import { MOVEABLE_BLOCKS, MOVEABLE_CONTAINERS } from "@/utils/constants";
 import { Extension } from "@tiptap/core";
 import type { ResolvedPos } from "@tiptap/pm/model";
 import { NodeSelection, TextSelection } from "@tiptap/pm/state";
+import { toggleSingleCodeBlock } from "../overrides/codeblock/codeblock-handler";
 
 const CodeSelectionWrapper = Extension.create({
   name: "codeSelectionWrapper",
@@ -21,7 +22,10 @@ const CodeSelectionWrapper = Extension.create({
             return true;
           });
         }
-        if (isMultiBlock) return this.editor.commands.toggleCodeBlock();
+        if (isMultiBlock) {
+          toggleSingleCodeBlock(this.editor);
+          return true;
+        }
         return this.editor.commands.toggleCode();
       },
     };

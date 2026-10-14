@@ -4,13 +4,21 @@ import {
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { DropHandler } from "@/extensions/editor-handler/drop-handler";
+import { MasterShortcuts } from "@/extensions/editor-handler/editor-shortcuts";
 import {
   GoogleDocsCleanup,
   PasteHandler,
   SecurityCleanup,
   WordCleanup,
 } from "@/extensions/editor-handler/paste-handler";
-import { MasterShortcuts } from "@/extensions/editor-shortcuts";
+import {
+  CodeSelectionWrapper,
+  HighlightSelectionWrapper,
+  ItalicAndBoldSelectionWrapper,
+  KbSelectionCommands,
+  StrikeThroughSelectionWrapper,
+  UnderlineSelectionWrapper,
+} from "@/extensions/editor-handler/selection-wrappers";
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
 import { CodeblockHandler } from "@/extensions/overrides/codeblock/codeblock-handler";
@@ -25,14 +33,6 @@ import { handleMathClick } from "@/extensions/overrides/mathematics/mathematics-
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { Placeholder } from "@/extensions/placeholder";
 import { DocSearch } from "@/extensions/search-replace";
-import {
-  CodeSelectionWrapper,
-  HighlightSelectionWrapper,
-  ItalicAndBoldSelectionWrapper,
-  KbSelectionCommands,
-  StrikeThroughSelectionWrapper,
-  UnderlineSelectionWrapper,
-} from "@/extensions/selection-wrappers";
 import { NoteTagHandler } from "@/extensions/tag/tag-handler";
 import { TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
@@ -78,6 +78,7 @@ function initEditor(settings: Partial<Readonly<AppSettings>>): Editor {
         spellcheck: settings.spellcheck ? "true" : "false",
       },
     },
+    parseOptions: { preserveWhitespace: "full" },
     autofocus: true,
     onFocus: () => {
       if (stateStore.get("hoverId") !== null) {
@@ -177,6 +178,7 @@ function getNoteEditorExtensions() {
     StarterKit.configure({
       codeBlock: {
         enableTabIndentation: true,
+        defaultLanguage: "plaintext",
         HTMLAttributes: {
           spellcheck: false,
         },

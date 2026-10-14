@@ -1,3 +1,4 @@
+import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { promptImageUpload } from "@/extensions/overrides/image/image";
 import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
 import type { ActionMap } from "@/utils/types";
@@ -133,7 +134,7 @@ const TOOLBAR_ACTIONS: ActionMap = {
     icon: "Code",
   },
   codeBlock: {
-    run: (editor) => editor?.chain().focus().toggleCodeBlock().run(),
+    run: (editor) => editor && toggleSingleCodeBlock(editor),
     isActive: (editor) => editor?.isActive("codeBlock"),
     icon: "CodeXml",
   },

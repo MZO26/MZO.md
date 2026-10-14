@@ -1,4 +1,4 @@
-import { lowlight } from "@/extensions/lowlight";
+import { lowlight } from "@/extensions/overrides/codeblock/lowlight";
 import { MAX_CODE_BLOCK_HIGHLIGHT_LENGTH } from "@/utils/constants";
 import { Extension } from "@tiptap/core";
 import {
@@ -33,9 +33,7 @@ const emptyState = (): HighlightPluginState => ({
 
 function getActiveCodeBlock(selection: Selection): CodeBlockInfo | null {
   const { $from } = selection;
-  if ($from.parent.type.name !== "codeBlock") {
-    return null;
-  }
+  if ($from.parent.type.name !== "codeBlock") return null;
   const pos = $from.before();
   return {
     pos,
@@ -52,7 +50,6 @@ function buildDecorations(text: string, textStart: number): Decoration[] {
     return [];
   }
   const decorations: Decoration[] = [];
-  // how far the codeblock has been walked
   let offset = 0;
   const walk = (
     nodes: RootContent[],
@@ -121,12 +118,9 @@ export const ActiveCodeHighlight = Extension.create({
             _oldEditorState: EditorState,
             newEditorState: EditorState,
           ): HighlightPluginState {
-            if (!tr.docChanged && !tr.selectionSet) {
-              return pluginState;
-            }
+            if (!tr.docChanged && !tr.selectionSet) return pluginState;
             const info = getActiveCodeBlock(newEditorState.selection);
             if (!info) return emptyState();
-            // tr.doc is new state of doc after transaction. pluginState.decos is current deco set for old state. .map(tr.mapping, tr.doc) shifts decos into new doc positions
             const mappedDecos = pluginState.decos.map(tr.mapping, tr.doc);
             const mappedPos =
               pluginState.pos === null ? null : tr.mapping.map(pluginState.pos);

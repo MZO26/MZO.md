@@ -52,10 +52,19 @@ async function checkNoteSize(doc: JSONContent) {
   }
 }
 
+function normalizeText(str: string): string {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 export {
   checkNoteSize,
   compareNotes,
   estimateReadingTime,
   getExtension,
+  normalizeText,
   updateNoteCount,
 };

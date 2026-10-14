@@ -1,4 +1,4 @@
-import { Extension } from "@tiptap/core";
+import { Editor, Extension } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
 const KEY_MAP = {
@@ -104,3 +104,31 @@ export const CodeblockHandler = Extension.create({
     };
   },
 });
+
+function toggleSingleCodeBlock(editor: Editor) {
+  if (editor.isActive("codeBlock")) {
+    editor.chain().focus().toggleCodeBlock().run();
+    return;
+  }
+  const { state } = editor;
+  const { from, to, empty } = state.selection;
+  if (empty) {
+    editor.chain().focus().toggleCodeBlock().run();
+    return;
+  }
+  const text = state.doc.textBetween(from, to, "\n", "\n");
+  editor
+    .chain()
+    .focus()
+    .insertContentAt(
+      { from, to },
+      {
+        type: "codeBlock",
+        content: text ? [{ type: "text", text }] : [],
+      },
+      { parseOptions: { preserveWhitespace: "full" } },
+    )
+    .run();
+}
+
+export { toggleSingleCodeBlock };
