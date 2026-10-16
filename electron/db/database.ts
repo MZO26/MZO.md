@@ -226,7 +226,6 @@ class AppDB {
       "code_theme" = $code_theme,
       "highlight" = $highlight,
       "note_item_display" = $note_item_display,
-      "toolbar_collapsed" = $toolbar_collapsed,
       "window_bounds" = $window_bounds,
       "active_tag" = $active_tag
       WHERE id = 1
@@ -290,7 +289,6 @@ class AppDB {
       code_theme TEXT NOT NULL DEFAULT 'balanced',
       highlight TEXT NOT NULL DEFAULT 'context',
       note_item_display TEXT NOT NULL DEFAULT 'preview',
-      toolbar_collapsed INTEGER NOT NULL DEFAULT 0,
       window_bounds TEXT NOT NULL DEFAULT '{"width":1100,"height":800}',
       active_tag TEXT
     );
@@ -369,7 +367,6 @@ class AppDB {
     const encoded = {
       ...mergedSettings,
       spellcheck: DbBoolCodec.encode(mergedSettings.spellcheck),
-      toolbar_collapsed: DbBoolCodec.encode(mergedSettings.toolbar_collapsed),
       window_bounds: DbWindowBoundsCodec.encode(mergedSettings.window_bounds),
     };
     const row = validation(StoreRowSchema, encoded);
@@ -382,7 +379,6 @@ class AppDB {
     const decoded = {
       ...row,
       spellcheck: DbBoolCodec.decode(row.spellcheck),
-      toolbar_collapsed: DbBoolCodec.decode(row.toolbar_collapsed),
       window_bounds: DbWindowBoundsCodec.decode(row.window_bounds),
     };
     return validation(StoreFromDbSchema, decoded);

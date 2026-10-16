@@ -22,7 +22,7 @@ import {
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
 import { CodeblockHandler } from "@/extensions/overrides/codeblock/codeblock-handler";
-import { ActiveCodeHighlight } from "@/extensions/overrides/codeblock/codeblock-highlight";
+import { lowlight } from "@/extensions/overrides/codeblock/lowlight";
 import { CustomHeading } from "@/extensions/overrides/headings";
 import { LinkWithTitle } from "@/extensions/overrides/link";
 import {
@@ -55,6 +55,7 @@ import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { ALLOWED_PROTOCOLS, MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import {
   Table,
@@ -176,13 +177,7 @@ function getNoteEditorExtensions() {
       levels: [1, 2, 3, 4, 5, 6],
     }),
     StarterKit.configure({
-      codeBlock: {
-        enableTabIndentation: true,
-        defaultLanguage: "plaintext",
-        HTMLAttributes: {
-          spellcheck: false,
-        },
-      },
+      codeBlock: false,
       heading: false,
       underline: false,
       undoRedo: {
@@ -218,7 +213,15 @@ function getNoteEditorExtensions() {
         }
       },
     }),
-    ActiveCodeHighlight,
+    CodeBlockLowlight.configure({
+      lowlight,
+      enableTabIndentation: true,
+      tabSize: 2,
+      defaultLanguage: "plaintext",
+      HTMLAttributes: {
+        spellcheck: false,
+      },
+    }),
     CodeblockHandler,
     CustomInlineMath.configure({
       onClick: handleMathClick,

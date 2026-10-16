@@ -4,7 +4,7 @@ import {
   getSafeSnippet,
 } from "@/components/sidebar/sidebar-note-items";
 import { applyView } from "@/components/sidebar/sidebar-views";
-import { noteStore } from "@/state/state";
+import { localStore, noteStore } from "@/state/state";
 import {
   DEBOUNCE_MS,
   SIDEBAR_ALL_NOTES_LIMIT,
@@ -253,16 +253,9 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
   }
 }
 
-function setSidebarState(element: HTMLDivElement, collapsed: boolean) {
-  const isCollapsed = element.classList.contains("collapsed");
-  if (isCollapsed === collapsed) return;
-  element.classList.toggle("collapsed", collapsed);
-}
-
-function toggleSidebar() {
+function toggleSidebar(collapsed?: boolean) {
   const { appContainer } = useCore("appContainer");
-  const collapsed = appContainer.classList.contains("collapsed");
-  setSidebarState(appContainer, !collapsed);
+  appContainer.classList.toggle("collapsed", collapsed);
 }
 
 function handleSidebarChange(sidebarParams: SidebarParams) {
@@ -322,6 +315,17 @@ function renderNoteList(sidebarParams: SidebarParams) {
 }
 
 function resizeSidebar() {
+  const storedWidth = localStore.get("sidebarWidth");
+  if (
+    typeof storedWidth === "number" &&
+    Number.isInteger(storedWidth) &&
+    storedWidth > 0
+  ) {
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      `${storedWidth}px`,
+    );
+  }
   const minWidth = 0;
   const maxWidth = 420;
   const { sidebarContainer } = useCore("sidebarContainer");
@@ -334,11 +338,13 @@ function resizeSidebar() {
   let isUpdatePending = false;
   let startX = 0;
   let startWidth = 0;
+  let currentWidth = 0;
 
   resizer.addEventListener("pointerdown", (e: PointerEvent) => {
     isResizing = true;
     startX = e.clientX;
     startWidth = sidebarContainer.getBoundingClientRect().width;
+    currentWidth = startWidth;
     resizer.setPointerCapture(e.pointerId);
     document.body.classList.add("is-dragging");
     document.body.style.userSelect = "none";
@@ -350,10 +356,10 @@ function resizeSidebar() {
     requestAnimationFrame(() => {
       const deltaX = e.clientX - startX;
       const adjustedWidth = startWidth + deltaX;
-      const newWidth = Math.max(minWidth, Math.min(adjustedWidth, maxWidth));
+      currentWidth = Math.max(minWidth, Math.min(adjustedWidth, maxWidth));
       document.documentElement.style.setProperty(
         "--sidebar-width",
-        `${newWidth}px`,
+        `${currentWidth}px`,
       );
       isUpdatePending = false;
     });
@@ -367,6 +373,7 @@ function resizeSidebar() {
       }
       document.body.classList.remove("is-dragging");
       document.body.style.userSelect = "";
+      localStore.setState({ sidebarWidth: currentWidth });
     }
   });
 }
@@ -375,7 +382,6 @@ export {
   handleSidebarChange,
   renderNoteList,
   resizeSidebar,
-  setSidebarState,
   showTagPopover,
   toggleSidebar,
   updateNoteCount,

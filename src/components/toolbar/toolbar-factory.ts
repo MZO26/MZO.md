@@ -1,12 +1,16 @@
-import { handleUpdateSettings } from "@/settings/setting-actions";
-import { settingsStore } from "@/state/state";
+import { localStore } from "@/state/state";
 import { createIconButton } from "@/utils/dom";
 import { registerAppEvents, useCore } from "@/utils/registry";
-import type { Action, ActionMap, ToolbarItem } from "@/utils/types";
+import type {
+  Action,
+  ActionMap,
+  ActiveStateParams,
+  ToolbarItem,
+} from "@/utils/types";
 import { APP_EVENTS } from "@shared/shared-constants";
-import type { Editor } from "@tiptap/core";
 
 let cachedActions: [string, Action][] | null = null;
+let buttonMap = new Map<string, HTMLButtonElement>();
 
 function createButton(key: string, item: Action) {
   const btn = createIconButton(item.icon, key);
@@ -22,7 +26,6 @@ function createDivider() {
 }
 
 function createToolbarFragment(actions: ActionMap) {
-  const buttonMap = new Map<string, HTMLButtonElement>();
   const fragment = document.createDocumentFragment();
   for (const [key, item] of Object.entries(actions)) {
     if (item.type === "divider") {
@@ -47,11 +50,8 @@ function getActions(actions: ActionMap): [string, Action][] {
   ));
 }
 
-function updateActiveStates(
-  buttonElements: Map<string, HTMLButtonElement>,
-  actions: ActionMap,
-  editor: Editor,
-): void {
+function updateActiveStates(params: ActiveStateParams): void {
+  const { buttonElements, actions, editor } = params;
   const actionEntries = getActions(actions);
   for (const [key, item] of actionEntries) {
     const btn = buttonElements.get(key);
@@ -72,20 +72,21 @@ function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
   container.replaceChildren();
   const { fragment, buttonMap } = createToolbarFragment(actions);
   container.appendChild(fragment);
-  function refresh(): void {
-    if (settingsStore.get("toolbar_collapsed") === true) return;
-    updateActiveStates(buttonMap, actions, editor);
+  if (localStore.get("toolbarCollapsed") === false) {
+    updateActiveStates({ buttonElements: buttonMap, actions, editor });
   }
-  refresh();
   editor.on("transaction", ({ transaction }) => {
     if (!transaction.docChanged && !transaction.selectionSet) return;
-    refresh();
+    if (localStore.get("toolbarCollapsed") === false) {
+      updateActiveStates({ buttonElements: buttonMap, actions, editor });
+    }
   });
   registerAppEvents(document, {
     [APP_EVENTS.TOGGLE_TOOLBAR]: async () => {
-      const newState = !settingsStore.get("toolbar_collapsed");
-      await handleUpdateSettings({ toolbar_collapsed: newState });
-      refresh();
+      localStore.setState((state) => ({
+        ...state,
+        toolbarCollapsed: !state.toolbarCollapsed,
+      }));
     },
   });
 }
@@ -114,6 +115,8 @@ function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
 export {
   buildToolbarMenu,
   buildTopToolbarMenu,
+  buttonMap,
+  cachedActions,
   createDivider,
   setupToolbarListeners,
   updateActiveStates,

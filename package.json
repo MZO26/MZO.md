@@ -93,13 +93,14 @@
   "homepage": "https://github.com/MZO26/MZO.md#readme",
   "dependencies": {
     "@tiptap/core": "^3.31.3",
+    "@tiptap/extension-code-block-lowlight": "^3.32.0",
     "@tiptap/extension-image": "^3.31.3",
     "@tiptap/extension-mathematics": "^3.31.3",
     "@tiptap/extension-table": "^3.31.3",
     "@tiptap/markdown": "^3.31.3",
     "@tiptap/starter-kit": "^3.30.3",
     "dompurify": "^3.4.15",
-    "katex": "^0.17.0",
+    "katex": "^0.19.0",
     "lowlight": "^3.3.0",
     "lucide": "^1.45.0",
     "zod": "^4.6.2"

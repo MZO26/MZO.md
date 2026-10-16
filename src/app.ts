@@ -24,6 +24,9 @@ import {
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { createLogger } from "@shared/log";
+import { isNoteID } from "@shared/schemas/note-schema";
+import { handleSelectNote } from "./notes/note-actions";
+import { localStore } from "./state/state";
 
 export const rendererLogger = createLogger(import.meta.env.DEV);
 
@@ -67,5 +70,7 @@ async function initApp() {
   renderIcons();
   rendererLogger.timeEnd("DOM Loading Time");
   rendererLogger.devLog("App started successfully");
+  const lastOpenNoteÌd = localStore.get("lastOpenNote");
+  if (isNoteID(lastOpenNoteÌd)) await handleSelectNote(lastOpenNoteÌd);
 }
 await initApp();

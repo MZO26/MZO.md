@@ -93,7 +93,7 @@ export const CodeblockHandler = Extension.create({
           const isMatch =
             isOpener(charBefore) && charAfter === KEY_MAP[charBefore];
           if (isMatch) {
-            this.editor.commands.insertContent("\n  \n");
+            this.editor.commands.insertContent("\n  \n  ");
             this.editor.commands.setTextSelection(from + 3);
             return true;
           }

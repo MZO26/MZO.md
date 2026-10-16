@@ -22,7 +22,6 @@ const StoreSchema = z.object({
   code_theme: z.enum(["focus", "balanced", "colorless"]).catch("balanced"),
   highlight: z.enum(["context", "insight", "action"]).catch("context"),
   note_item_display: z.enum(["preview", "tags", "minimal"]).catch("preview"),
-  toolbar_collapsed: z.boolean().catch(false),
   window_bounds: WindowBoundsSchema,
   active_tag: z.string().trim().min(1).nullish().catch(null).default(null),
 });
@@ -42,7 +41,6 @@ const StoreFromDbSchema = z.object({
   code_theme: StoreSchema.shape["code_theme"],
   highlight: StoreSchema.shape.highlight,
   note_item_display: StoreSchema.shape["note_item_display"],
-  toolbar_collapsed: BoolSchema,
   window_bounds: WindowBoundsSchema,
   active_tag: StoreSchema.shape["active_tag"],
 });
@@ -57,7 +55,6 @@ const StoreRowSchema = z.object({
   code_theme: StoreSchema.shape["code_theme"],
   highlight: StoreSchema.shape.highlight,
   note_item_display: StoreSchema.shape["note_item_display"],
-  toolbar_collapsed: BoolDbSchema,
   window_bounds: z.string(),
   active_tag: StoreSchema.shape["active_tag"],
 });

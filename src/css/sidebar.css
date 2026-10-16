@@ -3,6 +3,7 @@
   grid-column: 1;
   grid-row: 2;
   min-height: 0;
+  min-width: 0;
   position: relative;
   border-right: 1px solid var(--border-color);
   box-shadow: none;

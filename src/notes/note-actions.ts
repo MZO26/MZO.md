@@ -10,6 +10,7 @@ import {
 } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { recreateEditorState } from "@/components/editor/editor-actions";
+import { getEditorPos } from "@/components/editor/editor-content";
 import { updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
@@ -20,13 +21,14 @@ import {
   resolveDocLinks,
 } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
-import { noteStore, stateStore } from "@/state/state";
+import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import { extractText, getMetadata, titleGenerator } from "@/utils/generators";
 import { debounce } from "@/utils/helpers";
 import { checkNoteSize } from "@/utils/note-helpers";
 import { useCore } from "@/utils/registry";
 import {
+  isNoteID,
   type CreateNotePayload,
   type Id,
   type Note,
@@ -40,7 +42,7 @@ async function handleCreateNote(options?: {
   activeTitle?: NoteListItem["title"];
   shouldNavigate?: boolean;
 }) {
-  const { editor } = useCore("editor");
+  const { editor, editorWrapper } = useCore("editor", "editorWrapper");
   const activeTag = stateStore.get("activeTag");
   let editorContent = addActiveTagToDoc(EMPTY_DOC, activeTag);
   if (options?.activeTitle)
@@ -80,6 +82,12 @@ async function handleCreateNote(options?: {
     const headings = getTableOfContents(editor);
     updateToc(headings);
     updateStats();
+    const { cursorPos, scrollPos } = getEditorPos(editor, editorWrapper);
+    localStore.setState((state) => ({
+      cursorPos: { ...state.cursorPos, [result.data.id]: cursorPos },
+      scrollTop: { ...state.scrollTop, [result.data.id]: scrollPos },
+      lastOpenNote: result.data.id,
+    }));
   }
   return result.data.id;
 }
@@ -170,6 +178,28 @@ async function handleDeleteManyNotes(ids: Id[]) {
     hoverId: null,
     ...(isActiveDeleted && { activeId: null }),
   });
+  localStore.setState((state) => {
+    const nextCursorPos: typeof state.cursorPos = {};
+    const nextScroll: typeof state.scrollTop = {};
+    for (const id in state.cursorPos) {
+      if (isNoteID(id) && !deletedIds.has(id)) {
+        const val = state.cursorPos[id];
+        if (val) nextCursorPos[id] = val;
+      }
+    }
+    for (const id in state.scrollTop) {
+      if (isNoteID(id) && !deletedIds.has(id)) {
+        const val = state.scrollTop[id];
+        if (val) state.scrollTop[id] = val;
+      }
+    }
+    return {
+      ...state,
+      cursorPos: nextCursorPos,
+      scrollTop: nextScroll,
+      ...(isActiveDeleted && { lastOpenNote: null }),
+    };
+  });
 }
 
 async function handleDeleteNote(id: Id) {
@@ -200,6 +230,32 @@ async function handleDeleteNote(id: Id) {
     hoverId: null,
     ...(isActiveDeletedId && { activeId: null }),
   });
+  localStore.setState((state) => {
+    const nextCursorPos: typeof state.cursorPos = {};
+    const nextScroll: typeof state.scrollTop = {};
+    for (const key in state.cursorPos) {
+      const idKey = isNoteID(key);
+      if (!idKey) continue;
+      if (key !== id) {
+        const val = state.cursorPos[key];
+        if (val) nextCursorPos[key] = val;
+      }
+    }
+    for (const key in state.scrollTop) {
+      const idKey = isNoteID(key);
+      if (!idKey) continue;
+      if (key !== id) {
+        const val = state.scrollTop[key];
+        if (val) nextScroll[key] = val;
+      }
+    }
+    return {
+      ...state,
+      cursorPos: nextCursorPos,
+      scrollTop: nextScroll,
+      ...(isActiveDeletedId && { lastOpenNote: null }),
+    };
+  });
 }
 
 async function handleSaveNote(id: Id, flush: boolean = false) {
@@ -227,21 +283,14 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
   const activeTag = stateStore.get("activeTag");
   const isActiveNote = stateStore.get("activeId") === id;
   const notes = noteStore.get("notes");
-  // take snapshot of updated notes to derive update from
   const updatedNotes = notes.map((n) =>
     n.id === result.data.id ? result.data : n,
   );
-  // see if new note update did delete active tag
   const tagStillExists =
     activeTag === null ||
     updatedNotes.some((n) =>
-      activeTag === UNTAGGED
-        ? // if active tag is untagged view, check if note has no tags
-          !n.tags?.length
-        : // else check if active tag is still included
-          n.tags?.includes(activeTag),
+      activeTag === UNTAGGED ? !n.tags?.length : n.tags?.includes(activeTag),
     );
-  // first update store to updated notes
   noteStore.setState((state) => {
     const noteIndex = new Map(state.noteIndex);
     noteIndex.set(result.data.id, result.data);
@@ -251,9 +300,6 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
     };
   });
   stateStore.setState({ isDirty: false });
-  // check if update changed view
-  // if so, recompute visible ids and set active tag to null
-  // else visible ids don't change
   if (!tagStillExists) {
     await applyView(null, updatedNotes);
   }
@@ -283,14 +329,28 @@ async function waitForFlush(id: Id | null) {
 }
 
 async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
-  const { editor } = useCore("editor");
-  const activeId = stateStore.get("activeId");
+  const { editor, editorWrapper } = useCore("editor", "editorWrapper");
+  const activeId = stateStore.get("activeId") as Id | null;
   debouncedSaveNote.flush();
   if (activeId === id) {
-    rendererLogger.devLog("Already active. Skipping select.");
+    rendererLogger.devLog("Skipping select");
     return;
   }
   stateStore.setState({ activeId: id, hoverId: null });
+  localStore.setState((state) => {
+    if (activeId) {
+      const { cursorPos, scrollPos } = getEditorPos(editor, editorWrapper);
+      return {
+        cursorPos: { ...state.cursorPos, [activeId]: cursorPos },
+        scrollTop: { ...state.scrollTop, [activeId]: scrollPos },
+        lastOpenNote: id,
+      };
+    }
+    return {
+      ...state,
+      lastOpenNote: id,
+    };
+  });
   editor.setEditable(false, false);
   const result = await getNoteById(id);
   if (stateStore.get("activeId") !== id) return;
@@ -313,11 +373,24 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
     await showNotification("Invalid content detected", "Couldn't load content");
     return;
   }
-  if (stateStore.getState().activeId !== id) return;
+  if (stateStore.get("activeId") !== id) return;
   const headings = getTableOfContents(editor);
   updateToc(headings);
   updateStats();
   editor.setEditable(true, false);
+  try {
+    const { cursorPos, scrollTop } = localStore.getState();
+    editor.commands.setTextSelection(cursorPos[result.data.id] ?? 0);
+    editorWrapper.scrollTo({
+      top: scrollTop[result.data.id] ?? 0,
+      behavior: "auto",
+    });
+  } catch (error) {
+    rendererLogger.appError(
+      "[handleSelectNote]: Failed to scroll to selection:",
+      error,
+    );
+  }
   if (!options?.skipRecent) {
     noteStore.setState((state) => {
       const recentNotes = state.recentNotes.filter(

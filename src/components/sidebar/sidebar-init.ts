@@ -9,11 +9,7 @@ import {
   selectAllVisibleNotes,
   setSelectionMode,
 } from "@/components/sidebar/sidebar-selection";
-import {
-  resizeSidebar,
-  showTagPopover,
-  toggleSidebar,
-} from "@/components/sidebar/sidebar-ui";
+import { resizeSidebar, showTagPopover } from "@/components/sidebar/sidebar-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
 import {
   handleCreateNote,
@@ -21,7 +17,7 @@ import {
   handleSelectNote,
   waitForFlush,
 } from "@/notes/note-actions";
-import { noteStore, stateStore } from "@/state/state";
+import { localStore, noteStore, stateStore } from "@/state/state";
 import { NAV_KEYS, SELECTION_ACTIONS } from "@/utils/constants";
 import { createAsyncHandler } from "@/utils/helpers";
 import { registerAppEvents, useUI } from "@/utils/registry";
@@ -45,7 +41,12 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
   applySidebarListeners(sidebar, sidebarHeader, searchInput, selectionFooter);
   setupSidebarFileDrop(sidebar);
   registerAppEvents(document, {
-    [APP_EVENTS.TOGGLE_SIDEBAR]: toggleSidebar,
+    [APP_EVENTS.TOGGLE_SIDEBAR]: () => {
+      localStore.setState((state) => ({
+        ...state,
+        sidebarCollapsed: !state.sidebarCollapsed,
+      }));
+    },
     [APP_EVENTS.CREATE_NEW_NOTE]: async () =>
       await handleCreateNote({ shouldNavigate: true }),
     [APP_EVENTS.FOCUS_GLOBAL_SEARCH]: () => searchInput.focus(),

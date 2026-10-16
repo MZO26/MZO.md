@@ -3,14 +3,26 @@ import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { updateHover } from "@/components/sidebar/sidebar-navigation";
 import { updateSelection } from "@/components/sidebar/sidebar-selection";
 import { initSelectionFooter } from "@/components/sidebar/sidebar-selection-ui";
+import { toggleSidebar } from "@/components/sidebar/sidebar-ui";
 import { sidebarListener } from "@/components/sidebar/sidebar-views";
+import { TOOLBAR_ACTIONS } from "@/components/toolbar/toolbar-actions-init";
+import {
+  buttonMap,
+  updateActiveStates,
+} from "@/components/toolbar/toolbar-factory";
 import {
   setFocusMode,
   setToolbarCollapsed,
 } from "@/components/toolbar/toolbar-features";
-import { noteStore, settingsStore, shallowEq, stateStore } from "@/state/state";
+import {
+  localStore,
+  noteStore,
+  settingsStore,
+  shallowEq,
+  stateStore,
+} from "@/state/state";
 import { setActiveItem } from "@/utils/dom";
-import { APP_EVENTS } from "@shared/shared-constants";
+import { useCore } from "@/utils/registry";
 
 function initSubscriptions(sidebar: HTMLDivElement) {
   stateStore.subscribeSel(
@@ -24,7 +36,6 @@ function initSubscriptions(sidebar: HTMLDivElement) {
       if (noteElement) setActiveItem(noteElement, sidebar);
     },
     shallowEq,
-    // get editor empty state immediately
     { fireImmediately: true },
   );
 
@@ -61,7 +72,6 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     shallowEq,
   );
 
-  // note item keys that should trigger rerender
   const SIDEBAR_KEYS = ["title", "snippet", "pinned", "tags"] as const;
 
   noteStore.subscribeSel(
@@ -101,21 +111,32 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     shallowEq,
   );
 
-  settingsStore.subscribeSel(
-    (state) => state.toolbar_collapsed,
+  localStore.subscribeSel(
+    (state) => state.sidebarCollapsed,
     (collapsed) => {
       if (typeof collapsed === "boolean") {
-        rendererLogger.devLog("Collapsing toolbar");
-        try {
-          setToolbarCollapsed(collapsed);
-        } finally {
-          document.dispatchEvent(new CustomEvent(APP_EVENTS.REFRESH_TOOLBAR));
-          rendererLogger.devLog("Dispatched toolbar refresh");
-        }
+        rendererLogger.devLog("Collapsing sidebar");
+        toggleSidebar(collapsed);
       }
     },
     shallowEq,
-    // get matching background for collapsed toolbar state on app startup
+    { fireImmediately: true },
+  );
+
+  localStore.subscribeSel(
+    (state) => state.toolbarCollapsed,
+    (collapsed) => {
+      if (typeof collapsed === "boolean") {
+        rendererLogger.devLog("Collapsing toolbar");
+        setToolbarCollapsed(collapsed);
+        updateActiveStates({
+          buttonElements: buttonMap,
+          actions: TOOLBAR_ACTIONS,
+          editor: useCore("editor").editor,
+        });
+      }
+    },
+    shallowEq,
     { fireImmediately: true },
   );
 }

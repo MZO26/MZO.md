@@ -46,4 +46,12 @@ function getMarkdownContentBetween(
   }
 }
 
-export { getHTMLContentBetween, getMarkdownContentBetween };
+function getEditorPos(editor: Editor, container: HTMLDivElement) {
+  const { from } = editor.state.selection;
+  const docSize = editor.state.doc.content.size;
+  const safePos = Math.max(1, Math.min(from, docSize));
+  const scrollPos = container.scrollTop ?? 0;
+  return { cursorPos: safePos, scrollPos: scrollPos };
+}
+
+export { getEditorPos, getHTMLContentBetween, getMarkdownContentBetween };

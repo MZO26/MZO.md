@@ -98,6 +98,12 @@ type SelectionParams = {
   selectedIds: Set<Id>;
 };
 
+type ActiveStateParams = {
+  buttonElements: Map<string, HTMLButtonElement>;
+  actions: ActionMap;
+  editor: Editor;
+};
+
 type QuickSwitchDisplayNote =
   | (Pick<NoteListItem, "id" | "title"> & {
       section:
@@ -168,6 +174,7 @@ type ImageContent = (
 export type {
   Action,
   ActionMap,
+  ActiveStateParams,
   AllTagsMenu,
   AppIcons,
   EditorContentType,
