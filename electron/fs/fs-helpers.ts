@@ -69,7 +69,7 @@ async function writeAtomic(
 }
 
 async function sanitizeExportString(
-  content: string,
+  content: ExportContent["content"],
   assetsDir: string,
   internalImgDir: string,
 ) {
@@ -152,7 +152,8 @@ async function getFilePath(
   const newFileName = `${safeTitle}.${extension}`;
   const absoluteFilePath = path.resolve(targetDirectory, newFileName);
   // throwing security check
-  await assertInsideDirectory(targetDirectory, absoluteFilePath);
+  const inside = await isInsideDirectory(targetDirectory, absoluteFilePath);
+  if (!inside) throw new AppBackendError(AppErrorCode.FileWriteError);
   return absoluteFilePath;
 }
 
@@ -195,14 +196,6 @@ function isInsideDirectorySync(
   } catch (error) {
     return false;
   }
-}
-
-async function assertInsideDirectory(
-  baseDir: string,
-  absoluteFilePath: string,
-) {
-  const inside = await isInsideDirectory(baseDir, absoluteFilePath);
-  if (!inside) throw new AppBackendError(AppErrorCode.FileWriteError);
 }
 
 export {

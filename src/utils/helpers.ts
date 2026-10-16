@@ -1,4 +1,5 @@
 import { rendererLogger } from "@/app";
+import type { Id } from "@shared/schemas/note-schema";
 
 type Debounced<A extends (...args: any[]) => void> = ((
   ...args: Parameters<A>
@@ -113,10 +114,27 @@ function memoize<A extends unknown[], R>(
   };
 }
 
+function omitKeys<K extends Id, V>(
+  record: Record<K, V>,
+  keysToRemove: Set<Id> | Id,
+): Record<K, V> {
+  const next = {} as Record<K, V>;
+  const isSet = keysToRemove instanceof Set;
+  for (const key in record) {
+    const shouldRemove = isSet ? keysToRemove.has(key) : key === keysToRemove;
+    if (!shouldRemove) {
+      const val = record[key];
+      if (val !== undefined) next[key] = val;
+    }
+  }
+  return next;
+}
+
 export {
   createAsyncHandler,
   debounce,
   memoize,
+  omitKeys,
   sleep,
   waitForPaint,
   withPerformanceLog,

@@ -19,7 +19,7 @@ import { app } from "electron";
 import fs from "fs/promises";
 import path from "path";
 
-async function singleExport(filePath: string, data: string) {
+async function singleExport(filePath: string, data: ExportContent["content"]) {
   const absoluteTargetFolder = path.dirname(filePath);
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "editor-images");

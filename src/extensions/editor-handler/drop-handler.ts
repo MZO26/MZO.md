@@ -52,12 +52,13 @@ export const DropHandler = Extension.create({
               top: event.clientY,
             });
             const dropCandidates = files
-              .slice(0, MAX_DROP_LENGTH)
               .filter(
                 (file) =>
                   ALLOWED_TYPES.includes(file.type) ||
                   isValidExtension(getExtension(file.name)),
-              );
+              )
+              .slice(0, MAX_DROP_LENGTH);
+
             if (dropCandidates.length === 0) return false;
             event.preventDefault();
             void (async () => {

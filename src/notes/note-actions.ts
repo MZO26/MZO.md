@@ -24,11 +24,10 @@ import { setImportedContent } from "@/notes/import-actions";
 import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import { extractText, getMetadata, titleGenerator } from "@/utils/generators";
-import { debounce } from "@/utils/helpers";
+import { debounce, omitKeys } from "@/utils/helpers";
 import { checkNoteSize } from "@/utils/note-helpers";
 import { useCore } from "@/utils/registry";
 import {
-  isNoteID,
   type CreateNotePayload,
   type Id,
   type Note,
@@ -179,24 +178,10 @@ async function handleDeleteManyNotes(ids: Id[]) {
     ...(isActiveDeleted && { activeId: null }),
   });
   localStore.setState((state) => {
-    const nextCursorPos: typeof state.cursorPos = {};
-    const nextScroll: typeof state.scrollTop = {};
-    for (const id in state.cursorPos) {
-      if (isNoteID(id) && !deletedIds.has(id)) {
-        const val = state.cursorPos[id];
-        if (val !== undefined) nextCursorPos[id] = val;
-      }
-    }
-    for (const id in state.scrollTop) {
-      if (isNoteID(id) && !deletedIds.has(id)) {
-        const val = state.scrollTop[id];
-        if (val !== undefined) state.scrollTop[id] = val;
-      }
-    }
     return {
       ...state,
-      cursorPos: nextCursorPos,
-      scrollTop: nextScroll,
+      cursorPos: omitKeys(state.cursorPos, deletedIds),
+      scrollTop: omitKeys(state.scrollTop, deletedIds),
       ...(isActiveDeleted && { lastOpenNote: null }),
     };
   });
@@ -231,28 +216,10 @@ async function handleDeleteNote(id: Id) {
     ...(isActiveDeletedId && { activeId: null }),
   });
   localStore.setState((state) => {
-    const nextCursorPos: typeof state.cursorPos = {};
-    const nextScroll: typeof state.scrollTop = {};
-    for (const key in state.cursorPos) {
-      const idKey = isNoteID(key);
-      if (!idKey) continue;
-      if (key !== id) {
-        const val = state.cursorPos[key];
-        if (val !== undefined) nextCursorPos[key] = val;
-      }
-    }
-    for (const key in state.scrollTop) {
-      const idKey = isNoteID(key);
-      if (!idKey) continue;
-      if (key !== id) {
-        const val = state.scrollTop[key];
-        if (val !== undefined) nextScroll[key] = val;
-      }
-    }
     return {
       ...state,
-      cursorPos: nextCursorPos,
-      scrollTop: nextScroll,
+      cursorPos: omitKeys(state.cursorPos, id),
+      scrollTop: omitKeys(state.scrollTop, id),
       ...(isActiveDeletedId && { lastOpenNote: null }),
     };
   });
