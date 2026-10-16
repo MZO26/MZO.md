@@ -174,6 +174,7 @@
 }
 
 .ProseMirror .wikilink {
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   padding: 0 0.2em;
@@ -182,19 +183,19 @@
   box-shadow: none;
   border-radius: 0.25em;
   white-space: nowrap;
-  font-weight: 500;
+  font-weight: 500 !important;
+  font-size: 1em !important;
   user-select: all;
-  transition: all 0.2s ease;
-}
-
-.ProseMirror .wikilink {
-  cursor: pointer;
+  transition:
+    border 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .ProseMirror .wikilink:hover {
   box-shadow: var(--shadow);
   color: var(--text-main);
-  background: var(--tag-bg);
+  background-color: var(--tag-bg);
 }
 
 .ProseMirror .wikilink.ghost-link {

@@ -98,9 +98,6 @@ if (process.contextIsolated) {
       ) => {
         subscribe(IPC_CHANNELS.TRIGGER_EXPORT, callback);
       },
-      onTriggerPath: (callback: (id: Id) => void) => {
-        subscribe(IPC_CHANNELS.TRIGGER_SHOW_IN_FOLDER, callback);
-      },
       onTriggerCopyRichText: (callback: (id: Id) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT, callback);
       },
@@ -124,6 +121,9 @@ if (process.contextIsolated) {
       },
       onTriggerCopySelectionHTML: (callback: () => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_COPY_SELECTION_HTML, callback);
+      },
+      onTriggerExtractToNote: (callback: () => void) => {
+        subscribe(IPC_CHANNELS.TRIGGER_EXTRACT_SELECTION, callback);
       },
       getRelatedNotes: (payload: { id: Id }) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, payload),

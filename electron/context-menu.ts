@@ -47,6 +47,11 @@ function setUpEditorMenu(win: BrowserWindow) {
       addAction(true, "Copy", "copy", items, win);
     }
     if (hasSelection) {
+      items.push({
+        label: "Extract content",
+        click: () =>
+          win.webContents.send(IPC_CHANNELS.TRIGGER_EXTRACT_SELECTION),
+      });
       pushOptionalSeparator(items);
       items.push({
         label: "Copy As…",

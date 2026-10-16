@@ -37,7 +37,6 @@ const IPC_CHANNELS = {
   TRIGGER_TABLE_ACTION: "callback:trigger-table-action",
   TRIGGER_NOTE_ITEM_ACTION: "callback:trigger-note-item-action",
   TRIGGER_EXPORT: "callback:trigger-export",
-  TRIGGER_SHOW_IN_FOLDER: "callback:trigger-show-in-folder",
   TRIGGER_COPY_RICH_TEXT: "callback:trigger-copy-rich-text",
   TRIGGER_DELETE: "callback:trigger-delete",
   TRIGGER_DUPLICATE: "callback:trigger-duplicate",
@@ -47,6 +46,7 @@ const IPC_CHANNELS = {
   TRIGGER_COPY_SELECTION_RICH_TEXT: "callback:copy-selection-rich-text",
   TRIGGER_COPY_SELECTION_MARKDOWN: "callback:copy-selection-markdown",
   TRIGGER_COPY_SELECTION_HTML: "callback:copy-selection-html",
+  TRIGGER_EXTRACT_SELECTION: "callback:trigger-extract",
   // messages
   CONFIRM_FLUSH: "message:confirm-flush",
 } as const;

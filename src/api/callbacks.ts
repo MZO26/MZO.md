@@ -4,6 +4,7 @@ import {
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
   triggerDuplicate,
+  triggerExtractToNote,
   triggerNoteItemMenu,
   triggerPin,
   triggerSingleDelete,
@@ -45,6 +46,10 @@ function initListeners() {
 
   window.noteAPI.onTriggerCopySelectionMarkdown(async () => {
     await triggerCopySelectionMarkdown();
+  });
+
+  window.noteAPI.onTriggerExtractToNote(async () => {
+    await triggerExtractToNote();
   });
 
   window.noteAPI.onTriggerDelete(async (id: Id) => {

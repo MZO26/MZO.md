@@ -1,7 +1,12 @@
 import { getRelatedNotes } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { noteStore } from "@/state/state";
-import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
+import { memoize } from "@/utils/helpers";
+import {
+  isNoteID,
+  type Id,
+  type Note,
+  type NoteListItem,
+} from "@shared/schemas/note-schema";
 
 function tokenize(text: string): string[] {
   if (!text) return [];
@@ -29,36 +34,41 @@ function checkNoteSimilarity(
   return (2 * intersection) / (setA.size + setB.size);
 }
 
-async function getSimilarityMatching(activeId: Id) {
-  const noteIndex = noteStore.get("noteIndex");
-  const comparison = noteIndex.get(activeId);
-  if (!comparison) return [];
-  const relatedNotesQuery = await getRelatedNotes({
-    id: activeId,
-  });
-  const relatedNotes = relatedNotesQuery.success ? relatedNotesQuery.data : [];
-  const titleIndex = new Map(
-    noteStore.get("notes").map((n) => [n.title, n.id]),
-  );
-  for (const index of titleIndex.entries()) {
-    if (activeId === index[1]) continue;
-    const similarity = checkNoteSimilarity(comparison.title, index[0]);
-    if (similarity >= 0.75) {
-      rendererLogger.devLog(`Similar note found: ${index[0]}`);
-      if (isNoteID(index[1])) {
-        const note = noteIndex.get(index[1]);
-        if (!note) continue;
-        relatedNotes.push({
-          id: index[1],
-          title: note.title,
-        });
+const getSimilarityMatching = memoize(
+  async (
+    activeId: Id,
+    notes: readonly NoteListItem[],
+    noteIndex: Map<Id, NoteListItem>,
+  ) => {
+    const comparison = noteIndex.get(activeId);
+    if (!comparison) return [];
+    const relatedNotesQuery = await getRelatedNotes({
+      id: activeId,
+    });
+    const relatedNotes = relatedNotesQuery.success
+      ? relatedNotesQuery.data
+      : [];
+    const titleIndex = new Map(notes.map((n) => [n.title, n.id]));
+    for (const index of titleIndex.entries()) {
+      if (activeId === index[1]) continue;
+      const similarity = checkNoteSimilarity(comparison.title, index[0]);
+      if (similarity >= 0.75) {
+        rendererLogger.devLog(`Similar note found: ${index[0]}`);
+        if (isNoteID(index[1])) {
+          const note = noteIndex.get(index[1]);
+          if (!note) continue;
+          relatedNotes.push({
+            id: index[1],
+            title: note.title,
+          });
+        }
       }
     }
-  }
-  rendererLogger.devLog(
-    `[getSimilarityMatching]: matched notes: ${relatedNotes}`,
-  );
-  return relatedNotes;
-}
+    rendererLogger.devLog(
+      `[getSimilarityMatching]: matched notes: ${relatedNotes}`,
+    );
+    return relatedNotes;
+  },
+);
 
 export { getSimilarityMatching };

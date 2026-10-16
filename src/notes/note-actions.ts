@@ -23,7 +23,12 @@ import {
 import { setImportedContent } from "@/notes/import-actions";
 import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
-import { extractText, getMetadata, titleGenerator } from "@/utils/generators";
+import {
+  extractText,
+  getMetadata,
+  titleGenerator,
+  wrapAsDoc,
+} from "@/utils/generators";
 import { debounce, omitKeys } from "@/utils/helpers";
 import { checkNoteSize } from "@/utils/note-helpers";
 import { useCore } from "@/utils/registry";
@@ -370,6 +375,38 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   }
 }
 
+async function handleExtractToNote(id: Id, content: Readonly<Note["content"]>) {
+  const doc = wrapAsDoc(content);
+  if (!doc) return;
+  const activeTag = stateStore.get("activeTag");
+  let editorContent = addActiveTagToDoc(doc, activeTag);
+  const text = extractText(editorContent);
+  const metadata = getMetadata(editorContent);
+  const payload: CreateNotePayload = {
+    content: doc,
+    plain_text: text,
+    ...metadata,
+    links: [...metadata.links, id],
+    title: titleGenerator(editorContent) ?? UNTITLED,
+    pinned: false,
+  };
+  const result = await createNote(payload);
+  if (!result.success) {
+    rendererLogger.appError(
+      "[handleCreateNote]: Failed to create note:",
+      result.error,
+    );
+    return;
+  }
+  noteStore.setState((state) => ({
+    notes: [result.data, ...state.notes],
+    visibleIds: [result.data.id, ...state.visibleIds],
+    noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
+  }));
+  stateStore.setState({ hoverId: null });
+  return { id: result.data.id, title: result.data.title };
+}
+
 async function handleDuplicateNote(note: Readonly<Note>) {
   const {
     id: originalId,
@@ -411,6 +448,7 @@ export {
   handleDeleteManyNotes,
   handleDeleteNote,
   handleDuplicateNote,
+  handleExtractToNote,
   handleImportNote,
   handleSaveNote,
   handleSelectNote,

@@ -1,14 +1,8 @@
 import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
-import {
-  extractFrontmatter,
-  getFrontmatterMetadata,
-} from "@/extensions/frontmatter";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
-import { addActiveLinkToDoc } from "@/extensions/wikilink/wikilink-handler";
 import { stateStore } from "@/state/state";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
-import type { Metadata } from "@/utils/generators";
 import {
   getMetadata,
   textConverter,
@@ -100,29 +94,9 @@ async function setImportedContent(
     const extensions = getCachedEditorExtensions();
     for (const file of files) {
       let content = file.content;
-      let extracted: Pick<Metadata, "tags" | "links"> = { tags: [], links: [] };
-      if (file.extension === "md") {
-        const frontmatter = extractFrontmatter(file.content);
-        if (frontmatter) {
-          rendererLogger.devLog("YAML:", JSON.stringify(frontmatter.yaml));
-          content = frontmatter.body;
-          extracted = getFrontmatterMetadata(frontmatter.yaml);
-          rendererLogger.devLog(extracted);
-        }
-      }
       const json = await normalizeFileContent({ ...file, content });
       if (!json) continue;
       let updatedJson = addActiveTagToDoc(json, activeTag);
-      if (extracted.tags) {
-        for (const tag of extracted.tags) {
-          updatedJson = addActiveTagToDoc(updatedJson, tag);
-        }
-      }
-      if (extracted.links) {
-        for (const link of extracted.links) {
-          updatedJson = addActiveLinkToDoc(updatedJson, link);
-        }
-      }
       const text = generateText(updatedJson, extensions);
       const metadata = getMetadata(updatedJson);
       const payload: CreateNotePayload = {

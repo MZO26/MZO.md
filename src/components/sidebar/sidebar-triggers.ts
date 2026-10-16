@@ -6,9 +6,14 @@ import {
   getMarkdownContentBetween,
 } from "@/components/editor/editor-content";
 import { getExportContent } from "@/notes/export-actions";
-import { handleDeleteNote, handleDuplicateNote } from "@/notes/note-actions";
+import {
+  handleDeleteNote,
+  handleDuplicateNote,
+  handleExtractToNote,
+  waitForFlush,
+} from "@/notes/note-actions";
 import { confirmWithDialog, dialogMutex } from "@/settings/dialog-init";
-import { noteStore } from "@/state/state";
+import { noteStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { useCore, useDialog } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
@@ -182,6 +187,31 @@ async function triggerCopySelectionRichText() {
   }
 }
 
+async function triggerExtractToNote() {
+  const activeId = stateStore.get("activeId") as Id | null;
+  if (!activeId) return;
+  const { editor } = useCore("editor");
+  const { selection } = editor.state;
+  if (selection.empty) return;
+  const fragment = selection.content().content;
+  const json = fragment.toJSON();
+  if (!json) return;
+  const result = await handleExtractToNote(activeId, json);
+  rendererLogger.devLog(result);
+  if (!result) return;
+  editor
+    .chain()
+    .focus()
+    .insertWikiLink({
+      from: selection.from,
+      to: selection.to,
+      id: result.id,
+      title: result.title,
+    })
+    .run();
+  await waitForFlush(activeId);
+}
+
 async function triggerSingleDelete(id: Id) {
   const { deleteDialog } = useDialog("deleteDialog");
   const titleEl = requireElement<HTMLSpanElement>(
@@ -240,6 +270,7 @@ export {
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
   triggerDuplicate,
+  triggerExtractToNote,
   triggerNoteItemMenu,
   triggerPin,
   triggerSingleDelete,

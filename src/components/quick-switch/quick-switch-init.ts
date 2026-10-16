@@ -182,7 +182,12 @@ function initQuickSwitcher(editor: Editor) {
     }
     if (activeNote) {
       const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote);
-      const relatedNotes = await getSimilarityMatching(activeNote.id);
+      const { notes, noteIndex } = noteStore.getState();
+      const relatedNotes = await getSimilarityMatching(
+        activeNote.id,
+        notes,
+        noteIndex,
+      );
       rendererLogger.devLog(relatedNotes);
       for (const link of backlinks) {
         const linkedNote = noteIndex.get(link.id);

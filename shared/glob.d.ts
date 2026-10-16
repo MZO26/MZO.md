@@ -21,9 +21,6 @@ import type {
   ExportRequest,
   FilePathRequest,
   ImportRequest,
-  OpenAutoExportPathRequest,
-  SyncRequestPayload,
-  SyncResult,
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { ImportStats, Result, TableAction } from "@shared/shared-types";
@@ -56,15 +53,6 @@ declare global {
       confirmFlush: () => void;
       zoom: (action: ZoomAction) => Promise<Result<number>>;
       openExternal: (url: Url) => Promise<Result<string | void>>;
-      openAutoExportFolder: (
-        payload: OpenAutoExportPathRequest,
-      ) => Promise<Result<boolean>>;
-      openInDefaultEditor: (
-        payload: OpenAutoExportPathRequest,
-      ) => Promise<Result<boolean>>;
-      getAutoExportPath: (
-        payload: OpenAutoExportPathRequest,
-      ) => Promise<Result<string | null>>;
       openAppPath: () => Promise<Result<boolean>>;
     };
     noteAPI: {
@@ -83,14 +71,10 @@ declare global {
       ) => Promise<Result<NoteListItem>>;
       delete: (id: Id) => Promise<Result<void>>;
       deleteMany: (ids: Id[]) => Promise<Result<void>>;
-      selectAutoExportFolder: () => Promise<Result<string>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
-      onDirSync: (callback: (result: string[]) => void) => () => void;
-      dirRead: () => Promise<Result<boolean>>;
       onTriggerExport: (
         callback: (id: Id, extension: ExportContent["extension"]) => void,
       ) => () => void;
-      onTriggerPath: (callback: (id: Id) => void) => () => void;
       onTriggerDefaultEditor: (callback: (id: Id) => void) => () => void;
       onTriggerCopyRichText: (callback: (id: Id) => void) => () => void;
       onTriggerCopyPath: (callback: (id: Id) => void) => () => void;
@@ -107,13 +91,12 @@ declare global {
       onTriggerCopySelectionRichText: (callback: () => void) => () => void;
       onTriggerCopySelectionMarkdown: (callback: () => void) => () => void;
       onTriggerCopySelectionHTML: (callback: () => void) => () => void;
-      syncRequest: (payload: SyncRequestPayload) => Promise<Result<SyncResult>>;
+      onTriggerExtractToNote: (callback: () => void) => () => void;
       getRelatedNotes: (payload: { id: Id }) => Promise<Result<RelatedNotes[]>>;
       pin: (id: Id) => Promise<Result<boolean>>;
       pinMany: (ids: Id[]) => Promise<Result<boolean>>;
       databaseBackup: () => Promise<Result<number>>;
       databaseBackupRestore: () => Promise<Result<void>>;
-      setActiveNote: (id: Id) => void;
     };
     storeAPI: {
       onSettingsChanged: (
