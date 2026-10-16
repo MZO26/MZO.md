@@ -184,13 +184,13 @@ async function handleDeleteManyNotes(ids: Id[]) {
     for (const id in state.cursorPos) {
       if (isNoteID(id) && !deletedIds.has(id)) {
         const val = state.cursorPos[id];
-        if (val) nextCursorPos[id] = val;
+        if (val !== undefined) nextCursorPos[id] = val;
       }
     }
     for (const id in state.scrollTop) {
       if (isNoteID(id) && !deletedIds.has(id)) {
         const val = state.scrollTop[id];
-        if (val) state.scrollTop[id] = val;
+        if (val !== undefined) state.scrollTop[id] = val;
       }
     }
     return {
@@ -238,7 +238,7 @@ async function handleDeleteNote(id: Id) {
       if (!idKey) continue;
       if (key !== id) {
         const val = state.cursorPos[key];
-        if (val) nextCursorPos[key] = val;
+        if (val !== undefined) nextCursorPos[key] = val;
       }
     }
     for (const key in state.scrollTop) {
@@ -246,7 +246,7 @@ async function handleDeleteNote(id: Id) {
       if (!idKey) continue;
       if (key !== id) {
         const val = state.scrollTop[key];
-        if (val) nextScroll[key] = val;
+        if (val !== undefined) nextScroll[key] = val;
       }
     }
     return {

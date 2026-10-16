@@ -7,7 +7,6 @@ Built with Electron, TypeScript, SQLite, and TipTap / ProseMirror.
 ## Features
 
 - Local-first storage with SQLite
-- Optional auto-export to markdown files
 - Fast note-search with FTS5
 - Markdown-focused editing with TipTap / ProseMirror
 - Connect and organize notes with links and tags
@@ -60,21 +59,21 @@ npm install
 <summary><b>Click to view all App Shortcuts</b></summary>
 <br>
 
-| Shortcut                                                      | Action             |
-| ------------------------------------------------------------- | ------------------ |
-| <kbd>Mod</kbd> + <kbd>N</kbd>                                 | Create new note    |
-| <kbd>Mod</kbd> + <kbd>G</kbd>                                 | Open global search |
-| <kbd>Mod</kbd> + <kbd>F</kbd>                                 | Open doc search    |
-| <kbd>Mod</kbd> + <kbd>S</kbd>                                 | Toggle selection   |
-| <kbd>Mod</kbd> + <kbd>O</kbd>                                 | Toggle sidebar     |
-| <kbd>Mod</kbd> + <kbd>.</kbd>                                 | Toggle toolbar     |
-| <kbd>Mod</kbd> + <kbd>W</kbd>                                 | Set editor width   |
-| <kbd>Mod</kbd> + <kbd>,</kbd>                                 | Open settings      |
-| <kbd>Mod</kbd> + <kbd>+</kbd> / <kbd>Mod</kbd> + <kbd>=</kbd> | Zoom in            |
-| <kbd>Mod</kbd> + <kbd>-</kbd>                                 | Zoom out           |
-| <kbd>Mod</kbd> + <kbd>0</kbd>                                 | Reset zoom         |
-| <kbd>F11</kbd>                                                | Toggle focus mode  |
-| <kbd>Mod</kbd> + <kbd>P</kbd>                                 | View recent notes  |
+| Shortcut                                                      | Action              |
+| ------------------------------------------------------------- | ------------------- |
+| <kbd>Mod</kbd> + <kbd>N</kbd>                                 | Create new note     |
+| <kbd>Mod</kbd> + <kbd>G</kbd>                                 | Open global search  |
+| <kbd>Mod</kbd> + <kbd>F</kbd>                                 | Open doc search     |
+| <kbd>Mod</kbd> + <kbd>S</kbd>                                 | Toggle selection    |
+| <kbd>Mod</kbd> + <kbd>O</kbd>                                 | Toggle sidebar      |
+| <kbd>Mod</kbd> + <kbd>.</kbd>                                 | Toggle toolbar      |
+| <kbd>Mod</kbd> + <kbd>W</kbd>                                 | Set editor width    |
+| <kbd>Mod</kbd> + <kbd>,</kbd>                                 | Open settings       |
+| <kbd>Mod</kbd> + <kbd>+</kbd> / <kbd>Mod</kbd> + <kbd>=</kbd> | Zoom in             |
+| <kbd>Mod</kbd> + <kbd>-</kbd>                                 | Zoom out            |
+| <kbd>Mod</kbd> + <kbd>0</kbd>                                 | Reset zoom          |
+| <kbd>F11</kbd>                                                | Toggle focus mode   |
+| <kbd>Mod</kbd> + <kbd>P</kbd>                                 | Open Quick Switcher |
 
 </details>
 <br>

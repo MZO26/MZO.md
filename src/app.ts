@@ -70,7 +70,11 @@ async function initApp() {
   renderIcons();
   rendererLogger.timeEnd("DOM Loading Time");
   rendererLogger.devLog("App started successfully");
-  const lastOpenNoteÌd = localStore.get("lastOpenNote");
-  if (isNoteID(lastOpenNoteÌd)) await handleSelectNote(lastOpenNoteÌd);
+  const lastOpenNoteId = localStore.get("lastOpenNote");
+  if (
+    isNoteID(lastOpenNoteId) &&
+    notesResult.data.some((n) => n.id === lastOpenNoteId)
+  )
+    await handleSelectNote(lastOpenNoteId);
 }
 await initApp();
