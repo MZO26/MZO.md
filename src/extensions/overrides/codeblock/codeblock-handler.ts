@@ -92,12 +92,23 @@ export const CodeblockHandler = Extension.create({
         if (charBefore in KEY_MAP) {
           const isMatch =
             isOpener(charBefore) && charAfter === KEY_MAP[charBefore];
+          const { $from } = this.editor.state.selection;
+          const textBefore = $from.parent.textBetween(0, $from.parentOffset);
+          const lines = textBefore.split("\n");
+          const currentLine = lines[lines.length - 1];
+          const match = currentLine ? currentLine.match(/^[\t ]*/) : null;
+          const currentIndent = match ? match[0] : "";
+          const indent = "  ";
           if (isMatch) {
-            this.editor.commands.insertContent("\n  \n  ");
-            this.editor.commands.setTextSelection(from + 3);
+            const innerIndent = currentIndent + indent;
+            const insertionText = `\n${innerIndent}\n${currentIndent}`;
+            this.editor.commands.insertContent(insertionText);
+            this.editor.commands.setTextSelection(
+              from + 1 + innerIndent.length,
+            );
             return true;
           }
-          return this.editor.commands.insertContent("\n  ");
+          return this.editor.commands.insertContent(`\n${currentIndent}`);
         }
         return false;
       },

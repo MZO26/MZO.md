@@ -12,12 +12,8 @@ import {
   WordCleanup,
 } from "@/extensions/editor-handler/paste-handler";
 import {
-  CodeSelectionWrapper,
-  HighlightSelectionWrapper,
-  ItalicAndBoldSelectionWrapper,
   KbSelectionCommands,
-  StrikeThroughSelectionWrapper,
-  UnderlineSelectionWrapper,
+  SelectionWrapper,
 } from "@/extensions/editor-handler/selection-wrappers";
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
@@ -232,11 +228,7 @@ function getNoteEditorExtensions() {
       katexOptions: SHARED_KATEX_OPTIONS,
     }),
     DocSearch,
-    CodeSelectionWrapper,
-    ItalicAndBoldSelectionWrapper,
-    StrikeThroughSelectionWrapper,
-    UnderlineSelectionWrapper,
-    HighlightSelectionWrapper,
+    SelectionWrapper,
     KbSelectionCommands,
   ];
 }

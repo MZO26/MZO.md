@@ -201,6 +201,7 @@ export {
   snippetGenerator,
   textConverter,
   titleGenerator,
+  truncateTitle,
   wrapAsDoc,
   type Metadata,
 };

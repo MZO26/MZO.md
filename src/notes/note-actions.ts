@@ -9,8 +9,10 @@ import {
   updateNote,
 } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { recreateEditorState } from "@/components/editor/editor-actions";
-import { getEditorPos } from "@/components/editor/editor-content";
+import {
+  getEditorPos,
+  recreateEditorState,
+} from "@/components/editor/editor-actions";
 import { updateToc } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
@@ -18,6 +20,7 @@ import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { getTableOfContents } from "@/extensions/toc";
 import {
   addHeadingToDoc,
+  downgradeDocLinks,
   resolveDocLinks,
 } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
@@ -41,6 +44,7 @@ import {
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { EMPTY_DOC, UNTITLED } from "@shared/shared-constants";
+import type { JSONContent } from "@tiptap/core";
 
 async function handleCreateNote(options?: {
   activeTitle?: NoteListItem["title"];
@@ -190,10 +194,17 @@ async function handleDeleteManyNotes(ids: Id[]) {
       ...(isActiveDeleted && { lastOpenNote: null }),
     };
   });
+  if (!isActiveDeleted && activeId) {
+    const noteIndex = noteStore.get("noteIndex");
+    const links = noteIndex.get(activeId)?.links;
+    if (links?.some((l) => l.id && !noteIndex.has(l.id))) {
+      downgradeDocLinks(noteIndex);
+    }
+  }
 }
 
 async function handleDeleteNote(id: Id) {
-  const activeId = stateStore.get("activeId");
+  const activeId = stateStore.get("activeId") as Id | null;
   const isActiveDeletedId = activeId === id;
   if (isActiveDeletedId) {
     debouncedSaveNote.cancel();
@@ -228,6 +239,12 @@ async function handleDeleteNote(id: Id) {
       ...(isActiveDeletedId && { lastOpenNote: null }),
     };
   });
+  if (!isActiveDeletedId && activeId) {
+    const noteIndex = noteStore.get("noteIndex");
+    const needsDowngrade =
+      noteIndex.get(activeId)?.links?.some((l) => l.id === id) ?? false;
+    if (needsDowngrade) downgradeDocLinks(noteIndex);
+  }
 }
 
 async function handleSaveNote(id: Id, flush: boolean = false) {
@@ -235,7 +252,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
   if (activeId !== id) return;
   const activeNote = noteStore.get("noteIndex").get(activeId);
   if (!activeNote) return;
-  const { editor } = useCore("editor");
+  const { editor, editorWrapper } = useCore("editor", "editorWrapper");
   const content = editor.getJSON();
   const text = editor.getText();
   const metaData = getMetadata(content);
@@ -279,6 +296,14 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
     updateStats();
     const currentHeadings = getTableOfContents(editor);
     updateToc(currentHeadings);
+    localStore.setState((state) => {
+      const { cursorPos, scrollPos } = getEditorPos(editor, editorWrapper);
+      return {
+        cursorPos: { ...state.cursorPos, [result.data.id]: cursorPos },
+        scrollTop: { ...state.scrollTop, [result.data.id]: scrollPos },
+        lastOpenNote: result.data.id,
+      };
+    });
   }
 }
 
@@ -334,9 +359,12 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
     return;
   }
   try {
+    const noteIndex = noteStore.get("noteIndex");
     await checkNoteSize(result.data.content);
     recreateEditorState(editor, result.data.content);
     resolveDocLinks(result.data);
+    if (result.data.links.some((l) => l.id && !noteIndex.has(l.id)))
+      downgradeDocLinks(noteIndex);
   } catch (error) {
     rendererLogger.appError("Invalid Editor content:", error);
     editor.setEditable(false, false);
@@ -375,7 +403,7 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   }
 }
 
-async function handleExtractToNote(id: Id, content: Readonly<Note["content"]>) {
+async function handleExtractToNote(id: Id, content: JSONContent) {
   const doc = wrapAsDoc(content);
   if (!doc) return;
   const activeTag = stateStore.get("activeTag");

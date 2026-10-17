@@ -3,10 +3,14 @@ import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { handleCreateNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { WIKILINK_REGEX } from "@/utils/constants";
-import { getLinks } from "@/utils/generators";
+import { getLinks, truncateTitle } from "@/utils/generators";
 import { memoize } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
-import type { Id, Note, NoteListItem } from "@shared/schemas/note-schema";
+import {
+  type Id,
+  type Note,
+  type NoteListItem,
+} from "@shared/schemas/note-schema";
 import { UNTITLED } from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
@@ -41,6 +45,20 @@ const WikilinkHandler = WikiLink.extend({
             title: state.title,
           })
           .run();
+      },
+      Backspace: () => {
+        const { $from, empty } = this.editor.state.selection;
+        if (!empty) return false;
+        const nodeBefore = $from.nodeBefore;
+        if (nodeBefore?.type.name === "wikilink") {
+          const title = nodeBefore.attrs["title"] || "";
+          const from = $from.pos - nodeBefore.nodeSize;
+          return this.editor
+            .chain()
+            .insertContentAt({ from, to: $from.pos }, `[[${title}]`)
+            .run();
+        }
+        return false;
       },
     };
   },
@@ -138,34 +156,53 @@ const getSortedNotes = memoize((notes: readonly NoteListItem[]) => {
 });
 
 async function resolveGhostLink(title: Note["title"]) {
-  const noteId = await handleCreateNote({
-    activeTitle: title,
-    shouldNavigate: false,
-  });
+  const truncated = truncateTitle(title);
+  if (!truncated) return;
+  const normalizedOriginal = title.trim().toLowerCase();
+  const normalizedTruncated = truncated.toLowerCase();
+  const notes = noteStore.get("notes");
+  const existingNote = notes.find(
+    (n) => n.title.trim().toLowerCase() === normalizedTruncated,
+  );
+  const noteId =
+    existingNote?.id ??
+    (await handleCreateNote({
+      activeTitle: truncated,
+      shouldNavigate: false,
+    }));
   if (!noteId) return;
+  const resolvedTitle = existingNote?.title ?? truncated;
   const { editor } = useCore("editor");
-  const normalizedTitle = title.toLowerCase();
   editor.commands.command(({ tr, state, dispatch }) => {
     let modified = false;
     state.doc.descendants((node, currentPos) => {
       if (node.type.name === "wikilink") {
         const nodeId = node.attrs?.["id"];
         const nodeTitle = node.attrs?.["title"];
-        if (
-          !nodeId &&
-          typeof nodeTitle === "string" &&
-          nodeTitle.toLowerCase() === normalizedTitle
-        ) {
-          if (dispatch) {
-            tr.setNodeMarkup(currentPos, undefined, {
-              id: noteId,
-              title: nodeTitle,
-            });
+        if (!nodeId && typeof nodeTitle === "string") {
+          const normNodeTitle = nodeTitle.trim().toLowerCase();
+          const normNodeTruncated = truncateTitle(
+            nodeTitle.trim(),
+          ).toLowerCase();
+          if (
+            normNodeTitle === normalizedOriginal ||
+            normNodeTruncated === normalizedTruncated
+          ) {
             modified = true;
+            if (dispatch) {
+              tr.setNodeMarkup(currentPos, undefined, {
+                ...node.attrs,
+                id: noteId,
+                title: resolvedTitle,
+              });
+            }
           }
         }
       }
     });
+    if (modified && dispatch) {
+      tr.setMeta("addToHistory", false);
+    }
     return modified;
   });
   return noteId;
@@ -173,8 +210,12 @@ async function resolveGhostLink(title: Note["title"]) {
 
 function resolveDocLinks(note: Readonly<Note>) {
   const { editor } = useCore("editor");
-  const matchPos: { match: string; from: number; to: number; targetId: Id }[] =
-    [];
+  const matchPos: {
+    match: string;
+    from: number;
+    to: number;
+    targetId: Id;
+  }[] = [];
   const currentLinks = new Set(getLinks(note.content));
   const notes = noteStore.get("notes");
   const titleMap = new Map(notes.map((n) => [n.title, n.id]));
@@ -209,6 +250,27 @@ function resolveDocLinks(note: Readonly<Note>) {
       })
       .run();
   }
+}
+
+function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
+  const { editor } = useCore("editor");
+  if (!editor || editor.isDestroyed) return;
+  editor.commands.command(({ tr, state, dispatch }) => {
+    let modified = false;
+    state.doc.descendants((node, pos) => {
+      if (node.type.name === "wikilink") {
+        const nodeId = node.attrs?.["id"];
+        if (nodeId && !noteIndex.has(nodeId)) {
+          modified = true;
+          if (dispatch) {
+            tr.setNodeMarkup(pos, undefined, { ...node.attrs, id: null });
+          }
+        }
+      }
+    });
+    if (modified && dispatch) tr.setMeta("addToHistory", false);
+    return modified;
+  });
 }
 
 function addActiveLinkToDoc(
@@ -251,6 +313,7 @@ function addHeadingToDoc(doc: JSONContent, titleText: string): JSONContent {
 export {
   addActiveLinkToDoc,
   addHeadingToDoc,
+  downgradeDocLinks,
   resolveDocLinks,
   resolveGhostLink,
   WikilinkHandler,

@@ -1,14 +1,91 @@
+import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
+import { noteStore } from "@/state/state";
 import { MOVEABLE_BLOCKS, MOVEABLE_CONTAINERS } from "@/utils/constants";
 import { Extension } from "@tiptap/core";
 import type { ResolvedPos } from "@tiptap/pm/model";
 import { NodeSelection, TextSelection } from "@tiptap/pm/state";
-import { toggleSingleCodeBlock } from "../overrides/codeblock/codeblock-handler";
 
-const CodeSelectionWrapper = Extension.create({
-  name: "codeSelectionWrapper",
+const SelectionWrapper = Extension.create({
+  name: "SelectionWrapper",
 
   addKeyboardShortcuts() {
+    const handleItalicBoldWrapper = () => {
+      if (this.editor.state.selection.empty) {
+        return false;
+      }
+      if (this.editor.isActive("bold")) {
+        return this.editor.commands.unsetBold();
+      }
+      if (this.editor.isActive("italic")) {
+        return this.editor.chain().unsetItalic().setBold().run();
+      }
+      return this.editor.commands.setItalic();
+    };
     return {
+      "#": () => {
+        const { from, to, empty } = this.editor.state.selection;
+        if (empty) return false;
+        const { doc } = this.editor.state;
+        const selectedText = doc.textBetween(from, to, "\n");
+        const trimmed = selectedText.trim();
+        const charBefore = doc.textBetween(Math.max(0, from - 1), from);
+        const replaced = trimmed.replace(/^#/, "");
+        const isValidTag =
+          replaced.length > 0 &&
+          replaced.length <= 100 &&
+          /^[\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?$/u.test(replaced);
+        if (!isValidTag) return false;
+        const hasHashBefore = charBefore === "#";
+        const replaceFrom = hasHashBefore ? from - 1 : from;
+        return this.editor
+          .chain()
+          .insertNoteTag({
+            from: replaceFrom,
+            to: to,
+            id: replaced.toLowerCase(),
+          })
+          .run();
+      },
+      "[": () => {
+        const { from, to, empty } = this.editor.state.selection;
+        if (!empty) {
+          const { doc } = this.editor.state;
+          const selectedText = doc.textBetween(from, to, "\n");
+          const trimmed = selectedText.trim();
+          const normalized = trimmed.toLowerCase();
+          const charBefore = doc.textBetween(Math.max(0, from - 1), from);
+          const charAfter = doc.textBetween(
+            to,
+            Math.min(doc.content.size, to + 1),
+          );
+          const isValidTitle =
+            normalized.length > 0 &&
+            normalized.length <= 50 &&
+            !selectedText.includes("\n");
+          if (charBefore === "[" && charAfter === "]" && isValidTitle) {
+            const notes = noteStore.get("notes");
+            const existingNote = notes.find(
+              (n) => n.title.trim().toLowerCase() === normalized,
+            );
+            return this.editor
+              .chain()
+              .insertWikiLink({
+                from: from - 1,
+                to: to + 1,
+                id: existingNote?.id || null,
+                title: existingNote?.title || trimmed,
+              })
+              .run();
+          }
+          return this.editor
+            .chain()
+            .insertContentAt(to, "]")
+            .insertContentAt(from, "[")
+            .setTextSelection({ from: from + 1, to: to + 1 })
+            .run();
+        }
+        return false;
+      },
       "`": () => {
         const { empty, $from, $to } = this.editor.state.selection;
         if (empty) return false;
@@ -28,71 +105,23 @@ const CodeSelectionWrapper = Extension.create({
         }
         return this.editor.commands.toggleCode();
       },
-    };
-  },
-});
-
-const StrikeThroughSelectionWrapper = Extension.create({
-  name: "strikeThroughSelectionWrapper",
-
-  addKeyboardShortcuts() {
-    return {
       "~": () => {
         const { empty } = this.editor.state.selection;
         if (empty) return false;
         return this.editor.commands.toggleStrike();
       },
-    };
-  },
-});
-
-const UnderlineSelectionWrapper = Extension.create({
-  name: "underlineSelectionWrapper",
-
-  addKeyboardShortcuts() {
-    return {
       "+": () => {
         const { empty } = this.editor.state.selection;
         if (empty) return false;
         return this.editor.commands.toggleUnderline();
       },
-    };
-  },
-});
-
-const HighlightSelectionWrapper = Extension.create({
-  name: "highlightSelectionWrapper",
-
-  addKeyboardShortcuts() {
-    return {
       "=": () => {
         const { empty } = this.editor.state.selection;
         if (empty) return false;
         return this.editor.commands.toggleHighlight();
       },
-    };
-  },
-});
-
-const ItalicAndBoldSelectionWrapper = Extension.create({
-  name: "italicAndBoldSelectionWrapper",
-
-  addKeyboardShortcuts() {
-    const handleFormatKey = () => {
-      if (this.editor.state.selection.empty) {
-        return false;
-      }
-      if (this.editor.isActive("bold")) {
-        return this.editor.commands.unsetBold();
-      }
-      if (this.editor.isActive("italic")) {
-        return this.editor.chain().unsetItalic().setBold().run();
-      }
-      return this.editor.commands.setItalic();
-    };
-    return {
-      "*": handleFormatKey,
-      _: handleFormatKey,
+      "*": handleItalicBoldWrapper,
+      _: handleItalicBoldWrapper,
     };
   },
 });
@@ -182,11 +211,4 @@ const KbSelectionCommands = Extension.create({
   },
 });
 
-export {
-  CodeSelectionWrapper,
-  HighlightSelectionWrapper,
-  ItalicAndBoldSelectionWrapper,
-  KbSelectionCommands,
-  StrikeThroughSelectionWrapper,
-  UnderlineSelectionWrapper,
-};
+export { KbSelectionCommands, SelectionWrapper };

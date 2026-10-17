@@ -1,10 +1,10 @@
 import { exportNote, getNoteById, pin, showNotification } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import {
+  getCachedEditorExtensions,
   getHTMLContentBetween,
   getMarkdownContentBetween,
-} from "@/components/editor/editor-content";
+} from "@/components/editor/editor-actions";
 import { getExportContent } from "@/notes/export-actions";
 import {
   handleDeleteNote,
@@ -197,7 +197,6 @@ async function triggerExtractToNote() {
   const json = fragment.toJSON();
   if (!json) return;
   const result = await handleExtractToNote(activeId, json);
-  rendererLogger.devLog(result);
   if (!result) return;
   editor
     .chain()

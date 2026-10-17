@@ -36,6 +36,20 @@ const NoteTagHandler = NoteTag.extend({
           })
           .run();
       },
+      Backspace: () => {
+        const { $from, empty } = this.editor.state.selection;
+        if (!empty) return false;
+        const nodeBefore = $from.nodeBefore;
+        if (nodeBefore?.type.name === "noteTag") {
+          const title = nodeBefore.attrs["id"] || "";
+          const from = $from.pos - nodeBefore.nodeSize;
+          return this.editor
+            .chain()
+            .insertContentAt({ from, to: $from.pos }, `#${title}`)
+            .run();
+        }
+        return false;
+      },
     };
   },
 
