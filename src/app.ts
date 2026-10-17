@@ -5,7 +5,9 @@ import { initEditorSearch } from "@/components/editor/editor-search";
 import { initQuickSwitcher } from "@/components/quick-switch/quick-switch-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { initToolbar, initTopToolbar } from "@/components/toolbar/toolbar-init";
+import { handleSelectNote } from "@/notes/note-actions";
 import { initAppSettings } from "@/settings/setting-init";
+import { localStore } from "@/state/state";
 import "@/state/state-init";
 import { initSubscriptions } from "@/state/state-init";
 import {
@@ -25,8 +27,6 @@ import {
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { createLogger } from "@shared/log";
 import { isNoteID } from "@shared/schemas/note-schema";
-import { handleSelectNote } from "./notes/note-actions";
-import { localStore } from "./state/state";
 
 export const rendererLogger = createLogger(import.meta.env.DEV);
 

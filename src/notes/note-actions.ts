@@ -43,7 +43,12 @@ import {
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
-import { EMPTY_DOC, UNTITLED } from "@shared/shared-constants";
+import {
+  APP_EVENTS,
+  EMPTY_DOC,
+  MIN_SEARCH_LENGTH,
+  UNTITLED,
+} from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
 
 async function handleCreateNote(options?: {
@@ -304,6 +309,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
         lastOpenNote: result.data.id,
       };
     });
+    editor.view.dispatch(editor.state.tr.setMeta("noteInfoRefresh", true));
   }
 }
 
@@ -401,6 +407,9 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
       };
     });
   }
+  const globalQuery = stateStore.get("searchQuery");
+  if (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH)
+    document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_EDITOR_SEARCH));
 }
 
 async function handleExtractToNote(id: Id, content: JSONContent) {
@@ -453,7 +462,6 @@ async function handleDuplicateNote(note: Readonly<Note>) {
     links: outgoingLinkIds,
     pinned: false,
   };
-  // not handleCreateNote because content is already there
   const result = await createNote(data);
   if (!result.success) {
     rendererLogger.appError(

@@ -3,6 +3,7 @@ import {
   applyView,
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
+import { SelectionHighlight } from "@/extensions/active-highlight";
 import { DropHandler } from "@/extensions/editor-handler/drop-handler";
 import { MasterShortcuts } from "@/extensions/editor-handler/editor-shortcuts";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/extensions/editor-handler/selection-wrappers";
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
+import { NoteInfoWidget } from "@/extensions/note-info";
 import { CodeblockHandler } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { lowlight } from "@/extensions/overrides/codeblock/lowlight";
 import { CustomHeading } from "@/extensions/overrides/headings";
@@ -36,7 +38,6 @@ import {
   resolveGhostLink,
   WikilinkHandler,
 } from "@/extensions/wikilink/wikilink-handler";
-import { WikiLinkPreview } from "@/extensions/wikilink/wikilink-preview";
 import {
   debouncedSaveNote,
   handleSelectNote,
@@ -129,7 +130,6 @@ function getNoteEditorExtensions() {
         restoreSidebarScope();
       },
     }),
-    WikiLinkPreview,
     Placeholder,
     TextMetrics.configure({
       limit: MAX_CHARACTERS,
@@ -230,6 +230,8 @@ function getNoteEditorExtensions() {
     DocSearch,
     SelectionWrapper,
     KbSelectionCommands,
+    SelectionHighlight,
+    NoteInfoWidget,
   ];
 }
 

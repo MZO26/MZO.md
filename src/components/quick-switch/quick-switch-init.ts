@@ -9,7 +9,8 @@ import {
 import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, NAV_KEYS } from "@/utils/constants";
 import { createInfoSpan } from "@/utils/dom";
-import { debounce, waitForPaint } from "@/utils/helpers";
+import { truncateTitle } from "@/utils/generators";
+import { createAsyncHandler, debounce, waitForPaint } from "@/utils/helpers";
 import { normalizeText } from "@/utils/note-helpers";
 import { registerAppEvents, useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayNote } from "@/utils/types";
@@ -331,11 +332,11 @@ function initQuickSwitcher(editor: Editor) {
 
   async function selectActive() {
     const activeNote = qsState.currentDisplayNotes[qsState.activeIndex];
-    switchDialog.close();
     if (!activeNote) return;
+    switchDialog.close();
     if (activeNote.section === "create") {
       await handleCreateNote({
-        activeTitle: activeNote.title,
+        activeTitle: truncateTitle(activeNote.title),
         shouldNavigate: true,
       });
       restoreSidebarScope();
@@ -402,10 +403,23 @@ function initQuickSwitcher(editor: Editor) {
 
   switchListSearchInput.addEventListener("input", debouncedTitleFilter);
   document.addEventListener("keydown", handleListKeydown);
+  switchListSearchInput.addEventListener(
+    "keydown",
+    createAsyncHandler(async (event) => {
+      if (event.shiftKey && event.key === "Enter") {
+        event.preventDefault();
+        const value = (switchListSearchInput.value ?? "").trim();
+        await handleCreateNote({
+          activeTitle: truncateTitle(value),
+          shouldNavigate: true,
+        });
+        restoreSidebarScope();
+      }
+    }),
+  );
   switchListEl.addEventListener("click", handleListClick);
   document.addEventListener("keydown", handleDocumentKeydown);
   registerAppEvents(document, {
-    // [] for computed keys to be evaluated correctly
     [APP_EVENTS.TOGGLE_QUICK_SWITCH]: toggleSwitcher,
   });
 }
