@@ -128,6 +128,7 @@ function getNoteEditorExtensions() {
           const noteId = await resolveGhostLink(title);
           if (!noteId) return;
           await handleSelectNote(noteId);
+          await waitForFlush(noteId);
           restoreSidebarScope();
           return;
         }
