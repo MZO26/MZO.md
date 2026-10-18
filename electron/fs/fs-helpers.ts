@@ -152,8 +152,9 @@ async function getFilePath(
   const newFileName = `${safeTitle}.${extension}`;
   const absoluteFilePath = path.resolve(targetDirectory, newFileName);
   // throwing security check
-  const inside = await isInsideDirectory(targetDirectory, absoluteFilePath);
-  if (!inside) throw new AppBackendError(AppErrorCode.FileWriteError);
+  const outside = await isInsideDirectory(targetDirectory, absoluteFilePath);
+  mainLogger.devLog(outside);
+  if (outside) throw new AppBackendError(AppErrorCode.FileWriteError);
   return absoluteFilePath;
 }
 

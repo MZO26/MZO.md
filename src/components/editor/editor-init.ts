@@ -1,6 +1,11 @@
 import { showNotification } from "@/api/api";
 import { rendererLogger } from "@/app";
 import {
+  recreateEditorState,
+  validateUrl,
+} from "@/components/editor/editor-actions";
+import { updateStats } from "@/components/editor/editor-ui";
+import {
   applyView,
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
@@ -72,8 +77,6 @@ import {
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import "katex/dist/katex.min.css";
-import { recreateEditorState, validateUrl } from "./editor-actions";
-import { updateStats } from "./editor-ui";
 
 export const updateToc = initTableOfContents();
 
