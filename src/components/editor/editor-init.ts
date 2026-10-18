@@ -1,3 +1,4 @@
+import { showNotification } from "@/api/api";
 import { rendererLogger } from "@/app";
 import {
   applyView,
@@ -35,6 +36,8 @@ import { NoteTagHandler } from "@/extensions/tag/tag-handler";
 import { TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
 import {
+  downgradeDocLinks,
+  resolveDocLinks,
   resolveGhostLink,
   WikilinkHandler,
 } from "@/extensions/wikilink/wikilink-handler";
@@ -46,11 +49,17 @@ import {
 import { noteStore, stateStore } from "@/state/state";
 import { NODE_BASELINE, SHARED_KATEX_OPTIONS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
+import { checkNoteSize } from "@/utils/note-helpers";
 import { useCore } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
-import { isNoteID, type Id } from "@shared/schemas/note-schema";
+import {
+  isNoteID,
+  type Id,
+  type Note,
+  type NoteListItem,
+} from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import { ALLOWED_PROTOCOLS, MAX_CHARACTERS } from "@shared/shared-constants";
+import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
@@ -63,6 +72,8 @@ import {
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import "katex/dist/katex.min.css";
+import { recreateEditorState, validateUrl } from "./editor-actions";
+import { updateStats } from "./editor-ui";
 
 export const updateToc = initTableOfContents();
 
@@ -199,14 +210,7 @@ function getNoteEditorExtensions() {
       },
       isAllowedUri: (url, ctx) => {
         if (!ctx.defaultValidate(url)) return false;
-        try {
-          // google as base path for relative path parsing
-          const parsed = new URL(url, "https://google.com");
-          return ALLOWED_PROTOCOLS.includes(parsed.protocol);
-        } catch (error: unknown) {
-          rendererLogger.appError("[link.configure]: Invalid URL");
-          return false;
-        }
+        return validateUrl(url);
       },
     }),
     CodeBlockLowlight.configure({
@@ -262,4 +266,37 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   );
 }
 
-export { getNoteEditorExtensions, initEditor, setupEditorListeners };
+type EditorInitContentParams = {
+  note: Readonly<Note>;
+  noteIndex: Map<Id, NoteListItem>;
+  editor: Editor;
+};
+
+async function initEditorContent({
+  note,
+  noteIndex,
+  editor,
+}: EditorInitContentParams) {
+  try {
+    await checkNoteSize(note.content);
+    recreateEditorState(editor, note.content);
+    resolveDocLinks(note);
+    if (note.links.some((l) => l.id && !noteIndex.has(l.id))) {
+      downgradeDocLinks(noteIndex);
+    }
+    updateStats(editor);
+  } catch (error) {
+    rendererLogger.appError("Invalid Editor content:", error);
+    editor.setEditable(false, false);
+    updateStats(editor, { override: true });
+    await showNotification("Invalid content detected", "Couldn't load content");
+    return;
+  }
+}
+
+export {
+  getNoteEditorExtensions,
+  initEditor,
+  initEditorContent,
+  setupEditorListeners,
+};

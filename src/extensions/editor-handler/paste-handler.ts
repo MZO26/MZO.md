@@ -1,5 +1,8 @@
 import { rendererLogger } from "@/app";
-import { getMarkdownManager } from "@/components/editor/editor-actions";
+import {
+  getMarkdownManager,
+  validateUrl,
+} from "@/components/editor/editor-actions";
 import { processAndInsertImages } from "@/extensions/overrides/image/image";
 import {
   ALLOWED_TYPES,
@@ -54,6 +57,28 @@ export const PasteHandler = Extension.create({
               }
             }
             return false;
+          },
+        },
+      }),
+    ];
+  },
+});
+
+export const LinkPasteHandler = Extension.create({
+  name: "linkPasteHandler",
+  addProseMirrorPlugins() {
+    const editor = this.editor;
+    return [
+      new Plugin({
+        props: {
+          handlePaste(view, event) {
+            const { state } = view;
+            const { empty, $from } = state.selection;
+            if (empty || $from.parent.type.name === "codeBlock") return false;
+            const text = event.clipboardData?.getData("text/plain")?.trim();
+            if (!text || !validateUrl(text)) return false;
+            editor.commands.setLink({ href: text });
+            return true;
           },
         },
       }),

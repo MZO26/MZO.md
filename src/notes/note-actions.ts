@@ -12,16 +12,15 @@ import { rendererLogger } from "@/app";
 import {
   getEditorPos,
   recreateEditorState,
+  setSelection,
 } from "@/components/editor/editor-actions";
-import { updateToc } from "@/components/editor/editor-init";
+import { initEditorContent } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
-import { getTableOfContents } from "@/extensions/toc";
 import {
   addHeadingToDoc,
   downgradeDocLinks,
-  resolveDocLinks,
 } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
 import { localStore, noteStore, stateStore } from "@/state/state";
@@ -33,7 +32,6 @@ import {
   wrapAsDoc,
 } from "@/utils/generators";
 import { debounce, omitKeys } from "@/utils/helpers";
-import { checkNoteSize } from "@/utils/note-helpers";
 import { useCore } from "@/utils/registry";
 import {
   type CreateNotePayload,
@@ -92,9 +90,7 @@ async function handleCreateNote(options?: {
     stateStore.setState({ activeId: result.data.id, hoverId: null });
     recreateEditorState(editor, editorContent);
     editor.commands.focus();
-    const headings = getTableOfContents(editor);
-    updateToc(headings);
-    updateStats();
+    updateStats(editor);
     const { cursorPos, scrollPos } = getEditorPos(editor, editorWrapper);
     localStore.setState((state) => ({
       cursorPos: { ...state.cursorPos, [result.data.id]: cursorPos },
@@ -298,9 +294,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
     await applyView(null, updatedNotes);
   }
   if (isActiveNote) {
-    updateStats();
-    const currentHeadings = getTableOfContents(editor);
-    updateToc(currentHeadings);
+    updateStats(editor);
     localStore.setState((state) => {
       const { cursorPos, scrollPos } = getEditorPos(editor, editorWrapper);
       return {
@@ -364,39 +358,11 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
     );
     return;
   }
-  try {
-    const noteIndex = noteStore.get("noteIndex");
-    await checkNoteSize(result.data.content);
-    recreateEditorState(editor, result.data.content);
-    resolveDocLinks(result.data);
-    if (result.data.links.some((l) => l.id && !noteIndex.has(l.id)))
-      downgradeDocLinks(noteIndex);
-  } catch (error) {
-    rendererLogger.appError("Invalid Editor content:", error);
-    editor.setEditable(false, false);
-    updateToc([]);
-    updateStats();
-    await showNotification("Invalid content detected", "Couldn't load content");
-    return;
-  }
+  const noteIndex = noteStore.get("noteIndex");
+  await initEditorContent({ note: result.data, noteIndex, editor });
   if (stateStore.get("activeId") !== id) return;
-  const headings = getTableOfContents(editor);
-  updateToc(headings);
-  updateStats();
   editor.setEditable(true, false);
-  try {
-    const { cursorPos, scrollTop } = localStore.getState();
-    editor.commands.setTextSelection(cursorPos[result.data.id] ?? 0);
-    editorWrapper.scrollTo({
-      top: scrollTop[result.data.id] ?? 0,
-      behavior: "auto",
-    });
-  } catch (error) {
-    rendererLogger.appError(
-      "[handleSelectNote]: Failed to scroll to selection:",
-      error,
-    );
-  }
+  setSelection(editor, editorWrapper, result.data.id);
   if (!options?.skipRecent) {
     noteStore.setState((state) => {
       const recentNotes = state.recentNotes.filter(
@@ -452,8 +418,6 @@ async function handleDuplicateNote(note: Readonly<Note>) {
     updated_at,
     ...rest
   } = note;
-  // does not duplicate incoming links because other
-  // notes would be forced to point to this new duplicate
   const outgoingLinkIds = originalLinks
     .filter((link) => link.dir === "out")
     .map((link) => link.id);

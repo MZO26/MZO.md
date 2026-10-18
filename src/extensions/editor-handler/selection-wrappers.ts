@@ -1,9 +1,28 @@
 import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { noteStore } from "@/state/state";
 import { MOVEABLE_BLOCKS, MOVEABLE_CONTAINERS } from "@/utils/constants";
-import { Extension } from "@tiptap/core";
+import { Editor, Extension } from "@tiptap/core";
 import type { ResolvedPos } from "@tiptap/pm/model";
 import { NodeSelection, TextSelection } from "@tiptap/pm/state";
+
+function wrapSelection(
+  editor: Editor,
+  openChar: string,
+  closeChar: string,
+): boolean {
+  const { state } = editor;
+  const { selection } = state;
+  const { empty, from, to, $from, $to } = selection;
+  if (empty) return false;
+  if (!$from.sameParent($to)) return false;
+  return editor
+    .chain()
+    .focus()
+    .insertContentAt(to, closeChar)
+    .insertContentAt(from, openChar)
+    .setTextSelection({ from: from + 1, to: to + 1 })
+    .run();
+}
 
 const SelectionWrapper = Extension.create({
   name: "SelectionWrapper",
@@ -86,6 +105,9 @@ const SelectionWrapper = Extension.create({
         }
         return false;
       },
+      '"': () => wrapSelection(this.editor, '"', '"'),
+      "'": () => wrapSelection(this.editor, "'", "'"),
+      "(": () => wrapSelection(this.editor, "(", ")"),
       "`": () => {
         const { empty, $from, $to } = this.editor.state.selection;
         if (empty) return false;

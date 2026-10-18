@@ -5,6 +5,9 @@ import {
 } from "@/extensions/overrides/mathematics/mathematics";
 import { NoteTag } from "@/extensions/tag/tag";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
+import { localStore } from "@/state/state";
+import type { Id } from "@shared/schemas/note-schema";
+import { ALLOWED_PROTOCOLS } from "@shared/shared-constants";
 import {
   getHTMLFromFragment,
   type Editor,
@@ -106,6 +109,26 @@ function getEditorPos(editor: Editor, container: HTMLDivElement) {
   return { cursorPos: safePos, scrollPos: scrollPos };
 }
 
+function setSelection(editor: Editor, editorWrapper: HTMLDivElement, id: Id) {
+  const { cursorPos, scrollTop } = localStore.getState();
+  try {
+    editor.commands.setTextSelection(cursorPos[id] ?? 0);
+    editorWrapper.scrollTo({
+      top: scrollTop[id] ?? 0,
+      behavior: "auto",
+    });
+  } catch (error) {}
+}
+
+function validateUrl(url: string) {
+  try {
+    const parsed = new URL(url, "https://google.com");
+    return ALLOWED_PROTOCOLS.includes(parsed.protocol);
+  } catch (error: unknown) {
+    return false;
+  }
+}
+
 export {
   getCachedEditorExtensions,
   getEditorPos,
@@ -113,4 +136,6 @@ export {
   getMarkdownContentBetween,
   getMarkdownManager,
   recreateEditorState,
+  setSelection,
+  validateUrl,
 };

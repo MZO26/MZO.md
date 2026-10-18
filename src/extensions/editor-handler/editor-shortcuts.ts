@@ -1,8 +1,7 @@
 import { openExternal } from "@/api/api";
-import { rendererLogger } from "@/app";
+import { validateUrl } from "@/components/editor/editor-actions";
 import { promptImageUpload } from "@/extensions/overrides/image/image";
 import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
-import type { LinkAttributes } from "@/utils/types";
 import { Extension } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
 
@@ -82,45 +81,27 @@ export const MasterShortcuts = Extension.create({
       },
       "Mod-Alt-Enter": () => {
         if (!this.editor.isActive("link")) return false;
-        const { selection } = this.editor.state;
-        const $from = selection.$from;
-        let extractedUrl: string | undefined;
-        const nodeAttrs = this.editor.getAttributes("link") as LinkAttributes;
-        extractedUrl = nodeAttrs.href || nodeAttrs.url;
-        if (!extractedUrl) {
-          const linkMark = $from.marks().find((m) => m.type.name === "link");
-          if (linkMark?.attrs) {
-            const attrs = linkMark.attrs as LinkAttributes;
-            extractedUrl = attrs.href || attrs.url;
-          }
-        }
-        if (!extractedUrl) {
-          const textContent = $from.parent.textContent?.trim();
-          if (textContent) {
-            extractedUrl = textContent.toLowerCase().startsWith("http")
-              ? textContent
-              : `https://${textContent}`;
-          }
-        }
-        if (extractedUrl) {
-          let url: URL;
-          try {
-            url = new URL(extractedUrl);
-          } catch (error) {
-            rendererLogger.appError("[MasterShortcuts]: Invalid URL");
-            return false;
-          }
-          void openExternal(url.href);
+        const { $from } = this.editor.state.selection;
+        const linkMark =
+          $from.marks().find((m) => m.type.name === "link") ??
+          $from.nodeBefore?.marks.find((m) => m.type.name === "link") ??
+          $from.nodeAfter?.marks.find((m) => m.type.name === "link");
+        const rawUrl = (
+          this.editor.getAttributes("link")["href"] || linkMark?.attrs?.["href"]
+        )?.trim();
+        if (!rawUrl || !validateUrl(rawUrl)) return false;
+        try {
+          const formatted = /^https?:\/\//i.test(rawUrl)
+            ? rawUrl
+            : `https://${rawUrl}`;
+          void openExternal(new URL(formatted).href);
           return true;
+        } catch {
+          return false;
         }
-        rendererLogger.appError(
-          "[addKeyboardShortcuts -> link-open]: Could not extract a valid URL from the selection.",
-        );
-        return false;
       },
       "Mod-Shift-Enter": () => {
         const { $from } = this.editor.state.selection;
-        // $from.after(1) always points to the position after the root container
         const endPos = $from.after(1);
         return this.editor
           .chain()
