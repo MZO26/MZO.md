@@ -2,7 +2,6 @@ import { rendererLogger } from "@/app";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { updateHover } from "@/components/sidebar/sidebar-navigation";
 import { updateSelection } from "@/components/sidebar/sidebar-selection";
-import { initSelectionFooter } from "@/components/sidebar/sidebar-selection-ui";
 import { toggleSidebar } from "@/components/sidebar/sidebar-ui";
 import { sidebarListener } from "@/components/sidebar/sidebar-views";
 import { TOOLBAR_ACTIONS } from "@/components/toolbar/toolbar-actions-init";
@@ -41,12 +40,7 @@ function initSubscriptions(sidebar: HTMLDivElement) {
 
   stateStore.subscribeSel(
     (state) => state.selectionMode,
-    (mode, prev) => {
-      if (!prev && mode) {
-        initSelectionFooter();
-      }
-      updateSelection();
-    },
+    updateSelection,
     shallowEq,
   );
 

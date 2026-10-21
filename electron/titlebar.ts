@@ -74,9 +74,16 @@ const THEME_DATA: Record<
   dark_warm: {
     color: "#1e1b17", // --bg-sidebar
     symbolColor: "#9e9890", // --text-muted
-    background: "#1e1b17", // --bg-sidebar
+    background: "#1e1b17", // --bg-editor
     isDark: true,
     focus: "#1e1b17", // --bg-editor
+  },
+  oled: {
+    color: "#000000",
+    symbolColor: "#a1a1aa",
+    background: "#000000",
+    isDark: true,
+    focus: "#000000",
   },
 } as const;
 

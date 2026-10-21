@@ -16,6 +16,7 @@ const THEME_SETTINGS: readonly SelectOption<Theme>[] = [
   { value: "light_warm", label: "Light · Warm" },
   { value: "dark", label: "Dark" },
   { value: "dark_warm", label: "Dark · Warm" },
+  { value: "oled", label: "OLED" },
 ];
 
 const CODE_THEME_SETTINGS: readonly SelectOption<CodeTheme>[] = [

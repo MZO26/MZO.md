@@ -16,6 +16,7 @@ import {
   syncStateStore,
 } from "@/state/state-sync";
 import { startAppClock } from "@/utils/date";
+import { withPerformanceLog } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import {
   initCoreRegistry,
@@ -33,7 +34,6 @@ export const rendererLogger = createLogger(import.meta.env.DEV);
 async function initApp() {
   const notesResult = await getAll();
   const settingsResult = await getAllSettings();
-  rendererLogger.time("DOM Loading Time");
   if (!notesResult.success) {
     rendererLogger.appError(
       "[getAll]: Failed to fetch all notes:",
@@ -68,8 +68,6 @@ async function initApp() {
   initNotesSidebar(sidebar);
   initQuickSwitcher(editor);
   renderIcons();
-  rendererLogger.timeEnd("DOM Loading Time");
-  rendererLogger.devLog("App started successfully");
   const lastOpenNoteId = localStore.get("lastOpenNote");
   if (
     isNoteID(lastOpenNoteId) &&
@@ -77,4 +75,5 @@ async function initApp() {
   )
     await handleSelectNote(lastOpenNoteId);
 }
-await initApp();
+await withPerformanceLog(initApp)();
+rendererLogger.devLog("App started successfully");

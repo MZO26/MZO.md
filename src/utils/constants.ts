@@ -1,4 +1,4 @@
-import type { QuickActionConfig, SelectionActionConfig } from "@/utils/types";
+import type { QuickActionConfig } from "@/utils/types";
 
 const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
 
@@ -52,17 +52,6 @@ const IMAGE_MAX_WIDTH = 1000;
 
 const IMAGE_QUALITY = 0.9;
 
-const SELECTION_ACTIONS: SelectionActionConfig[] = [
-  { id: "cancel", icon: "X" },
-  { id: "pin", icon: "Pin" },
-  { id: "export", icon: "Download" },
-  {
-    id: "copy-rich-text",
-    icon: "FileSymlink",
-  },
-  { id: "delete", icon: "Trash2" },
-] as const;
-
 const QUICK_ACTIONS: QuickActionConfig[] = [
   { id: "open-path", icon: "FolderCog", label: "Open App Path" },
   { id: "backup-db", icon: "DatabaseBackup", label: "Database Backup" },
@@ -80,6 +69,7 @@ const THEME_MAP = {
   dark: "dark",
   light_warm: "light",
   dark_warm: "dark",
+  oled: "dark",
 } as const;
 
 const CODE_THEME_MAP = {
@@ -228,7 +218,6 @@ export {
   NAV_KEYS,
   NODE_BASELINE,
   QUICK_ACTIONS,
-  SELECTION_ACTIONS,
   SHARED_KATEX_OPTIONS,
   SIDEBAR_ALL_NOTES_LIMIT,
   THEME_MAP,

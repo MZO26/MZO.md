@@ -1,11 +1,17 @@
 import {
+  copyMarkdownSelection,
+  copyRichTextSelection,
+  deleteSelection,
+  exportSelection,
+  pinSelection,
+} from "@/components/sidebar/sidebar-selection";
+import {
+  triggerCopyMarkdown,
   triggerCopyRichText,
-  triggerCopySelectionHtml,
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
   triggerDuplicate,
   triggerExtractToNote,
-  triggerNoteItemMenu,
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,
@@ -14,34 +20,46 @@ import {
 import { debouncedSaveNote } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
 import { createGlobalSpinner } from "@/utils/ui";
-import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
+import type { Id } from "@shared/schemas/note-schema";
 import type { ExportContent } from "@shared/schemas/request-schema";
 import type { ResolvedTheme } from "@shared/shared-types";
 
 function initListeners() {
   window.electronAPI.onTriggerTableAction((action) => triggerTableMenu(action));
 
-  window.electronAPI.onTriggerNoteAction((payload: NoteMenuPayload) =>
-    triggerNoteItemMenu(payload),
-  );
-
   window.noteAPI.onTriggerExport(
-    async (id: Id, extension: ExportContent["extension"]) => {
-      await triggerSingleExport(id, extension);
+    async (ids: Id[], extension: ExportContent["extension"]) => {
+      const [singleId] = ids;
+      if (singleId && ids.length === 1) {
+        await triggerSingleExport(singleId, extension);
+        return;
+      }
+      await exportSelection(ids);
     },
   );
 
-  window.noteAPI.onTriggerCopyRichText(async (id: Id) => {
+  window.noteAPI.onTriggerCopyRichText(async (ids: Id[]) => {
     const loading = createGlobalSpinner();
-    await loading.wrap(() => triggerCopyRichText(id));
+    const [singleId] = ids;
+    if (singleId && ids.length === 1) {
+      await loading.wrap(() => triggerCopyRichText(singleId));
+      return;
+    }
+    await loading.wrap(() => copyRichTextSelection(ids));
+  });
+
+  window.noteAPI.onTriggerCopyMarkdown(async (ids: Id[]) => {
+    const loading = createGlobalSpinner();
+    const [singleId] = ids;
+    if (singleId && ids.length === 1) {
+      await loading.wrap(() => triggerCopyMarkdown(singleId));
+      return;
+    }
+    await loading.wrap(() => copyMarkdownSelection(ids));
   });
 
   window.noteAPI.onTriggerCopySelectionRichText(async () => {
     await triggerCopySelectionRichText();
-  });
-
-  window.noteAPI.onTriggerCopySelectionHTML(async () => {
-    await triggerCopySelectionHtml();
   });
 
   window.noteAPI.onTriggerCopySelectionMarkdown(async () => {
@@ -52,19 +70,42 @@ function initListeners() {
     await triggerExtractToNote();
   });
 
-  window.noteAPI.onTriggerDelete(async (id: Id) => {
-    await triggerSingleDelete(id);
+  window.noteAPI.onTriggerDelete(async (ids: Id[]) => {
+    const [singleId] = ids;
+    if (singleId && ids.length === 1) {
+      await triggerSingleDelete(singleId);
+      return;
+    }
+    await deleteSelection(ids);
   });
 
-  window.noteAPI.onTriggerPin(async (id: Id) => {
-    await triggerPin(id);
+  window.noteAPI.onTriggerPin(async (ids: Id[]) => {
+    const [singleId] = ids;
+    if (singleId && ids.length === 1) {
+      await triggerPin(singleId);
+      return;
+    }
+    await pinSelection(ids);
   });
 
-  window.noteAPI.onTriggerSelect((id: Id) => {
+  window.noteAPI.onTriggerSelect((ids: Id[]) => {
     stateStore.setState((state) => {
-      const nextSelectedIds = new Set(state.selectedIds);
-      nextSelectedIds.add(id);
+      if (ids.length === 0) {
+        if (!state.selectionMode && state.selectedIds.size === 0) return state;
+        return {
+          ...state,
+          selectionMode: false,
+          selectedIds: new Set<Id>(),
+        };
+      }
+      const nextSelectedIds = state.selectedIds.union(new Set(ids));
+      if (
+        state.selectionMode &&
+        nextSelectedIds.size === state.selectedIds.size
+      )
+        return state;
       return {
+        ...state,
         selectionMode: true,
         selectedIds: nextSelectedIds,
       };

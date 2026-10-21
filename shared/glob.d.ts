@@ -46,9 +46,6 @@ declare global {
       ) => () => void;
       showContextMenu: (menuType: MenuType, payload?: NoteMenuPayload) => void;
       onTriggerTableAction: (callback: (action: TableAction) => void) => void;
-      onTriggerNoteAction: (
-        callback: (payload: NoteMenuPayload) => void,
-      ) => void;
       onRequestFlush: (callback: () => void) => () => void;
       confirmFlush: () => void;
       zoom: (action: ZoomAction) => Promise<Result<number>>;
@@ -73,24 +70,22 @@ declare global {
       deleteMany: (ids: Id[]) => Promise<Result<void>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
       onTriggerExport: (
-        callback: (id: Id, extension: ExportContent["extension"]) => void,
+        callback: (ids: Id[], extension: ExportContent["extension"]) => void,
       ) => () => void;
-      onTriggerDefaultEditor: (callback: (id: Id) => void) => () => void;
-      onTriggerCopyRichText: (callback: (id: Id) => void) => () => void;
-      onTriggerCopyPath: (callback: (id: Id) => void) => () => void;
+      onTriggerCopyRichText: (callback: (ids: Id[]) => void) => () => void;
+      onTriggerCopyMarkdown: (callback: (ids: Id[]) => void) => () => void;
       noteExportMany: (
         payload: ExportContent[],
       ) => Promise<Result<ExportContent[]>>;
       noteImport: (
         payload: FilePathRequest,
       ) => Promise<Result<{ data: ImportRequest[]; stats: ImportStats }>>;
-      onTriggerDelete: (callback: (id: Id) => void) => () => void;
+      onTriggerDelete: (callback: (ids: Id[]) => void) => () => void;
       onTriggerDuplicate: (callback: (id: Id) => void) => () => void;
-      onTriggerPin: (callback: (id: Id) => void) => () => void;
-      onTriggerSelect: (callback: (id: Id) => void) => () => void;
+      onTriggerPin: (callback: (ids: Id[]) => void) => () => void;
+      onTriggerSelect: (callback: (ids: Id[]) => void) => () => void;
       onTriggerCopySelectionRichText: (callback: () => void) => () => void;
       onTriggerCopySelectionMarkdown: (callback: () => void) => () => void;
-      onTriggerCopySelectionHTML: (callback: () => void) => () => void;
       onTriggerExtractToNote: (callback: () => void) => () => void;
       getRelatedNotes: (payload: { id: Id }) => Promise<Result<RelatedNotes[]>>;
       pin: (id: Id) => Promise<Result<boolean>>;

@@ -12,7 +12,7 @@ const WindowBoundsSchema = z
 
 const StoreSchema = z.object({
   theme: z
-    .enum(["system", "light", "dark", "light_warm", "dark_warm"])
+    .enum(["system", "light", "dark", "light_warm", "dark_warm", "oled"])
     .catch("system"),
   font_family: z.enum(["system", "arial", "serif"]).catch("system"),
   font_size: z.enum(["16", "18", "20"]).catch("18"),

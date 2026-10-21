@@ -20,8 +20,27 @@ import { createAsyncHandler, debounce } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { updateNoteCount } from "@/utils/note-helpers";
 import { useCore } from "@/utils/registry";
-import type { AllTagsMenu, FilterMode, SidebarParams } from "@/utils/types";
+import type {
+  AllTagsMenu,
+  FilterMode,
+  SelectionParams,
+  SidebarParams,
+} from "@/utils/types";
 import { createTemplateCloner, isDiv } from "@/utils/ui";
+import { isNoteID } from "@shared/schemas/note-schema";
+
+function updateSelectionUI(selectionParams: SelectionParams) {
+  const { selectionMode, selectedIds } = selectionParams;
+  const { sidebar } = useCore("sidebar");
+  sidebar.classList.toggle("selection-mode", selectionMode);
+  const noteItems = sidebar.querySelectorAll<HTMLDivElement>(".note-item");
+  for (const item of noteItems) {
+    const id = item.getAttribute("data-id");
+    if (!isNoteID(id)) continue;
+    const isSelected = selectionMode && !!id && selectedIds.has(id);
+    item.classList.toggle("is-selected", isSelected);
+  }
+}
 
 const tagsPopoverClone = createTemplateCloner("tagsPopoverTemplate", isDiv);
 
@@ -385,4 +404,5 @@ export {
   showTagPopover,
   toggleSidebar,
   updateNoteCount,
+  updateSelectionUI,
 };

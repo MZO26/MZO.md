@@ -61,9 +61,6 @@ if (process.contextIsolated) {
       onTriggerTableAction: (callback: (action: TableAction) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_TABLE_ACTION, callback);
       },
-      onTriggerNoteAction: (callback: (payload: NoteMenuPayload) => void) => {
-        subscribe(IPC_CHANNELS.TRIGGER_NOTE_ITEM_ACTION, callback);
-      },
       onRequestFlush: (callback: () => void) =>
         subscribe(IPC_CHANNELS.REQUEST_FLUSH, () => callback()),
       confirmFlush: () => ipcRenderer.send(IPC_CHANNELS.CONFIRM_FLUSH),
@@ -94,23 +91,26 @@ if (process.contextIsolated) {
       noteImport: (payload: FilePathRequest) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_IMPORT, payload),
       onTriggerExport: (
-        callback: (id: Id, extension: ExportRequest["extension"]) => void,
+        callback: (ids: Id[], extension: ExportRequest["extension"]) => void,
       ) => {
         subscribe(IPC_CHANNELS.TRIGGER_EXPORT, callback);
       },
-      onTriggerCopyRichText: (callback: (id: Id) => void) => {
+      onTriggerCopyRichText: (callback: (ids: Id[]) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT, callback);
       },
-      onTriggerDelete: (callback: (id: Id) => void) => {
+      onTriggerCopyMarkdown: (callback: (ids: Id[]) => void) => {
+        subscribe(IPC_CHANNELS.TRIGGER_COPY_MARKDOWN, callback);
+      },
+      onTriggerDelete: (callback: (ids: Id[]) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_DELETE, callback);
       },
       onTriggerDuplicate: (callback: (id: Id) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_DUPLICATE, callback);
       },
-      onTriggerPin: (callback: (id: Id) => void) => {
+      onTriggerPin: (callback: (ids: Id[]) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_PIN, callback);
       },
-      onTriggerSelect: (callback: (id: Id) => void) => {
+      onTriggerSelect: (callback: (ids: Id[]) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_SELECT, callback);
       },
       onTriggerCopySelectionRichText: (callback: () => void) => {
@@ -118,9 +118,6 @@ if (process.contextIsolated) {
       },
       onTriggerCopySelectionMarkdown: (callback: () => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_COPY_SELECTION_MARKDOWN, callback);
-      },
-      onTriggerCopySelectionHTML: (callback: () => void) => {
-        subscribe(IPC_CHANNELS.TRIGGER_COPY_SELECTION_HTML, callback);
       },
       onTriggerExtractToNote: (callback: () => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_EXTRACT_SELECTION, callback);

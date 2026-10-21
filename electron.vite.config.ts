@@ -38,7 +38,7 @@ export default defineConfig({
         },
         output: {
           format: "cjs",
-          inlineDynamicImports: true,
+          codeSplitting: false,
         },
       },
     },

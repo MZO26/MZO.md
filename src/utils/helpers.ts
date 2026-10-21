@@ -73,8 +73,6 @@ async function waitForPaint(frames = 2): Promise<void> {
   }
 }
 
-// mainly for worker markdown parse evaluation
-
 function withPerformanceLog<A extends unknown[], T>(
   fn: (...args: A) => Promise<T>,
 ) {

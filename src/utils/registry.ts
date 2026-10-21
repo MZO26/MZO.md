@@ -126,9 +126,6 @@ function initUIRegistry() {
     searchInput: requireElement<HTMLInputElement>(".search-input"),
     sidebarHeader: requireElement<HTMLDivElement>(".sidebar-header"),
     sidebarFooter: requireElement<HTMLDivElement>(".sidebar-footer"),
-    selectionFooter: requireElement<HTMLDivElement>(
-      ".sidebar-selection-footer",
-    ),
     quickActionContainer: requireElement<HTMLDivElement>(
       ".settings-quick-actions",
     ),

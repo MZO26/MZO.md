@@ -4,6 +4,7 @@ import {
   getCachedEditorExtensions,
   getHTMLContentBetween,
   getMarkdownContentBetween,
+  getMarkdownManager,
 } from "@/components/editor/editor-actions";
 import { getExportContent } from "@/notes/export-actions";
 import {
@@ -17,7 +18,7 @@ import { noteStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { useCore, useDialog } from "@/utils/registry";
 import { ERROR_MESSAGES } from "@shared/errors";
-import type { Id, NoteMenuPayload } from "@shared/schemas/note-schema";
+import type { Id } from "@shared/schemas/note-schema";
 import type { ExportContent } from "@shared/schemas/request-schema";
 import { TABLE_ACTIONS } from "@shared/shared-constants";
 import type { TableAction } from "@shared/shared-types";
@@ -54,16 +55,16 @@ function triggerTableMenu(action: TableAction) {
   }
 }
 
-function triggerNoteItemMenu(payload: NoteMenuPayload) {
-  const { sidebar } = useCore("sidebar");
-  const noteElement = sidebar.querySelector<HTMLDivElement>(
-    `.note-item[data-id="${CSS.escape(payload.id)}"]`,
-  );
-  if (!noteElement) return;
-  if (payload.pinned !== undefined) {
-    noteElement.dataset["pinned"] = String(!!payload.pinned);
-  }
-}
+// function triggerNoteItemMenu(payload: NoteMenuPayload) {
+//   const { sidebar } = useCore("sidebar");
+//   const noteElement = sidebar.querySelector<HTMLDivElement>(
+//     `.note-item[data-id="${CSS.escape(payload.id)}"]`,
+//   );
+//   if (!noteElement) return;
+//   if (payload.pinned !== undefined) {
+//     noteElement.dataset["pinned"] = String(!!payload.pinned);
+//   }
+// }
 
 async function triggerSingleExport(
   id: Id,
@@ -94,6 +95,31 @@ async function triggerSingleExport(
   );
 }
 
+async function triggerCopyMarkdown(id: Id) {
+  const result = await getNoteById(id);
+  if (!result.success) {
+    rendererLogger.appError(
+      "[onTriggerCopyMarkdown]: Failed to fetch note data:",
+      result.error,
+    );
+    await showNotification("Failed to get markdown", "");
+    return;
+  }
+  const markdown = getMarkdownManager().serialize(result.data.content);
+  if (!markdown) {
+    await showNotification("Failed to get markdown", "");
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(markdown);
+  } catch (error) {
+    rendererLogger.appError(
+      "[triggerCopyMarkdown]: Failed to copy as markdown:",
+      error,
+    );
+  }
+}
+
 async function triggerCopyRichText(id: Id) {
   const result = await getNoteById(id);
   if (!result.success) {
@@ -101,7 +127,7 @@ async function triggerCopyRichText(id: Id) {
       "[onTriggerCopyRichText]: Failed to fetch note data:",
       result.error,
     );
-    await showNotification("Failed to get html", "");
+    await showNotification("Failed to get rich text", "");
     return;
   }
   const html = generateHTML(result.data.content, getCachedEditorExtensions());
@@ -118,25 +144,7 @@ async function triggerCopyRichText(id: Id) {
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
     rendererLogger.appError(
-      "[onTriggerCopyMarkdown]: Failed to copy markdown:",
-      error,
-    );
-  }
-}
-
-async function triggerCopySelectionHtml() {
-  const { editor } = useCore("editor");
-  if (!editor) return;
-  const { state } = editor;
-  const { from, to } = state.selection;
-  if (from === to) return;
-  const html = getHTMLContentBetween(editor, from, to);
-  if (!html) return;
-  try {
-    await navigator.clipboard.writeText(html);
-  } catch (error) {
-    rendererLogger.appError(
-      "[triggerCopySelectionHtml]: Failed to copy selection as HTML:",
+      "[onTriggerCopyRichText]: Failed to copy markdown:",
       error,
     );
   }
@@ -264,13 +272,12 @@ async function triggerDuplicate(id: Id) {
 }
 
 export {
+  triggerCopyMarkdown,
   triggerCopyRichText,
-  triggerCopySelectionHtml,
   triggerCopySelectionMarkdown,
   triggerCopySelectionRichText,
   triggerDuplicate,
   triggerExtractToNote,
-  triggerNoteItemMenu,
   triggerPin,
   triggerSingleDelete,
   triggerSingleExport,

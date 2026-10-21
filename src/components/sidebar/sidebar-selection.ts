@@ -6,19 +6,20 @@ import {
   showNotification,
 } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
-import { updateSelectionUI } from "@/components/sidebar/sidebar-selection-ui";
+import {
+  getCachedEditorExtensions,
+  getMarkdownManager,
+} from "@/components/editor/editor-actions";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { confirmWithDialog, dialogMutex } from "@/settings/dialog-init";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { useDialog } from "@/utils/registry";
-import type { SelectionAction } from "@/utils/types";
-import { createGlobalSpinner } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { generateHTML, generateText } from "@tiptap/core";
+import { updateSelectionUI } from "./sidebar-ui";
 
 let selectionUpdatePending = false;
 
@@ -58,30 +59,59 @@ function addToSelection(id: Id) {
   });
 }
 
-async function getSelectionAction(
-  action: SelectionAction,
-  selectedIds: Set<Id>,
-) {
-  switch (action) {
-    case "cancel":
-      setSelectionMode(false);
+async function copyMarkdownSelection(selectedIds: Id[]) {
+  if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+  const { notes, noteIndex } = noteStore.getState();
+  const allSelected =
+    selectedIds.length === notes.length &&
+    selectedIds.every((id) => noteIndex.has(id));
+  const result = allSelected
+    ? await getAllBackup()
+    : await getManyById(selectedIds);
+  if (!result.success) {
+    rendererLogger.appError(
+      "[getAllBackup | getManyById]: Failed to get notes by id:",
+      result.error,
+    );
+    return;
+  }
+  let clipboardLimit = 0;
+  let truncated = false;
+  const clipboardCandidates: string[] = [];
+  const mdManager = getMarkdownManager();
+  for (const data of result.data) {
+    const md = mdManager.serialize(data.content);
+    if (!md.trim()) continue;
+    const separatorLength = clipboardCandidates.length > 0 ? 2 : 0;
+    const addedLength = md.length + separatorLength;
+    if (clipboardLimit + addedLength > MAX_CHARACTERS) {
+      truncated = true;
       break;
-    case "pin":
-      await pinSelection([...selectedIds]);
-      break;
-    case "export":
-      const loading = createGlobalSpinner();
-      await loading.wrap(() => exportSelection([...selectedIds]));
-      break;
-    case "copy-rich-text":
-      await copyRichTextSelection([...selectedIds]);
-      break;
-    case "delete":
-      await deleteSelection();
-      break;
-    default:
-      action satisfies never;
-      break;
+    }
+    clipboardCandidates.push(md);
+    clipboardLimit += md.length;
+  }
+  if (clipboardCandidates.length === 0) {
+    await showNotification("Failed to copy to clipboard", "Note is too long");
+    return;
+  }
+  try {
+    const markdown = clipboardCandidates.join("\n\n");
+    await navigator.clipboard.writeText(markdown);
+    if (truncated) {
+      await showNotification(
+        "Copied to clipboard",
+        `Only first ${clipboardCandidates.length} notes copied (size limit reached)`,
+      );
+    } else {
+      await showNotification("Copied to clipboard", "");
+    }
+  } catch (error) {
+    await showNotification("Failed to copy to clipboard", "");
+    rendererLogger.appError(
+      "[copyMarkdownSelection]: Failed to copy markdown:",
+      error,
+    );
   }
 }
 
@@ -96,17 +126,24 @@ async function copyRichTextSelection(selectedIds: Id[]) {
     : await getManyById(selectedIds);
   if (!result.success) {
     rendererLogger.appError(
-      "[copyMarkdownSelection -> getAllBackup | getManyById]: Failed to get notes by id:",
+      "[getAllBackup | getManyById]: Failed to get notes by id:",
       result.error,
     );
     return;
   }
   let clipboardLimit = 0;
+  let truncated = false;
   const clipboardCandidates: { html: string; text: string }[] = [];
   const extensions = getCachedEditorExtensions();
   for (const data of result.data) {
     const text = generateText(data.content, extensions).trim();
-    if (clipboardLimit + text.length > MAX_CHARACTERS) break;
+    if (!text.trim()) continue;
+    const separatorLength = clipboardCandidates.length > 0 ? 2 : 0;
+    const addedLength = text.length + separatorLength;
+    if (clipboardLimit + addedLength > MAX_CHARACTERS) {
+      truncated = true;
+      break;
+    }
     clipboardLimit += text.length;
     clipboardCandidates.push({
       html: generateHTML(data.content, extensions),
@@ -118,23 +155,22 @@ async function copyRichTextSelection(selectedIds: Id[]) {
     return;
   }
   try {
-    const html = clipboardCandidates
-      .map((item) => item.html)
-      .filter((t): t is string => !!t)
-      .join("\n<hr>\n");
-
-    const plain = clipboardCandidates
-      .map((item) => item.text)
-      .filter((t): t is string => !!t)
-      .join("\n\n");
-
+    const html = clipboardCandidates.map((item) => item.html).join("\n<hr>\n");
+    const plain = clipboardCandidates.map((item) => item.text).join("\n\n");
     await navigator.clipboard.write([
       new ClipboardItem({
         "text/html": new Blob([html], { type: "text/html" }),
         "text/plain": new Blob([plain], { type: "text/plain" }),
       }),
     ]);
-    await showNotification("Copied to clipboard", "");
+    if (truncated) {
+      await showNotification(
+        "Copied to clipboard",
+        `Only first ${clipboardCandidates.length} notes copied (size limit reached)`,
+      );
+    } else {
+      await showNotification("Copied to clipboard", "");
+    }
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
     rendererLogger.appError(
@@ -217,10 +253,8 @@ async function pinSelection(selectedIds: Id[]) {
   });
 }
 
-async function deleteSelection() {
+async function deleteSelection(ids: Id[]) {
   const { deleteDialog } = useDialog("deleteDialog");
-  const selectedIds = stateStore.get("selectedIds");
-  const ids = [...selectedIds];
   if (!Array.isArray(ids) || ids.length === 0) return;
   const confirmed = await dialogMutex.runExclusive(async () =>
     confirmWithDialog(
@@ -252,10 +286,10 @@ function updateSelection() {
 
 export {
   addToSelection,
+  copyMarkdownSelection,
   copyRichTextSelection,
   deleteSelection,
   exportSelection,
-  getSelectionAction,
   pinSelection,
   selectAllVisibleNotes,
   setSelectionMode,

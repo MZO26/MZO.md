@@ -72,12 +72,6 @@ function setUpEditorMenu(win: BrowserWindow) {
               );
             },
           },
-          {
-            label: "HTML",
-            click: () => {
-              win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_SELECTION_HTML);
-            },
-          },
         ],
       });
       pushOptionalSeparator(items);
@@ -284,7 +278,9 @@ function setUpTableMenu(win: BrowserWindow) {
 }
 
 async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
-  const { id, pinned } = payload;
+  const { selectedIds, selectionMode, pinned } = payload;
+  const noteLabel =
+    selectedIds.length > 1 ? `${selectedIds.length} Notes` : "Note";
   const noteItemMenu = Menu.buildFromTemplate([
     {
       label: "Copy...",
@@ -292,58 +288,106 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
         {
           label: "Rich Text",
           click: () =>
-            win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT, id),
+            win.webContents.send(
+              IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT,
+              selectedIds,
+            ),
+        },
+        {
+          label: "Markdown",
+          click: () =>
+            win.webContents.send(
+              IPC_CHANNELS.TRIGGER_COPY_MARKDOWN,
+              selectedIds,
+            ),
         },
       ],
     },
     { type: "separator" },
     {
-      label: "Select...",
-      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_SELECT, id),
+      label:
+        selectionMode && selectedIds.length > 0
+          ? `Clear selection (${selectedIds.length})`
+          : selectionMode
+            ? "Exit selection"
+            : "Select items...",
+      click: () =>
+        win.webContents.send(
+          IPC_CHANNELS.TRIGGER_SELECT,
+          selectionMode ? [] : selectedIds,
+        ),
     },
     {
-      label: pinned ? "Unpin Note" : "Pin to Top",
-      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_PIN, id),
+      label:
+        selectionMode && selectedIds.length > 1
+          ? `Toggle Pins (${selectedIds.length})`
+          : pinned
+            ? "Unpin"
+            : "Pin to top",
+      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_PIN, selectedIds),
     },
     {
       label: "Duplicate Note",
-      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_DUPLICATE, id),
+      visible: selectedIds.length === 1,
+      click: () =>
+        win.webContents.send(IPC_CHANNELS.TRIGGER_DUPLICATE, selectedIds),
     },
     { type: "separator" },
     {
-      label: "Export Note as...",
+      label: `Export ${noteLabel} as...`,
       submenu: [
         {
           label: "Markdown (.md)",
           click: () =>
-            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "md"),
+            win.webContents.send(
+              IPC_CHANNELS.TRIGGER_EXPORT,
+              selectedIds,
+              "md",
+            ),
         },
         {
           label: "HTML (.html)",
           click: () =>
-            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "html"),
+            win.webContents.send(
+              IPC_CHANNELS.TRIGGER_EXPORT,
+              selectedIds,
+              "html",
+            ),
         },
         {
           label: "JSON Document (.json)",
           click: () =>
-            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "json"),
+            win.webContents.send(
+              IPC_CHANNELS.TRIGGER_EXPORT,
+              selectedIds,
+              "json",
+            ),
         },
         {
           label: "Plain Text (.txt)",
           click: () =>
-            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "txt"),
+            win.webContents.send(
+              IPC_CHANNELS.TRIGGER_EXPORT,
+              selectedIds,
+              "txt",
+            ),
         },
         {
           label: "PDF (.pdf)",
           click: () =>
-            win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, id, "pdf"),
+            win.webContents.send(
+              IPC_CHANNELS.TRIGGER_EXPORT,
+              selectedIds,
+              "pdf",
+            ),
         },
       ],
     },
     { type: "separator" },
     {
-      label: "Delete Note",
-      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_DELETE, id),
+      label: `Delete ${noteLabel}`,
+      click: () =>
+        win.webContents.send(IPC_CHANNELS.TRIGGER_DELETE, selectedIds),
     },
   ]);
   return noteItemMenu;

@@ -139,7 +139,8 @@ const SearchResultSchema = NoteSchema.pick({
 }).extend({ search_match: QuerySchema, rank: z.number() });
 
 const NoteMenuPayloadSchema = z.object({
-  id: IdSchema,
+  selectedIds: IdsSchema,
+  selectionMode: BoolSchema.default(false),
   pinned: BoolSchema.optional(),
 });
 

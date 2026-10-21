@@ -1,11 +1,9 @@
-import { rendererLogger } from "@/app";
 import { setupSidebarFileDrop } from "@/components/sidebar/sidebar-file-drop";
 import { navigateSidebar } from "@/components/sidebar/sidebar-navigation";
 import { debouncedSearch } from "@/components/sidebar/sidebar-search";
 import {
   addToSelection,
   deleteSelection,
-  getSelectionAction,
   selectAllVisibleNotes,
   setSelectionMode,
 } from "@/components/sidebar/sidebar-selection";
@@ -18,7 +16,7 @@ import {
   waitForFlush,
 } from "@/notes/note-actions";
 import { localStore, noteStore, stateStore } from "@/state/state";
-import { NAV_KEYS, SELECTION_ACTIONS } from "@/utils/constants";
+import { NAV_KEYS } from "@/utils/constants";
 import { createAsyncHandler } from "@/utils/helpers";
 import { registerAppEvents, useUI } from "@/utils/registry";
 import {
@@ -26,19 +24,14 @@ import {
   isFocusActive,
   isSelectionActive,
 } from "@/utils/shortcuts";
-import type { SelectionAction } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 function initNotesSidebar(sidebar: HTMLDivElement) {
-  const { searchInput, selectionFooter, sidebarHeader } = useUI(
-    "searchInput",
-    "selectionFooter",
-    "sidebarHeader",
-  );
-  applySidebarListeners(sidebar, sidebarHeader, searchInput, selectionFooter);
+  const { searchInput, sidebarHeader } = useUI("searchInput", "sidebarHeader");
+  applySidebarListeners(sidebar, sidebarHeader, searchInput);
   setupSidebarFileDrop(sidebar);
   registerAppEvents(document, {
     [APP_EVENTS.TOGGLE_SIDEBAR]: () => {
@@ -53,20 +46,19 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
     [APP_EVENTS.SET_SELECTION_MODE]: () =>
       setSelectionMode(!isSelectionActive()),
     [APP_EVENTS.EXIT_SELECTION_MODE]: () => setSelectionMode(false),
-    [APP_EVENTS.DELETE_SELECTED]: deleteSelection,
+    [APP_EVENTS.DELETE_SELECTED]: async () => {
+      const { selectionMode, selectedIds } = stateStore.getState();
+      if (selectionMode === true && selectedIds.size > 0)
+        await deleteSelection([...selectedIds]);
+    },
     [APP_EVENTS.SELECT_ALL_VISIBLE]: selectAllVisibleNotes,
   });
-}
-
-function isValidAction(action: string): action is SelectionAction {
-  return SELECTION_ACTIONS.some((a) => a.id === action);
 }
 
 function applySidebarListeners(
   sidebar: HTMLDivElement,
   sidebarHeader: HTMLDivElement,
   searchInput: HTMLInputElement,
-  selectionFooter: HTMLDivElement,
 ) {
   resizeSidebar();
   sidebarHeader.addEventListener(
@@ -96,39 +88,21 @@ function applySidebarListeners(
     }),
   );
   searchInput.addEventListener("input", debouncedSearch);
-  selectionFooter.addEventListener(
-    "click",
-    createAsyncHandler(async (e) => {
-      if (!(e.target instanceof Element)) return;
-      const button = e.target.closest<HTMLButtonElement>("button[data-action]");
-      if (!button) return;
-      const selectedIds = stateStore.get("selectedIds");
-      const action = button.getAttribute("data-action");
-      if (!action) return;
-      if (!isValidAction(action)) {
-        rendererLogger.devLog(`${action} is not a valid action`);
-        return;
-      }
-      if (action !== "cancel" && selectedIds.size === 0) return;
-      await getSelectionAction(action, selectedIds);
-    }),
-  );
   sidebar.addEventListener("contextmenu", (e) => {
     if (!(e.target instanceof Element)) return;
-    if (stateStore.get("selectionMode") === true) return;
     const isEmptySidebar = noteStore.get("visibleIds").length === 0;
-    if (e.target === sidebar || isEmptySidebar) {
-      e.preventDefault();
-      return;
-    }
+    if (e.target === sidebar || isEmptySidebar) return;
     e.preventDefault();
     const noteElement = e.target.closest<HTMLDivElement>(".note-item");
     const id = noteElement?.getAttribute("data-id");
+    const { selectionMode, selectedIds } = stateStore.getState();
     if (!isNoteID(id) || !noteElement) return;
     const isPinned = noteElement.getAttribute("data-pinned") === "true";
     window.electronAPI.showContextMenu("note", {
-      id,
-      pinned: isPinned,
+      selectedIds:
+        selectionMode && selectedIds.size > 0 ? Array.from(selectedIds) : [id],
+      selectionMode,
+      pinned: !selectionMode ? isPinned : undefined,
     });
     return;
   });
@@ -144,9 +118,14 @@ function applySidebarListeners(
         const id = noteItem?.getAttribute("data-id");
         if (!isNoteID(id) || !noteItem) return;
         const isPinned = noteItem.getAttribute("data-pinned") === "true";
+        const { selectionMode, selectedIds } = stateStore.getState();
         window.electronAPI.showContextMenu("note", {
-          id,
-          pinned: isPinned,
+          selectedIds:
+            selectionMode && selectedIds.size > 0
+              ? Array.from(selectedIds)
+              : [id],
+          selectionMode,
+          pinned: !selectionMode ? isPinned : undefined,
         });
         return;
       }
