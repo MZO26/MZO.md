@@ -22,7 +22,7 @@ import path from "path";
 async function singleExport(filePath: string, data: ExportContent["content"]) {
   const absoluteTargetFolder = path.dirname(filePath);
   const userDataPath = app.getPath("userData");
-  const imagesFolder = path.join(userDataPath, "editor-images");
+  const imagesFolder = path.join(userDataPath, "Images");
   const portableContent = await sanitizeExportString(
     data,
     absoluteTargetFolder,
@@ -51,7 +51,7 @@ async function batchExport(folder: string, payload: ExportContent[]) {
   const absoluteTargetFolder = path.resolve(folder);
   await fs.mkdir(absoluteTargetFolder, { recursive: true });
   const userDataPath = app.getPath("userData");
-  const imagesFolder = path.join(userDataPath, "editor-images");
+  const imagesFolder = path.join(userDataPath, "Images");
   const assetsDir = path.join(absoluteTargetFolder, "assets");
   const isPdf = uniqueExtensions.has("pdf");
   const limit = isPdf ? 1 : 3;
@@ -60,7 +60,7 @@ async function batchExport(folder: string, payload: ExportContent[]) {
   for (const p of payload) {
     const count = fileMap.get(p.fileName) ?? 0;
     fileMap.set(p.fileName, count + 1);
-    const fileName = count === 0 ? p.fileName : `${p.fileName}(${count})`;
+    const fileName = count === 0 ? p.fileName : `${p.fileName} (${count})`;
     updatedPayload.push({ ...p, fileName });
   }
   let hiddenWin: BrowserWindow | null = null;
@@ -118,14 +118,19 @@ async function batchExport(folder: string, payload: ExportContent[]) {
   }
 }
 
-async function exportPDFNote(params: {
+type GeneratePDFParams = {
   win: BrowserWindow;
   landscape: boolean;
-  filePath: string;
   html: string;
   assets: PDFAssets;
-}) {
-  const { win, landscape, filePath, html, assets } = params;
+};
+
+type ExportPDFParams = GeneratePDFParams & { filePath: string };
+
+async function generatePDFBuffer(params: GeneratePDFParams): Promise<Buffer> {
+  const { win, landscape, html, assets } = params;
+  if (!win || win.isDestroyed() || win.webContents.isDestroyed())
+    throw new AppBackendError(AppErrorCode.CancelledOperation);
   const pdfOptions: PrintToPDFOptions = {
     pageSize: "A4",
     printBackground: true,
@@ -133,12 +138,17 @@ async function exportPDFNote(params: {
   };
   const htmlString = renderPDFCanvas(html, assets);
   const encoded = Buffer.from(htmlString, "utf8").toString("base64");
-  if (win && !win.isDestroyed() && !win.webContents.isDestroyed())
-    await win.loadURL(`data:text/html;base64,${encoded}`);
-  const pdfBuffer = await win.webContents.printToPDF(pdfOptions);
+  await win.loadURL(`data:text/html;base64,${encoded}`);
+  return await win.webContents.printToPDF(pdfOptions);
+}
+
+async function exportPDFNote(params: ExportPDFParams): Promise<string> {
+  const { filePath, ...generateParams } = params;
+  const pdfBuffer = await generatePDFBuffer(generateParams);
   try {
     await withRetry(writeAtomic)(filePath, pdfBuffer);
   } catch (error) {
+    mainLogger.appError("Failed to export PDF note", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }
   return filePath;

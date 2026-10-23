@@ -13,7 +13,7 @@ import path from "path";
 
 async function batchImport(filePaths: string[]) {
   const userDataPath = app.getPath("userData");
-  const imagesFolder = path.join(userDataPath, "editor-images");
+  const imagesFolder = path.join(userDataPath, "Images");
   await fs.mkdir(imagesFolder, { recursive: true });
   const uniqueFilePaths = Array.from(new Set<string>(filePaths));
   const seenFileNames = new Set<string>();

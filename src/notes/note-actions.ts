@@ -17,11 +17,9 @@ import {
 import { initEditorContent } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
+import { addHeadingToDoc } from "@/extensions/overrides/headings";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
-import {
-  addHeadingToDoc,
-  downgradeDocLinks,
-} from "@/extensions/wikilink/wikilink-handler";
+import { downgradeDocLinks } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
 import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";

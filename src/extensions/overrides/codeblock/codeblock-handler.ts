@@ -36,7 +36,6 @@ export const CodeblockHandler = Extension.create({
             }
             return true;
           }
-          // no special logic to handle
           if (!opener || !closeChar) return false;
           if (!empty) {
             if (dispatch) {

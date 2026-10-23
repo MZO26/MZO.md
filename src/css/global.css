@@ -238,8 +238,8 @@ button {
 }
 
 button:hover {
-  background-color: var(--bg-editor);
-  border-color: var(--border-color);
+  background-color: var(--selection-bg);
+  border-color: var(--border-subtle);
   box-shadow: var(--shadow);
 }
 
@@ -249,9 +249,9 @@ button:active {
 
 button.is-active,
 button:focus-within {
-  background-color: var(--bg-editor);
   color: var(--text-muted);
   box-shadow: var(--shadow);
+  border-color: var(--border-color);
   font-weight: bold;
 }
 

@@ -157,7 +157,7 @@ async function setSettings(
 // electron api
 
 async function setTheme(
-  theme: Readonly<Theme>,
+  theme: Theme,
   focus?: boolean,
 ): Promise<Result<Exclude<Theme, "system">>> {
   return invoke(window.electronAPI.setTheme(theme, focus));

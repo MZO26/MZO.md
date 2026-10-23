@@ -1,3 +1,4 @@
+import type { JSONContent } from "@tiptap/core";
 import Heading from "@tiptap/extension-heading";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 
@@ -40,4 +41,20 @@ const CustomHeading = Heading.extend({
   },
 });
 
-export { CustomHeading };
+function addHeadingToDoc(doc: JSONContent, titleText: string): JSONContent {
+  if (!titleText) return doc;
+  const content = [...(doc.content || [])];
+  const headingNode = {
+    type: "heading",
+    attrs: { level: 1 },
+    content: [{ type: "text", text: titleText }],
+  };
+  if (content[0]?.type === "heading") {
+    content[0] = headingNode;
+  } else {
+    content.unshift(headingNode);
+  }
+  return { ...doc, content };
+}
+
+export { addHeadingToDoc, CustomHeading };

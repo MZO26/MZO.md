@@ -1,5 +1,6 @@
 import { setUpEditorMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
+import { initBackupScheduler } from "@electron/fs/fs-backup";
 import { setupGlobalErrorHandling } from "@electron/handler/global-handler";
 import {
   navigationHandler,
@@ -156,6 +157,8 @@ app.whenReady().then(async () => {
   await createWindow();
   setupLocalImageProtocol();
   setPermissions();
+  const backupDir = path.join(app.getPath("userData"), "Backups");
+  initBackupScheduler(backupDir);
   if (win) {
     registerIpc(win);
     setUpEditorMenu(win);

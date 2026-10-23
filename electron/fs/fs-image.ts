@@ -11,7 +11,7 @@ type UniqueImageWrite = { filePath: string; imageBuffer: Buffer };
 
 async function handleImageWriteMany(validatedData: ImagePayload[]) {
   const userDataPath = app.getPath("userData");
-  const imagesFolder = path.join(userDataPath, "editor-images");
+  const imagesFolder = path.join(userDataPath, "Images");
   await fs.mkdir(imagesFolder, { recursive: true });
   const prepared = validatedData.map((image) => {
     const imageBuffer = Buffer.from(image.imageData);
@@ -53,7 +53,7 @@ async function handleImageWriteMany(validatedData: ImagePayload[]) {
 async function removeUnusedImages(hashes: string[]) {
   if (!hashes || hashes.length === 0) return;
   const userDataPath = app.getPath("userData");
-  const imagesFolder = path.join(userDataPath, "editor-images");
+  const imagesFolder = path.join(userDataPath, "Images");
   await fs.mkdir(imagesFolder, { recursive: true });
   await processWithLimit(hashes, 5, async (file) => {
     const filePath = path.join(imagesFolder, file);

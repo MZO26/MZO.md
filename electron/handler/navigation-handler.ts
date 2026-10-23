@@ -23,7 +23,7 @@ function registerCustomProtocol() {
 }
 
 async function setupLocalImageProtocol() {
-  const imagesDir = path.join(app.getPath("userData"), "editor-images");
+  const imagesDir = path.join(app.getPath("userData"), "Images");
   let realImagesDir: string;
   try {
     await fs.mkdir(imagesDir, { recursive: true });

@@ -294,25 +294,8 @@ function addActiveLinkToDoc(
   return { ...doc, content };
 }
 
-function addHeadingToDoc(doc: JSONContent, titleText: string): JSONContent {
-  if (!titleText) return doc;
-  const content = [...(doc.content || [])];
-  const headingNode = {
-    type: "heading",
-    attrs: { level: 1 },
-    content: [{ type: "text", text: titleText }],
-  };
-  if (content[0]?.type === "heading") {
-    content[0] = headingNode;
-  } else {
-    content.unshift(headingNode);
-  }
-  return { ...doc, content };
-}
-
 export {
   addActiveLinkToDoc,
-  addHeadingToDoc,
   downgradeDocLinks,
   resolveDocLinks,
   resolveGhostLink,

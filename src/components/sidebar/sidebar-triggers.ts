@@ -55,17 +55,6 @@ function triggerTableMenu(action: TableAction) {
   }
 }
 
-// function triggerNoteItemMenu(payload: NoteMenuPayload) {
-//   const { sidebar } = useCore("sidebar");
-//   const noteElement = sidebar.querySelector<HTMLDivElement>(
-//     `.note-item[data-id="${CSS.escape(payload.id)}"]`,
-//   );
-//   if (!noteElement) return;
-//   if (payload.pinned !== undefined) {
-//     noteElement.dataset["pinned"] = String(!!payload.pinned);
-//   }
-// }
-
 async function triggerSingleExport(
   id: Id,
   extension: ExportContent["extension"],

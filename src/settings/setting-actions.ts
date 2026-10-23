@@ -28,7 +28,7 @@ async function applyAppTheme(
       "[applyAppTheme]: Failed to apply theme:",
       result.error,
     );
-    return { success: false, error: result.error };
+    return result;
   }
   document.documentElement.dataset["theme"] = result.data;
   const codePreference = settingsStore.get("code_theme");
