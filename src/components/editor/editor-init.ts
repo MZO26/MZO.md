@@ -41,7 +41,6 @@ import { NoteTagHandler } from "@/extensions/tag/tag-handler";
 import { TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
 import {
-  downgradeDocLinks,
   resolveDocLinks,
   resolveGhostLink,
   WikilinkHandler,
@@ -57,12 +56,7 @@ import { requireElement } from "@/utils/dom";
 import { checkNoteSize } from "@/utils/note-helpers";
 import { useCore } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
-import {
-  isNoteID,
-  type Id,
-  type Note,
-  type NoteListItem,
-} from "@shared/schemas/note-schema";
+import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
@@ -272,22 +266,14 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
 
 type EditorInitContentParams = {
   note: Readonly<Note>;
-  noteIndex: Map<Id, NoteListItem>;
   editor: Editor;
 };
 
-async function initEditorContent({
-  note,
-  noteIndex,
-  editor,
-}: EditorInitContentParams) {
+async function initEditorContent({ note, editor }: EditorInitContentParams) {
   try {
     await checkNoteSize(note.content);
     recreateEditorState(editor, note.content);
     resolveDocLinks(note);
-    if (note.links.some((l) => l.id && !noteIndex.has(l.id))) {
-      downgradeDocLinks(noteIndex);
-    }
     updateStats(editor);
   } catch (error) {
     rendererLogger.appError("Invalid Editor content:", error);

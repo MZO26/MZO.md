@@ -14,8 +14,8 @@ import {
 import { stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { createAsyncHandler } from "@/utils/helpers";
-import { registerAppEvents } from "@/utils/registry";
 import { isFocusActive } from "@/utils/shortcuts";
+import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 function initToolbar(editorContainer: HTMLDivElement) {
@@ -36,12 +36,10 @@ function initTopToolbar(appContainer: HTMLDivElement) {
     "click",
     createAsyncHandler(async () => await setWindowTop(appPinBtn)),
   );
-  registerAppEvents(document, {
-    [APP_EVENTS.SET_EDITOR_WIDTH]: () => setEditorWidth(appContainer),
-    [APP_EVENTS.TOGGLE_FOCUS_MODE]: () => {
-      const newState = !isFocusActive();
-      stateStore.setState({ focus: newState });
-    },
+  appEvents.on(APP_EVENTS.SET_EDITOR_WIDTH, () => setEditorWidth(appContainer));
+  appEvents.on(APP_EVENTS.TOGGLE_FOCUS_MODE, () => {
+    const newState = !isFocusActive();
+    stateStore.setState({ focus: newState });
   });
 }
 

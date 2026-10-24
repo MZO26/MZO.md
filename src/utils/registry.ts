@@ -1,7 +1,6 @@
 import { initEditor } from "@/components/editor/editor-init";
 import { requireElement } from "@/utils/dom";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import type { AppEvent } from "@shared/shared-types";
 import type { Editor } from "@tiptap/core";
 
 interface AppRegistry {
@@ -94,19 +93,6 @@ function toRegistry<T extends keyof AppRegistry>(registryKey: T) {
   };
 }
 
-function registerAppEvents(
-  target: EventTarget,
-  events: Partial<Record<AppEvent, EventListener>>,
-) {
-  // ts only infers string from for in loop / object.keys (structural typing)
-  // so cast as AppEvents is necessary
-  for (const eventName in events) {
-    const handler = events[eventName as AppEvent];
-    if (!handler) continue;
-    target.addEventListener(eventName, handler);
-  }
-}
-
 function initCoreRegistry(settings: Readonly<AppSettings>) {
   toRegistry("core")({
     appContainer: requireElement<HTMLDivElement>(".app-container"),
@@ -176,7 +162,6 @@ export {
   initDialogRegistry,
   initTemplateRegistry,
   initUIRegistry,
-  registerAppEvents,
   toRegistry,
   useCore,
   useDialog,

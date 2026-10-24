@@ -12,9 +12,10 @@ import { createInfoSpan } from "@/utils/dom";
 import { truncateTitle } from "@/utils/generators";
 import { createAsyncHandler, debounce, waitForPaint } from "@/utils/helpers";
 import { normalizeText } from "@/utils/note-helpers";
-import { registerAppEvents, useDialog } from "@/utils/registry";
+import { useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayNote } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
+import { appEvents } from "@shared/event-emitter";
 import {
   isNoteID,
   type Id,
@@ -416,15 +417,17 @@ function initQuickSwitcher(editor: Editor) {
           activeTitle: truncateTitle(value),
           shouldNavigate: true,
         });
+        editor.commands.focus();
         restoreSidebarScope();
       }
     }),
   );
   switchListEl.addEventListener("click", handleListClick);
   document.addEventListener("keydown", handleDocumentKeydown);
-  registerAppEvents(document, {
-    [APP_EVENTS.TOGGLE_QUICK_SWITCH]: toggleSwitcher,
-  });
+  appEvents.on(
+    APP_EVENTS.TOGGLE_QUICK_SWITCH,
+    async () => await toggleSwitcher(),
+  );
 }
 
 export { initQuickSwitcher };

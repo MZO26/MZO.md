@@ -2,7 +2,6 @@ import { noteStore } from "@/state/state";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import { UNTITLED } from "@shared/shared-constants";
 import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
-import { TextSelection } from "@tiptap/pm/state";
 
 const UUID_PATTERN = "([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})";
 const INPUT_REGEX = /(?<!!)\[\[([^\]]+)\]\]$/;
@@ -148,16 +147,22 @@ const WikiLink = Node.create<WikiLinkOptions>({
     return {
       insertWikiLink:
         ({ from, to, id, title }) =>
-        ({ tr, dispatch }) => {
-          const node = this.type.create({ id, title });
-          if (dispatch) {
-            tr.replaceWith(from, to, node)
-              .insertText(" ", from + node.nodeSize)
-              .setSelection(
-                TextSelection.create(tr.doc, from + node.nodeSize + 1),
-              );
-          }
-          return true;
+        ({ chain }) => {
+          return chain()
+            .deleteRange({ from, to })
+            .command(({ state, commands }) => {
+              const { $from } = state.selection;
+              const empty =
+                $from.parent.content.size === 0 &&
+                ($from.parent.type.name !== "paragraph" || $from.depth > 1);
+              if (empty) return commands.clearNodes();
+              return true;
+            })
+            .insertContent([
+              { type: this.name, attrs: { id, title } },
+              { type: "text", text: " " },
+            ])
+            .run();
         },
     };
   },

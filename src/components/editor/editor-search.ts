@@ -3,7 +3,7 @@ import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
 import { debounce, waitForPaint } from "@/utils/helpers";
-import { registerAppEvents } from "@/utils/registry";
+import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
 
@@ -242,10 +242,7 @@ function initEditorSearch(
   }, DEBOUNCE_MS.normal);
 
   input.addEventListener("input", debouncedSearch);
-
-  registerAppEvents(document, {
-    [APP_EVENTS.TOGGLE_EDITOR_SEARCH]: toggle,
-  });
+  appEvents.on(APP_EVENTS.TOGGLE_EDITOR_SEARCH, toggle);
 }
 
 export { initEditorSearch };

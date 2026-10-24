@@ -2,25 +2,23 @@ import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codebloc
 import { promptImageUpload } from "@/extensions/overrides/image/image";
 import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
 import type { ActionMap } from "@/utils/types";
+import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 const TOP_TOOLBAR_ACTIONS: ActionMap = {
   editorWidth: {
     type: "action",
-    run: () =>
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.SET_EDITOR_WIDTH)),
+    run: () => appEvents.emit(APP_EVENTS.SET_EDITOR_WIDTH),
     icon: "RulerDimensionLine",
   },
   focus: {
     type: "action",
-    run: () =>
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_FOCUS_MODE)),
+    run: () => appEvents.emit(APP_EVENTS.TOGGLE_FOCUS_MODE),
     icon: "Focus",
   },
   toggleToolbar: {
     type: "action",
-    run: () =>
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_TOOLBAR)),
+    run: () => appEvents.emit(APP_EVENTS.TOGGLE_TOOLBAR),
     icon: "ArrowDownFromLine",
   },
 };
@@ -29,8 +27,7 @@ const TOP_TOOLBAR_ACTIONS: ActionMap = {
 
 const TOOLBAR_ACTIONS: ActionMap = {
   toggleSidebar: {
-    run: () =>
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_SIDEBAR)),
+    run: () => appEvents.emit(APP_EVENTS.TOGGLE_SIDEBAR),
     icon: "ArrowLeftFromLine",
   },
   undo: {
@@ -44,13 +41,11 @@ const TOOLBAR_ACTIONS: ActionMap = {
     icon: "Redo2",
   },
   search: {
-    run: () =>
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_EDITOR_SEARCH)),
+    run: () => appEvents.emit(APP_EVENTS.TOGGLE_EDITOR_SEARCH),
     icon: "Search",
   },
   quickSwitch: {
-    run: () =>
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_QUICK_SWITCH)),
+    run: () => appEvents.emitAsync(APP_EVENTS.TOGGLE_QUICK_SWITCH),
     icon: "FileClock",
   },
   divider1: { type: "divider" },

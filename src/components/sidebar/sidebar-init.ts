@@ -18,13 +18,14 @@ import {
 import { localStore, noteStore, stateStore } from "@/state/state";
 import { NAV_KEYS } from "@/utils/constants";
 import { createAsyncHandler } from "@/utils/helpers";
-import { registerAppEvents, useUI } from "@/utils/registry";
+import { useUI } from "@/utils/registry";
 import {
   isEditorFocused,
   isFocusActive,
   isSelectionActive,
 } from "@/utils/shortcuts";
 import { createGlobalSpinner } from "@/utils/ui";
+import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
@@ -33,26 +34,27 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
   const { searchInput, sidebarHeader } = useUI("searchInput", "sidebarHeader");
   applySidebarListeners(sidebar, sidebarHeader, searchInput);
   setupSidebarFileDrop(sidebar);
-  registerAppEvents(document, {
-    [APP_EVENTS.TOGGLE_SIDEBAR]: () => {
-      localStore.setState((state) => ({
-        ...state,
-        sidebarCollapsed: !state.sidebarCollapsed,
-      }));
-    },
-    [APP_EVENTS.CREATE_NEW_NOTE]: async () =>
-      await handleCreateNote({ shouldNavigate: true }),
-    [APP_EVENTS.FOCUS_GLOBAL_SEARCH]: () => searchInput.focus(),
-    [APP_EVENTS.SET_SELECTION_MODE]: () =>
-      setSelectionMode(!isSelectionActive()),
-    [APP_EVENTS.EXIT_SELECTION_MODE]: () => setSelectionMode(false),
-    [APP_EVENTS.DELETE_SELECTED]: async () => {
-      const { selectionMode, selectedIds } = stateStore.getState();
-      if (selectionMode === true && selectedIds.size > 0)
-        await deleteSelection([...selectedIds]);
-    },
-    [APP_EVENTS.SELECT_ALL_VISIBLE]: selectAllVisibleNotes,
+  appEvents.on(APP_EVENTS.TOGGLE_SIDEBAR, () => {
+    localStore.setState((state) => ({
+      ...state,
+      sidebarCollapsed: !state.sidebarCollapsed,
+    }));
   });
+  appEvents.on(
+    APP_EVENTS.CREATE_NEW_NOTE,
+    async () => await handleCreateNote({ shouldNavigate: true }),
+  );
+  appEvents.on(APP_EVENTS.FOCUS_GLOBAL_SEARCH, () => searchInput.focus());
+  appEvents.on(APP_EVENTS.SET_SELECTION_MODE, () =>
+    setSelectionMode(!isSelectionActive()),
+  );
+  appEvents.on(APP_EVENTS.EXIT_SELECTION_MODE, () => setSelectionMode(false));
+  appEvents.on(APP_EVENTS.DELETE_SELECTED, async () => {
+    const { selectionMode, selectedIds } = stateStore.getState();
+    if (selectionMode === true && selectedIds.size > 0)
+      await deleteSelection([...selectedIds]);
+  });
+  appEvents.on(APP_EVENTS.SELECT_ALL_VISIBLE, selectAllVisibleNotes);
 }
 
 function applySidebarListeners(

@@ -1,5 +1,6 @@
 import { handleZoom } from "@/api/api";
 import { stateStore } from "@/state/state";
+import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 function isFocusActive() {
@@ -37,55 +38,55 @@ function initGlobalShortcuts() {
     }
     if (isMod && key === ".") {
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_TOOLBAR));
+      appEvents.emit(APP_EVENTS.TOGGLE_TOOLBAR);
       return;
     }
     if (isMod && key === "o") {
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_SIDEBAR));
+      appEvents.emit(APP_EVENTS.TOGGLE_SIDEBAR);
       return;
     }
     if (isMod && key === "w") {
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.SET_EDITOR_WIDTH));
+      appEvents.emit(APP_EVENTS.SET_EDITOR_WIDTH);
       return;
     }
     if (isMod && key === "g") {
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.FOCUS_GLOBAL_SEARCH));
+      appEvents.emit(APP_EVENTS.FOCUS_GLOBAL_SEARCH);
       return;
     }
     if (isMod && key === ",") {
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.OPEN_SETTINGS));
+      appEvents.emit(APP_EVENTS.OPEN_SETTINGS);
       return;
     }
     if (isMod && key === "n") {
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.CREATE_NEW_NOTE));
+      appEvents.emitAsync(APP_EVENTS.CREATE_NEW_NOTE);
       return;
     }
     if (key === "F11") {
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_FOCUS_MODE));
+      appEvents.emit(APP_EVENTS.TOGGLE_FOCUS_MODE);
       return;
     }
     if (isMod && e.key === "s") {
       if (isEditorFocused(e.target)) return;
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.SET_SELECTION_MODE));
+      appEvents.emit(APP_EVENTS.SET_SELECTION_MODE);
       return;
     }
     if (isSelectionActive() && key === "Backspace") {
       if (isEditorFocused(e.target)) return;
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.DELETE_SELECTED));
+      appEvents.emitAsync(APP_EVENTS.DELETE_SELECTED);
       return;
     }
     if (isSelectionActive() && isMod && key === "a") {
       if (isEditorFocused(e.target)) return;
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent(APP_EVENTS.SELECT_ALL_VISIBLE));
+      appEvents.emit(APP_EVENTS.SELECT_ALL_VISIBLE);
       return;
     }
     if (key === "Escape") {
@@ -97,12 +98,12 @@ function initGlobalShortcuts() {
       }
       if (isSelectionActive()) {
         e.preventDefault();
-        document.dispatchEvent(new CustomEvent(APP_EVENTS.EXIT_SELECTION_MODE));
+        appEvents.emit(APP_EVENTS.EXIT_SELECTION_MODE);
         return;
       }
       if (isFocusActive()) {
         e.preventDefault();
-        document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_FOCUS_MODE));
+        appEvents.emit(APP_EVENTS.TOGGLE_FOCUS_MODE);
         return;
       }
     }

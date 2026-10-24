@@ -11,8 +11,9 @@ import { setSelectListeners } from "@/settings/setting-items-init";
 import { QUICK_ACTIONS } from "@/utils/constants";
 import { requireElement, setActiveItem } from "@/utils/dom";
 import { createAsyncHandler } from "@/utils/helpers";
-import { registerAppEvents, useDialog } from "@/utils/registry";
+import { useDialog } from "@/utils/registry";
 import type { QuickAction } from "@/utils/types";
+import { appEvents } from "@shared/event-emitter";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
 
@@ -42,9 +43,7 @@ async function initAppSettings(settings: Readonly<AppSettings>) {
     quickActionsContainer,
     githubRef,
   );
-  registerAppEvents(document, {
-    [APP_EVENTS.OPEN_SETTINGS]: () => settingsDialog.showModal(),
-  });
+  appEvents.on(APP_EVENTS.OPEN_SETTINGS, () => settingsDialog.showModal());
 }
 
 function isValidQuickAction(action: string): action is QuickAction {

@@ -1,12 +1,13 @@
 import { localStore } from "@/state/state";
 import { createIconButton } from "@/utils/dom";
-import { registerAppEvents, useCore } from "@/utils/registry";
+import { useCore } from "@/utils/registry";
 import type {
   Action,
   ActionMap,
   ActiveStateParams,
   ToolbarItem,
 } from "@/utils/types";
+import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 let cachedActions: [string, Action][] | null = null;
@@ -81,13 +82,11 @@ function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
       updateActiveStates({ buttonElements: buttonMap, actions, editor });
     }
   });
-  registerAppEvents(document, {
-    [APP_EVENTS.TOGGLE_TOOLBAR]: async () => {
-      localStore.setState((state) => ({
-        ...state,
-        toolbarCollapsed: !state.toolbarCollapsed,
-      }));
-    },
+  appEvents.on(APP_EVENTS.TOGGLE_TOOLBAR, async () => {
+    localStore.setState((state) => ({
+      ...state,
+      toolbarCollapsed: !state.toolbarCollapsed,
+    }));
   });
 }
 

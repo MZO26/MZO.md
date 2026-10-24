@@ -31,6 +31,7 @@ import {
 } from "@/utils/generators";
 import { debounce, omitKeys } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
+import { appEvents } from "@shared/event-emitter";
 import {
   type CreateNotePayload,
   type Id,
@@ -87,7 +88,6 @@ async function handleCreateNote(options?: {
   if (options?.shouldNavigate) {
     stateStore.setState({ activeId: result.data.id, hoverId: null });
     recreateEditorState(editor, editorContent);
-    editor.commands.focus();
     updateStats(editor);
     const { cursorPos, scrollPos } = getEditorPos(editor, editorWrapper);
     localStore.setState((state) => ({
@@ -358,7 +358,7 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
     return;
   }
   const noteIndex = noteStore.get("noteIndex");
-  await initEditorContent({ note: result.data, noteIndex, editor });
+  await initEditorContent({ note: result.data, editor });
   if (stateStore.get("activeId") !== id) return;
   editor.setEditable(true, false);
   setSelection(editor, editorWrapper, result.data.id);
@@ -375,7 +375,7 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   }
   const globalQuery = stateStore.get("searchQuery");
   if (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH)
-    document.dispatchEvent(new CustomEvent(APP_EVENTS.TOGGLE_EDITOR_SEARCH));
+    appEvents.emit(APP_EVENTS.TOGGLE_EDITOR_SEARCH);
 }
 
 async function handleExtractToNote(id: Id, content: JSONContent) {
