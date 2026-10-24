@@ -42,7 +42,7 @@ class EventManager<
     ...args: [T[K]] extends [void] ? [] : [payload: T[K]]
   ) {
     const listeners = this.store.get(event);
-    if (!listeners) return;
+    if (!listeners || listeners.size === 0) return;
     for (const cb of new Set(listeners)) {
       cb(...args);
     }
@@ -51,10 +51,10 @@ class EventManager<
   public async emitAsync<K extends keyof T>(
     event: K,
     ...args: [T[K]] extends [void] ? [] : [payload: T[K]]
-  ) {
+  ): Promise<void> {
     const listeners = this.store.get(event);
-    if (!listeners || listeners.size === 0) return [];
-    return Promise.allSettled(
+    if (!listeners || listeners.size === 0) return;
+    await Promise.allSettled(
       Array.from(listeners, (cb) => Promise.try(cb, ...args)),
     );
   }

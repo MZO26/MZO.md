@@ -12,11 +12,6 @@ import type {
 } from "@shared/shared-constants";
 import type { Editor, SetContentOptions } from "@tiptap/core";
 
-type LinkAttributes = {
-  href?: string;
-  url?: string;
-};
-
 type MathOptions =
   | {
       mode: "insert";
@@ -30,7 +25,7 @@ type MathOptions =
       initialValue?: string;
     };
 
-type SelectOption<T extends Readonly<string | boolean>> = {
+type SelectOption<T extends string | boolean> = {
   value: T;
   label: string;
 };
@@ -177,7 +172,6 @@ export type {
   FilterMode,
   ImageCompressionPayload,
   ImageContent,
-  LinkAttributes,
   MappedMatches,
   MathOptions,
   QuickAction,

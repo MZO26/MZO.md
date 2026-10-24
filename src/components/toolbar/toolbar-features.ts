@@ -4,13 +4,13 @@ import { useCore } from "@/utils/registry";
 
 const widths = ["comfortable", "normal", "wide"] as const;
 
-function isValidWith(width: unknown): width is (typeof widths)[number] {
+function isValidWidth(width: unknown): width is (typeof widths)[number] {
   return widths.some((w) => w === width);
 }
 
 function setEditorWidth(container: HTMLDivElement) {
   const current = container.getAttribute("data-width") || "normal";
-  if (isValidWith(current)) {
+  if (isValidWidth(current)) {
     const index = widths.indexOf(current);
     const next = widths[(index + 1) % widths.length];
     if (!next) return;

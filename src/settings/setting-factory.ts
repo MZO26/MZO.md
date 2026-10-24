@@ -42,7 +42,6 @@ function selectBuilder<K extends ValidSelectKeys<Readonly<AppSettings>>>(
   settingsContainer.appendChild(row);
 }
 
-// builds the button palette and wraps it into the button container
 function createSettingsMenu() {
   const createSettingsButton = (category: SettingsCategory, icon: AppIcons) => {
     const btn = createIconButton(icon, category);
