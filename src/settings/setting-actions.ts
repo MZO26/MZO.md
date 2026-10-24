@@ -1,8 +1,16 @@
-import { setSettings, setTheme } from "@/api/api";
+import {
+  databaseBackup,
+  databaseBackupRestore,
+  openAppPath,
+  setSettings,
+  setTheme,
+  showNotification,
+} from "@/api/api";
 import { rendererLogger } from "@/app";
 import { settingsStore } from "@/state/state";
 import { CODE_THEME_MAP, THEME_MAP } from "@/utils/constants";
 import { isFocusActive } from "@/utils/shortcuts";
+import type { QuickAction } from "@/utils/types";
 import type {
   AppSettings,
   CodeTheme,
@@ -109,11 +117,54 @@ async function handleUpdateSettings(settings: Partial<Readonly<AppSettings>>) {
   settingsStore.setState(settings);
 }
 
+async function getQuickAction(action: QuickAction) {
+  switch (action) {
+    case "open-path":
+      const open = await openAppPath();
+      if (!open.success) {
+        rendererLogger.appError(
+          "[quickActions -> open-path]: Failed to open app path:",
+          open.error,
+        );
+        return;
+      }
+      break;
+    case "backup-db":
+      const dbBackup = await databaseBackup();
+      if (!dbBackup.success) {
+        rendererLogger.appError(
+          "[quickActions -> backup-db]: Failed to backup db:",
+          dbBackup.error,
+        );
+        await showNotification("Failed to save Backup", "");
+        return;
+      }
+      await showNotification("Backup saved", "");
+      return;
+    case "backup-db-restore":
+      const restore = await databaseBackupRestore();
+      if (!restore.success) {
+        rendererLogger.appError(
+          "[quickActions -> backup-db-restore]: Failed to restore db:",
+          restore.error,
+        );
+        await showNotification("Failed to restore Backup", "");
+        return;
+      }
+      await showNotification("Backup restored", "");
+      return;
+    default:
+      action satisfies never;
+      break;
+  }
+}
+
 export {
   applyAppTheme,
   applyFontFamily,
   applyFontSize,
   applyLineHeight,
+  getQuickAction,
   handleUpdateSettings,
   resolveTheme,
 };

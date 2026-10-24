@@ -254,7 +254,6 @@ function resolveDocLinks(note: Readonly<Note>) {
 
 function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
   const { editor } = useCore("editor");
-  if (!editor || editor.isDestroyed) return;
   editor.commands.command(({ tr, state, dispatch }) => {
     let modified = false;
     state.doc.descendants((node, pos) => {

@@ -240,9 +240,10 @@ async function handleDeleteNote(id: Id) {
   });
   if (!isActiveDeletedId && activeId) {
     const noteIndex = noteStore.get("noteIndex");
-    const needsDowngrade =
-      noteIndex.get(activeId)?.links?.some((l) => l.id === id) ?? false;
-    if (needsDowngrade) downgradeDocLinks(noteIndex);
+    const links = noteIndex.get(activeId)?.links;
+    if (links?.some((l) => l.id && !noteIndex.has(l.id))) {
+      downgradeDocLinks(noteIndex);
+    }
   }
 }
 
@@ -361,6 +362,7 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   if (stateStore.get("activeId") !== id) return;
   editor.setEditable(true, false);
   setSelection(editor, editorWrapper, result.data.id);
+  downgradeDocLinks(noteIndex);
   if (!options?.skipRecent) {
     noteStore.setState((state) => {
       const recentNotes = state.recentNotes.filter(

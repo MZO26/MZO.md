@@ -333,6 +333,21 @@
   flex-direction: row;
 }
 
+.settings-link {
+  margin-top: 20px;
+  color: var(--tag-color);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+
+.settings-app-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
 .settings-title {
   font-weight: 800;
   color: var(--text-main);

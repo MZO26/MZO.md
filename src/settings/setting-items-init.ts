@@ -1,7 +1,6 @@
 import { rendererLogger } from "@/app";
 import {
   CODE_THEME_SETTINGS,
-  EXPORT_FORMAT_SETTINGS,
   FONT_FAMILY_SETTINGS,
   FONT_SIZE_SETTINGS,
   HIGHLIGHT_THEME_SETTINGS,
@@ -25,7 +24,6 @@ import type {
   AppearanceKeys,
   AppSettings,
   EditorKeys,
-  GeneralKey,
 } from "@shared/schemas/store-schema";
 
 function initAppearanceSettings(
@@ -202,35 +200,12 @@ function initEditorSettings(
   );
 }
 
-function initGeneralSettings(
-  settings: Readonly<GeneralKey>,
-  container: HTMLDivElement,
-) {
-  const exportFormatSelect =
-    container.querySelector<HTMLSelectElement>("#export_format");
-  if (!exportFormatSelect) return;
-  exportFormatSelect.value = settings["export_format"];
-  exportFormatSelect.addEventListener(
-    "change",
-    createAsyncHandler(async (e) => {
-      if (!(e.target instanceof HTMLSelectElement)) return;
-      const selectedExtension = e.target.value;
-      const match = EXPORT_FORMAT_SETTINGS.find(
-        (s) => s.value === selectedExtension,
-      );
-      if (!match) return;
-      await handleUpdateSettings({ export_format: match.value });
-    }),
-  );
-}
-
 function setSelectListeners(
   settings: Readonly<AppSettings>,
   container: HTMLDivElement,
 ) {
   initAppearanceSettings(settings, container);
   initEditorSettings(settings, container);
-  initGeneralSettings(settings, container);
 }
 
 export { setSelectListeners };

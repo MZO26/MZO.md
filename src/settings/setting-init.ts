@@ -1,8 +1,9 @@
+import { openExternal } from "@/api/api";
 import { rendererLogger } from "@/app";
-import { getQuickAction } from "@/settings/quick-actions";
-import { applyAppTheme } from "@/settings/setting-actions";
+import { applyAppTheme, getQuickAction } from "@/settings/setting-actions";
 import {
   buildSelects,
+  createGithubRef,
   createQuickActionContainer,
   createSettingsMenu,
 } from "@/settings/setting-factory";
@@ -29,7 +30,8 @@ async function initAppSettings(settings: Readonly<AppSettings>) {
     "button:first-child",
     buttonsContainer,
   );
-  const quickActionContainer = createQuickActionContainer();
+  const quickActionsContainer = createQuickActionContainer();
+  const githubRef = createGithubRef();
   if (firstActiveBtn) setActiveItem(firstActiveBtn, buttonsContainer);
   await applyAppTheme(settings["theme"]);
   applyModalListeners(
@@ -37,7 +39,8 @@ async function initAppSettings(settings: Readonly<AppSettings>) {
     buttonsContainer,
     settingsContainer,
     settingsDialog,
-    quickActionContainer,
+    quickActionsContainer,
+    githubRef,
   );
   registerAppEvents(document, {
     [APP_EVENTS.OPEN_SETTINGS]: () => settingsDialog.showModal(),
@@ -54,9 +57,15 @@ function applyModalListeners(
   settingsContainer: HTMLDivElement,
   modal: HTMLDialogElement,
   quickActionsContainer: HTMLDivElement,
+  githubLink: HTMLAnchorElement,
 ) {
   openModalBtn.addEventListener("click", () => {
     modal.showModal();
+  });
+  githubLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (!(e.target instanceof HTMLAnchorElement)) return;
+    openExternal(e.target.href);
   });
   quickActionsContainer.addEventListener(
     "click",

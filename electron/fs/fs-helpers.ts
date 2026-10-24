@@ -152,9 +152,9 @@ async function getFilePath(
   const newFileName = `${safeTitle}.${extension}`;
   const absoluteFilePath = path.resolve(targetDirectory, newFileName);
   // throwing security check
-  const outside = await isInsideDirectory(targetDirectory, absoluteFilePath);
-  mainLogger.devLog(outside);
-  if (outside) throw new AppBackendError(AppErrorCode.FileWriteError);
+  const inside = await isInsideDirectory(targetDirectory, absoluteFilePath);
+  mainLogger.devLog(inside);
+  if (!inside) throw new AppBackendError(AppErrorCode.FileWriteError);
   return absoluteFilePath;
 }
 
@@ -169,11 +169,12 @@ async function isInsideDirectory(
       : await fs.promises.realpath(baseDir);
     const targetPath = await fs.promises.realpath(absoluteFilePath);
     const relative = path.relative(basePath, targetPath);
-    const isOutside =
+    const inside = !(
       relative === ".." ||
       relative.startsWith(`..${path.sep}`) ||
-      path.isAbsolute(relative);
-    return isOutside;
+      path.isAbsolute(relative)
+    );
+    return inside;
   } catch (error) {
     return false;
   }
@@ -189,17 +190,40 @@ function isInsideDirectorySync(
       : fs.realpathSync(baseDir);
     const targetPath = fs.realpathSync(absoluteFilePath);
     const relative = path.relative(basePath, targetPath);
-    return !(
+    const inside = !(
       relative === ".." ||
       relative.startsWith(`..${path.sep}`) ||
       path.isAbsolute(relative)
     );
+    return inside;
   } catch (error) {
     return false;
   }
 }
 
+function dedupeFileNames(payload: ExportContent[]): ExportContent[] {
+  const usedNames = new Set<string>();
+  const updatedPayload: ExportContent[] = [];
+  for (const p of payload) {
+    let fileName = p.fileName;
+    if (usedNames.has(fileName.toLowerCase())) {
+      const dotIndex = fileName.lastIndexOf(".");
+      const stem = dotIndex > 0 ? fileName.slice(0, dotIndex) : fileName;
+      const extension = dotIndex > 0 ? fileName.slice(dotIndex) : "";
+      let count = 1;
+      do {
+        fileName = `${stem} (${count})${extension}`;
+        count++;
+      } while (usedNames.has(fileName.toLowerCase()));
+    }
+    usedNames.add(fileName.toLowerCase());
+    updatedPayload.push({ ...p, fileName });
+  }
+  return updatedPayload;
+}
+
 export {
+  dedupeFileNames,
   EXPORT_REGEX,
   getFilePath,
   isInsideDirectory,

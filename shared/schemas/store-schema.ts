@@ -18,7 +18,6 @@ const StoreSchema = z.object({
   font_size: z.enum(["16", "18", "20"]).catch("18"),
   line_height: z.enum(["1.4", "1.5", "1.6"]).catch("1.5"),
   spellcheck: z.boolean().catch(false),
-  export_format: z.enum(["md", "json", "html", "txt", "pdf"]).catch("md"),
   code_theme: z.enum(["focus", "balanced", "colorless"]).catch("balanced"),
   highlight: z.enum(["context", "insight", "action"]).catch("context"),
   note_item_display: z.enum(["preview", "tags", "minimal"]).catch("preview"),
@@ -37,7 +36,6 @@ const StoreFromDbSchema = z.object({
   font_size: StoreSchema.shape["font_size"],
   line_height: StoreSchema.shape["line_height"],
   spellcheck: BoolSchema,
-  export_format: StoreSchema.shape["export_format"],
   code_theme: StoreSchema.shape["code_theme"],
   highlight: StoreSchema.shape.highlight,
   note_item_display: StoreSchema.shape["note_item_display"],
@@ -51,7 +49,6 @@ const StoreRowSchema = z.object({
   font_size: StoreSchema.shape["font_size"],
   line_height: StoreSchema.shape["line_height"],
   spellcheck: BoolDbSchema,
-  export_format: StoreSchema.shape["export_format"],
   code_theme: StoreSchema.shape["code_theme"],
   highlight: StoreSchema.shape.highlight,
   note_item_display: StoreSchema.shape["note_item_display"],
@@ -64,7 +61,6 @@ type StoreRow = z.infer<typeof StoreRowSchema>;
 type AppSettings = z.infer<typeof StoreSchema>;
 type ActiveTag = AppSettings["active_tag"];
 type Spellcheck = AppSettings["spellcheck"];
-type ExportFormat = AppSettings["export_format"];
 type NoteItemDisplay = AppSettings["note_item_display"];
 type HighlightTheme = AppSettings["highlight"];
 type Theme = AppSettings["theme"];
@@ -80,7 +76,6 @@ type EditorKeys = Pick<
   AppSettings,
   "font_family" | "font_size" | "line_height" | "spellcheck"
 >;
-type GeneralKey = Pick<AppSettings, "export_format">;
 
 export {
   DbWindowBoundsCodec,
@@ -92,10 +87,8 @@ export {
   type AppSettings,
   type CodeTheme,
   type EditorKeys,
-  type ExportFormat,
   type FontFamily,
   type FontSize,
-  type GeneralKey,
   type HighlightTheme,
   type LineHeight,
   type NoteItemDisplay,

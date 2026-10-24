@@ -18,13 +18,6 @@ function isEditorFocused(target: EventTarget | null) {
 function initGlobalShortcuts() {
   window.addEventListener("keydown", (e) => {
     if (!(e.target instanceof HTMLElement)) return;
-    if (
-      e.target.tagName === "INPUT" ||
-      e.target.tagName === "TEXTAREA" ||
-      e.target.isContentEditable
-    ) {
-      return;
-    }
     const { key, ctrlKey, metaKey } = e;
     const isMod = ctrlKey || metaKey;
     if (isMod && (key === "+" || key === "=")) {
@@ -84,6 +77,7 @@ function initGlobalShortcuts() {
       return;
     }
     if (isSelectionActive() && key === "Backspace") {
+      if (isEditorFocused(e.target)) return;
       e.preventDefault();
       document.dispatchEvent(new CustomEvent(APP_EVENTS.DELETE_SELECTED));
       return;

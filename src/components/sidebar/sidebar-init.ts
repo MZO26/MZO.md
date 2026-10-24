@@ -111,24 +111,6 @@ function applySidebarListeners(
     createAsyncHandler(async (e) => {
       if (!(e.target instanceof Element)) return;
       const actionBtn = e.target.closest<HTMLButtonElement>(".menu-btn");
-      if (actionBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-        const noteItem = e.target.closest<HTMLDivElement>(".note-item");
-        const id = noteItem?.getAttribute("data-id");
-        if (!isNoteID(id) || !noteItem) return;
-        const isPinned = noteItem.getAttribute("data-pinned") === "true";
-        const { selectionMode, selectedIds } = stateStore.getState();
-        window.electronAPI.showContextMenu("note", {
-          selectedIds:
-            selectionMode && selectedIds.size > 0
-              ? Array.from(selectedIds)
-              : [id],
-          selectionMode,
-          pinned: !selectionMode ? isPinned : undefined,
-        });
-        return;
-      }
       const clearBtn = e.target.closest<HTMLButtonElement>(
         ".active-tag-clear-btn",
       );
@@ -140,9 +122,33 @@ function applySidebarListeners(
         }
       }
       const noteItem = e.target.closest<HTMLDivElement>(".note-item");
+      if (isSelectionActive() && !noteItem && !actionBtn) {
+        setSelectionMode(false);
+        return;
+      }
       const id = noteItem?.getAttribute("data-id");
       if (!isNoteID(id)) return;
-      if (stateStore.get("selectionMode") === true) {
+      if (actionBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const isPinned = noteItem?.getAttribute("data-pinned") === "true";
+        const { selectionMode, selectedIds } = stateStore.getState();
+        window.electronAPI.showContextMenu("note", {
+          selectedIds:
+            selectionMode && selectedIds.size > 0
+              ? Array.from(selectedIds)
+              : [id],
+          selectionMode,
+          pinned: !selectionMode ? isPinned : undefined,
+        });
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && !isSelectionActive()) {
+        setSelectionMode(true);
+        addToSelection(id);
+        return;
+      }
+      if (isSelectionActive()) {
         addToSelection(id);
         return;
       }
@@ -150,6 +156,12 @@ function applySidebarListeners(
       await loading.wrap(() => handleSelectNote(id));
     }),
   );
+  sidebar.addEventListener("focusout", (e) => {
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (!relatedTarget) return;
+    if (isSelectionActive() && !sidebar.contains(relatedTarget))
+      setSelectionMode(false);
+  });
   document.addEventListener(
     "mouseup",
     createAsyncHandler(async (e: MouseEvent) => {

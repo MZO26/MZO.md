@@ -2,13 +2,7 @@ import type { QuickActionConfig } from "@/utils/types";
 
 const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
 
-const NAV_KEYS = new Set([
-  "ArrowDown",
-  "ArrowUp",
-  "Enter",
-  "Backspace",
-  "Delete",
-]);
+const NAV_KEYS = new Set(["ArrowDown", "ArrowUp", "Enter", "Backspace"]);
 
 const DEBOUNCE_MS = {
   very_fast: 100,
@@ -34,8 +28,6 @@ const MAX_FILE_DROPS = 50;
 
 const MAX_DROP_PASTE_CHARACTERS = 1_000_000;
 
-const MAX_CODE_BLOCK_HIGHLIGHT_LENGTH = 20_000;
-
 const CHAR_BASELINE = 200_000;
 
 const MAX_DROP_LENGTH = 50;
@@ -55,7 +47,6 @@ const IMAGE_QUALITY = 0.9;
 const QUICK_ACTIONS: QuickActionConfig[] = [
   { id: "open-path", icon: "FolderCog", label: "Open App Path" },
   { id: "backup-db", icon: "DatabaseBackup", label: "Database Backup" },
-  { id: "backup-notes", icon: "Download", label: "File Backup" },
   {
     id: "backup-db-restore",
     icon: "ArchiveRestore",
@@ -206,7 +197,6 @@ export {
   IMAGE_MAX_WIDTH,
   IMAGE_QUALITY,
   KATEX_MACROS,
-  MAX_CODE_BLOCK_HIGHLIGHT_LENGTH,
   MAX_DROP_LENGTH,
   MAX_DROP_PASTE_CHARACTERS,
   MAX_FILE_DROPS,

@@ -32,7 +32,7 @@ async function getSortedBackups(dbBackupsDir: string) {
       (entry) =>
         entry.isFile() &&
         entry.name.startsWith("backup-") &&
-        entry.name.endsWith(".db"),
+        entry.name.endsWith(".sqlite"),
     )
     .map((entry) => entry.name)
     .sort((a, b) => b.localeCompare(a));
@@ -55,7 +55,7 @@ function initBackupScheduler(backupRootDir: string) {
   })().catch((error) => {
     mainLogger.appError("Failed to clean leftover temp files", error);
   });
-  const checkAndBackup = async () => {
+  async function checkAndBackup() {
     try {
       if (await shouldRunBackup(dbBackupsDir)) {
         await runFolderBackup(backupRootDir);
@@ -73,7 +73,7 @@ function initBackupScheduler(backupRootDir: string) {
         error,
       );
     }
-  };
+  }
   setTimeout(checkAndBackup, 10_000);
   setInterval(checkAndBackup, 60 * 60 * 1000);
 }
@@ -86,7 +86,7 @@ async function runFolderBackup(backupRootDir: string) {
   await fs.mkdir(dbBackupsDir, { recursive: true });
   await fs.mkdir(backupImagesDir, { recursive: true });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const dbBackupPath = path.join(dbBackupsDir, `backup-${timestamp}.db`);
+  const dbBackupPath = path.join(dbBackupsDir, `backup-${timestamp}.sqlite`);
   const tempPath = `${dbBackupPath}.${crypto.randomUUID()}.tmp`;
   try {
     await db.backupDb(tempPath);

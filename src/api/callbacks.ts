@@ -34,7 +34,7 @@ function initListeners() {
         await triggerSingleExport(singleId, extension);
         return;
       }
-      await exportSelection(ids);
+      await exportSelection(ids, extension);
     },
   );
 

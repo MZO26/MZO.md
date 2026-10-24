@@ -64,8 +64,8 @@ function initQuickSwitcher(editor: Editor) {
     const { activeId, isDirty } = stateStore.getState();
     if (activeId && isDirty) await waitForFlush(activeId);
     if (switchDialog.open) {
-      switchListSearchInput.value = "";
       resetQuickSwitchState();
+      switchListSearchInput.value = "";
       switchDialog.close();
       return;
     }
@@ -379,8 +379,11 @@ function initQuickSwitcher(editor: Editor) {
   }
 
   function handleDocumentKeydown(event: KeyboardEvent) {
-    if (!event.ctrlKey && !event.metaKey) return;
-    if (event.key === "p" || event.key === "P") {
+    const isEscape = switchDialog.open && event.key === "Escape";
+    const isCtrlP =
+      (event.ctrlKey || event.metaKey) &&
+      (event.key === "p" || event.key === "P");
+    if (isEscape || isCtrlP) {
       event.preventDefault();
       toggleSwitcher();
     }

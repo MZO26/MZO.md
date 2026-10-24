@@ -50,10 +50,10 @@ async function setupLocalImageProtocol() {
         .replace(/\/+$/, "");
       const fileName = decodeURIComponent(rawPath);
       const intendedPath = path.resolve(realImagesDir, fileName);
-      const isOutside = await isInsideDirectory(realImagesDir, intendedPath, {
+      const inside = await isInsideDirectory(realImagesDir, intendedPath, {
         skipBaseRealpath: true,
       });
-      if (isOutside) {
+      if (!inside) {
         return new Response("Forbidden", {
           status: 403,
           headers: { "Content-Type": "text/plain" },

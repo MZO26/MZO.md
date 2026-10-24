@@ -30,9 +30,10 @@ async function handleImportDialog(win: BrowserWindow) {
 }
 
 async function handleDBBackupDialog(win: BrowserWindow) {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const defaultPath = path.join(
     app.getPath("documents"),
-    `db-backup-${Date.now()}.sqlite`,
+    `backup-${timestamp}.sqlite`,
   );
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
     title: "Backup database",

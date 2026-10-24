@@ -1,4 +1,4 @@
-import type { ExportFormat, SelectOption } from "@/utils/types";
+import type { SelectOption } from "@/utils/types";
 import type {
   CodeTheme,
   FontFamily,
@@ -69,17 +69,8 @@ const SPELLCHECK_SETTINGS: readonly SelectOption<Spellcheck>[] = [
   { value: false, label: "Disable" },
 ];
 
-const EXPORT_FORMAT_SETTINGS: readonly SelectOption<ExportFormat>[] = [
-  { value: "json", label: "JSON" },
-  { value: "md", label: "Markdown" },
-  { value: "txt", label: "Plain Text" },
-  { value: "html", label: "HTML" },
-  { value: "pdf", label: "PDF" },
-];
-
 export {
   CODE_THEME_SETTINGS,
-  EXPORT_FORMAT_SETTINGS,
   FONT_FAMILY_SETTINGS,
   FONT_SIZE_SETTINGS,
   HIGHLIGHT_THEME_SETTINGS,

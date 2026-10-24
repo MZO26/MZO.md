@@ -5,7 +5,7 @@ import type {
   NoteListItem,
   SearchResult,
 } from "@shared/schemas/note-schema";
-import type { AppSettings, ExportFormat } from "@shared/schemas/store-schema";
+import type { AppSettings } from "@shared/schemas/store-schema";
 import type {
   SETTINGS_CATEGORIES,
   SIDEBAR_FILTER_MODES,
@@ -138,11 +138,7 @@ type SettingsCategory = (typeof SETTINGS_CATEGORIES)[number];
 
 type AppIcons = keyof typeof APP_ICONS;
 
-type QuickAction =
-  | "open-path"
-  | "backup-db"
-  | "backup-notes"
-  | "backup-db-restore";
+type QuickAction = "open-path" | "backup-db" | "backup-db-restore";
 
 type QuickActionConfig = {
   id: QuickAction;
@@ -178,7 +174,6 @@ export type {
   AllTagsMenu,
   AppIcons,
   EditorContentType,
-  ExportFormat,
   FilterMode,
   ImageCompressionPayload,
   ImageContent,

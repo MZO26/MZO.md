@@ -10,16 +10,17 @@ import {
   getCachedEditorExtensions,
   getMarkdownManager,
 } from "@/components/editor/editor-actions";
+import { updateSelectionUI } from "@/components/sidebar/sidebar-ui";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { confirmWithDialog, dialogMutex } from "@/settings/dialog-init";
-import { noteStore, settingsStore, stateStore } from "@/state/state";
+import { noteStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/dom";
 import { useDialog } from "@/utils/registry";
 import type { Id } from "@shared/schemas/note-schema";
+import type { ExportContent } from "@shared/schemas/request-schema";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { generateHTML, generateText } from "@tiptap/core";
-import { updateSelectionUI } from "./sidebar-ui";
 
 let selectionUpdatePending = false;
 
@@ -180,7 +181,10 @@ async function copyRichTextSelection(selectedIds: Id[]) {
   }
 }
 
-async function exportSelection(selectedIds: Id[]) {
+async function exportSelection(
+  selectedIds: Id[],
+  extension: ExportContent["extension"],
+) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const { notes, noteIndex } = noteStore.getState();
   const allSelected =
@@ -196,10 +200,9 @@ async function exportSelection(selectedIds: Id[]) {
     );
     return;
   }
-  const exportFormat = settingsStore.get("export_format") ?? "md";
   const exportContent = await getBatchExportContent(
     exportResult.data,
-    exportFormat,
+    extension,
   );
   if (!exportContent.success) {
     rendererLogger.appError(
@@ -218,7 +221,7 @@ async function exportSelection(selectedIds: Id[]) {
   }
   await showNotification(
     "Export Complete",
-    `Exported ${result.data.length} files to .${exportFormat}`,
+    `Exported ${result.data.length} files to .${extension}`,
   );
 }
 

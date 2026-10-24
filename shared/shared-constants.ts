@@ -1,5 +1,9 @@
 import type { AppSettings } from "@shared/schemas/store-schema";
 
+const APP_VERSION = "1.2.0";
+
+const GITHUB_LINK = "https://github.com/MZO26/MZO.md";
+
 const MAX_BYTES_FILE = 3 * 1024 * 1024;
 
 const MAX_CHARACTERS = 4_000_000;
@@ -61,7 +65,6 @@ const DEFAULT_SETTINGS: Readonly<AppSettings> = {
   font_size: "18",
   line_height: "1.5",
   spellcheck: false,
-  export_format: "md",
   code_theme: "balanced",
   highlight: "context",
   note_item_display: "preview",
@@ -174,10 +177,12 @@ export {
   ALLOWED_IMPORT_EXTENSIONS,
   ALLOWED_PROTOCOLS,
   APP_EVENTS,
+  APP_VERSION,
   DE_STOPWORDS,
   DEFAULT_SETTINGS,
   EMPTY_DOC,
   EN_STOPWORDS,
+  GITHUB_LINK,
   MAX_BYTES_FILE,
   MAX_CHARACTERS,
   MAX_SEARCH_LENGTH,

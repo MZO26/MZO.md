@@ -1,6 +1,5 @@
 import {
   CODE_THEME_SETTINGS,
-  EXPORT_FORMAT_SETTINGS,
   FONT_FAMILY_SETTINGS,
   FONT_SIZE_SETTINGS,
   HIGHLIGHT_THEME_SETTINGS,
@@ -14,6 +13,7 @@ import { createIconButton, requireElement } from "@/utils/dom";
 import { useUI } from "@/utils/registry";
 import type { AppIcons, SelectOption, SettingsCategory } from "@/utils/types";
 import type { AppSettings } from "@shared/schemas/store-schema";
+import { APP_VERSION, GITHUB_LINK } from "@shared/shared-constants";
 
 type ValidSelectKeys<T> = {
   [K in keyof T]: T[K] extends string | boolean ? K : never;
@@ -60,6 +60,27 @@ function createSettingsMenu() {
   return container;
 }
 
+function createGithubRef() {
+  const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
+  const row = document.createElement("div");
+  row.className = "settings-row settings-app-info";
+  row.dataset["category"] = "General";
+  const appVer = document.createElement("span");
+  appVer.className = "info-span";
+  appVer.textContent = `App Version: ${APP_VERSION}`;
+  const githubLink = Object.assign(document.createElement("a"), {
+    href: GITHUB_LINK,
+    textContent: "GitHub Repository ↗",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    className: "settings-link",
+    title: "Visit the project's github site",
+  });
+  row.append(githubLink, appVer);
+  settingsContainer.appendChild(row);
+  return githubLink;
+}
+
 function createQuickActionContainer() {
   const { quickActionContainer } = useUI("quickActionContainer");
   const settingsContainer = requireElement<HTMLDivElement>(".settings-content");
@@ -75,7 +96,7 @@ function createQuickActionContainer() {
   }
   quickActionContainer.appendChild(frag);
   row.appendChild(quickActionContainer);
-  settingsContainer.appendChild(row);
+  settingsContainer.append(row);
   return quickActionContainer;
 }
 
@@ -98,12 +119,11 @@ function buildSelects() {
   selectBuilder("font_size", FONT_SIZE_SETTINGS, "Editor", "Font-Size");
   selectBuilder("line_height", LINE_HEIGHT_SETTINGS, "Editor", "Line-Height");
   selectBuilder("spellcheck", SPELLCHECK_SETTINGS, "Editor", "Spellcheck");
-  selectBuilder(
-    "export_format",
-    EXPORT_FORMAT_SETTINGS,
-    "General",
-    "Bulk Export-Format",
-  );
 }
 
-export { buildSelects, createQuickActionContainer, createSettingsMenu };
+export {
+  buildSelects,
+  createGithubRef,
+  createQuickActionContainer,
+  createSettingsMenu,
+};

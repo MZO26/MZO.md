@@ -1,5 +1,6 @@
 import { processWithLimit } from "@electron/concurrent";
 import {
+  dedupeFileNames,
   getFilePath,
   sanitizeExportString,
   withRetry,
@@ -55,14 +56,7 @@ async function batchExport(folder: string, payload: ExportContent[]) {
   const assetsDir = path.join(absoluteTargetFolder, "assets");
   const isPdf = uniqueExtensions.has("pdf");
   const limit = isPdf ? 1 : 3;
-  const fileMap = new Map<string, number>();
-  const updatedPayload: ExportContent[] = [];
-  for (const p of payload) {
-    const count = fileMap.get(p.fileName) ?? 0;
-    fileMap.set(p.fileName, count + 1);
-    const fileName = count === 0 ? p.fileName : `${p.fileName} (${count})`;
-    updatedPayload.push({ ...p, fileName });
-  }
+  const updatedPayload = dedupeFileNames(payload);
   let hiddenWin: BrowserWindow | null = null;
   let pdfAssets: PDFAssets | null = null;
   try {
