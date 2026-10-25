@@ -84,8 +84,22 @@
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   user-select: none;
-  -webkit-user-select: none;
   pointer-events: none;
+}
+
+.selection-metrics-widget {
+  margin-left: 0.6rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--text-main) 8%, transparent);
+  color: var(--text-main);
+  opacity: 0.75;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
 }
 
 .ProseMirror > h1.is-empty:first-child::before {

@@ -42,7 +42,7 @@ import { CustomUnderline } from "@/extensions/overrides/underline";
 import { Placeholder } from "@/extensions/placeholder";
 import { DocSearch } from "@/extensions/search-replace";
 import { NoteTagHandler } from "@/extensions/tag/tag-handler";
-import { TextMetrics } from "@/extensions/text-metrics";
+import { SelectionMetrics, TextMetrics } from "@/extensions/text-metrics";
 import { initTableOfContents } from "@/extensions/toc";
 import {
   resolveDocLinks,
@@ -201,6 +201,7 @@ function getNoteEditorExtensions() {
     }),
     DocSearch,
     SelectionWrapper,
+    SelectionMetrics,
     KbSelectionCommands,
     SelectionHighlight,
     NoteInfoWidget,
