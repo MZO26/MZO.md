@@ -4,6 +4,10 @@ import {
   recreateEditorState,
   validateUrl,
 } from "@/components/editor/editor-actions";
+import {
+  editorCommands,
+  registerCommands,
+} from "@/components/editor/editor-commands";
 import { updateStats } from "@/components/editor/editor-ui";
 import {
   applyView,
@@ -56,6 +60,7 @@ import { requireElement } from "@/utils/dom";
 import { checkNoteSize } from "@/utils/note-helpers";
 import { useCore } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
+import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
@@ -86,19 +91,11 @@ function initEditor(settings: Partial<Readonly<AppSettings>>): Editor {
     },
     parseOptions: { preserveWhitespace: "full" },
     autofocus: true,
-    onFocus: () => {
-      if (stateStore.get("hoverId") !== null) {
-        rendererLogger.devLog("Resetting hover");
-        stateStore.setState({ hoverId: null });
-      }
-    },
+    onFocus: () => appEvents.emit("app:unset-hover"),
   });
   editor.on("update", ({ transaction }) => {
     if (!transaction.docChanged) return;
-    const activeId = stateStore.get("activeId") as Id | null;
-    if (!activeId) return;
-    if (!stateStore.get("isDirty")) stateStore.setState({ isDirty: true });
-    debouncedSaveNote(activeId, false);
+    appEvents.emit("app:save-note");
   });
   return editor;
 }
@@ -116,28 +113,8 @@ function getNoteEditorExtensions() {
     CustomUnderline,
     Highlight,
     WikilinkHandler.configure({
-      onClick: async (id, title) => {
-        if (!id || !isNoteID(id)) {
-          const activeId = stateStore.get("activeId") as Id | null;
-          if (!activeId) return;
-          // don't navigate right away to update
-          // wikilink to an active one
-          const noteId = await resolveGhostLink(title);
-          if (!noteId) return;
-          await handleSelectNote(noteId);
-          await waitForFlush(noteId);
-          restoreSidebarScope();
-          return;
-        }
-        const noteExists = noteStore.get("noteIndex").has(id);
-        if (!noteExists) {
-          rendererLogger.devLog("[Wikilink configure]: Note not found.");
-          return;
-        }
-        const loading = createGlobalSpinner();
-        await loading.wrap(() => handleSelectNote(id));
-        restoreSidebarScope();
-      },
+      onClick: async (id, title) =>
+        appEvents.emitAsync("app:handle-wikilink-click", { id, title }),
     }),
     Placeholder,
     TextMetrics.configure({
@@ -155,14 +132,7 @@ function getNoteEditorExtensions() {
       HTMLAttributes: { loading: "lazy" },
     }),
     NoteTagHandler.configure({
-      onClick: async (id: string) => {
-        const normalizedTag = id?.trim().toLowerCase();
-        const { activeId, isDirty } = stateStore.getState();
-        if (!normalizedTag || !activeId) return;
-        const saved = isDirty ? await waitForFlush(activeId) : true;
-        if (!saved) return;
-        await applyView(normalizedTag);
-      },
+      onClick: async (id: string) => appEvents.emitAsync("app:apply-view", id),
     }),
     Table.configure({
       resizable: true,
@@ -238,6 +208,52 @@ function getNoteEditorExtensions() {
 }
 
 function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
+  registerCommands(editor, editorCommands);
+  appEvents.on("app:save-note", () => {
+    const activeId = stateStore.get("activeId") as Id | null;
+    if (!activeId) return;
+    if (!stateStore.get("isDirty")) stateStore.setState({ isDirty: true });
+    debouncedSaveNote(activeId, false);
+  });
+  appEvents.on("app:unset-hover", () => {
+    if (stateStore.get("hoverId") !== null) {
+      rendererLogger.devLog("Resetting hover");
+      stateStore.setState({ hoverId: null });
+    }
+  });
+  appEvents.on("app:apply-view", async (id: string) => {
+    const normalizedTag = id?.trim().toLowerCase();
+    const { activeId, isDirty } = stateStore.getState();
+    if (!normalizedTag || !activeId) return;
+    const saved = isDirty ? await waitForFlush(activeId) : true;
+    if (!saved) return;
+    await applyView(normalizedTag);
+  });
+  appEvents.on(
+    "app:handle-wikilink-click",
+    async ({ id, title }: { id: Id | null; title: Note["title"] }) => {
+      if (!id || !isNoteID(id)) {
+        const activeId = stateStore.get("activeId") as Id | null;
+        if (!activeId) return;
+        // don't navigate right away to update
+        // wikilink to an active one
+        const noteId = await resolveGhostLink(title);
+        if (!noteId) return;
+        await handleSelectNote(noteId);
+        await waitForFlush(noteId);
+        restoreSidebarScope();
+        return;
+      }
+      const noteExists = noteStore.get("noteIndex").has(id);
+      if (!noteExists) {
+        rendererLogger.devLog("[Wikilink configure]: Note not found.");
+        return;
+      }
+      const loading = createGlobalSpinner();
+      await loading.wrap(() => handleSelectNote(id));
+      restoreSidebarScope();
+    },
+  );
   editorWrapper.addEventListener("contextmenu", (event: MouseEvent) => {
     if (!(event.target instanceof HTMLElement)) return;
     if (event.target.closest(".selectedCell")) {

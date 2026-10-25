@@ -10,6 +10,7 @@ import type {
   SETTINGS_CATEGORIES,
   SIDEBAR_FILTER_MODES,
 } from "@shared/shared-constants";
+import type { AppEvent } from "@shared/shared-types";
 import type { Editor, SetContentOptions } from "@tiptap/core";
 
 type MathOptions =
@@ -48,10 +49,7 @@ type WorkerFailure<E = WorkerErrorCode> = {
 type WorkerResult<T, E = WorkerErrorCode> = WorkerSuccess<T> | WorkerFailure<E>;
 
 type Action = {
-  type?: "action";
-  run: (args?: Editor) => void;
-  isActive?: (args: Editor) => boolean;
-  isDisabled?: (args: Editor) => boolean;
+  action: AppEvent;
   icon: AppIcons;
 };
 
@@ -147,21 +145,6 @@ type MappedMatches = Omit<SearchResult, "search_match"> & {
   snippet: string;
 };
 
-type ImageContent = (
-  | {
-      type: string;
-      attrs: {
-        src: {
-          imageSrc: string;
-        };
-      };
-    }
-  | {
-      type: string;
-      attrs?: never;
-    }
-)[];
-
 export type {
   Action,
   ActionMap,
@@ -171,7 +154,6 @@ export type {
   EditorContentType,
   FilterMode,
   ImageCompressionPayload,
-  ImageContent,
   MappedMatches,
   MathOptions,
   QuickAction,

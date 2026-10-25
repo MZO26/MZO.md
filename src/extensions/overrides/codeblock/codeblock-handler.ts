@@ -116,18 +116,13 @@ export const CodeblockHandler = Extension.create({
 });
 
 function toggleSingleCodeBlock(editor: Editor) {
-  if (editor.isActive("codeBlock")) {
-    editor.chain().focus().toggleCodeBlock().run();
-    return;
-  }
+  if (editor.isActive("codeBlock"))
+    return editor.chain().focus().toggleCodeBlock().run();
   const { state } = editor;
   const { from, to, empty } = state.selection;
-  if (empty) {
-    editor.chain().focus().toggleCodeBlock().run();
-    return;
-  }
+  if (empty) return editor.chain().focus().toggleCodeBlock().run();
   const text = state.doc.textBetween(from, to, "\n", "\n");
-  editor
+  return editor
     .chain()
     .focus()
     .insertContentAt(

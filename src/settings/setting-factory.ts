@@ -64,9 +64,10 @@ function createGithubRef() {
   const row = document.createElement("div");
   row.className = "settings-row settings-app-info";
   row.dataset["category"] = "General";
-  const appVer = document.createElement("span");
-  appVer.className = "info-span";
-  appVer.textContent = `App Version: ${APP_VERSION}`;
+  const appVer = Object.assign(document.createElement("span"), {
+    className: "info-span",
+    textContent: `App Version: ${APP_VERSION}`,
+  });
   const githubLink = Object.assign(document.createElement("a"), {
     href: GITHUB_LINK,
     textContent: "GitHub Repository ↗",

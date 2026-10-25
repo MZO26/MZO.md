@@ -1,13 +1,28 @@
-import type { AppEvent } from "@shared/shared-types";
+import type { editorCommands } from "@/components/editor/editor-commands";
+import type { Id, Note } from "@shared/schemas/note-schema";
+import type { APP_EVENTS } from "@shared/shared-constants";
 import type { CallbackFunction } from "node:ffi";
 
 type Listener<T> = T extends void ? () => void : (payload: T) => void;
 
-class EventManager<
-  T extends Record<string, unknown> = Partial<
-    Record<AppEvent, Listener<unknown>>
-  >,
-> {
+export type ListenerMap<T> = {
+  [K in keyof T]?: Listener<T[K]> | Listener<T[K]>[];
+};
+
+type EditorEventMap = Record<keyof typeof editorCommands, void>;
+
+type AppEventStrings = (typeof APP_EVENTS)[keyof typeof APP_EVENTS];
+
+type PayloadOverrides = {
+  [APP_EVENTS.APPLY_VIEW]: string;
+  [APP_EVENTS.HANDLE_WIKILINK_CLICK]: { id: Id | null; title: Note["title"] };
+};
+
+type AppEventMap = EditorEventMap &
+  Omit<Record<AppEventStrings, void>, keyof PayloadOverrides> &
+  PayloadOverrides;
+
+class EventManager<T extends Record<string, unknown>> {
   private store = new Map<keyof T, Set<CallbackFunction>>();
   public on<K extends keyof T>(event: K, cb: Listener<T[K]>) {
     let listeners = this.store.get(event);
@@ -17,6 +32,27 @@ class EventManager<
     }
     listeners.add(cb);
     return () => this.off(event, cb);
+  }
+
+  public onMany(map: ListenerMap<T>) {
+    const unsubs: (() => void)[] = [];
+    const add = <K extends keyof T>(
+      key: K,
+      value: NonNullable<ListenerMap<T>[K]>,
+    ) => {
+      const callbacks = Array.isArray(value) ? value : [value];
+      for (const cb of callbacks) {
+        unsubs.push(this.on(key, cb));
+      }
+    };
+    for (const key of Object.keys(map) as (keyof T)[]) {
+      const value = map[key];
+      if (value) add(key, value);
+    }
+    return () => {
+      for (const unsub of unsubs) unsub();
+      unsubs.length = 0;
+    };
   }
 
   public once<K extends keyof T>(event: K, cb: Listener<T[K]>) {
@@ -60,4 +96,4 @@ class EventManager<
   }
 }
 
-export const appEvents = new EventManager<Record<AppEvent, void>>();
+export const appEvents = new EventManager<AppEventMap>();

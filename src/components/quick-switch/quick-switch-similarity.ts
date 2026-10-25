@@ -15,8 +15,8 @@ function tokenize(text: string): string[] {
 }
 
 function checkNoteSimilarity(
-  titleA: Readonly<Note["title"]>,
-  titleB: Readonly<Note["title"]>,
+  titleA: Note["title"],
+  titleB: Note["title"],
 ): number {
   const setA = new Set(tokenize(titleA));
   const setB = new Set(tokenize(titleB));

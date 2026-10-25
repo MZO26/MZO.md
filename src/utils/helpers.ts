@@ -8,7 +8,7 @@ type Debounced<A extends (...args: any[]) => void> = ((
   flush: () => void;
 };
 
-function debounce<A extends (...args: any[]) => void>(
+function debounce<A extends (...args: any[]) => any>(
   fn: A,
   wait: number,
 ): Debounced<A> {
@@ -19,11 +19,11 @@ function debounce<A extends (...args: any[]) => void>(
     timer = null;
     lastArgs = null;
   }
-  function flush() {
-    if (timer === null || lastArgs === null) return;
+  function flush(): ReturnType<typeof fn> | undefined {
+    if (timer === null || lastArgs === null) return undefined;
     const args = lastArgs;
     cancel();
-    fn(...args);
+    return fn(...args);
   }
   const debounced = ((...args: Parameters<A>) => {
     lastArgs = args;

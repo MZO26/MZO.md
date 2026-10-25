@@ -1,180 +1,120 @@
-import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
-import { promptImageUpload } from "@/extensions/overrides/image/image";
-import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
 import type { ActionMap } from "@/utils/types";
-import { appEvents } from "@shared/event-emitter";
-import { APP_EVENTS } from "@shared/shared-constants";
 
 const TOP_TOOLBAR_ACTIONS: ActionMap = {
   editorWidth: {
-    type: "action",
-    run: () => appEvents.emit(APP_EVENTS.SET_EDITOR_WIDTH),
+    action: "app:set-editor-width",
     icon: "RulerDimensionLine",
   },
   focus: {
-    type: "action",
-    run: () => appEvents.emit(APP_EVENTS.TOGGLE_FOCUS_MODE),
+    action: "app:toggle-focus-mode",
     icon: "Focus",
   },
   toggleToolbar: {
-    type: "action",
-    run: () => appEvents.emit(APP_EVENTS.TOGGLE_TOOLBAR),
+    action: "app:toggle-toolbar",
     icon: "ArrowDownFromLine",
   },
 };
 
-// editor toolbar
-
 const TOOLBAR_ACTIONS: ActionMap = {
   toggleSidebar: {
-    run: () => appEvents.emit(APP_EVENTS.TOGGLE_SIDEBAR),
+    action: "app:toggle-sidebar",
     icon: "ArrowLeftFromLine",
   },
   undo: {
-    run: (editor) => editor?.chain().focus().undo().run(),
-    isDisabled: (editor) => !editor.can().undo(),
+    action: "undo",
     icon: "Undo2",
   },
   redo: {
-    run: (editor) => editor?.chain().focus().redo().run(),
-    isDisabled: (editor) => !editor.can().redo(),
+    action: "redo",
     icon: "Redo2",
   },
   search: {
-    run: () => appEvents.emit(APP_EVENTS.TOGGLE_EDITOR_SEARCH),
+    action: "app:toggle-editor-search",
     icon: "Search",
   },
   quickSwitch: {
-    run: () => appEvents.emitAsync(APP_EVENTS.TOGGLE_QUICK_SWITCH),
+    action: "app:toggle-quick-switch",
     icon: "FileClock",
   },
   divider1: { type: "divider" },
   bold: {
-    run: (editor) => editor?.chain().focus().toggleBold().run(),
-    isActive: (editor) => editor?.isActive("bold"),
+    action: "bold",
     icon: "Bold",
   },
   italic: {
-    run: (editor) => editor?.chain().focus().toggleItalic().run(),
-    isActive: (editor) => editor?.isActive("italic"),
+    action: "italic",
     icon: "Italic",
   },
   strike: {
-    run: (editor) => editor?.chain().focus().toggleStrike().run(),
-    isActive: (editor) => editor?.isActive("strike"),
+    action: "strike",
     icon: "Strikethrough",
   },
   underline: {
-    run: (editor) => editor?.chain().focus().toggleUnderline().run(),
-    isActive: (editor) => editor?.isActive("underline"),
+    action: "underline",
     icon: "Underline",
   },
   highlight: {
-    run: (editor) => editor?.chain().focus().toggleHighlight().run(),
-    isActive: (editor) => editor?.isActive("highlight"),
+    action: "highlight",
     icon: "Highlighter",
   },
   mathInline: {
-    run: (editor) => {
-      if (!editor) return;
-      const { from, to, empty } = editor.state.selection;
-      const selectedText = empty
-        ? ""
-        : editor.state.doc.textBetween(from, to, "");
-      openMathDialog(editor, {
-        mode: "insert",
-        type: "inline",
-        initialValue: selectedText,
-      });
-    },
-    isActive: (editor) => editor?.isActive("inlineMath"),
+    action: "mathInline",
     icon: "Sigma",
   },
   divider2: { type: "divider" },
   heading1: {
-    run: (editor) => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
-    isActive: (editor) => editor?.isActive("heading", { level: 1 }),
+    action: "heading1",
     icon: "Heading1",
   },
   heading2: {
-    run: (editor) => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
-    isActive: (editor) => editor?.isActive("heading", { level: 2 }),
+    action: "heading2",
     icon: "Heading2",
   },
   heading3: {
-    run: (editor) => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
-    isActive: (editor) => editor?.isActive("heading", { level: 3 }),
+    action: "heading3",
     icon: "Heading3",
   },
   divider3: { type: "divider" },
   bulletList: {
-    run: (editor) => editor?.chain().focus().toggleBulletList().run(),
-    isActive: (editor) => editor?.isActive("bulletList"),
+    action: "bulletList",
     icon: "List",
   },
   orderedList: {
-    run: (editor) => editor?.chain().focus().toggleOrderedList().run(),
-    isActive: (editor) => editor?.isActive("orderedList"),
+    action: "orderedList",
     icon: "ListOrdered",
   },
   blockQuote: {
-    run: (editor) => editor?.chain().focus().toggleBlockquote().run(),
-    isActive: (editor) => editor?.isActive("blockquote"),
+    action: "blockQuote",
     icon: "TextQuote",
   },
   divider4: { type: "divider" },
   inlineCode: {
-    run: (editor) => editor?.chain().focus().toggleCode().run(),
-    isActive: (editor) => editor?.isActive("code"),
+    action: "inlineCode",
     icon: "Code",
   },
   codeBlock: {
-    run: (editor) => editor && toggleSingleCodeBlock(editor),
-    isActive: (editor) => editor?.isActive("codeBlock"),
+    action: "codeBlock",
     icon: "CodeXml",
   },
   mathBlock: {
-    run: (editor) => {
-      if (!editor) return;
-      openMathDialog(editor, {
-        mode: "insert",
-        type: "block",
-        initialValue: "",
-      });
-    },
-    isActive: (editor) => editor?.isActive("blockMath"),
+    action: "mathBlock",
     icon: "SquareSigma",
   },
   horizontalRule: {
-    run: (editor) => editor?.chain().focus().setHorizontalRule().run(),
-    isActive: (editor) => editor?.isActive("hr"),
+    action: "horizontalRule",
     icon: "SeparatorHorizontal",
   },
   divider5: { type: "divider" },
   link: {
-    run: (editor) => {
-      if (!editor) return false;
-      if (editor.isActive("link")) {
-        return editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      }
-      return editor.chain().focus().setLink({ href: "" }).run();
-    },
-    isActive: (editor) => editor?.isActive("link"),
+    action: "link",
     icon: "Link",
   },
   image: {
-    run: async (editor) => editor && (await promptImageUpload(editor)),
-    isActive: (editor) => editor?.isActive("image"),
+    action: "image",
     icon: "Image",
   },
   table: {
-    run: (editor) =>
-      editor
-        ?.chain()
-        .focus()
-        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-        .run(),
-    isActive: (editor) => editor?.isActive("table"),
+    action: "table",
     icon: "Grid2x2",
   },
 };

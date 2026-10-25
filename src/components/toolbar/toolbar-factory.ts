@@ -1,3 +1,4 @@
+import { getCommandState } from "@/components/editor/editor-commands";
 import { localStore } from "@/state/state";
 import { createIconButton } from "@/utils/dom";
 import { useCore } from "@/utils/registry";
@@ -29,10 +30,10 @@ function createDivider() {
 function createToolbarFragment(actions: ActionMap) {
   const fragment = document.createDocumentFragment();
   for (const [key, item] of Object.entries(actions)) {
-    if (item.type === "divider") {
+    if ("type" in item && item.type === "divider") {
       fragment.appendChild(createDivider());
     } else {
-      if (!item) continue;
+      if (!item || !isAction(item)) continue;
       const actionBtn = createButton(key, item);
       fragment.appendChild(actionBtn);
       buttonMap.set(key, actionBtn);
@@ -41,14 +42,14 @@ function createToolbarFragment(actions: ActionMap) {
   return { fragment, buttonMap };
 }
 
-function isAction(item: ToolbarItem): item is Action {
-  return item.type !== "divider";
-}
-
 function getActions(actions: ActionMap): [string, Action][] {
   return (cachedActions ??= Object.entries(actions).filter(
     (entry): entry is [string, Action] => isAction(entry[1]),
   ));
+}
+
+function isAction(item: ToolbarItem): item is Action {
+  return !("type" in item && item.type === "divider") && "action" in item;
 }
 
 function updateActiveStates(params: ActiveStateParams): void {
@@ -57,8 +58,7 @@ function updateActiveStates(params: ActiveStateParams): void {
   for (const [key, item] of actionEntries) {
     const btn = buttonElements.get(key);
     if (!btn) continue;
-    const isActive = item.isActive?.(editor) ?? false;
-    const isDisabled = item.isDisabled?.(editor) ?? false;
+    const { isActive, isDisabled } = getCommandState(editor, item.action);
     if (btn.classList.contains("is-active") !== isActive) {
       btn.classList.toggle("is-active", isActive);
     }
@@ -98,16 +98,14 @@ function buildTopToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
 }
 
 function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
-  const { editor } = useCore("editor");
   container.addEventListener("click", (e) => {
     if (!(e.target instanceof Element)) return;
     const btn = e.target.closest<HTMLButtonElement>("[data-action]");
     const key = btn?.getAttribute("data-action");
     if (!key) return;
     const item = actions[key];
-    if (item && "run" in item) {
-      item.run(editor);
-    }
+    if (!item || !isAction(item)) return;
+    appEvents.emit(item.action);
   });
 }
 

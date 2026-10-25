@@ -1,10 +1,9 @@
 import { imageWriteMany } from "@/api/api";
 import { rendererLogger } from "@/app";
 import { ALLOWED_TYPES, MAX_SIZE, MIME_TO_EXT } from "@/utils/constants";
-import type { ImageContent } from "@/utils/types";
 import { compressImageInWorker } from "@/utils/workers/worker-init";
 import type { ImagePayload } from "@shared/schemas/image-schema";
-import type { Editor } from "@tiptap/core";
+import type { Editor, JSONContent } from "@tiptap/core";
 
 async function processAndInsertImages(files: File[], editor: Editor) {
   const validFiles = files.filter(
@@ -40,7 +39,7 @@ async function processAndInsertImages(files: File[], editor: Editor) {
       );
       return;
     }
-    const content: ImageContent = [];
+    const content: JSONContent[] = [];
     for (const src of result.data) {
       content.push({ type: "image", attrs: { src } }, { type: "paragraph" });
     }

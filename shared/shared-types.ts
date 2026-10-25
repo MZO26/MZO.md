@@ -1,3 +1,4 @@
+import type { EditorActionKey } from "@/components/editor/editor-commands";
 import type { AppErrorCode } from "@shared/errors";
 import type { Theme } from "@shared/schemas/store-schema";
 import type {
@@ -24,7 +25,11 @@ type ResolvedTheme = Extract<Theme, "light" | "dark">;
 
 type TableAction = ValueOf<typeof TABLE_ACTIONS>;
 
-type AppEvent = ValueOf<typeof APP_EVENTS>;
+type AppEvent = ValueOf<typeof APP_EVENTS> | EditorActionKey;
+
+type PayloadOverrides = {
+  [APP_EVENTS.APPLY_VIEW]: string;
+};
 
 type Success<T> = {
   success: true;
@@ -59,6 +64,7 @@ export type {
   ImportExtension,
   ImportStats,
   NativeWindowColors,
+  PayloadOverrides,
   PDFAssets,
   ResolvedTheme,
   Result,

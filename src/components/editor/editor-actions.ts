@@ -35,7 +35,7 @@ function recreateEditorState(editor: Editor, doc: JSONContent) {
       errorOnInvalidContent: false,
       contentType: "json",
     })
-    .focus("start")
+    .focus("end")
     .run();
 }
 
