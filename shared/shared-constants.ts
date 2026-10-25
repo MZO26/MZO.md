@@ -4,7 +4,7 @@ const APP_VERSION = "1.2.0";
 
 const GITHUB_LINK = "https://github.com/MZO26/MZO.md";
 
-const MAX_BYTES_FILE = 3 * 1024 * 1024;
+const MAX_BYTES_FILE = 4 * 1024 * 1024;
 
 const MAX_CHARACTERS = 4_000_000;
 
@@ -61,6 +61,30 @@ const APP_EVENTS = {
   TOGGLE_FOCUS_MODE: "app:toggle-focus-mode",
   TOGGLE_TOOLBAR: "app:toggle-toolbar",
   OPEN_SETTINGS: "app:open-settings",
+} as const;
+
+const EDITOR_EVENTS = {
+  UNDO: "editor:undo",
+  REDO: "editor:redo",
+  BOLD: "editor:bold",
+  ITALIC: "editor:italic",
+  STRIKE: "editor:strike",
+  UNDERLINE: "editor:underline",
+  HIGHLIGHT: "editor:highlight",
+  MATH_INLINE: "editor:math-inline",
+  HEADING1: "editor:heading1",
+  HEADING2: "editor:heading2",
+  HEADING3: "editor:heading3",
+  BULLET_LIST: "editor:bullet-list",
+  ORDERED_LIST: "editor:ordered-list",
+  BLOCK_QUOTE: "editor:block-quote",
+  INLINE_CODE: "editor:inline-code",
+  CODE_BLOCK: "editor:code-block",
+  MATH_BLOCK: "editor:math-block",
+  HORIZONTAL_RULE: "editor:horizontal-rule",
+  LINK: "editor:link",
+  IMAGE: "editor:image",
+  TABLE: "editor:table",
 } as const;
 
 const DEFAULT_SETTINGS: Readonly<AppSettings> = {
@@ -184,6 +208,7 @@ export {
   APP_VERSION,
   DE_STOPWORDS,
   DEFAULT_SETTINGS,
+  EDITOR_EVENTS,
   EMPTY_DOC,
   EN_STOPWORDS,
   GITHUB_LINK,

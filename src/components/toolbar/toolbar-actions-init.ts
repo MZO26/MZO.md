@@ -21,11 +21,11 @@ const TOOLBAR_ACTIONS: ActionMap = {
     icon: "ArrowLeftFromLine",
   },
   undo: {
-    action: "undo",
+    action: "editor:undo",
     icon: "Undo2",
   },
   redo: {
-    action: "redo",
+    action: "editor:redo",
     icon: "Redo2",
   },
   search: {
@@ -38,83 +38,83 @@ const TOOLBAR_ACTIONS: ActionMap = {
   },
   divider1: { type: "divider" },
   bold: {
-    action: "bold",
+    action: "editor:bold",
     icon: "Bold",
   },
   italic: {
-    action: "italic",
+    action: "editor:italic",
     icon: "Italic",
   },
   strike: {
-    action: "strike",
+    action: "editor:strike",
     icon: "Strikethrough",
   },
   underline: {
-    action: "underline",
+    action: "editor:underline",
     icon: "Underline",
   },
   highlight: {
-    action: "highlight",
+    action: "editor:highlight",
     icon: "Highlighter",
   },
   mathInline: {
-    action: "mathInline",
+    action: "editor:math-inline",
     icon: "Sigma",
   },
   divider2: { type: "divider" },
   heading1: {
-    action: "heading1",
+    action: "editor:heading1",
     icon: "Heading1",
   },
   heading2: {
-    action: "heading2",
+    action: "editor:heading2",
     icon: "Heading2",
   },
   heading3: {
-    action: "heading3",
+    action: "editor:heading3",
     icon: "Heading3",
   },
   divider3: { type: "divider" },
   bulletList: {
-    action: "bulletList",
+    action: "editor:bullet-list",
     icon: "List",
   },
   orderedList: {
-    action: "orderedList",
+    action: "editor:ordered-list",
     icon: "ListOrdered",
   },
   blockQuote: {
-    action: "blockQuote",
+    action: "editor:block-quote",
     icon: "TextQuote",
   },
   divider4: { type: "divider" },
   inlineCode: {
-    action: "inlineCode",
+    action: "editor:inline-code",
     icon: "Code",
   },
   codeBlock: {
-    action: "codeBlock",
+    action: "editor:code-block",
     icon: "CodeXml",
   },
   mathBlock: {
-    action: "mathBlock",
+    action: "editor:math-block",
     icon: "SquareSigma",
   },
   horizontalRule: {
-    action: "horizontalRule",
+    action: "editor:horizontal-rule",
     icon: "SeparatorHorizontal",
   },
   divider5: { type: "divider" },
   link: {
-    action: "link",
+    action: "editor:link",
     icon: "Link",
   },
   image: {
-    action: "image",
+    action: "editor:image",
     icon: "Image",
   },
   table: {
-    action: "table",
+    action: "editor:table",
     icon: "Grid2x2",
   },
 };

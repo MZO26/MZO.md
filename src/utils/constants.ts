@@ -24,7 +24,7 @@ const MAX_SIZE = 25 * 1024 * 1024; // 25MB -> 25MB * 1024 = 25,600KB -> *1024 = 
 
 const YIELD_MS = 300;
 
-const MAX_FILE_DROPS = 50;
+const MAX_FILE_DROPS = 1000;
 
 const MAX_DROP_PASTE_CHARACTERS = 1_000_000;
 

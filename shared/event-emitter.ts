@@ -1,15 +1,21 @@
-import type { editorCommands } from "@/components/editor/editor-commands";
 import type { Id, Note } from "@shared/schemas/note-schema";
-import type { APP_EVENTS } from "@shared/shared-constants";
+import type { APP_EVENTS, EDITOR_EVENTS } from "@shared/shared-constants";
 import type { CallbackFunction } from "node:ffi";
-
-type Listener<T> = T extends void ? () => void : (payload: T) => void;
 
 export type ListenerMap<T> = {
   [K in keyof T]?: Listener<T[K]> | Listener<T[K]>[];
 };
 
-type EditorEventMap = Record<keyof typeof editorCommands, void>;
+export type AppEventMap = CommandEventMap &
+  Omit<Record<AppEventStrings, void>, keyof PayloadOverrides> &
+  PayloadOverrides;
+
+export type CommandEventMap = Record<EditorEventStrings, boolean>;
+
+export type EditorEventStrings =
+  (typeof EDITOR_EVENTS)[keyof typeof EDITOR_EVENTS];
+
+type Listener<T> = T extends void ? () => void : (payload: T) => void;
 
 type AppEventStrings = (typeof APP_EVENTS)[keyof typeof APP_EVENTS];
 
@@ -17,10 +23,6 @@ type PayloadOverrides = {
   [APP_EVENTS.APPLY_VIEW]: string;
   [APP_EVENTS.HANDLE_WIKILINK_CLICK]: { id: Id | null; title: Note["title"] };
 };
-
-type AppEventMap = EditorEventMap &
-  Omit<Record<AppEventStrings, void>, keyof PayloadOverrides> &
-  PayloadOverrides;
 
 class EventManager<T extends Record<string, unknown>> {
   private store = new Map<keyof T, Set<CallbackFunction>>();

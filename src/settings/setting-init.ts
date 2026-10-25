@@ -64,7 +64,7 @@ function applyModalListeners(
   githubLink.addEventListener("click", (e) => {
     e.preventDefault();
     if (!(e.target instanceof HTMLAnchorElement)) return;
-    openExternal(e.target.href);
+    void openExternal(e.target.href);
   });
   quickActionsContainer.addEventListener(
     "click",

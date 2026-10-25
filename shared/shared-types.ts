@@ -1,11 +1,12 @@
-import type { EditorActionKey } from "@/components/editor/editor-commands";
 import type { AppErrorCode } from "@shared/errors";
 import type { Theme } from "@shared/schemas/store-schema";
 import type {
   ALLOWED_IMPORT_EXTENSIONS,
   APP_EVENTS,
+  EDITOR_EVENTS,
   TABLE_ACTIONS,
 } from "@shared/shared-constants";
+import type { Editor } from "@tiptap/core";
 
 type TitleBarOverlayOptions = {
   color: string;
@@ -25,11 +26,17 @@ type ResolvedTheme = Extract<Theme, "light" | "dark">;
 
 type TableAction = ValueOf<typeof TABLE_ACTIONS>;
 
-type AppEvent = ValueOf<typeof APP_EVENTS> | EditorActionKey;
+type AppEvent = ValueOf<typeof APP_EVENTS> | ValueOf<typeof EDITOR_EVENTS>;
 
 type PayloadOverrides = {
   [APP_EVENTS.APPLY_VIEW]: string;
 };
+
+interface EditorCommands {
+  run: (args: Editor) => boolean | Promise<boolean>;
+  isActive?: (args: Editor) => boolean;
+  isDisabled?: (args: Editor) => boolean;
+}
 
 type Success<T> = {
   success: true;
@@ -60,6 +67,7 @@ type ValueOf<T> = T[keyof T];
 export type {
   AppEvent,
   ContentType,
+  EditorCommands,
   Failure,
   ImportExtension,
   ImportStats,

@@ -101,7 +101,9 @@ async function triggerCopyMarkdown(id: Id) {
   }
   try {
     await navigator.clipboard.writeText(markdown);
+    await showNotification("Copied to clipboard", "");
   } catch (error) {
+    await showNotification("Failed to copy to clipboard", "");
     rendererLogger.appError(
       "[triggerCopyMarkdown]: Failed to copy as markdown:",
       error,

@@ -1,104 +1,98 @@
 import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { promptImageUpload } from "@/extensions/overrides/image/image";
 import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
-import { appEvents, type ListenerMap } from "@shared/event-emitter";
-import type { AppEvent } from "@shared/shared-types";
+import type { Action } from "@/utils/types";
+import {
+  appEvents,
+  type CommandEventMap,
+  type EditorEventStrings,
+  type ListenerMap,
+} from "@shared/event-emitter";
+import type { EditorCommands } from "@shared/shared-types";
 import type { Editor } from "@tiptap/core";
 
-interface EditorActions {
-  run: (args: Editor) => boolean | Promise<boolean>;
-  isActive?: (args: Editor) => boolean;
-  isDisabled?: (args: Editor) => boolean;
-}
-
-type EditorActionKey = keyof typeof editorCommands;
-
-type CommandEventMap = {
-  [K in EditorActionKey]: void;
-};
-
-const editorCommands = {
-  undo: {
+const editorCommands: Record<EditorEventStrings, EditorCommands> = {
+  "editor:undo": {
     run: (editor) => editor.chain().focus().undo().run(),
     isDisabled: (editor) => !editor.can().undo(),
   },
-  redo: {
+  "editor:redo": {
     run: (editor) => editor.chain().focus().redo().run(),
     isDisabled: (editor) => !editor.can().redo(),
   },
-  bold: {
+  "editor:bold": {
     run: (editor) => editor.chain().focus().toggleBold().run(),
     isActive: (editor) => editor.isActive("bold"),
   },
-  italic: {
+  "editor:italic": {
     run: (editor) => editor.chain().focus().toggleItalic().run(),
     isActive: (editor) => editor.isActive("italic"),
   },
-  strike: {
+  "editor:strike": {
     run: (editor) => editor.chain().focus().toggleStrike().run(),
     isActive: (editor) => editor.isActive("strike"),
   },
-  underline: {
+  "editor:underline": {
     run: (editor) => editor.chain().focus().toggleUnderline().run(),
     isActive: (editor) => editor.isActive("underline"),
   },
-  highlight: {
+  "editor:highlight": {
     run: (editor) => editor.chain().focus().toggleHighlight().run(),
     isActive: (editor) => editor.isActive("highlight"),
   },
-  mathInline: {
+  "editor:math-inline": {
     run: toggleMathInline,
     isActive: (editor) => editor.isActive("inlineMath"),
   },
-  heading1: {
+  "editor:heading1": {
     run: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run(),
     isActive: (editor) => editor.isActive("heading", { level: 1 }),
   },
-  heading2: {
+  "editor:heading2": {
     run: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
     isActive: (editor) => editor.isActive("heading", { level: 2 }),
   },
-  heading3: {
+  "editor:heading3": {
     run: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
     isActive: (editor) => editor.isActive("heading", { level: 3 }),
   },
-  bulletList: {
+  "editor:bullet-list": {
     run: (editor) => editor.chain().focus().toggleBulletList().run(),
     isActive: (editor) => editor.isActive("bulletList"),
   },
-  orderedList: {
+  "editor:ordered-list": {
     run: (editor) => editor.chain().focus().toggleOrderedList().run(),
     isActive: (editor) => editor.isActive("orderedList"),
   },
-  blockQuote: {
+  "editor:block-quote": {
     run: (editor) => editor.chain().focus().toggleBlockquote().run(),
     isActive: (editor) => editor.isActive("blockquote"),
   },
-  inlineCode: {
+  "editor:inline-code": {
     run: (editor) => editor.chain().focus().toggleCode().run(),
     isActive: (editor) => editor.isActive("code"),
   },
-  codeBlock: {
+  "editor:code-block": {
     run: (editor) => editor && toggleSingleCodeBlock(editor),
     isActive: (editor) => editor.isActive("codeBlock"),
   },
-  mathBlock: {
+  "editor:math-block": {
     run: toggleMathBlock,
     isActive: (editor) => editor.isActive("blockMath"),
   },
-  horizontalRule: {
+  "editor:horizontal-rule": {
     run: (editor) => editor.chain().focus().setHorizontalRule().run(),
     isActive: (editor) => editor.isActive("hr"),
   },
-  link: {
+  "editor:link": {
     run: toggleLink,
     isActive: (editor) => editor.isActive("link"),
   },
-  image: {
+  "editor:image": {
     run: async (editor) => editor && (await setImageUploadPrompt(editor)),
     isActive: (editor) => editor.isActive("image"),
   },
-  table: {
+  "editor:table": {
     run: (editor) =>
       editor
         .chain()
@@ -107,12 +101,15 @@ const editorCommands = {
         .run(),
     isActive: (editor) => editor.isActive("table"),
   },
-} satisfies Record<string, EditorActions>;
+};
 
-function registerCommands(editor: Editor, commands: typeof editorCommands) {
+function registerCommands(
+  editor: Editor,
+  commands: Record<EditorEventStrings, EditorCommands>,
+) {
   const listenerMap: ListenerMap<CommandEventMap> = {};
-  for (const key of Object.keys(commands) as EditorActionKey[]) {
-    const cmd: EditorActions = commands[key];
+  for (const key of Object.keys(commands) as EditorEventStrings[]) {
+    const cmd = commands[key];
     listenerMap[key] = () => {
       if (cmd.isDisabled?.(editor)) return;
       cmd.run(editor);
@@ -121,14 +118,14 @@ function registerCommands(editor: Editor, commands: typeof editorCommands) {
   return appEvents.onMany(listenerMap);
 }
 
-function getCommandState(editor: Editor, action: AppEvent) {
+function getCommandState(editor: Editor, action: Action["action"]) {
   if (!(action in editorCommands)) {
     return { isActive: false, isDisabled: false };
   }
-  const cmd: EditorActions = editorCommands[action as EditorActionKey];
+  const cmd = editorCommands[action as EditorEventStrings];
   return {
-    isActive: cmd.isActive?.(editor) ?? false,
-    isDisabled: cmd.isDisabled?.(editor) ?? false,
+    isActive: cmd?.isActive?.(editor) ?? false,
+    isDisabled: cmd?.isDisabled?.(editor) ?? false,
   };
 }
 
@@ -168,10 +165,4 @@ async function setImageUploadPrompt(editor: Editor) {
   return true;
 }
 
-export {
-  editorCommands,
-  getCommandState,
-  registerCommands,
-  type EditorActionKey,
-  type EditorActions,
-};
+export { editorCommands, getCommandState, registerCommands };
