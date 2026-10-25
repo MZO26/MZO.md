@@ -193,37 +193,11 @@
   margin-bottom: 0;
 }
 
-.ProseMirror a[data-type="wiki-link"] {
+.ProseMirror a[data-type="wikilink"] {
   color: #10b981;
   text-decoration: none;
   font-weight: 500;
   cursor: pointer;
-}
-
-.ProseMirror ul[data-type="taskList"] {
-  list-style: none;
-  padding: 0;
-}
-
-.ProseMirror ul[data-type="taskList"] li {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 0.5em;
-}
-
-.ProseMirror ul[data-type="taskList"] li > label {
-  margin-right: 0.5em;
-  user-select: none;
-}
-
-.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
-  margin: 0;
-  margin-top: 0.3em;
-  cursor: pointer;
-}
-
-.ProseMirror ul[data-type="taskList"] li > div {
-  flex: 1;
 }
 
 .ProseMirror .tableWrapper {

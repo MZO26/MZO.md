@@ -55,15 +55,14 @@ import {
   waitForFlush,
 } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { NODE_BASELINE, SHARED_KATEX_OPTIONS } from "@/utils/constants";
+import { SHARED_KATEX_OPTIONS } from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
 import { checkNoteSize } from "@/utils/note-helpers";
-import { useCore } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import { MAX_CHARACTERS } from "@shared/shared-constants";
+import { ALLOWED_PROTOCOLS, MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
@@ -167,11 +166,7 @@ function getNoteEditorExtensions() {
     LinkWithTitle.configure({
       openOnClick: false,
       defaultProtocol: "https",
-      shouldAutoLink: () => {
-        const { editor } = useCore("editor");
-        if (!editor) return true;
-        return editor.state.doc.childCount <= NODE_BASELINE;
-      },
+      protocols: ALLOWED_PROTOCOLS,
       HTMLAttributes: {
         target: "_blank",
         rel: "noopener noreferrer",

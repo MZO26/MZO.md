@@ -40,9 +40,9 @@ const SIDEBAR_ALL_NOTES_LIMIT = 50;
 
 const MAX_WORKER_TIMEOUT_MS = 180_000;
 
-const IMAGE_MAX_WIDTH = 1000;
+const IMAGE_MAX_WIDTH = 1600;
 
-const IMAGE_QUALITY = 0.9;
+const IMAGE_QUALITY = 0.85;
 
 const QUICK_ACTIONS: QuickActionConfig[] = [
   { id: "open-path", icon: "FolderCog", label: "Open App Path" },

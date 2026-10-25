@@ -19,23 +19,35 @@ async function compressImage(
   quality = IMAGE_QUALITY,
 ): Promise<Uint8Array> {
   const bitmap = await createImageBitmap(blob);
-  let { width, height } = getScaledSize(bitmap.width, bitmap.height, maxWidth);
-  const canvas = new OffscreenCanvas(width, height);
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
+  try {
+    const { width, height } = getScaledSize(
+      bitmap.width,
+      bitmap.height,
+      maxWidth,
+    );
+    const canvas = new OffscreenCanvas(
+      Math.max(1, Math.round(width)),
+      Math.max(1, Math.round(height)),
+    );
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Couldn't get canvas context");
+    }
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close();
-    throw new Error("Couldn't get canvas context");
+    const outputBlob = await canvas.convertToBlob({
+      type: "image/webp",
+      quality,
+    });
+    canvas.width = 0;
+    canvas.height = 0;
+    const buffer = await outputBlob.arrayBuffer();
+    return new Uint8Array(buffer);
+  } finally {
+    bitmap.close();
   }
-  ctx.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
-  const outputBlob = await canvas.convertToBlob({
-    type: "image/webp",
-    quality,
-  });
-  const buffer = await outputBlob.arrayBuffer();
-  canvas.width = 0;
-  canvas.height = 0;
-  return new Uint8Array(buffer);
 }
 
 export { compressImage };

@@ -24,7 +24,7 @@ const EMPTY_DOC = {
   ],
 };
 
-const ALLOWED_PROTOCOLS = ["https:", "http:", "appimg:", "file:"];
+const ALLOWED_PROTOCOLS = ["https", "http", "appimg", "file"];
 
 const SETTINGS_CATEGORIES = ["Appearance", "Editor", "General"] as const;
 

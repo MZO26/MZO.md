@@ -500,26 +500,6 @@
   white-space: nowrap;
 }
 
-.link {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  text-decoration: none;
-  user-select: none;
-  padding: 5px 2px;
-}
-
-.link.active-node {
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.link:hover {
-  opacity: 1;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
 .separator-icon {
   display: inline-flex;
   align-items: center;
