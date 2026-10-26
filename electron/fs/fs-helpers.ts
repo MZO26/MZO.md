@@ -151,7 +151,7 @@ async function getFilePath(
   const safeTitle = validation(FileNameSchema, payload.fileName);
   const newFileName = `${safeTitle}.${extension}`;
   const absoluteFilePath = path.resolve(targetDirectory, newFileName);
-  // throwing security check
+  // if inside
   const inside = await isInsideDirectory(targetDirectory, absoluteFilePath);
   mainLogger.devLog(inside);
   if (!inside) throw new AppBackendError(AppErrorCode.FileWriteError);
@@ -162,23 +162,35 @@ async function isInsideDirectory(
   baseDir: string,
   absoluteFilePath: string,
   options?: { skipBaseRealpath?: boolean },
-) {
+): Promise<boolean> {
   try {
     const basePath = options?.skipBaseRealpath
-      ? baseDir
+      ? path.resolve(baseDir)
       : await fs.promises.realpath(baseDir);
-    const targetPath = await fs.promises.realpath(absoluteFilePath);
+    let targetPath: string;
+    try {
+      targetPath = await fs.promises.realpath(absoluteFilePath);
+    } catch (error: unknown) {
+      const err = error as NodeJS.ErrnoException;
+      if (err.code !== "ENOENT") throw err;
+      const parentReal = await fs.promises.realpath(
+        path.dirname(absoluteFilePath),
+      );
+      targetPath = path.join(parentReal, path.basename(absoluteFilePath));
+    }
     const relative = path.relative(basePath, targetPath);
     const inside = !(
+      relative === "" ||
       relative === ".." ||
       relative.startsWith(`..${path.sep}`) ||
       path.isAbsolute(relative)
     );
     return inside;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
+
 function isInsideDirectorySync(
   baseDir: string,
   absoluteFilePath: string,
