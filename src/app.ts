@@ -4,6 +4,7 @@ import { setupEditorListeners } from "@/components/editor/editor-init";
 import { initEditorSearch } from "@/components/editor/editor-search";
 import { initQuickSwitcher } from "@/components/quick-switch/quick-switch-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
+import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { initToolbar, initTopToolbar } from "@/components/toolbar/toolbar-init";
 import { handleSelectNote } from "@/notes/note-actions";
 import { initAppSettings } from "@/settings/setting-init";
@@ -74,6 +75,7 @@ async function initApp() {
     notesResult.data.some((n) => n.id === lastOpenNoteId)
   )
     await handleSelectNote(lastOpenNoteId);
+  restoreSidebarScope();
 }
 await withPerformanceLog(initApp)();
 rendererLogger.devLog("App started successfully");

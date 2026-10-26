@@ -59,9 +59,7 @@ function initSubscriptions(sidebar: HTMLDivElement) {
   );
 
   stateStore.subscribeSel(
-    (state) => ({
-      activeTag: state.activeTag,
-    }),
+    (state) => state.activeTag,
     sidebarListener,
     shallowEq,
   );
