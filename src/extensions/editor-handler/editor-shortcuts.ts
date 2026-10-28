@@ -1,5 +1,5 @@
 import { openExternal } from "@/api/api";
-import { validateUrl } from "@/components/editor/editor-actions";
+import { isSafeExternalUrl } from "@/components/editor/editor-actions";
 import { promptImageUpload } from "@/extensions/overrides/image/image";
 import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
 import { Extension } from "@tiptap/core";
@@ -89,12 +89,11 @@ export const MasterShortcuts = Extension.create({
         const rawUrl = (
           this.editor.getAttributes("link")["href"] || linkMark?.attrs?.["href"]
         )?.trim();
-        if (!rawUrl || !validateUrl(rawUrl)) return false;
+        if (!rawUrl) return false;
         try {
-          const formatted = /^https?:\/\//i.test(rawUrl)
-            ? rawUrl
-            : `https://${rawUrl}`;
-          void openExternal(new URL(formatted).href);
+          const safe = isSafeExternalUrl(rawUrl);
+          if (!safe) return false;
+          void openExternal(rawUrl);
           return true;
         } catch {
           return false;

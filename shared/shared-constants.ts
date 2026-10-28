@@ -12,6 +12,10 @@ const MAX_SEARCH_LENGTH = 100;
 
 const MIN_SEARCH_LENGTH = 2;
 
+const ALLOWED_PROTOCOLS = new Set(["https:", "http:", "appimg:"]);
+
+const LOCALHOST_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
 const UNTITLED = "Untitled";
 
 const EMPTY_DOC = {
@@ -24,13 +28,7 @@ const EMPTY_DOC = {
   ],
 };
 
-const ALLOWED_PROTOCOLS = ["https", "http", "appimg", "file"];
-
-const SETTINGS_CATEGORIES = ["Appearance", "Editor", "General"] as const;
-
 const ALLOWED_IMPORT_EXTENSIONS = ["md", "html", "json", "txt"] as const;
-
-const SIDEBAR_FILTER_MODES = ["recent", "search", "tag"] as const;
 
 const TABLE_ACTIONS = {
   ADD_ROW_BEFORE: "addRowBefore",
@@ -212,12 +210,11 @@ export {
   EMPTY_DOC,
   EN_STOPWORDS,
   GITHUB_LINK,
+  LOCALHOST_HOSTS,
   MAX_BYTES_FILE,
   MAX_CHARACTERS,
   MAX_SEARCH_LENGTH,
   MIN_SEARCH_LENGTH,
-  SETTINGS_CATEGORIES,
-  SIDEBAR_FILTER_MODES,
   STOPWORDS,
   TABLE_ACTIONS,
   UNTITLED,

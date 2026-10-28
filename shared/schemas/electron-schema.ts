@@ -10,9 +10,7 @@ const ZoomActionSchema = z.enum(["get", "in", "out", "reset"]);
 const MenuTypeSchema = z.enum(["table", "text", "note"]);
 
 const ExternalUrlSchema = z.url({
-  protocol: /^(https?|file|appimg)$/,
-  hostname:
-    /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|localhost|)$/,
+  protocol: /^(https?|appimg)$/,
 });
 
 type Url = z.infer<typeof ExternalUrlSchema>;

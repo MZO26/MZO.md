@@ -1,9 +1,6 @@
 import { showNotification } from "@/api/api";
 import { rendererLogger } from "@/app";
-import {
-  recreateEditorState,
-  validateUrl,
-} from "@/components/editor/editor-actions";
+import { recreateEditorState } from "@/components/editor/editor-actions";
 import {
   editorCommands,
   registerCommands,
@@ -62,7 +59,7 @@ import { createGlobalSpinner } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import { ALLOWED_PROTOCOLS, MAX_CHARACTERS } from "@shared/shared-constants";
+import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
@@ -166,14 +163,15 @@ function getNoteEditorExtensions() {
     LinkWithTitle.configure({
       openOnClick: false,
       defaultProtocol: "https",
-      protocols: ALLOWED_PROTOCOLS,
+      autolink: true,
+      linkOnPaste: true,
       HTMLAttributes: {
         target: "_blank",
         rel: "noopener noreferrer",
       },
       isAllowedUri: (url, ctx) => {
         if (!ctx.defaultValidate(url)) return false;
-        return validateUrl(url);
+        return true;
       },
     }),
     CodeBlockLowlight.configure({

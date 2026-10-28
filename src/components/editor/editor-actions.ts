@@ -120,13 +120,10 @@ function setSelection(editor: Editor, editorWrapper: HTMLDivElement, id: Id) {
   } catch (error) {}
 }
 
-function validateUrl(url: string) {
-  try {
-    const parsed = new URL(url, "https://google.com");
-    return ALLOWED_PROTOCOLS.includes(parsed.protocol);
-  } catch (error: unknown) {
-    return false;
-  }
+function isSafeExternalUrl(url: string) {
+  const parsed = URL.parse(url);
+  if (!parsed) return false;
+  return ALLOWED_PROTOCOLS.has(parsed.protocol);
 }
 
 export {
@@ -135,7 +132,7 @@ export {
   getHTMLContentBetween,
   getMarkdownContentBetween,
   getMarkdownManager,
+  isSafeExternalUrl,
   recreateEditorState,
   setSelection,
-  validateUrl,
 };

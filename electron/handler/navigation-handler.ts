@@ -3,6 +3,7 @@ import {
   isInsideDirectorySync,
 } from "@electron/fs/fs-helpers";
 import { IS_DEV_MAIN, mainLogger } from "@electron/handler/permission-handler";
+import { ALLOWED_PROTOCOLS, LOCALHOST_HOSTS } from "@shared/shared-constants";
 import { app, net, protocol, shell, type BrowserWindow } from "electron";
 import fs from "fs/promises";
 import path from "path";
@@ -33,7 +34,6 @@ async function setupLocalImageProtocol() {
       "Failed to initialize image directory. Images will not load.",
       setupError,
     );
-    // Register a fallback protocol handler that returns a 500 error for all requests
     protocol.handle("appimg", () => {
       return new Response("Image system disabled due to startup error", {
         status: 500,
@@ -42,14 +42,27 @@ async function setupLocalImageProtocol() {
     });
     return;
   }
-  // Standard protocol handler for appimg: URLs
   protocol.handle("appimg", async (request) => {
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      return new Response("Method Not Allowed", {
+        status: 405,
+        headers: { "Content-Type": "text/plain" },
+      });
+    }
+    const parsed = URL.parse(request.url);
+    if (!parsed || parsed.protocol !== "appimg:") {
+      return new Response("Bad Request", {
+        status: 400,
+        headers: { "Content-Type": "text/plain" },
+      });
+    }
     try {
-      const rawPath = request.url
-        .replace(/^appimg:\/+/i, "")
-        .replace(/\/+$/, "");
-      const fileName = decodeURIComponent(rawPath);
-      const intendedPath = path.resolve(realImagesDir, fileName);
+      const rawRelativePath = `${parsed.hostname}${parsed.pathname}`;
+      const decodedPath = decodeURIComponent(rawRelativePath).replace(
+        /^[/\\]+/,
+        "",
+      );
+      const intendedPath = path.resolve(realImagesDir, decodedPath);
       const inside = await isInsideDirectory(realImagesDir, intendedPath, {
         skipBaseRealpath: true,
       });
@@ -70,38 +83,39 @@ async function setupLocalImageProtocol() {
 }
 
 function processUrl(url: string) {
-  try {
-    const parsedUrl = new URL(url);
-    const isLocalhost =
-      parsedUrl.hostname === "localhost" || parsedUrl.hostname === "127.0.0.1";
-    const isWebProtocol =
-      parsedUrl.protocol === "https:" || parsedUrl.protocol === "http:";
-    const isCustomAppProtocol = parsedUrl.protocol === "appimg:";
-    let isSafeLocalFile = false;
-    if (parsedUrl.protocol === "file:") {
-      const requestedPath = path.resolve(fileURLToPath(url));
-      const appDir = path.resolve(app.getAppPath());
-      const isOutside = isInsideDirectorySync(appDir, requestedPath);
-      isSafeLocalFile = !isOutside;
-    }
-    if (isWebProtocol && !isLocalhost) {
-      return "external";
-    }
-    if (
-      (isWebProtocol && isLocalhost && IS_DEV_MAIN) ||
-      isSafeLocalFile ||
-      isCustomAppProtocol
-    ) {
-      return "allow";
-    }
-    mainLogger.devLog(
-      `[processUrl]: Blocked dangerous protocol: ${parsedUrl.protocol}`,
-    );
-    return "block";
-  } catch {
+  const parsedUrl = URL.parse(url);
+  if (!parsedUrl) {
     mainLogger.appError(`[processUrl]: Blocked invalid URL: ${url}`);
     return "block";
   }
+  const { protocol, hostname } = parsedUrl;
+  if (protocol === "appimg:") {
+    return "allow";
+  }
+  if (protocol === "file:") {
+    try {
+      const requestedPath = path.resolve(fileURLToPath(parsedUrl));
+      const appDir = path.resolve(app.getAppPath());
+      if (isInsideDirectorySync(appDir, requestedPath)) {
+        return "allow";
+      }
+    } catch {}
+    mainLogger.devLog(`[processUrl]: Blocked unauthorized file access: ${url}`);
+    return "block";
+  }
+  if (ALLOWED_PROTOCOLS.has(protocol)) {
+    const isLocalhost = LOCALHOST_HOSTS.has(hostname);
+    if (isLocalhost) {
+      if (IS_DEV_MAIN) return "allow";
+      mainLogger.devLog(
+        `[processUrl]: Blocked localhost URL in production: ${url}`,
+      );
+      return "block";
+    }
+    return "external";
+  }
+  mainLogger.devLog(`[processUrl]: Blocked dangerous protocol: ${protocol}`);
+  return "block";
 }
 
 async function navigationHandler(win: BrowserWindow) {

@@ -3,7 +3,8 @@ import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { ExternalUrlSchema } from "@shared/schemas/electron-schema";
 import { type NoteMenuPayload } from "@shared/schemas/note-schema";
 import { TABLE_ACTIONS } from "@shared/shared-constants";
-import { clipboard, Menu, shell, type BrowserWindow } from "electron";
+import { app, clipboard, Menu, shell, type BrowserWindow } from "electron";
+import path from "node:path";
 
 const MAX_SPELLING_SUGGESTIONS = 4;
 
@@ -147,11 +148,11 @@ function setUpEditorMenu(win: BrowserWindow) {
         ? ExternalUrlSchema.safeParse(params.linkURL)
         : null;
       pushOptionalSeparator(items);
-      if (isImage) {
+      if (isImage && hasImageAddress?.success) {
         items.push({
           label: "Save Image As…",
           click: () => {
-            win.webContents.downloadURL(params.srcURL);
+            win.webContents.downloadURL(hasImageAddress.data);
           },
         });
         items.push({
@@ -167,16 +168,28 @@ function setUpEditorMenu(win: BrowserWindow) {
             }
           },
         });
-        if (hasImageAddress?.success) {
+        (items.push({
+          label: "Open image",
+          click: () => {
+            const hashFilename = path.basename(
+              new URL(hasImageAddress.data).pathname,
+            );
+            const localPath = path.join(
+              app.getPath("userData"),
+              "images",
+              hashFilename,
+            );
+            void shell.openPath(localPath);
+          },
+        }),
           items.push({
             label: "Copy Image Address",
             click: () => {
               clipboard.writeText(hasImageAddress.data);
             },
-          });
-        }
+          }));
       }
-      if (hasLinkUrl?.success) {
+      if (hasLink && hasLinkUrl?.success) {
         items.push({
           label: "Open Link",
           click: async () => {

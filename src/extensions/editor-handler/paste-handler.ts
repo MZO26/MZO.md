@@ -1,8 +1,5 @@
 import { rendererLogger } from "@/app";
-import {
-  getMarkdownManager,
-  validateUrl,
-} from "@/components/editor/editor-actions";
+import { getMarkdownManager } from "@/components/editor/editor-actions";
 import { processAndInsertImages } from "@/extensions/overrides/image/image";
 import {
   ALLOWED_TYPES,
@@ -76,7 +73,7 @@ export const LinkPasteHandler = Extension.create({
             const { empty, $from } = state.selection;
             if (empty || $from.parent.type.name === "codeBlock") return false;
             const text = event.clipboardData?.getData("text/plain")?.trim();
-            if (!text || !validateUrl(text)) return false;
+            if (!text) return false;
             editor.commands.setLink({ href: text });
             return true;
           },

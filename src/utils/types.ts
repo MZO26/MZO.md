@@ -6,10 +6,6 @@ import type {
   SearchResult,
 } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import type {
-  SETTINGS_CATEGORIES,
-  SIDEBAR_FILTER_MODES,
-} from "@shared/shared-constants";
 import type { AppEvent } from "@shared/shared-types";
 import type { Editor, SetContentOptions } from "@tiptap/core";
 
@@ -127,7 +123,7 @@ type SelectionAction =
 
 type SelectionActionConfig = { id: SelectionAction; icon: AppIcons };
 
-type SettingsCategory = (typeof SETTINGS_CATEGORIES)[number];
+type SettingsCategory = "Appearance" | "Editor" | "General";
 
 type AppIcons = keyof typeof APP_ICONS;
 
@@ -139,7 +135,7 @@ type QuickActionConfig = {
   label: string;
 };
 
-type FilterMode = (typeof SIDEBAR_FILTER_MODES)[number];
+type FilterMode = "recent" | "search" | "tag";
 
 type MappedMatches = Omit<SearchResult, "search_match"> & {
   snippet: string;
