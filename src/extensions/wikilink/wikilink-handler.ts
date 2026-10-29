@@ -1,9 +1,9 @@
 import { rendererLogger } from "@/app";
+import { truncateTitle } from "@/components/editor/editor-generators";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { handleCreateNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { WIKILINK_REGEX } from "@/utils/constants";
-import { truncateTitle } from "@/utils/doc-helpers";
 import { memoize } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import {

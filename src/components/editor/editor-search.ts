@@ -1,8 +1,8 @@
 import { rendererLogger } from "@/app";
 import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
-import { requireElement } from "@/utils/dom";
 import { debounce, waitForPaint } from "@/utils/helpers";
+import { requireElement } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";

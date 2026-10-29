@@ -1,4 +1,4 @@
-import { createInfoSpan, requireElement } from "@/utils/dom";
+import { createInfoSpan, requireElement } from "@/utils/ui";
 import type { Editor } from "@tiptap/core";
 
 export interface TocItem {

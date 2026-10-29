@@ -1,5 +1,5 @@
 import { initEditor } from "@/components/editor/editor-init";
-import { requireElement } from "@/utils/dom";
+import { requireElement } from "@/utils/ui";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { Editor } from "@tiptap/core";
 

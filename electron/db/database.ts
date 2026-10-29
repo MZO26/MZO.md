@@ -361,7 +361,7 @@ class AppDB {
     return linkMap;
   }
 
-  public updateSettings(mergedSettings: Readonly<AppSettings>): void {
+  public updateSettings(mergedSettings: Readonly<AppSettings>) {
     const encoded = {
       ...mergedSettings,
       spellcheck: DbBoolCodec.encode(mergedSettings.spellcheck),
@@ -371,7 +371,7 @@ class AppDB {
     this.updateStoreStmt.run(row);
   }
 
-  public getAllSettings(): Readonly<AppSettings> {
+  public getAllSettings() {
     const row = this.getAllSettingsStmt.get() as StoreRow | undefined;
     if (!row) throw new AppBackendError(AppErrorCode.DBError);
     const decoded = {
@@ -382,11 +382,11 @@ class AppDB {
     return validation(StoreFromDbSchema, decoded);
   }
 
-  public create(payload: DbCreateArgs): NoteListItem {
+  public create(payload: DbCreateArgs) {
     const id = crypto.randomUUID() as Id;
     const now = new Date().toISOString();
     const { tags, links, images, ...rest } = payload;
-    const uniqueTags = [...new Set(tags)].slice(0, 5);
+    const uniqueTags = [...new Set(tags)];
     const uniqueLinks = [...new Set(links)];
     const uniqueImages = [...new Set(images)];
     const dbPayload = {
@@ -404,13 +404,13 @@ class AppDB {
     return result;
   }
 
-  public createMany(payloads: DbCreateArgs[]): readonly NoteListItem[] {
+  public createMany(payloads: DbCreateArgs[]) {
     const now = new Date().toISOString();
     const dbContents = [];
     for (const payload of payloads) {
       const id = crypto.randomUUID() as Id;
       const { tags, links, images, ...rest } = payload;
-      const uniqueTags = [...new Set(tags)].slice(0, 5);
+      const uniqueTags = [...new Set(tags)];
       const uniqueLinks = [...new Set(links)];
       const uniqueImages = [...new Set(images)];
       const dbPayload = {
@@ -429,13 +429,10 @@ class AppDB {
     return result;
   }
 
-  public update(payload: DbUpdateArgs): {
-    result: NoteListItem;
-    imageDiff: string[];
-  } {
+  public update(payload: DbUpdateArgs) {
     const { tags, links, images, ...rest } = payload;
     const now = new Date().toISOString();
-    const uniqueTags = [...new Set(tags)].slice(0, 5);
+    const uniqueTags = [...new Set(tags)];
     const uniqueLinks = [...new Set(links)];
     const uniqueImages = [...new Set(images)];
     const dbPayload = {
@@ -462,7 +459,7 @@ class AppDB {
     return result;
   }
 
-  public getAll(): readonly NoteListItem[] {
+  public getAll() {
     const tagMap = this.getTagMapAll() ?? new Map();
     const linkMap = this.getLinkMapAll() ?? new Map();
     const results: NoteListItem[] = [];
@@ -478,7 +475,7 @@ class AppDB {
     return results;
   }
 
-  public getAllBackup(): readonly Note[] {
+  public getAllBackup() {
     const results: Note[] = [];
     const tagMap = this.getTagMapAll() ?? new Map();
     const linkMap = this.getLinkMapAll() ?? new Map();
@@ -495,7 +492,7 @@ class AppDB {
     return results;
   }
 
-  public getById(id: Id): Readonly<Note> {
+  public getById(id: Id) {
     const row = this.getNoteByIdStmt.get({ $id: id }) as NoteRow | undefined;
     if (!row) {
       throw new AppBackendError(AppErrorCode.DBError);
@@ -509,7 +506,7 @@ class AppDB {
     });
   }
 
-  public getManyById(ids: Id[]): readonly Note[] {
+  public getManyById(ids: Id[]) {
     if (ids.length === 0) return [];
     const params = { $ids: JSON.stringify(ids) };
     const rows = this.getManyNotesByIdStmt.all(params) as NoteRow[];
@@ -527,7 +524,7 @@ class AppDB {
     });
   }
 
-  public togglePin(id: Id): boolean {
+  public togglePin(id: Id) {
     const now = new Date().toISOString();
     const result = this.togglePinStmt.get({ $updated_at: now, $id: id }) as
       | { pinned: BoolDb }
@@ -539,7 +536,7 @@ class AppDB {
     return validation(BoolSchema, decoded);
   }
 
-  public toggleManyPins(ids: Id[]): boolean {
+  public toggleManyPins(ids: Id[]) {
     if (ids.length === 0) return false;
     const now = new Date().toISOString();
     const result = this.toggleManyPinStmt.all({
@@ -551,7 +548,7 @@ class AppDB {
     return rows.length > 0;
   }
 
-  public getTagsById(id: Id): string[] {
+  public getTagsById(id: Id) {
     const rows = this.getTagsByIdStmt.all({ $id: id }) as {
       tag_name: string;
     }[];
@@ -559,12 +556,12 @@ class AppDB {
     return validation(TagsSchema, tagArr);
   }
 
-  public getLinksById(id: Id): Link[] {
+  public getLinksById(id: Id) {
     const rows = this.getLinksByIdStmt.all({ $id: id }) as Link[];
     return validation(LinksSchema, rows);
   }
 
-  public getRelatedNotes(id: Id): RelatedNotes[] {
+  public getRelatedNotes(id: Id) {
     const rows = this.getRelatedNotesStmt.all({
       $id: id,
     }) as RelatedNotes[];
@@ -592,7 +589,7 @@ class AppDB {
     return this.transactions;
   }
 
-  public execPragma(name: string, db: DatabaseSync = this.getDb()): void {
+  public execPragma(name: string, db: DatabaseSync = this.getDb()) {
     const sql = name.trim().toUpperCase().startsWith("PRAGMA ")
       ? name
       : `PRAGMA ${name}`;

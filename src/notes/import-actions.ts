@@ -1,15 +1,15 @@
 import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
-import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
-import { stateStore } from "@/state/state";
-import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import {
   snippetGenerator,
   textConverter,
   titleGenerator,
   walkDoc,
   wrapAsDoc,
-} from "@/utils/doc-helpers";
+} from "@/components/editor/editor-generators";
+import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
+import { stateStore } from "@/state/state";
+import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import { withPerformanceLog } from "@/utils/helpers";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
 import { AppErrorCode } from "@shared/errors";
@@ -19,8 +19,6 @@ import type { ImportContent } from "@shared/schemas/request-schema";
 import type { Result } from "@shared/shared-types";
 import { generateJSON, generateText, type JSONContent } from "@tiptap/core";
 import DOMPurify from "dompurify";
-
-// function to either sanitize content or format it to make import cleaner
 
 async function normalizeFileContent(
   file: ImportContent,

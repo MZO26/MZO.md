@@ -71,7 +71,7 @@ function initSettings(): Readonly<AppSettings> {
 }
 
 async function createWindow() {
-  const settings = await initSettings();
+  const settings = initSettings();
   const preloadPath = path.join(__dirname, "../preload/preload.js");
   const activeTheme = initTheme(settings.theme);
   const windowTheme = getTitleBarOverlay(activeTheme);

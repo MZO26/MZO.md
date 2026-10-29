@@ -9,10 +9,10 @@ import {
 } from "@/settings/setting-factory";
 import { setSelectListeners } from "@/settings/setting-items-init";
 import { QUICK_ACTIONS } from "@/utils/constants";
-import { requireElement, setActiveItem } from "@/utils/dom";
 import { createAsyncHandler } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import type { QuickAction } from "@/utils/types";
+import { requireElement, setActiveItem } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { APP_EVENTS } from "@shared/shared-constants";

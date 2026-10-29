@@ -33,7 +33,7 @@ const DateSchema = z.iso.datetime();
 
 const TagSchema = z.string().trim().min(1).max(100).toLowerCase();
 
-const TagsSchema = z.array(TagSchema).max(5).default([]);
+const TagsSchema = z.array(TagSchema).default([]);
 
 const TagRowSchema = z.object({
   note_id: IdSchema,

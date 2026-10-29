@@ -9,9 +9,9 @@ import {
   THEME_SETTINGS,
 } from "@/settings/setting";
 import { QUICK_ACTIONS } from "@/utils/constants";
-import { createIconButton, requireElement } from "@/utils/dom";
 import { useUI } from "@/utils/registry";
 import type { AppIcons, SelectOption, SettingsCategory } from "@/utils/types";
+import { createIconButton, requireElement } from "@/utils/ui";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { APP_VERSION, GITHUB_LINK } from "@shared/shared-constants";
 

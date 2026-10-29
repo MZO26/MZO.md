@@ -1,6 +1,5 @@
 import { getCommandState } from "@/components/editor/editor-commands";
 import { localStore } from "@/state/state";
-import { createIconButton } from "@/utils/dom";
 import { useCore } from "@/utils/registry";
 import type {
   Action,
@@ -8,6 +7,7 @@ import type {
   ActiveStateParams,
   ToolbarItem,
 } from "@/utils/types";
+import { createIconButton } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
 

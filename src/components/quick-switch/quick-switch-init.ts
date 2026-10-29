@@ -1,4 +1,5 @@
 import { rendererLogger } from "@/app";
+import { truncateTitle } from "@/components/editor/editor-generators";
 import { getSimilarityMatching } from "@/components/quick-switch/quick-switch-similarity";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import {
@@ -8,12 +9,10 @@ import {
 } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, NAV_KEYS } from "@/utils/constants";
-import { truncateTitle } from "@/utils/doc-helpers";
-import { createInfoSpan } from "@/utils/dom";
 import { createAsyncHandler, debounce, waitForPaint } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayNote } from "@/utils/types";
-import { createGlobalSpinner } from "@/utils/ui";
+import { createInfoSpan, createGlobalSpinner } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import {
   isNoteID,

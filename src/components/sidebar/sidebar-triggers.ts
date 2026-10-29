@@ -15,8 +15,8 @@ import {
 } from "@/notes/note-actions";
 import { confirmWithDialog, dialogMutex } from "@/settings/dialog-init";
 import { noteStore, stateStore } from "@/state/state";
-import { requireElement } from "@/utils/dom";
 import { useCore, useDialog } from "@/utils/registry";
+import { requireElement } from "@/utils/ui";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { Id } from "@shared/schemas/note-schema";
 import type { ExportContent } from "@shared/schemas/request-schema";

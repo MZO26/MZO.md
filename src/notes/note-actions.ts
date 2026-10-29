@@ -14,6 +14,13 @@ import {
   recreateEditorState,
   setSelection,
 } from "@/components/editor/editor-actions";
+import {
+  extractText,
+  snippetGenerator,
+  titleGenerator,
+  walkDoc,
+  wrapAsDoc,
+} from "@/components/editor/editor-generators";
 import { initEditorContent } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
@@ -23,13 +30,6 @@ import { downgradeDocLinks } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
 import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
-import {
-  extractText,
-  snippetGenerator,
-  titleGenerator,
-  walkDoc,
-  wrapAsDoc,
-} from "@/utils/doc-helpers";
 import { debounce, omitKeys } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import { appEvents } from "@shared/event-emitter";

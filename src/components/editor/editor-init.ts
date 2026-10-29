@@ -10,7 +10,9 @@ import {
   applyView,
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
-import { SelectionHighlight } from "@/extensions/active-highlight";
+import { SelectionHighlight } from "@/extensions/decorations/active-highlight";
+import { NoteInfoWidget } from "@/extensions/decorations/note-info";
+import { Placeholder } from "@/extensions/decorations/placeholder";
 import { DropHandler } from "@/extensions/editor-handler/drop-handler";
 import { MasterShortcuts } from "@/extensions/editor-handler/editor-shortcuts";
 import {
@@ -25,7 +27,6 @@ import {
 } from "@/extensions/editor-handler/selection-wrappers";
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
-import { NoteInfoWidget } from "@/extensions/note-info";
 import { CodeblockHandler } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { lowlight } from "@/extensions/overrides/codeblock/lowlight";
 import { CustomHeading } from "@/extensions/overrides/headings";
@@ -36,7 +37,6 @@ import {
 } from "@/extensions/overrides/mathematics/mathematics";
 import { handleMathClick } from "@/extensions/overrides/mathematics/mathematics-dialog";
 import { CustomUnderline } from "@/extensions/overrides/underline";
-import { Placeholder } from "@/extensions/placeholder";
 import { DocSearch } from "@/extensions/search-replace";
 import { NoteTagHandler } from "@/extensions/tag/tag-handler";
 import { SelectionMetrics, TextMetrics } from "@/extensions/text-metrics";
@@ -57,9 +57,8 @@ import {
   SHARED_KATEX_OPTIONS,
   YIELD_MS,
 } from "@/utils/constants";
-import { requireElement } from "@/utils/dom";
 import { sleep } from "@/utils/helpers";
-import { createGlobalSpinner } from "@/utils/ui";
+import { createGlobalSpinner, requireElement } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";

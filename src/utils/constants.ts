@@ -69,29 +69,6 @@ const CODE_THEME_MAP = {
   colorless: { dark: "colorless", light: "colorless" },
 } as const;
 
-const BLOCK_TYPES = new Set([
-  "paragraph",
-  "heading",
-  "blockquote",
-  "codeBlock",
-  "horizontalRule",
-  "bulletList",
-  "orderedList",
-  "listItem",
-  "taskList",
-  "taskItem",
-  "table",
-  "tableRow",
-  "tableHeader",
-  "tableCell",
-  "inlineMath",
-  "blockMath",
-  "hardBreak",
-  "image",
-  "noteTag",
-  "wikilink",
-]);
-
 const MOVEABLE_BLOCKS = new Set([
   "paragraph",
   "heading",
@@ -189,7 +166,6 @@ const SHARED_KATEX_OPTIONS = {
 
 export {
   ALLOWED_TYPES,
-  BLOCK_TYPES,
   CHAR_BASELINE,
   CODE_THEME_MAP,
   DEBOUNCE_MS,

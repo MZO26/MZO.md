@@ -20,9 +20,9 @@ function extractText(doc: JSONContent): string {
         continue;
       }
       case "wikilink": {
-        const label = node.attrs?.["label"] ?? node.attrs?.["id"];
-        if (typeof label === "string" && label.length > 0) {
-          parts.push(" ", label, " ");
+        const title = node.attrs?.["title"] ?? "";
+        if (typeof title === "string" && title.length > 0) {
+          parts.push(" ", title, " ");
         }
         continue;
       }

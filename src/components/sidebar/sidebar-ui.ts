@@ -10,12 +10,6 @@ import {
   SIDEBAR_ALL_NOTES_LIMIT,
   UNTAGGED,
 } from "@/utils/constants";
-import {
-  createIconButton,
-  createInfoSpan,
-  requireElement,
-  setActiveItem,
-} from "@/utils/dom";
 import { createAsyncHandler, debounce } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { useCore } from "@/utils/registry";
@@ -25,7 +19,14 @@ import type {
   SelectionParams,
   SidebarParams,
 } from "@/utils/types";
-import { createTemplateCloner, isDiv } from "@/utils/ui";
+import {
+  createIconButton,
+  createInfoSpan,
+  createTemplateCloner,
+  isDiv,
+  requireElement,
+  setActiveItem,
+} from "@/utils/ui";
 import { isNoteID } from "@shared/schemas/note-schema";
 
 function updateSelectionUI(selectionParams: SelectionParams) {

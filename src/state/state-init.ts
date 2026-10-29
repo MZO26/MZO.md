@@ -20,8 +20,8 @@ import {
   shallowEq,
   stateStore,
 } from "@/state/state";
-import { setActiveItem } from "@/utils/dom";
 import { useCore } from "@/utils/registry";
+import { setActiveItem } from "@/utils/ui";
 
 function initSubscriptions(sidebar: HTMLDivElement) {
   stateStore.subscribeSel(

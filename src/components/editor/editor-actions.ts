@@ -23,6 +23,9 @@ import {
 import { MarkdownManager } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 
+// actions that don't require dom
+// (have to be compatible with worker)
+
 let editorExtensions: ReturnType<typeof getRequestExtensions> | undefined;
 let markdownManager: MarkdownManager | undefined;
 

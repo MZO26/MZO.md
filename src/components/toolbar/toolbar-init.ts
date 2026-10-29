@@ -12,9 +12,9 @@ import {
   setWindowTop,
 } from "@/components/toolbar/toolbar-features";
 import { stateStore } from "@/state/state";
-import { requireElement } from "@/utils/dom";
 import { createAsyncHandler } from "@/utils/helpers";
 import { isFocusActive } from "@/utils/shortcuts";
+import { requireElement } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
 
