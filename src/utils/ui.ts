@@ -1,5 +1,5 @@
 import { requireElement } from "@/utils/dom";
-import { useTemplates, type TemplateRegistry } from "./registry";
+import { useTemplates, type TemplateRegistry } from "@/utils/registry";
 
 function createTooltipContent(baseText: string) {
   return baseText
@@ -11,15 +11,12 @@ function createTooltipContent(baseText: string) {
 function createGlobalSpinner(showDelay: number = 200) {
   const spinner = requireElement<HTMLDivElement>(".app-loading");
   return {
-    async wrap<T>(
-      task: () => T | Promise<T>,
-      delay = showDelay,
-    ): Promise<Awaited<T>> {
+    async wrap<T>(task: () => T | Promise<T>, delay = showDelay): Promise<T> {
       const showTimer = setTimeout(() => {
         spinner.hidden = false;
       }, delay);
       try {
-        return typeof task === "function" ? await task() : await task;
+        return typeof task === "function" ? await task() : task;
       } finally {
         clearTimeout(showTimer);
         spinner.hidden = true;

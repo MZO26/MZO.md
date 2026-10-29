@@ -4,11 +4,12 @@ import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { stateStore } from "@/state/state";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import {
-  getMetadata,
+  snippetGenerator,
   textConverter,
   titleGenerator,
+  walkDoc,
   wrapAsDoc,
-} from "@/utils/generators";
+} from "@/utils/doc-helpers";
 import { withPerformanceLog } from "@/utils/helpers";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
 import { AppErrorCode } from "@shared/errors";
@@ -98,12 +99,12 @@ async function setImportedContent(
       if (!json) continue;
       let updatedJson = addActiveTagToDoc(json, activeTag);
       const text = generateText(updatedJson, extensions);
-      const metadata = getMetadata(updatedJson);
       const payload: CreateNotePayload = {
         title: titleGenerator(updatedJson),
+        snippet: snippetGenerator(updatedJson),
         content: updatedJson,
         plain_text: text,
-        ...metadata,
+        ...walkDoc(updatedJson),
         pinned: false,
       };
       processedPayloads.push(payload);

@@ -8,10 +8,9 @@ import {
 } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, NAV_KEYS } from "@/utils/constants";
+import { truncateTitle } from "@/utils/doc-helpers";
 import { createInfoSpan } from "@/utils/dom";
-import { truncateTitle } from "@/utils/generators";
 import { createAsyncHandler, debounce, waitForPaint } from "@/utils/helpers";
-import { normalizeText } from "@/utils/note-helpers";
 import { useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayNote } from "@/utils/types";
 import { createGlobalSpinner } from "@/utils/ui";
@@ -34,6 +33,14 @@ type QuickSwitchState = {
   lastQuery: SearchQuery;
   currentQueryId: number;
 };
+
+function normalizeText(str: string): string {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
 
 function initQuickSwitcher(editor: Editor) {
   const qsState: QuickSwitchState = {

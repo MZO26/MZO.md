@@ -3,10 +3,11 @@ import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { handleCreateNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { WIKILINK_REGEX } from "@/utils/constants";
-import { getLinks, truncateTitle } from "@/utils/generators";
+import { truncateTitle } from "@/utils/doc-helpers";
 import { memoize } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import {
+  isNoteID,
   type Id,
   type Note,
   type NoteListItem,
@@ -270,6 +271,29 @@ function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
     if (modified && dispatch) tr.setMeta("addToHistory", false);
     return modified;
   });
+}
+
+function getLinks(doc: JSONContent): Id[] {
+  const seen = new Set<Id>();
+  const stack: JSONContent[] = [doc];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!node) continue;
+    if (node.type === "wikilink") {
+      const id = node.attrs?.["id"];
+      if (typeof id === "string" && isNoteID(id)) {
+        seen.add(id);
+      }
+      continue;
+    }
+    if (Array.isArray(node.content)) {
+      for (let i = node.content.length - 1; i >= 0; i--) {
+        const child = node.content[i];
+        if (child) stack.push(child);
+      }
+    }
+  }
+  return Array.from(seen);
 }
 
 function addActiveLinkToDoc(

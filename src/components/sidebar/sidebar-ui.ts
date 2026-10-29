@@ -18,7 +18,6 @@ import {
 } from "@/utils/dom";
 import { createAsyncHandler, debounce } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
-import { updateNoteCount } from "@/utils/note-helpers";
 import { useCore } from "@/utils/registry";
 import type {
   AllTagsMenu,
@@ -403,6 +402,5 @@ export {
   resizeSidebar,
   showTagPopover,
   toggleSidebar,
-  updateNoteCount,
   updateSelectionUI,
 };

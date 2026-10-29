@@ -25,10 +25,11 @@ import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import {
   extractText,
-  getMetadata,
+  snippetGenerator,
   titleGenerator,
+  walkDoc,
   wrapAsDoc,
-} from "@/utils/generators";
+} from "@/utils/doc-helpers";
 import { debounce, omitKeys } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import { appEvents } from "@shared/event-emitter";
@@ -58,11 +59,11 @@ async function handleCreateNote(options?: {
   if (options?.activeTitle)
     editorContent = addHeadingToDoc(editorContent, options.activeTitle);
   const text = extractText(editorContent);
-  const metadata = getMetadata(editorContent);
   const payload: CreateNotePayload = {
     content: editorContent,
+    snippet: snippetGenerator(editorContent),
     plain_text: text,
-    ...metadata,
+    ...walkDoc(editorContent),
     title: options?.activeTitle ?? UNTITLED,
     pinned: false,
   };
@@ -255,14 +256,14 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
   const { editor, editorWrapper } = useCore("editor", "editorWrapper");
   const content = editor.getJSON();
   const text = editor.getText();
-  const metaData = getMetadata(content);
   const newTitle = titleGenerator(content);
   const payload: UpdateNotePayload = {
     id,
     title: newTitle,
+    snippet: snippetGenerator(content),
     content,
     plain_text: text,
-    ...metaData,
+    ...walkDoc(content),
   };
   const result = await updateNote(payload, flush);
   if (!result.success) {
@@ -384,12 +385,13 @@ async function handleExtractToNote(id: Id, content: JSONContent) {
   const activeTag = stateStore.get("activeTag");
   let editorContent = addActiveTagToDoc(doc, activeTag);
   const text = extractText(editorContent);
-  const metadata = getMetadata(editorContent);
+  const extractedData = walkDoc(editorContent);
   const payload: CreateNotePayload = {
-    content: doc,
+    content: editorContent,
+    snippet: snippetGenerator(editorContent),
     plain_text: text,
-    ...metadata,
-    links: [...metadata.links, id],
+    ...extractedData,
+    links: [...extractedData.links, id],
     title: titleGenerator(editorContent) ?? UNTITLED,
     pinned: false,
   };

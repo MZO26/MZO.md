@@ -38,8 +38,7 @@ function registerSettingsIpc(win: BrowserWindow) {
       if (!checkRateLimit(IPC_CHANNELS.GET_SETTING, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const safeKey = validation(StoreSchema.keyof(), key);
-      const settings = settingsService.getSettings();
-      return validation(StoreSchema.shape[safeKey], settings[safeKey]);
+      return settingsService.get(safeKey);
     }),
   );
 

@@ -3,7 +3,7 @@ import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { handleUpdateSettings } from "@/settings/setting-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
-import { compareNotes, updateNoteCount } from "@/utils/note-helpers";
+import { compareNotes } from "@/utils/helpers";
 import { useUI } from "@/utils/registry";
 import type { SidebarParams } from "@/utils/types";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
@@ -94,6 +94,18 @@ function getSidebarParams(): SidebarParams {
     display,
   };
 }
+
+function createNoteUpdater() {
+  let element: HTMLDivElement | null = null;
+  return function updateNoteCount(count: number) {
+    const { sidebarFooter } = useUI("sidebarFooter");
+    element ??= sidebarFooter.querySelector<HTMLDivElement>(".note-count");
+    if (!element) return;
+    element.textContent = `${count} ${count === 1 ? "note" : "notes"}`;
+  };
+}
+
+const updateNoteCount = createNoteUpdater();
 
 function sidebarListener() {
   if (sidebarUpdatePending) return;

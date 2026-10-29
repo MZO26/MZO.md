@@ -43,7 +43,7 @@ function saveWindowBounds() {
   if (!win || win.isDestroyed() || win.isMinimized()) {
     return;
   }
-  const settings = settingsService.getSettings();
+  const settings = settingsService.get("window_bounds");
   try {
     const bounds =
       typeof win.getNormalBounds === "function"

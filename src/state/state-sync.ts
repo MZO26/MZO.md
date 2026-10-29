@@ -1,7 +1,7 @@
 import { rendererLogger } from "@/app";
 import { getSidebarParams } from "@/components/sidebar/sidebar-views";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
-import { compareNotes } from "@/utils/note-helpers";
+import { compareNotes } from "@/utils/helpers";
 import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { Result } from "@shared/shared-types";

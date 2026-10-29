@@ -2,7 +2,6 @@ import { updateToc } from "@/components/editor/editor-init";
 import { getTextMetrics } from "@/extensions/text-metrics";
 import { getTableOfContents } from "@/extensions/toc";
 import { renderIcons } from "@/utils/icons";
-import { estimateReadingTime } from "@/utils/note-helpers";
 import { useCore, useTemplates, useUI } from "@/utils/registry";
 import { createTemplateCloner, isDiv } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
@@ -34,6 +33,12 @@ function handleEditorEmptyState(activeId: Id | null) {
   } else if (existingEmptyState) {
     existingEmptyState.remove();
   }
+}
+
+function estimateReadingTime(wordCount: number, wpm = 238) {
+  const s = Math.round((wordCount / wpm) * 60);
+  const m = Math.round(s / 60);
+  return s < 30 ? "< 1 min read" : s < 60 ? "1 min read" : `${m} min read`;
 }
 
 function updateStats(editor: Editor, options?: { override: boolean }) {

@@ -1,7 +1,6 @@
 import { NoteTag } from "@/extensions/tag/tag";
 import { noteStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
-import { getTags } from "@/utils/generators";
 import { memoize } from "@/utils/helpers";
 import type { NoteListItem, Tag } from "@shared/schemas/note-schema";
 import type { JSONContent } from "@tiptap/core";
@@ -146,6 +145,32 @@ const getSortedTags = memoize((notes: readonly NoteListItem[]) => {
   }
   return Array.from(tagSet).sort((a, b) => a.length - b.length);
 });
+
+function getTags(doc: JSONContent) {
+  const seen = new Set<string>();
+  const stack: JSONContent[] = [doc];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!node) continue;
+    if (node.type === "noteTag") {
+      const name = node.attrs?.["id"];
+      if (typeof name === "string") {
+        const normalized = name.trim().toLowerCase();
+        if (normalized.length > 0 && normalized.length <= 100) {
+          seen.add(normalized);
+        }
+      }
+      continue;
+    }
+    if (Array.isArray(node.content)) {
+      for (let i = node.content.length - 1; i >= 0; i--) {
+        const child = node.content[i];
+        if (child) stack.push(child);
+      }
+    }
+  }
+  return Array.from(seen);
+}
 
 function addActiveTagToDoc(
   doc: JSONContent,

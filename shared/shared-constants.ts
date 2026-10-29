@@ -1,4 +1,5 @@
 import type { AppSettings } from "@shared/schemas/store-schema";
+import type { JSONContent } from "@tiptap/core";
 
 const APP_VERSION = "1.2.0";
 
@@ -26,7 +27,7 @@ const EMPTY_DOC = {
       attrs: { level: 1 },
     },
   ],
-};
+} satisfies JSONContent;
 
 const ALLOWED_IMPORT_EXTENSIONS = ["md", "html", "json", "txt"] as const;
 

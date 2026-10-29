@@ -18,13 +18,14 @@ import type {
 } from "@shared/schemas/store-schema";
 import type { ResolvedTheme, Result } from "@shared/shared-types";
 
-function resolveTheme(theme: Readonly<Theme>): Readonly<ResolvedTheme> {
-  if (theme === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
+const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+function resolveTheme(theme: Theme): ResolvedTheme {
+  return theme === "system"
+    ? darkQuery.matches
       ? "dark"
-      : "light";
-  }
-  return THEME_MAP[theme];
+      : "light"
+    : THEME_MAP[theme];
 }
 
 async function applyAppTheme(

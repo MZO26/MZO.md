@@ -21,7 +21,6 @@ import {
 } from "@electron/titlebar";
 import { isWindowVisible, saveWindowBounds } from "@electron/win";
 import { type AppSettings } from "@shared/schemas/store-schema";
-import { DEFAULT_SETTINGS } from "@shared/shared-constants";
 import {
   app,
   BrowserWindow,
@@ -58,20 +57,17 @@ setupGlobalErrorHandling({
   ignore: ["DownloadItem", "net::ERR_ABORTED", "net::ERR_CONNECTION_REFUSED"],
 });
 
-// window logic
-
-async function initSettings(): Promise<AppSettings> {
+function initSettings(): Readonly<AppSettings> {
   try {
     db.open();
-    await settingsService.initialize();
-    return settingsService.getSettings();
+    settingsService.initialize();
   } catch (error) {
     mainLogger.appError(
       "[initSettings]: Couldn't load settings from DB. Using defaults.",
       error,
     );
-    return DEFAULT_SETTINGS;
   }
+  return settingsService.getSettings();
 }
 
 async function createWindow() {

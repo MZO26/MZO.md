@@ -1,5 +1,5 @@
 import { rendererLogger } from "@/app";
-import type { Id } from "@shared/schemas/note-schema";
+import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 
 type Debounced<A extends (...args: any[]) => void> = ((
   ...args: Parameters<A>
@@ -63,13 +63,11 @@ function createAsyncHandler<T extends Event>(
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-function nextFrame(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
-}
-
 async function waitForPaint(frames = 2): Promise<void> {
   for (let i = 0; i < frames; i++) {
-    await nextFrame();
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve()),
+    );
   }
 }
 
@@ -128,9 +126,26 @@ function omitKeys<K extends Id, V>(
   return next;
 }
 
+function compareNotes(a: NoteListItem, b: NoteListItem) {
+  if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+  if (a.created_at > b.created_at) return -1;
+  if (a.created_at < b.created_at) return 1;
+  return a.title.localeCompare(b.title, undefined, {
+    sensitivity: "accent",
+    numeric: true,
+  });
+}
+
+function getExtension(name: string) {
+  const index = name.lastIndexOf(".");
+  return index > 0 ? name.slice(index + 1).toLowerCase() : "";
+}
+
 export {
+  compareNotes,
   createAsyncHandler,
   debounce,
+  getExtension,
   memoize,
   omitKeys,
   sleep,

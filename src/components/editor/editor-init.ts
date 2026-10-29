@@ -52,15 +52,19 @@ import {
   waitForFlush,
 } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { SHARED_KATEX_OPTIONS } from "@/utils/constants";
+import {
+  NODE_BASELINE,
+  SHARED_KATEX_OPTIONS,
+  YIELD_MS,
+} from "@/utils/constants";
 import { requireElement } from "@/utils/dom";
-import { checkNoteSize } from "@/utils/note-helpers";
+import { sleep } from "@/utils/helpers";
 import { createGlobalSpinner } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
-import { Editor } from "@tiptap/core";
+import { Editor, type JSONContent } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import {
@@ -278,6 +282,11 @@ type EditorInitContentParams = {
   note: Readonly<Note>;
   editor: Editor;
 };
+
+async function checkNoteSize(doc: JSONContent) {
+  rendererLogger.devLog(`Node amount: ${doc.content?.length}`);
+  if (doc.content && doc.content.length > NODE_BASELINE) await sleep(YIELD_MS);
+}
 
 async function initEditorContent({ note, editor }: EditorInitContentParams) {
   try {
