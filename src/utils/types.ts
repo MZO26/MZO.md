@@ -79,7 +79,6 @@ type SnippetGenParams = {
   item: HTMLDivElement;
   note: NoteListItem;
   snippets: Record<Id, string>;
-  display: AppSettings["note_item_display"];
 };
 
 type SelectionParams = {

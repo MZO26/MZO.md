@@ -11,7 +11,7 @@ const imageWorker =
 
 const markdownWorker =
   typeof window !== "undefined"
-    ? new Worker(new URL("./worker-markdown.ts", import.meta.url), {
+    ? new Worker(new URL("./worker-parse.ts", import.meta.url), {
         type: "module",
       })
     : null;

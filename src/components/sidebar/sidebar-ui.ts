@@ -313,7 +313,7 @@ function renderNoteList(sidebarParams: SidebarParams) {
     : notes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
   for (const note of displayNotes) {
     const item = createNoteItem(note, display);
-    getSafeSnippet({ item, note, snippets: searchSnippets, display });
+    getSafeSnippet({ item, note, snippets: searchSnippets });
     if (note.id === activeId) {
       activeElement = item;
     }

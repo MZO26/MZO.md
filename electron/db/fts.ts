@@ -22,12 +22,12 @@ class NotesSearch {
     WITH matched_notes AS (
         SELECT
         rowid,
-        rank,
-        snippet(notes_fts, 1, '<mark class="active-search-highlight">', '</mark>', '...', 8) AS search_match
+        bm25(notes_fts, 10.0, 1.0) as rank,
+        snippet(notes_fts, -1, '<mark class="active-search-highlight">', '</mark>', '...', 12) AS search_match
         FROM notes_fts
         WHERE notes_fts MATCH $ftsQuery
-        ORDER BY rank
-        LIMIT 20
+        ORDER BY rank ASC
+        LIMIT 50
     )
     SELECT
         n.id,
@@ -36,7 +36,7 @@ class NotesSearch {
         m.rank
     FROM matched_notes m
     JOIN notes n ON n.rowid = m.rowid
-    ORDER BY m.rank
+    ORDER BY m.rank ASC
     `);
   }
 

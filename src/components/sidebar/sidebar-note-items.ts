@@ -11,13 +11,14 @@ import DOMPurify from "dompurify";
 const getNoteItemClone = createTemplateCloner("noteItemTemplate", isDiv);
 
 function getSafeSnippet(snippetGenParams: SnippetGenParams) {
-  const { item, note, snippets, display } = snippetGenParams;
+  const { item, note, snippets } = snippetGenParams;
   const contentEl = item.querySelector<HTMLDivElement>(".note-content");
   if (!contentEl) return;
-  const searchSnippets = snippets || {};
-  const displaySnippet = searchSnippets[note.id] || note.snippet;
+  const searchSnippet = snippets?.[note.id];
+  const displaySnippet = searchSnippet ?? note.snippet;
   const safe = DOMPurify.sanitize(displaySnippet, DOMPURIFY_CONFIG);
-  contentEl.innerHTML = display === "preview" ? safe : "";
+  item.classList.toggle("search", !!searchSnippet);
+  contentEl.innerHTML = safe;
 }
 
 function renderTags(tags: NoteListItem["tags"], container: HTMLDivElement) {

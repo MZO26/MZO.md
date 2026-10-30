@@ -23,6 +23,8 @@ function registerCustomProtocol() {
   ]);
 }
 
+const TEXT_HEADERS = { "Content-Type": "text/plain; charset=utf-8" };
+
 async function setupLocalImageProtocol() {
   const imagesDir = path.join(app.getPath("userData"), "Images");
   let realImagesDir: string;
@@ -37,7 +39,7 @@ async function setupLocalImageProtocol() {
     protocol.handle("appimg", () => {
       return new Response("Image system disabled due to startup error", {
         status: 500,
-        headers: { "Content-Type": "text/plain" },
+        headers: TEXT_HEADERS,
       });
     });
     return;
@@ -46,23 +48,26 @@ async function setupLocalImageProtocol() {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return new Response("Method Not Allowed", {
         status: 405,
-        headers: { "Content-Type": "text/plain" },
+        headers: TEXT_HEADERS,
       });
     }
     const parsed = URL.parse(request.url);
     if (!parsed || parsed.protocol !== "appimg:") {
       return new Response("Bad Request", {
         status: 400,
-        headers: { "Content-Type": "text/plain" },
+        headers: TEXT_HEADERS,
       });
     }
     try {
-      const rawRelativePath = `${parsed.hostname}${parsed.pathname}`;
-      const decodedPath = decodeURIComponent(rawRelativePath).replace(
+      const rawRelativePath = `${parsed.hostname}${parsed.pathname}`.replace(
         /^[/\\]+/,
         "",
       );
-      const intendedPath = path.resolve(realImagesDir, decodedPath);
+      const targetFileUrl = new URL(
+        rawRelativePath,
+        pathToFileURL(realImagesDir + path.sep),
+      );
+      const intendedPath = fileURLToPath(targetFileUrl);
       const inside = await isInsideDirectory(realImagesDir, intendedPath, {
         skipBaseRealpath: true,
       });
@@ -72,7 +77,7 @@ async function setupLocalImageProtocol() {
           headers: { "Content-Type": "text/plain" },
         });
       }
-      return net.fetch(pathToFileURL(intendedPath).toString());
+      return await net.fetch(pathToFileURL(intendedPath).toString());
     } catch (error) {
       return new Response("Image not found", {
         status: 404,
