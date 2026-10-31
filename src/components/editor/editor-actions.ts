@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@tiptap/extension-table";
 import { MarkdownManager } from "@tiptap/markdown";
+import { Node as PMNode } from "@tiptap/pm/model";
 import StarterKit from "@tiptap/starter-kit";
 
 // actions that don't require dom
@@ -129,7 +130,20 @@ function isSafeExternalUrl(url: string) {
   return ALLOWED_PROTOCOLS.has(parsed.protocol);
 }
 
+function findAllNodes(
+  doc: PMNode,
+  predicate: (node: PMNode) => boolean,
+): { node: PMNode; pos: number }[] {
+  const results: { node: PMNode; pos: number }[] = [];
+  doc.descendants((node, pos) => {
+    if (predicate(node)) results.push({ node, pos });
+    return true;
+  });
+  return results;
+}
+
 export {
+  findAllNodes,
   getCachedEditorExtensions,
   getEditorPos,
   getHTMLContentBetween,

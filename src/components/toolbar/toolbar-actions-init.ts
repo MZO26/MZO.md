@@ -83,6 +83,10 @@ const TOOLBAR_ACTIONS: ActionMap = {
     action: "editor:ordered-list",
     icon: "ListOrdered",
   },
+  taskList: {
+    action: "editor:task-list",
+    icon: "ListChecks",
+  },
   blockQuote: {
     action: "editor:block-quote",
     icon: "TextQuote",

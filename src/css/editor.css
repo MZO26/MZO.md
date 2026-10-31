@@ -87,6 +87,28 @@
   pointer-events: none;
 }
 
+.note-info-progress-bar-bg {
+  width: 4.5rem;
+  height: 0.35rem;
+  border-radius: 99px;
+  background-color: color-mix(in srgb, var(--text-muted) 20%, transparent);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.note-info-progress-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--text-muted);
+  transition:
+    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease;
+}
+
+.note-info-progress-bar-bg.is-complete .note-info-progress-bar-fill {
+  background-color: var(--text-main);
+}
+
 .duplicate-link-widget {
   display: flex;
   width: fit-content;
@@ -540,6 +562,39 @@
   list-style-type: disc;
   padding-left: 1.5rem;
   margin: 0.75rem 0;
+}
+
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.25rem;
+}
+
+.ProseMirror li[data-checked] {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.ProseMirror li[data-checked] > label,
+.ProseMirror li[data-checked] > div {
+  display: contents;
+}
+
+.ProseMirror li[data-checked] p {
+  flex: 1;
+  margin: 0;
+}
+
+.ProseMirror li[data-checked] input {
+  accent-color: var(--text-muted);
+  margin: 0;
+  transform: translateY(1px);
+  cursor: pointer;
+}
+
+.ProseMirror li[data-checked="true"] p {
+  color: var(--text-muted);
+  text-decoration: line-through;
 }
 
 .ProseMirror .editor-dropcursor {

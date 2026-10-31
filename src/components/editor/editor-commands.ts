@@ -64,6 +64,10 @@ const editorCommands: Record<EditorEventStrings, EditorCommands> = {
     run: (editor) => editor.chain().focus().toggleOrderedList().run(),
     isActive: (editor) => editor.isActive("orderedList"),
   },
+  "editor:task-list": {
+    run: (editor) => editor.chain().focus().toggleTaskList().run(),
+    isActive: (editor) => editor.isActive("taskList"),
+  },
   "editor:block-quote": {
     run: (editor) => editor.chain().focus().toggleBlockquote().run(),
     isActive: (editor) => editor.isActive("blockquote"),

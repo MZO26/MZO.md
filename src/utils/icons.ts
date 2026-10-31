@@ -1,4 +1,10 @@
-import { ChevronDown, ChevronRight, ChevronUp, createIcons } from "lucide";
+import {
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  createIcons,
+  ListChecks,
+} from "lucide";
 
 import {
   AppWindow,
@@ -53,6 +59,7 @@ import {
 } from "lucide";
 
 const APP_ICONS = {
+  ListChecks,
   ChevronRight,
   ChevronUp,
   ChevronDown,

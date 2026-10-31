@@ -76,6 +76,7 @@ const EDITOR_EVENTS = {
   HEADING3: "editor:heading3",
   BULLET_LIST: "editor:bullet-list",
   ORDERED_LIST: "editor:ordered-list",
+  TASK_LIST: "editor:task-list",
   BLOCK_QUOTE: "editor:block-quote",
   INLINE_CODE: "editor:inline-code",
   CODE_BLOCK: "editor:code-block",

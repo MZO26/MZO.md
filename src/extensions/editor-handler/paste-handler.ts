@@ -130,6 +130,7 @@ function looksLikeMarkdown(text: string) {
     /\[[^\]\n]+\]\([^)\n]+\)/,
     /^\S[^\r\n]*\r?\n(?:={3,}|-{3,})$/m,
     /^---\r?\n(?:\w[\w-]*:\s?.*\r?\n)+---$/m,
+    /^\s*(?:[-*+]|\d{1,3}[.)])\s+\[[ xX]\]\s+\S/m,
   ];
   if (strongSignals.some((pattern) => pattern.test(trimmed))) return true;
   let matchCount = 0;
@@ -149,8 +150,8 @@ function looksLikeMarkdown(text: string) {
   const lines = trimmed.split(/\r?\n/);
   const blockPatterns = [
     /^>\s?\S/,
-    /^[-*+]\s+\S/,
-    /^\d{1,3}[.)]\s+\S/,
+    /^\s*[-*+]\s+\S/,
+    /^\s*\d{1,3}[.)]\s+\S/,
     /^\|.+\|$/,
     /^(-{3,}|\*{3,}|_{3,})$/,
   ];

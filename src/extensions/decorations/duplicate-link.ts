@@ -1,7 +1,7 @@
+import { findAllNodes } from "@/components/editor/editor-actions";
 import { noteStore, stateStore } from "@/state/state";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 import { Extension } from "@tiptap/core";
-import { Node as PMNode } from "@tiptap/pm/model";
 import { EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
@@ -53,18 +53,6 @@ function checkForDuplicates(): Map<Id, DuplicateItem> | null {
     }
   }
   return duplicatesMap.size > 0 ? duplicatesMap : null;
-}
-
-function findAllNodes(
-  doc: PMNode,
-  predicate: (node: PMNode) => boolean,
-): { node: PMNode; pos: number }[] {
-  const results: { node: PMNode; pos: number }[] = [];
-  doc.descendants((node, pos) => {
-    if (predicate(node)) results.push({ node, pos });
-    return true;
-  });
-  return results;
 }
 
 function createDuplicateDecoration(state: EditorState): DecorationSet {

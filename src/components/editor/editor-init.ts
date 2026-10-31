@@ -67,6 +67,7 @@ import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor, type JSONContent } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
+import { ListKit } from "@tiptap/extension-list";
 import {
   Table,
   TableCell,
@@ -163,6 +164,12 @@ function getNoteEditorExtensions() {
         width: 2,
         class: "editor-dropcursor",
       },
+    }),
+    ListKit.configure({
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
+      listKeymap: false,
     }),
     LinkWithTitle.configure({
       openOnClick: false,
