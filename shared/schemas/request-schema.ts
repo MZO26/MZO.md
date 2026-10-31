@@ -110,7 +110,6 @@ export {
   FileNameSchema,
   FilePathRequestSchema,
   ImportRequestSchema,
-  StringContentSchema,
   type ExportManyRequest,
   type ExportRequest,
   type FilePathRequest,

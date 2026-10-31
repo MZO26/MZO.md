@@ -7,7 +7,7 @@ import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-interface TagAutocompleteState {
+export interface TagAutocompleteState {
   from: number;
   to: number;
   autocompleteText: string;

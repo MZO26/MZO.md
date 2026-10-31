@@ -462,7 +462,6 @@ export {
   handleDuplicateNote,
   handleExtractToNote,
   handleImportNote,
-  handleSaveNote,
   handleSelectNote,
   waitForFlush,
 };

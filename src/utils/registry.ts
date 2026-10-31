@@ -157,19 +157,13 @@ const useTemplates = fromRegistry("template");
 const useDialog = fromRegistry("dialog");
 
 export {
-  fromRegistry,
   initCoreRegistry,
   initDialogRegistry,
   initTemplateRegistry,
   initUIRegistry,
-  toRegistry,
   useCore,
   useDialog,
   useTemplates,
   useUI,
-  type AppRegistry,
-  type CoreRegistry,
-  type DialogRegistry,
   type TemplateRegistry,
-  type UIRegistry,
 };

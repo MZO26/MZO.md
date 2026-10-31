@@ -99,7 +99,6 @@ export {
   createIconButton,
   createInfoSpan,
   createTemplateCloner,
-  createTooltipContent,
   isDiv,
   requireElement,
   setActiveItem,

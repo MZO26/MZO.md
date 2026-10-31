@@ -3,7 +3,7 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-type CountState = {
+export type CountState = {
   characters: number;
   words: number;
 };

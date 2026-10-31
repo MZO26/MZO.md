@@ -292,5 +292,4 @@ export {
   shallowEq,
   stateStore,
   type AppState,
-  type NoteStore,
 };

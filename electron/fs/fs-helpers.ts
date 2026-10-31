@@ -234,7 +234,6 @@ function dedupeFileNames(payload: ExportRequest[]) {
 
 export {
   dedupeFileNames,
-  EXPORT_REGEX,
   getFilePath,
   isInsideDirectory,
   isInsideDirectorySync,

@@ -31,6 +31,4 @@ const DbContentCodec = z.codec(z.string(), EditorDocSchema, {
   encode: (doc) => JSON.stringify(doc),
 });
 
-type EditorDoc = z.infer<typeof EditorDocSchema>;
-
-export { DbContentCodec, EditorDocSchema, isEditorDoc, type EditorDoc };
+export { DbContentCodec, EditorDocSchema, isEditorDoc };

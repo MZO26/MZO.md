@@ -89,7 +89,7 @@ function createDuplicateDecoration(state: EditorState): DecorationSet {
   );
 }
 
-export const duplicateLinkKey = new PluginKey<DecorationSet>("duplicateLink");
+const duplicateLinkKey = new PluginKey<DecorationSet>("duplicateLink");
 
 export const DuplicateLinkWidget = Extension.create({
   name: "duplicateLinkWidget",

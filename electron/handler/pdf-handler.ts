@@ -54,4 +54,4 @@ const createHiddenPdfWindow = () => {
   return hiddenWin;
 };
 
-export { createHiddenPdfWindow, getPDFAssets, loadPDFAssets, renderPDFCanvas };
+export { createHiddenPdfWindow, getPDFAssets, renderPDFCanvas };

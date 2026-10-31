@@ -54,4 +54,4 @@ function createNoteItem(
   return item;
 }
 
-export { createNoteItem, getSafeSnippet, renderTags };
+export { createNoteItem, getSafeSnippet };

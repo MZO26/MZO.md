@@ -20,17 +20,11 @@ type NativeWindowColors = {
   overlayOptions: TitleBarOverlayOptions;
 };
 
-type UrlDecision = "allow" | "block" | "external";
-
 type ResolvedTheme = Extract<Theme, "light" | "dark">;
 
 type TableAction = ValueOf<typeof TABLE_ACTIONS>;
 
 type AppEvent = ValueOf<typeof APP_EVENTS> | ValueOf<typeof EDITOR_EVENTS>;
-
-type PayloadOverrides = {
-  [APP_EVENTS.APPLY_VIEW]: string;
-};
 
 interface EditorCommands {
   run: (args: Editor) => boolean | Promise<boolean>;
@@ -60,24 +54,17 @@ type PDFAssets = { template: string; css: string };
 
 type ImportExtension = (typeof ALLOWED_IMPORT_EXTENSIONS)[number];
 
-type ContentType = ImportExtension;
-
 type ValueOf<T> = T[keyof T];
 
 export type {
   AppEvent,
-  ContentType,
   EditorCommands,
-  Failure,
   ImportExtension,
   ImportStats,
   NativeWindowColors,
-  PayloadOverrides,
   PDFAssets,
   ResolvedTheme,
   Result,
-  Success,
   TableAction,
-  UrlDecision,
   ValueOf,
 };

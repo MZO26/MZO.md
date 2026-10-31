@@ -5,7 +5,7 @@ import { Extension } from "@tiptap/core";
 import { EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-export const noteMetaKey = new PluginKey<DecorationSet>("noteMeta");
+const noteMetaKey = new PluginKey<DecorationSet>("noteMeta");
 
 interface TaskInfo {
   tasks: number;

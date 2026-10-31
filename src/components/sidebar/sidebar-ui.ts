@@ -399,7 +399,6 @@ function resizeSidebar() {
 
 export {
   handleSidebarChange,
-  renderNoteList,
   resizeSidebar,
   showTagPopover,
   toggleSidebar,

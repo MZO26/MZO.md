@@ -137,4 +137,4 @@ async function restoreFromBackupPath(backupPath: string) {
   }
 }
 
-export { initBackupScheduler, restoreFromBackupPath, runFolderBackup };
+export { initBackupScheduler, restoreFromBackupPath };

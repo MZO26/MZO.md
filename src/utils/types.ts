@@ -7,7 +7,7 @@ import type {
 } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { AppEvent } from "@shared/shared-types";
-import type { Editor, SetContentOptions } from "@tiptap/core";
+import type { Editor } from "@tiptap/core";
 
 type MathOptions =
   | {
@@ -64,8 +64,6 @@ type ImageCompressionPayload = {
   quality: number;
 };
 
-type EditorContentType = NonNullable<SetContentOptions["contentType"]>;
-
 type SidebarParams = {
   visibleNotes: readonly NoteListItem[];
   searchSnippets: Record<Id, string>;
@@ -113,15 +111,6 @@ type AllTagsMenu = {
   close(): void;
 };
 
-type SelectionAction =
-  | "cancel"
-  | "pin"
-  | "export"
-  | "copy-rich-text"
-  | "delete";
-
-type SelectionActionConfig = { id: SelectionAction; icon: AppIcons };
-
 type SettingsCategory = "Appearance" | "Editor" | "General";
 
 type AppIcons = keyof typeof APP_ICONS;
@@ -146,7 +135,6 @@ export type {
   ActiveStateParams,
   AllTagsMenu,
   AppIcons,
-  EditorContentType,
   FilterMode,
   ImageCompressionPayload,
   MappedMatches,
@@ -154,8 +142,6 @@ export type {
   QuickAction,
   QuickActionConfig,
   QuickSwitchDisplayNote,
-  SelectionAction,
-  SelectionActionConfig,
   SelectionParams,
   SelectOption,
   SettingsCategory,

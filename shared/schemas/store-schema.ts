@@ -56,10 +56,8 @@ const StoreRowSchema = z.object({
   active_tag: StoreSchema.shape["active_tag"],
 });
 
-type StoreFromDb = z.infer<typeof StoreFromDbSchema>;
 type StoreRow = z.infer<typeof StoreRowSchema>;
 type AppSettings = z.infer<typeof StoreSchema>;
-type ActiveTag = AppSettings["active_tag"];
 type Spellcheck = AppSettings["spellcheck"];
 type NoteItemDisplay = AppSettings["note_item_display"];
 type HighlightTheme = AppSettings["highlight"];
@@ -82,7 +80,6 @@ export {
   StoreFromDbSchema,
   StoreRowSchema,
   StoreSchema,
-  type ActiveTag,
   type AppearanceKeys,
   type AppSettings,
   type CodeTheme,
@@ -93,7 +90,6 @@ export {
   type LineHeight,
   type NoteItemDisplay,
   type Spellcheck,
-  type StoreFromDb,
   type StoreRow,
   type Theme,
 };

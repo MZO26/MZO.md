@@ -311,9 +311,4 @@ async function initEditorContent({ note, editor }: EditorInitContentParams) {
   }
 }
 
-export {
-  getNoteEditorExtensions,
-  initEditor,
-  initEditorContent,
-  setupEditorListeners,
-};
+export { initEditor, initEditorContent, setupEditorListeners };

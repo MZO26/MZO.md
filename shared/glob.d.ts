@@ -94,9 +94,6 @@ declare global {
       databaseBackupRestore: () => Promise<Result<void>>;
     };
     storeAPI: {
-      getSettings: <K extends keyof Readonly<AppSettings>>(
-        key: K,
-      ) => Promise<Result<Readonly<AppSettings[K]>>>;
       getAllSettings: () => Promise<Result<Readonly<AppSettings>>>;
       setSettings: (
         settings: Partial<Readonly<AppSettings>>,

@@ -69,4 +69,4 @@ function saveWindowBounds() {
   }
 }
 
-export { getClosestZoom, isWindowVisible, nextZoom, saveWindowBounds, ZOOMS };
+export { getClosestZoom, isWindowVisible, nextZoom, saveWindowBounds };

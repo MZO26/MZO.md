@@ -1,5 +1,4 @@
 import { rendererLogger } from "@/app";
-import { getSidebarParams } from "@/components/sidebar/sidebar-views";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { compareNotes } from "@/utils/helpers";
 import type { NoteListItem } from "@shared/schemas/note-schema";
@@ -44,4 +43,4 @@ function syncStateStore(settingsResult: Result<Readonly<AppSettings>>) {
   return stateStore.getState();
 }
 
-export { getSidebarParams, syncNoteStore, syncSettingsStore, syncStateStore };
+export { syncNoteStore, syncSettingsStore, syncStateStore };

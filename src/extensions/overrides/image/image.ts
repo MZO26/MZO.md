@@ -72,4 +72,4 @@ async function promptImageUpload(editor: Editor) {
   input.click();
 }
 
-export { compressImageInWorker, processAndInsertImages, promptImageUpload };
+export { processAndInsertImages, promptImageUpload };

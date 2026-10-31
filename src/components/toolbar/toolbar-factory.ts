@@ -113,8 +113,6 @@ export {
   buildToolbarMenu,
   buildTopToolbarMenu,
   buttonMap,
-  cachedActions,
-  createDivider,
   setupToolbarListeners,
   updateActiveStates,
 };

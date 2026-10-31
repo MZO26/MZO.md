@@ -68,4 +68,4 @@ function formatUpdatedAt(iso: string, now = Date.now()): string {
   }).format(new Date(iso));
 }
 
-export { formatNoteDate, formatUpdatedAt, startAppClock, updateDateTime };
+export { formatNoteDate, formatUpdatedAt, startAppClock };

@@ -75,4 +75,4 @@ function move(delta: number, currentIndex: number, visibleIds: readonly Id[]) {
   return nextIndex;
 }
 
-export { move, navigateSidebar, updateHover };
+export { navigateSidebar, updateHover };

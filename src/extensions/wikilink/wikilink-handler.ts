@@ -11,20 +11,19 @@ import {
   type Note,
   type NoteListItem,
 } from "@shared/schemas/note-schema";
-import { UNTITLED } from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
 
-type AutocompleteState = {
+export interface AutocompleteState {
   from: number;
   to: number;
   autocompleteText: string;
   noteId: Id;
   title: string;
-};
+}
 
 const autocompleteKey = new PluginKey<AutocompleteState>(
   "wikilinkAutocomplete",
@@ -298,31 +297,8 @@ function getLinks(doc: JSONContent): Id[] {
   return Array.from(seen);
 }
 
-function addActiveLinkToDoc(
-  doc: JSONContent,
-  activeLink: Id | null,
-): JSONContent {
-  if (!activeLink || getLinks(doc).some((id) => id === activeLink)) return doc;
-  const title = noteStore.get("noteIndex").get(activeLink)?.title ?? UNTITLED;
-  const linkNode = { type: "wikilink", attrs: { id: activeLink, title } };
-  const spaceNode = { type: "text", text: " " };
-  const content = [...(doc.content ?? [])];
-  const pIdx = content.findIndex((n) => n.type === "paragraph");
-  if (pIdx !== -1) {
-    content[pIdx] = {
-      ...content[pIdx],
-      content: [...(content[pIdx]?.content ?? []), linkNode, spaceNode],
-    };
-  } else {
-    content.push({ type: "paragraph", content: [linkNode, spaceNode] });
-  }
-  return { ...doc, content };
-}
-
 export {
-  addActiveLinkToDoc,
   downgradeDocLinks,
-  getLinks,
   resolveDocLinks,
   resolveGhostLink,
   WikilinkHandler,

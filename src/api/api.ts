@@ -137,12 +137,6 @@ async function databaseBackupRestore(): Promise<Result<void>> {
 
 // settings api
 
-async function getSettings<K extends keyof Readonly<AppSettings>>(
-  key: K,
-): Promise<Result<Readonly<AppSettings[K]>>> {
-  return invoke(window.storeAPI.getSettings(key));
-}
-
 async function getAllSettings(): Promise<Result<Readonly<AppSettings>>> {
   return invoke(window.storeAPI.getAllSettings());
 }
@@ -206,7 +200,6 @@ export {
   getManyById,
   getNoteById,
   getRelatedNotes,
-  getSettings,
   handleZoom,
   imageWriteMany,
   importNote,

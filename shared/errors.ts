@@ -51,15 +51,6 @@ enum AppErrorCode {
   ExportError = "EXPORT_ERROR",
 }
 
-const WORKER_ERROR_MESSAGES: Record<WorkerErrorCode, string> = {
-  [WorkerErrorCode.InvalidDataError]: "Worker got invalid payload",
-  [WorkerErrorCode.TimeoutError]: "Worker took too long",
-  [WorkerErrorCode.InitializeError]: "Worker failed to initialize",
-  [WorkerErrorCode.CompressionError]: "Image compression failed.",
-  [WorkerErrorCode.InvalidImageError]: "Invalid image file.",
-  [WorkerErrorCode.UnknownError]: "An unexpected worker error occurred.",
-};
-
 const ERROR_MESSAGES: Record<AppErrorCode, string> = {
   [AppErrorCode.DBError]: "Failed to access database.",
   [AppErrorCode.InvalidData]: "Couldn't read the notes' data.",
@@ -76,6 +67,5 @@ export {
   AppErrorCode,
   ERROR_MESSAGES,
   handleWorkerError,
-  WORKER_ERROR_MESSAGES,
   WorkerErrorCode,
 };

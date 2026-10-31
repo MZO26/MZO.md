@@ -119,11 +119,4 @@ function sidebarListener() {
   });
 }
 
-export {
-  applyView,
-  computeIdsForTagView,
-  getSidebarParams,
-  matchesActiveTag,
-  restoreSidebarScope,
-  sidebarListener,
-};
+export { applyView, matchesActiveTag, restoreSidebarScope, sidebarListener };

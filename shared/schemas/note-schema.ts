@@ -40,8 +40,6 @@ const TagRowSchema = z.object({
   tag_name: TagSchema,
 });
 
-const TagRowsSchema = z.array(TagRowSchema).default([]);
-
 const LinkRowSchema = z.object({
   source_id: IdSchema,
   target_id: IdSchema,
@@ -78,9 +76,6 @@ const NoteSchema = NoteTableSchema.extend({
   links: LinksSchema,
   pinned: BoolSchema,
 });
-
-// Full Array of Note Objects
-const NotesSchema = z.array(NoteSchema);
 
 // DB Results (Content gets parsed / 0 or 1 gets converted to boolean). Links have new Schema
 const NoteFromDB = NoteSchema.extend({
@@ -164,7 +159,6 @@ type CreateTransaction = z.infer<typeof CreateTransactionSchema>;
 type UpdateTransaction = z.infer<typeof UpdateTransactionSchema>;
 type UpdateNotePayload = z.infer<typeof UpdateNotePayloadSchema>;
 type CreateNotePayload = z.infer<typeof CreateNotePayloadSchema>;
-type CreateNotesPayload = z.infer<typeof CreateNotesPayloadsSchema>;
 type Note = z.infer<typeof NoteSchema>;
 type Id = z.infer<typeof IdSchema>;
 type RelatedNotes = z.infer<typeof RelatedNotesSchema>;
@@ -182,28 +176,16 @@ export {
   IdsSchema,
   ImageRowSchema,
   isNoteID,
-  LinkRowSchema,
   LinksSchema,
   NoteFromDB,
   NoteListItemFromDB,
   NoteMenuPayloadSchema,
-  NoteSchema,
-  NotesSchema,
-  NoteToDBSchema,
-  PlainTextSchema,
   QuerySchema,
   RelatedNotesSchema,
-  SearchResultSchema,
-  SnippetSchema,
-  TagRowsSchema,
-  TagSchema,
   TagsSchema,
-  TitleSchema,
   UpdateNotePayloadSchema,
-  UpdateTransactionSchema,
   type BoolDb,
   type CreateNotePayload,
-  type CreateNotesPayload,
   type CreateTransaction,
   type DbCreateArgs,
   type DbUpdateArgs,

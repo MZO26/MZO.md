@@ -135,8 +135,6 @@ if (process.contextIsolated) {
         ipcRenderer.invoke(IPC_CHANNELS.DB_BACKUP_RESTORE),
     });
     contextBridge.exposeInMainWorld("storeAPI", {
-      getSettings: (key: keyof Readonly<AppSettings>) =>
-        ipcRenderer.invoke(IPC_CHANNELS.GET_SETTING, key),
       getAllSettings: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_SETTINGS),
       setSettings: (settings: Partial<Readonly<AppSettings>>) =>
         ipcRenderer.invoke(IPC_CHANNELS.SET_SETTING, settings),

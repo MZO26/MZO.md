@@ -61,28 +61,6 @@ export const PasteHandler = Extension.create({
   },
 });
 
-export const LinkPasteHandler = Extension.create({
-  name: "linkPasteHandler",
-  addProseMirrorPlugins() {
-    const editor = this.editor;
-    return [
-      new Plugin({
-        props: {
-          handlePaste(view, event) {
-            const { state } = view;
-            const { empty, $from } = state.selection;
-            if (empty || $from.parent.type.name === "codeBlock") return false;
-            const text = event.clipboardData?.getData("text/plain")?.trim();
-            if (!text) return false;
-            editor.commands.setLink({ href: text });
-            return true;
-          },
-        },
-      }),
-    ];
-  },
-});
-
 export const GoogleDocsCleanup = Extension.create({
   name: "googleDocsCleanup",
   transformPastedHTML(html) {

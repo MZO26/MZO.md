@@ -42,10 +42,4 @@ async function compressImageInWorker(
   );
 }
 
-export {
-  compressImageInWorker,
-  imageWorker,
-  markdownWorker,
-  workOnImageCompression,
-  workOnMarkdownParsing,
-};
+export { compressImageInWorker, workOnMarkdownParsing };
