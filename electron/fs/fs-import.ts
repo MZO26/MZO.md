@@ -36,7 +36,6 @@ async function batchImport(filePaths: string[]) {
           return null;
         }
         seenFileNames.add(fileName.toLowerCase());
-
         const content = await fs.readFile(file, "utf8");
         mainLogger.devLog(`Content length: ${content.length} characters`);
         if (content.length > MAX_CHARACTERS) {

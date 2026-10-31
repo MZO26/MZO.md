@@ -343,7 +343,7 @@ async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       label: "Duplicate Note",
       visible: selectedIds.length === 1,
       click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_DUPLICATE, selectedIds),
+        win.webContents.send(IPC_CHANNELS.TRIGGER_DUPLICATE, selectedIds[0]),
     },
     { type: "separator" },
     {

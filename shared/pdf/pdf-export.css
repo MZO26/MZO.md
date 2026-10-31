@@ -100,6 +100,8 @@
   border-left: 3px solid #aaaaaa;
   color: #555555;
   font-style: italic;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .ProseMirror blockquote p {
@@ -123,6 +125,8 @@
     "Courier New", monospace;
   font-size: 9.5pt;
   white-space: pre-wrap;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .ProseMirror pre {
@@ -209,7 +213,7 @@
   border-collapse: collapse;
   margin: 0;
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
   background: transparent;
   color: #1a1a1a;
   font-size: 10pt;
@@ -303,6 +307,11 @@
   .ProseMirror tr {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  .ProseMirror li {
+    orphans: 3;
+    widows: 3;
   }
 
   .ProseMirror thead {

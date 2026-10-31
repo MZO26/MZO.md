@@ -320,6 +320,7 @@ function addActiveLinkToDoc(
 export {
   addActiveLinkToDoc,
   downgradeDocLinks,
+  getLinks,
   resolveDocLinks,
   resolveGhostLink,
   WikilinkHandler,

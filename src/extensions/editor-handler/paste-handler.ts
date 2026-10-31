@@ -120,7 +120,7 @@ export const SecurityCleanup = Extension.create({
   },
 });
 
-function looksLikeMarkdown(text: string): boolean {
+function looksLikeMarkdown(text: string) {
   const trimmed = text.trim();
   if (!trimmed) return false;
   const strongSignals = [
@@ -128,7 +128,8 @@ function looksLikeMarkdown(text: string): boolean {
     /^```/m,
     /!\[[^\]\n]*\]\([^)\n]+\)/,
     /\[[^\]\n]+\]\([^)\n]+\)/,
-    /^={3,}$\vert{}^-{3,}$/m,
+    /^\S[^\r\n]*\r?\n(?:={3,}|-{3,})$/m,
+    /^---\r?\n(?:\w[\w-]*:\s?.*\r?\n)+---$/m,
   ];
   if (strongSignals.some((pattern) => pattern.test(trimmed))) return true;
   let matchCount = 0;
@@ -149,7 +150,7 @@ function looksLikeMarkdown(text: string): boolean {
   const blockPatterns = [
     /^>\s?\S/,
     /^[-*+]\s+\S/,
-    /^\d+[.)]\s+\S/,
+    /^\d{1,3}[.)]\s+\S/,
     /^\|.+\|$/,
     /^(-{3,}|\*{3,}|_{3,})$/,
   ];
@@ -157,7 +158,7 @@ function looksLikeMarkdown(text: string): boolean {
     for (const pattern of blockPatterns) {
       if (pattern.test(line)) {
         matchCount++;
-        if (matchCount >= 3) return true;
+        if (matchCount >= 2) return true;
         break;
       }
     }

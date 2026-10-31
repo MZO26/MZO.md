@@ -11,6 +11,7 @@ import {
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { SelectionHighlight } from "@/extensions/decorations/active-highlight";
+import { DuplicateLinkWidget } from "@/extensions/decorations/duplicate-link";
 import { NoteInfoWidget } from "@/extensions/decorations/note-info";
 import { Placeholder } from "@/extensions/decorations/placeholder";
 import { DropHandler } from "@/extensions/editor-handler/drop-handler";
@@ -201,6 +202,7 @@ function getNoteEditorExtensions() {
     KbSelectionCommands,
     SelectionHighlight,
     NoteInfoWidget,
+    DuplicateLinkWidget,
   ];
 }
 
