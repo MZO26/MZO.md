@@ -14,7 +14,6 @@ const ImagePayloadsSchema = z.array(ImagePayloadSchema);
 
 type ImageExtension = z.infer<typeof ImagePayloadSchema>["extension"];
 type ImagePayload = z.infer<typeof ImagePayloadSchema>;
-
 type ImageHash = z.infer<typeof ImageHashSchema>;
 type DbImage = z.infer<typeof DbImageSchema>;
 

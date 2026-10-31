@@ -13,12 +13,13 @@ import {
 import { updateSelectionUI } from "@/components/sidebar/sidebar-ui";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
-import { confirmWithDialog, dialogMutex } from "@/settings/dialog-init";
+import { confirmWithDialog } from "@/settings/setting-actions";
 import { noteStore, stateStore } from "@/state/state";
+import { dialogMutex } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import { requireElement } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
-import type { ExportContent } from "@shared/schemas/request-schema";
+import type { ExportRequest } from "@shared/schemas/request-schema";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { generateHTML, generateText } from "@tiptap/core";
 
@@ -183,7 +184,7 @@ async function copyRichTextSelection(selectedIds: Id[]) {
 
 async function exportSelection(
   selectedIds: Id[],
-  extension: ExportContent["extension"],
+  extension: ExportRequest["extension"],
 ) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const { notes, noteIndex } = noteStore.getState();

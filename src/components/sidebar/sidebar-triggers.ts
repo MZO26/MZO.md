@@ -13,13 +13,14 @@ import {
   handleExtractToNote,
   waitForFlush,
 } from "@/notes/note-actions";
-import { confirmWithDialog, dialogMutex } from "@/settings/dialog-init";
+import { confirmWithDialog } from "@/settings/setting-actions";
 import { noteStore, stateStore } from "@/state/state";
+import { dialogMutex } from "@/utils/helpers";
 import { useCore, useDialog } from "@/utils/registry";
 import { requireElement } from "@/utils/ui";
 import { ERROR_MESSAGES } from "@shared/errors";
 import type { Id } from "@shared/schemas/note-schema";
-import type { ExportContent } from "@shared/schemas/request-schema";
+import type { ExportRequest } from "@shared/schemas/request-schema";
 import { TABLE_ACTIONS } from "@shared/shared-constants";
 import type { TableAction } from "@shared/shared-types";
 import { generateHTML } from "@tiptap/core";
@@ -57,7 +58,7 @@ function triggerTableMenu(action: TableAction) {
 
 async function triggerSingleExport(
   id: Id,
-  extension: ExportContent["extension"],
+  extension: ExportRequest["extension"],
 ) {
   const result = await getExportContent(id, extension);
   if (!result.success) {

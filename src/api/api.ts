@@ -17,7 +17,6 @@ import type {
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type {
-  ExportContent,
   ExportRequest,
   FilePathRequest,
   ImportRequest,
@@ -103,8 +102,8 @@ async function exportNote(
 }
 
 async function exportManyNotes(
-  payload: ExportContent[],
-): Promise<Result<ExportContent[]>> {
+  payload: ExportRequest[],
+): Promise<Result<ExportRequest[]>> {
   return invoke(window.noteAPI.noteExportMany(payload));
 }
 

@@ -21,14 +21,14 @@ import { debouncedSaveNote } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
-import type { ExportContent } from "@shared/schemas/request-schema";
+import type { ExportRequest } from "@shared/schemas/request-schema";
 import type { ResolvedTheme } from "@shared/shared-types";
 
 function initListeners() {
   window.electronAPI.onTriggerTableAction((action) => triggerTableMenu(action));
 
   window.noteAPI.onTriggerExport(
-    async (ids: Id[], extension: ExportContent["extension"]) => {
+    async (ids: Id[], extension: ExportRequest["extension"]) => {
       const [singleId] = ids;
       if (singleId && ids.length === 1) {
         await triggerSingleExport(singleId, extension);

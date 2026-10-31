@@ -13,14 +13,14 @@ import {
 } from "@electron/handler/pdf-handler";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError, AppErrorCode } from "@shared/errors";
-import type { ExportContent } from "@shared/schemas/request-schema";
+import type { ExportRequest } from "@shared/schemas/request-schema";
 import type { PDFAssets } from "@shared/shared-types";
 import type { BrowserWindow, PrintToPDFOptions } from "electron";
 import { app } from "electron";
 import fs from "fs/promises";
 import path from "path";
 
-async function singleExport(filePath: string, data: ExportContent["content"]) {
+async function singleExport(filePath: string, data: ExportRequest["content"]) {
   const absoluteTargetFolder = path.dirname(filePath);
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "Images");
@@ -37,7 +37,7 @@ async function singleExport(filePath: string, data: ExportContent["content"]) {
   return filePath;
 }
 
-async function batchExport(folder: string, payload: ExportContent[]) {
+async function batchExport(folder: string, payload: ExportRequest[]) {
   if (payload.length === 0) return [];
   const uniqueExtensions = new Set(
     payload.map((c) => c.extension.toLowerCase()),
@@ -69,7 +69,7 @@ async function batchExport(folder: string, payload: ExportContent[]) {
     const exported = await processWithLimit(
       updatedPayload,
       limit,
-      async (item: ExportContent): Promise<string | null> => {
+      async (item: ExportRequest): Promise<string | null> => {
         try {
           const absoluteFilePath = await getFilePath(
             absoluteTargetFolder,

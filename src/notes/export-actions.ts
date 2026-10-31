@@ -6,18 +6,15 @@ import { DOMPURIFY_CONFIG, NODE_BASELINE } from "@/utils/constants";
 import { useCore } from "@/utils/registry";
 import { AppErrorCode } from "@shared/errors";
 import type { Id, Note } from "@shared/schemas/note-schema";
-import type {
-  ExportContent,
-  ExportRequest,
-} from "@shared/schemas/request-schema";
+import type { ExportRequest } from "@shared/schemas/request-schema";
 import type { Result } from "@shared/shared-types";
 import { generateHTML, generateText } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
 async function getBatchExportContent(
   notes: readonly Note[],
-  extension: ExportContent["extension"],
-): Promise<Result<ExportContent[]>> {
+  extension: ExportRequest["extension"],
+): Promise<Result<ExportRequest[]>> {
   try {
     switch (extension) {
       case "json":
@@ -104,7 +101,7 @@ async function getBatchExportContent(
 
 async function getExportContent(
   id: Id,
-  extension: ExportContent["extension"],
+  extension: ExportRequest["extension"],
 ): Promise<Result<ExportRequest>> {
   const result = await getNoteById(id);
   if (!result.success) {

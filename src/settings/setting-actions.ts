@@ -160,11 +160,29 @@ async function getQuickAction(action: QuickAction) {
   }
 }
 
+function confirmWithDialog(
+  dialog: HTMLDialogElement,
+  titleEl: HTMLElement,
+  title: string,
+) {
+  titleEl.textContent = title;
+  dialog.returnValue = "";
+  dialog.showModal();
+  return new Promise((resolve) => {
+    const onClose = () => {
+      titleEl.textContent = "";
+      resolve(dialog.returnValue === "confirm");
+    };
+    dialog.addEventListener("close", onClose, { once: true });
+  });
+}
+
 export {
   applyAppTheme,
   applyFontFamily,
   applyFontSize,
   applyLineHeight,
+  confirmWithDialog,
   getQuickAction,
   handleUpdateSettings,
   resolveTheme,

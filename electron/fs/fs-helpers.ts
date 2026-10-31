@@ -4,7 +4,7 @@ import { validation } from "@electron/ipc/ipc-validation";
 import { AppBackendError, AppErrorCode } from "@shared/errors";
 import {
   FileNameSchema,
-  type ExportContent,
+  type ExportRequest,
 } from "@shared/schemas/request-schema";
 import fs from "fs";
 import { randomUUID } from "node:crypto";
@@ -69,7 +69,7 @@ async function writeAtomic(
 }
 
 async function sanitizeExportString(
-  content: ExportContent["content"],
+  content: ExportRequest["content"],
   assetsDir: string,
   internalImgDir: string,
 ) {
@@ -144,7 +144,7 @@ async function getFilePath(
   targetDirectory: string,
   payload: {
     fileName: string;
-    extension: ExportContent["extension"];
+    extension: ExportRequest["extension"];
   },
 ) {
   const extension = payload.extension ?? "md";
@@ -211,9 +211,9 @@ function isInsideDirectorySync(
   }
 }
 
-function dedupeFileNames(payload: ExportContent[]): ExportContent[] {
+function dedupeFileNames(payload: ExportRequest[]) {
   const usedNames = new Set<string>();
-  const updatedPayload: ExportContent[] = [];
+  const updatedPayload: ExportRequest[] = [];
   for (const p of payload) {
     let fileName = p.fileName;
     if (usedNames.has(fileName.toLowerCase())) {

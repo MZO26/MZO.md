@@ -87,7 +87,7 @@ function createDuplicateDecoration(state: EditorState): DecorationSet {
           dom.className = "duplicate-link-widget";
           dom.contentEditable = "false";
           const titleEl = document.createElement("span");
-          titleEl.textContent = `Duplicates with title: ${node.attrs?.["title"]} found: ${dupInfo.duplicates}`;
+          titleEl.textContent = `${dupInfo.duplicates} Duplicates with title: ${node.attrs?.["title"]}`;
           dom.appendChild(titleEl);
           return dom;
         },

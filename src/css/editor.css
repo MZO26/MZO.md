@@ -93,7 +93,6 @@
   padding: 0.1rem 0.4rem;
   margin-bottom: 0.1rem;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--text-main) 8%, transparent);
   color: var(--text-main);
   opacity: 0.75;
   font-size: 0.82rem;
@@ -108,7 +107,6 @@
   margin-left: 0.6rem;
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--text-main) 8%, transparent);
   color: var(--text-main);
   opacity: 0.75;
   font-size: 0.82rem;

@@ -3,7 +3,6 @@ import { truncateTitle } from "@/components/editor/editor-generators";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { handleCreateNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { WIKILINK_REGEX } from "@/utils/constants";
 import { memoize } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import {
@@ -16,6 +15,8 @@ import { UNTITLED } from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+
+const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
 
 type AutocompleteState = {
   from: number;
@@ -220,6 +221,7 @@ function resolveDocLinks(note: Readonly<Note>) {
   const currentLinks = new Set(getLinks(note.content));
   const notes = noteStore.get("notes");
   const titleMap = new Map(notes.map((n) => [n.title, n.id]));
+
   editor.state.doc.descendants((node, pos) => {
     if (!node.isText || !node.text) return true;
     for (const match of node.text.matchAll(WIKILINK_REGEX)) {

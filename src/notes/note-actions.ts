@@ -53,11 +53,15 @@ async function handleCreateNote(options?: {
   activeTitle?: NoteListItem["title"];
   shouldNavigate?: boolean;
 }) {
+  const { activeTag, activeId } = stateStore.getState();
+  if (options?.shouldNavigate && activeId) {
+    await waitForFlush(activeId);
+  }
   const { editor, editorWrapper } = useCore("editor", "editorWrapper");
-  const activeTag = stateStore.get("activeTag");
   let editorContent = addActiveTagToDoc(EMPTY_DOC, activeTag);
-  if (options?.activeTitle)
+  if (options?.activeTitle) {
     editorContent = addHeadingToDoc(editorContent, options.activeTitle);
+  }
   const text = extractText(editorContent);
   const payload: CreateNotePayload = {
     content: editorContent,

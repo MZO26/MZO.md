@@ -1,7 +1,5 @@
 import type { QuickActionConfig } from "@/utils/types";
 
-const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
-
 const NAV_KEYS = new Set(["ArrowDown", "ArrowUp", "Enter", "Backspace"]);
 
 const DEBOUNCE_MS = {
@@ -188,6 +186,5 @@ export {
   SIDEBAR_ALL_NOTES_LIMIT,
   THEME_MAP,
   UNTAGGED,
-  WIKILINK_REGEX,
   YIELD_MS,
 };

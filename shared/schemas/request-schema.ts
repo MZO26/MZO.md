@@ -77,15 +77,7 @@ const ExportRequestSchema = z.discriminatedUnion("extension", [
   PdfSchema,
 ]);
 
-const ExportItemSchema = z.discriminatedUnion("extension", [
-  HtmlSchema,
-  MdSchema,
-  TxtSchema,
-  JsonSchema,
-  PdfSchema,
-]);
-
-const ExportManyRequestSchema = z.array(ExportItemSchema);
+const ExportManyRequestSchema = z.array(ExportRequestSchema);
 
 const ImportRequestSchema = z.discriminatedUnion("extension", [
   HtmlSchema.omit({ created_at: true }),
@@ -106,37 +98,19 @@ const FilePathRequestSchema = z.discriminatedUnion("source", [
   }),
 ]);
 
-const ExistenceImportCheckSchema = z.discriminatedUnion("status", [
-  z.object({
-    status: z.literal("exists"),
-    fileName: z.string(),
-    content: z.string(),
-  }),
-  z.object({
-    status: z.literal("missing"),
-    fileName: z.string(),
-    content: z.string(),
-  }),
-]);
-
-type ExportContent = z.infer<typeof ExportItemSchema>;
 type ImportContent = z.infer<typeof ImportRequestSchema>;
 type FilePathRequest = z.infer<typeof FilePathRequestSchema>;
 type ExportManyRequest = z.infer<typeof ExportManyRequestSchema>;
 type ImportRequest = z.infer<typeof ImportRequestSchema>;
 type ExportRequest = z.infer<typeof ExportRequestSchema>;
-type ExistenceImportCheck = z.infer<typeof ExistenceImportCheckSchema>;
 
 export {
-  ExistenceImportCheckSchema,
   ExportManyRequestSchema,
   ExportRequestSchema,
   FileNameSchema,
   FilePathRequestSchema,
   ImportRequestSchema,
   StringContentSchema,
-  type ExistenceImportCheck,
-  type ExportContent,
   type ExportManyRequest,
   type ExportRequest,
   type FilePathRequest,
