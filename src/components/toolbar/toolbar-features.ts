@@ -4,18 +4,14 @@ import { useCore } from "@/utils/registry";
 
 const widths = ["comfortable", "normal", "wide"] as const;
 
-function isValidWidth(width: unknown): width is (typeof widths)[number] {
-  return widths.some((w) => w === width);
-}
-
 function setEditorWidth(container: HTMLDivElement) {
   const current = container.getAttribute("data-width") || "normal";
-  if (isValidWidth(current)) {
-    const index = widths.indexOf(current);
-    const next = widths[(index + 1) % widths.length];
-    if (!next) return;
-    container.setAttribute("data-width", next);
-  }
+  const index = widths.indexOf(current as (typeof widths)[number]);
+  if (index === -1) return;
+  container.setAttribute(
+    "data-width",
+    widths[(index + 1) % widths.length] ?? "normal",
+  );
 }
 
 async function setWindowTop(toggleBtn: HTMLButtonElement) {

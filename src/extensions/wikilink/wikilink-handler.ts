@@ -186,9 +186,12 @@ async function resolveGhostLink(title: Note["title"]) {
   const resolvedTitle = existingNote?.title ?? truncated;
   const { editor } = useCore("editor");
   editor.commands.command(({ tr, state, dispatch }) => {
+    const wikilinkType = state.schema.nodes["wikilink"];
+    if (!wikilinkType) return false;
     let modified = false;
     state.doc.descendants((node, currentPos) => {
-      if (node.type.name === "wikilink") {
+      if (node.type.spec.code) return false;
+      if (node.type === wikilinkType) {
         const nodeId = node.attrs?.["id"];
         const nodeTitle = node.attrs?.["title"];
         if (!nodeId && typeof nodeTitle === "string") {
@@ -210,7 +213,9 @@ async function resolveGhostLink(title: Note["title"]) {
             }
           }
         }
+        return false;
       }
+      return true;
     });
     if (modified && dispatch) {
       tr.setMeta("addToHistory", false);
@@ -231,9 +236,10 @@ function resolveDocLinks(note: Readonly<Note>) {
   const currentLinks = new Set(getLinks(note.content));
   const notes = noteStore.get("notes");
   const titleMap = new Map(notes.map((n) => [n.title, n.id]));
-
   editor.state.doc.descendants((node, pos) => {
+    if (node.type.spec.code) return false;
     if (!node.isText || !node.text) return true;
+    if (node.marks.some((mark) => mark.type.spec.code)) return false;
     for (const match of node.text.matchAll(WIKILINK_REGEX_GLOBAL)) {
       const title = typeof match[1] === "string" ? match[1].trim() : "";
       if (!title) continue;
@@ -268,9 +274,12 @@ function resolveDocLinks(note: Readonly<Note>) {
 function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
   const { editor } = useCore("editor");
   editor.commands.command(({ tr, state, dispatch }) => {
+    const wikilinkType = state.schema.nodes["wikilink"];
+    if (!wikilinkType) return false;
     let modified = false;
     state.doc.descendants((node, pos) => {
-      if (node.type.name === "wikilink") {
+      if (node.type.spec.code) return false;
+      if (node.type === wikilinkType) {
         const nodeId = node.attrs?.["id"];
         if (nodeId && !noteIndex.has(nodeId)) {
           modified = true;
@@ -278,7 +287,9 @@ function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
             tr.setNodeMarkup(pos, undefined, { ...node.attrs, id: null });
           }
         }
+        return false;
       }
+      return true;
     });
     if (modified && dispatch) tr.setMeta("addToHistory", false);
     return modified;

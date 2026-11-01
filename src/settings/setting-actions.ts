@@ -9,6 +9,7 @@ import {
 import { rendererLogger } from "@/app";
 import { settingsStore } from "@/state/state";
 import { CODE_THEME_MAP, THEME_MAP } from "@/utils/constants";
+import { showDialog } from "@/utils/helpers";
 import { isFocusActive } from "@/utils/shortcuts";
 import type { QuickAction } from "@/utils/types";
 import type {
@@ -160,21 +161,16 @@ async function getQuickAction(action: QuickAction) {
   }
 }
 
-function confirmWithDialog(
+async function confirmWithDialog(
   dialog: HTMLDialogElement,
   titleEl: HTMLElement,
   title: string,
 ) {
   titleEl.textContent = title;
   dialog.returnValue = "";
-  dialog.showModal();
-  return new Promise((resolve) => {
-    const onClose = () => {
-      titleEl.textContent = "";
-      resolve(dialog.returnValue === "confirm");
-    };
-    dialog.addEventListener("close", onClose, { once: true });
-  });
+  const result = await showDialog(dialog);
+  titleEl.textContent = "";
+  return result === "confirm";
 }
 
 export {

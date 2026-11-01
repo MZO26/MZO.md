@@ -9,19 +9,23 @@ export interface TocItem {
 
 function getTableOfContents(editor: Editor | null) {
   const headings: TocItem[] = [];
+  const headingType = editor?.schema.nodes["heading"];
+  if (!headingType) return headings;
   editor?.state.doc.descendants((node) => {
-    if (node.type.name === "heading") {
-      const text = (
-        typeof node.textContent === "string" ? node.textContent : ""
-      ).trim();
+    if (node.type.spec.code) return false;
+    if (node.type === headingType) {
+      const text = node.textContent.trim();
       const { id, level } = node.attrs || {};
-      if (!text || typeof id !== "string") return true;
-      headings.push({
-        id,
-        level: typeof level === "number" ? level : 1,
-        text,
-      });
+      if (text || typeof id === "string") {
+        headings.push({
+          id,
+          level: typeof level === "number" ? level : 1,
+          text,
+        });
+      }
+      return false;
     }
+    if (node.isTextblock) return false;
     return true;
   });
   return headings;

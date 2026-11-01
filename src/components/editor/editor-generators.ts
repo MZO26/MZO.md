@@ -2,13 +2,14 @@ import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import { UNTITLED } from "@shared/shared-constants";
 import { type JSONContent } from "@tiptap/core";
 
-function extractText(doc: JSONContent): string {
+function extractText(doc: JSONContent) {
   const parts: string[] = [];
   const stack: JSONContent[] = [doc];
   while (stack.length > 0) {
     const node = stack.pop();
     if (!node) continue;
-    switch (node.type) {
+    const nodeType = node.type;
+    switch (nodeType) {
       case "text": {
         if (typeof node.text === "string") {
           parts.push(node.text);

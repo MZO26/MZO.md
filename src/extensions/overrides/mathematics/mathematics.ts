@@ -5,7 +5,6 @@ const INLINE_MATH_INPUT_REGEX = /(?<!\$)\$([^$\n]+?)\$(?!\$)$/;
 const INLINE_MATH_PASTE_REGEX = /(?<!\$)\$([^$\n]+?)\$(?!\$)/g;
 const INLINE_MATH_TOKENIZER_REGEX =
   /^\$(?!\$)(?!\s)([^$\r\n]+?)(?<!\s)\$(?!\$)/;
-const INLINE_MATH_START_REGEX = /\$(?!\$)/;
 
 const BLOCK_MATH_INPUT_REGEX = /(?<!\$)\$\$([\s\S]+?)\$\$$/;
 const BLOCK_MATH_TOKENIZER_REGEX = /^\$\$\r?\n?([\s\S]+?)\r?\n?\$\$(?:\r?\n|$)/;
@@ -48,19 +47,16 @@ const CustomInlineMath = InlineMath.extend({
   markdownTokenizer: {
     name: "inlineMath",
     level: "inline",
-    start: (src: string) => {
-      return src.search(INLINE_MATH_START_REGEX);
-    },
+    start: (src: string) => src.indexOf("$"),
     tokenize: (src: string) => {
       const match = INLINE_MATH_TOKENIZER_REGEX.exec(src);
       if (!match) return undefined;
-      const [raw, latex = ""] = match;
-      const trimmedLatex = latex.trim();
-      if (!trimmedLatex) return undefined;
+      const latex = typeof match[1] === "string" ? match[1].trim() : "";
+      if (!latex) return undefined;
       return {
         type: "inlineMath",
-        raw,
-        latex: trimmedLatex,
+        raw: match[0],
+        latex,
       };
     },
   },
@@ -103,12 +99,12 @@ const CustomBlockMath = BlockMath.extend({
     tokenize: (src) => {
       const match = BLOCK_MATH_TOKENIZER_REGEX.exec(src);
       if (!match) return undefined;
-      const [raw, latex = ""] = match;
-      if (!latex.trim()) return undefined;
+      const latex = typeof match[1] === "string" ? match[1].trim() : "";
+      if (!latex) return undefined;
       return {
         type: "blockMath",
-        raw,
-        latex: latex.trim(),
+        raw: match[0],
+        latex,
       };
     },
   },

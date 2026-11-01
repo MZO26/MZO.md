@@ -83,9 +83,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
   markdownTokenizer: {
     name: "wikilink",
     level: "inline",
-    start(src: string) {
-      return src.indexOf("[[");
-    },
+    start: (src: string) => src.indexOf("[["),
     tokenize(src: string) {
       const match = WIKILINK_REGEX.exec(src);
       if (!match) return undefined;
@@ -155,7 +153,8 @@ const WikiLink = Node.create<WikiLinkOptions>({
               const { $from } = state.selection;
               const empty =
                 $from.parent.content.size === 0 &&
-                ($from.parent.type.name !== "paragraph" || $from.depth > 1);
+                ($from.parent.type !== state.schema.nodes["paragraph"] ||
+                  $from.depth > 1);
               if (empty) return commands.clearNodes();
               return true;
             })

@@ -1,39 +1,34 @@
+import { showDialog } from "@/utils/helpers";
 import { useCore, useDialog } from "@/utils/registry";
 import type { MathOptions } from "@/utils/types";
 import type { Editor } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 
-function openMathDialog(editor: Editor, options: MathOptions) {
+async function openMathDialog(editor: Editor, options: MathOptions) {
   const { mathDialog, mathInput } = useDialog("mathDialog", "mathInput");
   mathInput.value = options.initialValue ?? "";
-  mathDialog.showModal();
-  mathDialog.addEventListener(
-    "close",
-    () => {
-      if (mathDialog.returnValue !== "confirm") return;
-      editor.chain().focus();
-      if (options.mode === "insert") {
-        if (options.type === "inline") {
-          editor.commands.insertInlineMath({ latex: mathInput.value });
-        } else {
-          editor.commands.insertBlockMath({ latex: mathInput.value });
-        }
-        return;
-      }
-      if (options.type === "inline") {
-        editor.commands.updateInlineMath({
-          latex: mathInput.value,
-          pos: options.pos,
-        });
-      } else {
-        editor.commands.updateBlockMath({
-          latex: mathInput.value,
-          pos: options.pos,
-        });
-      }
-    },
-    { once: true },
-  );
+  const result = await showDialog(mathDialog);
+  if (result !== "confirm") return;
+  editor.chain().focus();
+  if (options.mode === "insert") {
+    if (options.type === "inline") {
+      editor.commands.insertInlineMath({ latex: mathInput.value });
+    } else {
+      editor.commands.insertBlockMath({ latex: mathInput.value });
+    }
+    return;
+  }
+  if (options.type === "inline") {
+    editor.commands.updateInlineMath({
+      latex: mathInput.value,
+      pos: options.pos,
+    });
+  } else {
+    editor.commands.updateBlockMath({
+      latex: mathInput.value,
+      pos: options.pos,
+    });
+  }
 }
 
 function handleMathClick(node: ProseMirrorNode, pos: number) {

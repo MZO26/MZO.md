@@ -30,7 +30,7 @@ import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
 import { CodeblockHandler } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { lowlight } from "@/extensions/overrides/codeblock/lowlight";
-import { CustomHeading } from "@/extensions/overrides/headings";
+import { CustomHeading, TitleEnforcer } from "@/extensions/overrides/headings";
 import { LinkWithTitle } from "@/extensions/overrides/link";
 import {
   CustomBlockMath,
@@ -207,6 +207,7 @@ function getNoteEditorExtensions() {
       katexOptions: SHARED_KATEX_OPTIONS,
     }),
     DocSearch,
+    TitleEnforcer,
     SelectionWrapper,
     SelectionMetrics,
     KbSelectionCommands,

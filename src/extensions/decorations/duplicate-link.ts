@@ -67,6 +67,7 @@ function findWikilinkNodes(
   const wikilinkType = doc.type.schema.nodes["wikilink"];
   if (!wikilinkType) return results;
   doc.descendants((node, pos) => {
+    if (node.type.spec.code) return false;
     if (node.type === wikilinkType) {
       if (duplicates.has(node.attrs?.["id"])) {
         results.push({ node, pos });

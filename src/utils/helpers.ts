@@ -167,6 +167,15 @@ function createMutex<T>() {
   return { acquire, release, runExclusive };
 }
 
+function showDialog(dialog: HTMLDialogElement) {
+  return new Promise((resolve) => {
+    dialog.addEventListener("close", () => resolve(dialog.returnValue), {
+      once: true,
+    });
+    dialog.showModal();
+  });
+}
+
 const dialogMutex = createMutex();
 
 export {
@@ -177,6 +186,7 @@ export {
   getExtension,
   memoize,
   omitKeys,
+  showDialog,
   sleep,
   waitForPaint,
   withPerformanceLog,

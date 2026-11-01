@@ -133,11 +133,11 @@ function getCommandState(editor: Editor, action: Action["action"]) {
   };
 }
 
-function toggleMathInline(editor: Editor) {
+async function toggleMathInline(editor: Editor) {
   if (!editor) return false;
   const { from, to, empty } = editor.state.selection;
   const selectedText = empty ? "" : editor.state.doc.textBetween(from, to, "");
-  openMathDialog(editor, {
+  await openMathDialog(editor, {
     mode: "insert",
     type: "inline",
     initialValue: selectedText,
@@ -145,9 +145,9 @@ function toggleMathInline(editor: Editor) {
   return true;
 }
 
-function toggleMathBlock(editor: Editor) {
+async function toggleMathBlock(editor: Editor) {
   if (!editor) return false;
-  openMathDialog(editor, {
+  await openMathDialog(editor, {
     mode: "insert",
     type: "block",
     initialValue: "",

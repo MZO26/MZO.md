@@ -24,9 +24,11 @@ export const Placeholder = Extension.create<PlaceHolderOptions>({
             const { doc } = state;
             const first = doc.firstChild;
             if (!first) return DecorationSet.empty;
-            const isH1 =
-              first.type.name === "heading" && first.attrs["level"] === 1;
-            if (!isH1 || first.content.size > 0) return DecorationSet.empty;
+            const headingSchema = state.schema.nodes["heading"];
+            if (!headingSchema) return DecorationSet.empty;
+            const isHeading = first.type === headingSchema;
+            if (!isHeading || first.content.size > 0)
+              return DecorationSet.empty;
             return DecorationSet.create(doc, [
               Decoration.node(0, first.nodeSize, {
                 class: "is-empty",
