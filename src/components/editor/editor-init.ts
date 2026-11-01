@@ -1,5 +1,4 @@
 import { showNotification } from "@/api/api";
-import { rendererLogger } from "@/app";
 import { recreateEditorState } from "@/components/editor/editor-actions";
 import {
   editorCommands,
@@ -58,7 +57,7 @@ import {
   SHARED_KATEX_OPTIONS,
   YIELD_MS,
 } from "@/utils/constants";
-import { sleep } from "@/utils/helpers";
+import { rendererLogger, sleep } from "@/utils/helpers";
 import { createGlobalSpinner, requireElement } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";

@@ -1,5 +1,5 @@
 import { pinWindow } from "@/api/api";
-import { rendererLogger } from "@/app";
+import { rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 
 const widths = ["comfortable", "normal", "wide"] as const;

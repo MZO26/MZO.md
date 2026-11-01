@@ -153,8 +153,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
               const { $from } = state.selection;
               const empty =
                 $from.parent.content.size === 0 &&
-                ($from.parent.type !== state.schema.nodes["paragraph"] ||
-                  $from.depth > 1);
+                ($from.parent.type.name !== "paragraph" || $from.depth > 1);
               if (empty) return commands.clearNodes();
               return true;
             })

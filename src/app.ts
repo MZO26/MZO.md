@@ -17,7 +17,7 @@ import {
   syncStateStore,
 } from "@/state/state-sync";
 import { startAppClock } from "@/utils/date";
-import { withPerformanceLog } from "@/utils/helpers";
+import { rendererLogger, withPerformanceLog } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import {
   initCoreRegistry,
@@ -27,10 +27,7 @@ import {
   useCore,
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
-import { createLogger } from "@shared/log";
 import { isNoteID } from "@shared/schemas/note-schema";
-
-export const rendererLogger = createLogger(import.meta.env.DEV);
 
 async function initApp() {
   const notesResult = await getAll();

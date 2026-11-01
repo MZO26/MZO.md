@@ -1,12 +1,11 @@
 import { search } from "@/api/api";
-import { rendererLogger } from "@/app";
 import {
   matchesActiveTag,
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
-import { debounce } from "@/utils/helpers";
+import { debounce, rendererLogger } from "@/utils/helpers";
 import type { MappedMatches } from "@/utils/types";
 import {
   isNoteID,

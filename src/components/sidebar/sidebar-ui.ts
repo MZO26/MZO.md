@@ -1,4 +1,3 @@
-import { rendererLogger } from "@/app";
 import {
   createNoteItem,
   getSafeSnippet,
@@ -10,7 +9,7 @@ import {
   SIDEBAR_ALL_NOTES_LIMIT,
   UNTAGGED,
 } from "@/utils/constants";
-import { createAsyncHandler, debounce } from "@/utils/helpers";
+import { createAsyncHandler, debounce, rendererLogger } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { useCore } from "@/utils/registry";
 import type {

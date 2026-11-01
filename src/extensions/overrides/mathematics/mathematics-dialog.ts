@@ -31,9 +31,9 @@ async function openMathDialog(editor: Editor, options: MathOptions) {
   }
 }
 
-function handleMathClick(node: ProseMirrorNode, pos: number) {
+async function handleMathClick(node: ProseMirrorNode, pos: number) {
   const { editor } = useCore("editor");
-  openMathDialog(editor, {
+  await openMathDialog(editor, {
     mode: "update",
     type: node.type.name === "inlineMath" ? "inline" : "block",
     pos,

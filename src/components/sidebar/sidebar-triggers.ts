@@ -1,5 +1,4 @@
 import { exportNote, getNoteById, pin, showNotification } from "@/api/api";
-import { rendererLogger } from "@/app";
 import {
   getCachedEditorExtensions,
   getHTMLContentBetween,
@@ -15,7 +14,7 @@ import {
 } from "@/notes/note-actions";
 import { confirmWithDialog } from "@/settings/setting-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { dialogMutex } from "@/utils/helpers";
+import { rendererLogger } from "@/utils/helpers";
 import { useCore, useDialog } from "@/utils/registry";
 import { requireElement } from "@/utils/ui";
 import { ERROR_MESSAGES } from "@shared/errors";
@@ -217,8 +216,10 @@ async function triggerSingleDelete(id: Id) {
     ".delete-dialog-title",
     deleteDialog,
   );
-  const confirmed = await dialogMutex.runExclusive(async () =>
-    confirmWithDialog(deleteDialog, titleEl, "Delete this note?"),
+  const confirmed = await confirmWithDialog(
+    deleteDialog,
+    titleEl,
+    "Delete this note?",
   );
   if (!confirmed) return;
   await handleDeleteNote(id);

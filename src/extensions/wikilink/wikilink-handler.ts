@@ -1,9 +1,8 @@
-import { rendererLogger } from "@/app";
 import { truncateTitle } from "@/components/editor/editor-generators";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { handleCreateNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { memoize } from "@/utils/helpers";
+import { memoize, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import {
   isNoteID,

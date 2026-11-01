@@ -1,4 +1,3 @@
-import { rendererLogger } from "@/app";
 import { getMarkdownManager } from "@/components/editor/editor-actions";
 import { processAndInsertImages } from "@/extensions/overrides/image/image";
 import {
@@ -6,6 +5,7 @@ import {
   DOMPURIFY_CONFIG,
   MAX_DROP_LENGTH,
 } from "@/utils/constants";
+import { rendererLogger } from "@/utils/helpers";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";

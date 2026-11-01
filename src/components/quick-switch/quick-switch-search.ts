@@ -1,6 +1,5 @@
 import { getRelatedNotes } from "@/api/api";
-import { rendererLogger } from "@/app";
-import { memoize } from "@/utils/helpers";
+import { memoize, rendererLogger } from "@/utils/helpers";
 import {
   isNoteID,
   type Id,

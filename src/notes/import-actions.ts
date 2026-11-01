@@ -1,4 +1,3 @@
-import { rendererLogger } from "@/app";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import {
   snippetGenerator,
@@ -10,7 +9,7 @@ import {
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { stateStore } from "@/state/state";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
-import { withPerformanceLog } from "@/utils/helpers";
+import { rendererLogger, withPerformanceLog } from "@/utils/helpers";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
 import { AppErrorCode } from "@shared/errors";
 import { isEditorDoc } from "@shared/schemas/editor-schema";

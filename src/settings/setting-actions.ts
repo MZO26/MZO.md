@@ -6,10 +6,9 @@ import {
   setTheme,
   showNotification,
 } from "@/api/api";
-import { rendererLogger } from "@/app";
 import { settingsStore } from "@/state/state";
 import { CODE_THEME_MAP, THEME_MAP } from "@/utils/constants";
-import { showDialog } from "@/utils/helpers";
+import { rendererLogger, showDialog } from "@/utils/helpers";
 import { isFocusActive } from "@/utils/shortcuts";
 import type { QuickAction } from "@/utils/types";
 import type {

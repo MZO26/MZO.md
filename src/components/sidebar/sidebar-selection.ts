@@ -5,7 +5,6 @@ import {
   pinMany,
   showNotification,
 } from "@/api/api";
-import { rendererLogger } from "@/app";
 import {
   getCachedEditorExtensions,
   getMarkdownManager,
@@ -15,7 +14,7 @@ import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { confirmWithDialog } from "@/settings/setting-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { dialogMutex } from "@/utils/helpers";
+import { rendererLogger } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import { requireElement } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
@@ -260,12 +259,10 @@ async function pinSelection(selectedIds: Id[]) {
 async function deleteSelection(ids: Id[]) {
   const { deleteDialog } = useDialog("deleteDialog");
   if (!Array.isArray(ids) || ids.length === 0) return;
-  const confirmed = await dialogMutex.runExclusive(async () =>
-    confirmWithDialog(
-      deleteDialog,
-      requireElement<HTMLSpanElement>(".delete-dialog-title", deleteDialog),
-      ids.length === 1 ? "Delete this note?" : `Delete ${ids.length} notes?`,
-    ),
+  const confirmed = await confirmWithDialog(
+    deleteDialog,
+    requireElement<HTMLSpanElement>(".delete-dialog-title", deleteDialog),
+    ids.length === 1 ? "Delete this note?" : `Delete ${ids.length} notes?`,
   );
   if (!confirmed) return;
   const idsToDelete = new Set(ids);

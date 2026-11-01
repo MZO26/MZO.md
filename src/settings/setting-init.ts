@@ -1,5 +1,4 @@
 import { openExternal } from "@/api/api";
-import { rendererLogger } from "@/app";
 import { applyAppTheme, getQuickAction } from "@/settings/setting-actions";
 import {
   buildSelects,
@@ -9,7 +8,7 @@ import {
 } from "@/settings/setting-factory";
 import { setSelectListeners } from "@/settings/setting-items-init";
 import { QUICK_ACTIONS } from "@/utils/constants";
-import { createAsyncHandler } from "@/utils/helpers";
+import { createAsyncHandler, rendererLogger } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import type { QuickAction } from "@/utils/types";
 import { requireElement, setActiveItem } from "@/utils/ui";

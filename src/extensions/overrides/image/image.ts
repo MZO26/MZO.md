@@ -1,6 +1,6 @@
 import { imageWriteMany } from "@/api/api";
-import { rendererLogger } from "@/app";
 import { ALLOWED_TYPES, MAX_SIZE, MIME_TO_EXT } from "@/utils/constants";
+import { rendererLogger } from "@/utils/helpers";
 import { compressImageInWorker } from "@/utils/workers/worker-init";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type { Editor, JSONContent } from "@tiptap/core";

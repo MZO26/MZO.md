@@ -1,4 +1,4 @@
-import { rendererLogger } from "@/app";
+import { rendererLogger } from "@/utils/helpers";
 import { AppErrorCode } from "@shared/errors";
 import type {
   Notification,

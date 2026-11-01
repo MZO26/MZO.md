@@ -6,9 +6,11 @@ import {
 import { NoteTag } from "@/extensions/tag/tag";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { localStore } from "@/state/state";
+import { clearAllMemoizedCaches } from "@/utils/helpers";
 import type { Id } from "@shared/schemas/note-schema";
 import { ALLOWED_PROTOCOLS } from "@shared/shared-constants";
 import {
+  createDocument,
   getHTMLFromFragment,
   type Editor,
   type JSONContent,
@@ -21,6 +23,7 @@ import {
   TableRow,
 } from "@tiptap/extension-table";
 import { MarkdownManager } from "@tiptap/markdown";
+import { EditorState } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
 
 // actions that don't require dom
@@ -30,16 +33,22 @@ let editorExtensions: ReturnType<typeof getRequestExtensions> | undefined;
 let markdownManager: MarkdownManager | undefined;
 
 function recreateEditorState(editor: Editor, doc: JSONContent) {
-  editor
-    .chain()
-    .setMeta("addToHistory", false)
-    .setContent(doc, {
-      emitUpdate: false,
+  const newDoc = createDocument(
+    doc,
+    editor.schema,
+    editor.options.parseOptions,
+    {
       errorOnInvalidContent: false,
-      contentType: "json",
-    })
-    .focus("end")
-    .run();
+    },
+  );
+  const newState = EditorState.create({
+    schema: editor.schema,
+    doc: newDoc,
+    plugins: editor.state.plugins,
+  });
+  editor.view.updateState(newState);
+  editor.commands.focus("end");
+  clearAllMemoizedCaches();
 }
 
 function getCachedEditorExtensions() {

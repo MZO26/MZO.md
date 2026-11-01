@@ -1,5 +1,7 @@
-import { rendererLogger } from "@/app";
+import { createLogger } from "@shared/log";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
+
+export const rendererLogger = createLogger(import.meta.env.DEV);
 
 type Debounced<A extends (...args: any[]) => void> = ((
   ...args: Parameters<A>
@@ -54,7 +56,6 @@ function createAsyncHandler<T extends Event>(
     try {
       await callback(e);
     } catch (error) {
-      rendererLogger.appError("[createAsyncHandler]: Async Error: ", error);
     } finally {
       isProcessing = false;
     }
@@ -92,22 +93,35 @@ function withPerformanceLog<A extends unknown[], T>(
   };
 }
 
+const activeCaches = new Set<() => void>();
+
+function clearAllMemoizedCaches() {
+  activeCaches.forEach((clear) => clear());
+}
+
 function memoize<A extends unknown[], R>(
   fn: (...args: A) => R,
   equalFn: (prev: A, next: A) => boolean = (prev, next) =>
     prev.length === next.length && next.every((val, i) => val === prev[i]),
 ) {
   let lastArgs: A | null = null;
-  let lastResult: R;
-  return (...args: A): R => {
+  let lastResult: R | undefined;
+  const clear = () => {
+    lastArgs = null;
+    lastResult = undefined;
+  };
+  activeCaches.add(clear);
+  const memoized = (...args: A): R => {
     if (lastArgs && equalFn(lastArgs, args)) {
       rendererLogger.devLog("Returning old result");
-      return lastResult;
+      return lastResult as R;
     }
     lastArgs = args;
     lastResult = fn(...args);
     return lastResult;
   };
+  memoized.clear = clear;
+  return memoized;
 }
 
 function omitKeys<K extends Id, V>(
@@ -141,32 +155,6 @@ function getExtension(name: string) {
   return index > 0 ? name.slice(index + 1).toLowerCase() : "";
 }
 
-function createMutex<T>() {
-  let locked = false;
-  const waiters: (() => void)[] = [];
-  async function acquire() {
-    if (!locked) {
-      locked = true;
-      return;
-    }
-    await new Promise<void>((resolve) => waiters.push(resolve));
-  }
-  function release() {
-    const next = waiters.shift();
-    if (next) next();
-    else locked = false;
-  }
-  async function runExclusive(fn: () => Promise<T>): Promise<T> {
-    await acquire();
-    try {
-      return await fn();
-    } finally {
-      release();
-    }
-  }
-  return { acquire, release, runExclusive };
-}
-
 function showDialog(dialog: HTMLDialogElement) {
   return new Promise((resolve) => {
     dialog.addEventListener("close", () => resolve(dialog.returnValue), {
@@ -176,13 +164,11 @@ function showDialog(dialog: HTMLDialogElement) {
   });
 }
 
-const dialogMutex = createMutex();
-
 export {
+  clearAllMemoizedCaches,
   compareNotes,
   createAsyncHandler,
   debounce,
-  dialogMutex,
   getExtension,
   memoize,
   omitKeys,

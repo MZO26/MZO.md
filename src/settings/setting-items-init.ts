@@ -1,4 +1,3 @@
-import { rendererLogger } from "@/app";
 import {
   CODE_THEME_SETTINGS,
   FONT_FAMILY_SETTINGS,
@@ -18,7 +17,7 @@ import {
 } from "@/settings/setting-actions";
 import { settingsStore } from "@/state/state";
 import { CODE_THEME_MAP } from "@/utils/constants";
-import { createAsyncHandler } from "@/utils/helpers";
+import { createAsyncHandler, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import type {
   AppearanceKeys,

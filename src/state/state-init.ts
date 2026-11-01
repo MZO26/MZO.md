@@ -1,4 +1,3 @@
-import { rendererLogger } from "@/app";
 import { handleEditorEmptyState } from "@/components/editor/editor-ui";
 import { updateHover } from "@/components/sidebar/sidebar-navigation";
 import { updateSelection } from "@/components/sidebar/sidebar-selection";
@@ -20,6 +19,7 @@ import {
   shallowEq,
   stateStore,
 } from "@/state/state";
+import { rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import { setActiveItem } from "@/utils/ui";
 

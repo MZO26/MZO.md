@@ -8,7 +8,6 @@ import {
   showNotification,
   updateNote,
 } from "@/api/api";
-import { rendererLogger } from "@/app";
 import {
   getEditorPos,
   recreateEditorState,
@@ -30,7 +29,7 @@ import { downgradeDocLinks } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
 import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
-import { debounce, omitKeys } from "@/utils/helpers";
+import { debounce, omitKeys, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import { appEvents } from "@shared/event-emitter";
 import {

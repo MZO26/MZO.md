@@ -1,9 +1,8 @@
-import { rendererLogger } from "@/app";
 import { handleSidebarChange } from "@/components/sidebar/sidebar-ui";
 import { handleUpdateSettings } from "@/settings/setting-actions";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
-import { compareNotes } from "@/utils/helpers";
+import { compareNotes, rendererLogger } from "@/utils/helpers";
 import { useUI } from "@/utils/registry";
 import type { SidebarParams } from "@/utils/types";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";

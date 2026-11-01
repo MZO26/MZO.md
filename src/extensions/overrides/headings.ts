@@ -30,8 +30,9 @@ const CustomHeading = Heading.extend({
           let modified = false;
           const headingType = newState.schema.nodes["heading"];
           newState.doc.descendants((node, pos) => {
-            if (!node.isTextblock || node.type.spec.code) return false;
-            if (node.type === headingType && !node.attrs["id"]) {
+            if (node.type.spec.code) return false;
+            const hasContent = !!node.textContent.trim();
+            if (node.type === headingType && hasContent && !node.attrs["id"]) {
               const id = crypto.randomUUID();
               tr.setNodeMarkup(pos, undefined, { ...node.attrs, id });
               modified = true;

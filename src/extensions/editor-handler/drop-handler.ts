@@ -1,4 +1,3 @@
-import { rendererLogger } from "@/app";
 import { isValidExtension } from "@/components/sidebar/sidebar-file-drop";
 import { processAndInsertImages } from "@/extensions/overrides/image/image";
 import { normalizeFileContent } from "@/notes/import-actions";
@@ -7,7 +6,7 @@ import {
   MAX_DROP_LENGTH,
   MAX_DROP_PASTE_CHARACTERS,
 } from "@/utils/constants";
-import { getExtension } from "@/utils/helpers";
+import { getExtension, rendererLogger } from "@/utils/helpers";
 import { MAX_BYTES_FILE } from "@shared/shared-constants";
 import { Editor, Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
