@@ -170,6 +170,9 @@ function getNoteEditorExtensions() {
       orderedList: false,
       listItem: false,
       listKeymap: false,
+      taskItem: {
+        nested: false,
+      },
     }),
     LinkWithTitle.configure({
       openOnClick: false,

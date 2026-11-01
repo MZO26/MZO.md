@@ -24,7 +24,7 @@ function getNoteInfo(state: EditorState): NoteInfo | null {
   if (!activeNote) return null;
   const { tasks, completed } = getTaskInfo(state);
   return {
-    key: `info-${activeId}-${activeNote.updated_at}-${activeNote.tags.join(" ")}-${tasks}-${completed}`,
+    key: `info-${activeId}-${activeNote.updated_at}-${tasks}-${completed}`,
     updatedAt: activeNote.updated_at,
     tasks,
     completed,
@@ -34,21 +34,40 @@ function getNoteInfo(state: EditorState): NoteInfo | null {
 function getTaskInfo(state: EditorState): TaskInfo {
   let tasks = 0;
   let completed = 0;
+  const taskItemType = state.schema.nodes["taskItem"];
   state.doc.descendants((node) => {
-    if (node.type.name === "taskItem") {
+    if (node.type === taskItemType) {
       tasks++;
       if (node.attrs?.["checked"]) completed++;
+      return false;
     }
+    if (node.isTextblock) return false;
+    return true;
   });
   return { tasks, completed };
 }
 
-function createNoteInfoDecoration(state: EditorState): DecorationSet {
+function createNoteInfoDecoration(
+  state: EditorState,
+  oldSet?: DecorationSet,
+): DecorationSet {
   const first = state.doc.firstChild;
-  if (!first || first.type.name !== "heading" || first.content.size === 0)
+  if (
+    !first ||
+    first.type !== state.schema.nodes["heading"] ||
+    first.content.size === 0
+  )
     return DecorationSet.empty;
   const info = getNoteInfo(state);
   if (!info) return DecorationSet.empty;
+  const existing = oldSet?.find()[0];
+  if (
+    existing &&
+    existing.spec.key === info.key &&
+    existing.from === first.nodeSize
+  ) {
+    return oldSet;
+  }
   return DecorationSet.create(state.doc, [
     Decoration.widget(
       first.nodeSize,
@@ -61,8 +80,7 @@ function createNoteInfoDecoration(state: EditorState): DecorationSet {
         timeEl.textContent = `Updated: ${formatUpdatedAt(info.updatedAt)}`;
         dom.append(timeEl);
         if (info.tasks > 0) {
-          const taskCompletion =
-            info.tasks > 0 ? (info.completed / info.tasks) * 100 : 0;
+          const taskCompletion = (info.completed / info.tasks) * 100;
           const progressBar = document.createElement("div");
           progressBar.className = "note-info-progress-bar-bg";
           if (taskCompletion === 100) progressBar.classList.add("is-complete");
@@ -96,8 +114,13 @@ export const NoteInfoWidget = Extension.create({
         state: {
           init: (_, state) => createNoteInfoDecoration(state),
           apply: (tr, oldSet, _oldState, newState) => {
-            if (!tr.docChanged && !tr.getMeta("noteInfoRefresh")) return oldSet;
-            return createNoteInfoDecoration(newState);
+            try {
+              if (!tr.docChanged && !tr.getMeta("noteInfoRefresh"))
+                return oldSet;
+              return createNoteInfoDecoration(newState, oldSet);
+            } catch (err) {
+              return DecorationSet.empty;
+            }
           },
         },
         props: {

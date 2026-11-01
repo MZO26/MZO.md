@@ -78,7 +78,18 @@ const NoteTagHandler = NoteTag.extend({
         ): TagAutocompleteState | null => {
           if (!tr.docChanged && !tr.selectionSet) return pluginState;
           const { selection } = newEditorState;
-          if (!selection.empty) return null;
+          const { $from, empty } = newEditorState.selection;
+          if (
+            !empty ||
+            $from.parent.type.spec.code ||
+            !$from.parent.type.isTextblock ||
+            !$from.parent.type.inlineContent
+          ) {
+            return null;
+          }
+          for (let d = $from.depth; d > 0; d--) {
+            if ($from.node(d).type.spec.isolating) return null;
+          }
           const $head = selection.$head;
           const lookbackStart = Math.max(0, $head.parentOffset - 100);
           const textBefore = $head.parent.textContent.slice(
