@@ -1,6 +1,12 @@
 import { InputRule, mergeAttributes, Node } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
+const NOTE_TAG_REGEX =
+  /^#([\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?)(?![\p{L}\p{N}_-])/u;
+const NOTE_TAG_INPUT_REGEX = /(?:^|\s)#([\p{L}\p{N}_-]+)\s$/u;
+const HEADING_REGEX = /^#{1,6}(?:\s|\t)/;
+const HEX_REGEX = /^([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/;
+
 export interface NoteTagOptions {
   onClick: (id: string) => void | Promise<void>;
 }
@@ -74,13 +80,11 @@ const NoteTag = Node.create<NoteTagOptions>({
       return src.indexOf("#");
     },
     tokenize(src: string) {
-      if (/^#{1,6}(?:\s|\t)/.test(src)) return;
-      const match = src.match(
-        /^#([\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?)(?![\p{L}\p{N}_-])/u,
-      );
+      if (HEADING_REGEX.test(src)) return;
+      const match = NOTE_TAG_REGEX.exec(src);
       if (!match) return undefined;
       const text = typeof match[1] === "string" ? match[1].trim() : "";
-      if (/^([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/.test(text)) return;
+      if (HEX_REGEX.test(text)) return;
       if (!text) {
         return undefined;
       }
@@ -128,7 +132,7 @@ const NoteTag = Node.create<NoteTagOptions>({
   addInputRules() {
     return [
       new InputRule({
-        find: /(?:^|\s)#([\p{L}\p{N}_-]+)\s$/u,
+        find: NOTE_TAG_INPUT_REGEX,
         handler: ({ range, match, commands }) => {
           const matchString = typeof match[0] === "string" ? match[0] : "";
           const rawTagText = typeof match[1] === "string" ? match[1] : "";

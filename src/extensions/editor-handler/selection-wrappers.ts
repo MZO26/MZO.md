@@ -5,6 +5,8 @@ import { Editor, Extension } from "@tiptap/core";
 import type { ResolvedPos } from "@tiptap/pm/model";
 import { NodeSelection, TextSelection } from "@tiptap/pm/state";
 
+const SELECTION_TAG_REGEX = /^[\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?$/u;
+
 function wrapSelection(
   editor: Editor,
   openChar: string,
@@ -52,7 +54,7 @@ const SelectionWrapper = Extension.create({
         const isValidTag =
           replaced.length > 0 &&
           replaced.length <= 100 &&
-          /^[\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?$/u.test(replaced);
+          SELECTION_TAG_REGEX.test(replaced);
         if (!isValidTag) return false;
         const hasHashBefore = charBefore === "#";
         const replaceFrom = hasHashBefore ? from - 1 : from;

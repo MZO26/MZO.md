@@ -15,7 +15,7 @@ import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-const WIKILINK_REGEX = /\[\[([^\]]+)\]\]/g;
+const WIKILINK_REGEX_GLOBAL = /\[\[([^\]]+)\]\]/g;
 
 export interface AutocompleteState {
   from: number;
@@ -234,7 +234,7 @@ function resolveDocLinks(note: Readonly<Note>) {
 
   editor.state.doc.descendants((node, pos) => {
     if (!node.isText || !node.text) return true;
-    for (const match of node.text.matchAll(WIKILINK_REGEX)) {
+    for (const match of node.text.matchAll(WIKILINK_REGEX_GLOBAL)) {
       const title = typeof match[1] === "string" ? match[1].trim() : "";
       if (!title) continue;
       const targetId = titleMap.get(title);

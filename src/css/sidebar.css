@@ -539,9 +539,9 @@ input::-webkit-search-cancel-button {
 }
 
 .notes-container .note-item.search {
-  height: 87px;
-  grid-template-rows: 20px 18px 35px;
-  contain-intrinsic-size: auto 87px;
+  height: 90px;
+  grid-template-rows: 20px 18px 38px;
+  contain-intrinsic-size: auto 90px;
 }
 
 .note-tags,

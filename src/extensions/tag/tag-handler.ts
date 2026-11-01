@@ -7,6 +7,8 @@ import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
+const TAG_REGEX = /(?:^|\s)#([\p{L}\p{N}_-]+)$/u;
+
 export interface TagAutocompleteState {
   from: number;
   to: number;
@@ -97,7 +99,7 @@ const NoteTagHandler = NoteTag.extend({
             $head.parentOffset,
           );
           if (textBefore.lastIndexOf("#") === -1) return null;
-          const match = textBefore.match(/(?:^|\s)#([\p{L}\p{N}_-]+)$/u);
+          const match = TAG_REGEX.exec(textBefore);
           if (!match) return null;
           const rawQuery = match[1];
           if (!rawQuery) return null;

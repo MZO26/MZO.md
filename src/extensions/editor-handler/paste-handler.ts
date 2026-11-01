@@ -11,6 +11,33 @@ import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";
 
+const strongSignals = [
+  /^#{1,6}\s+\S/m,
+  /^```/m,
+  /!\[[^\]\n]*\]\([^)\n]+\)/,
+  /\[[^\]\n]+\]\([^)\n]+\)/,
+  /^\S[^\r\n]*\r?\n(?:={3,}|-{3,})$/m,
+  /^---\r?\n(?:\w[\w-]*:\s?.*\r?\n)+---$/m,
+  /^\s*(?:[-*+]|\d{1,3}[.)])\s+\[[ xX]\]\s+\S/m,
+];
+
+const inlinePatterns = [
+  /\*\*[^*\n]+\*\*/g,
+  /__[^_\n]+__/g,
+  /(?:^|[^\w*])\*[^*\n]+\*(?!\w)/g,
+  /(?:^|[^\w_])_[^_\n]+_(?!\w)/g,
+  /~~[^~\n]+~~/g,
+  /`[^`\n]+`/g,
+];
+
+const blockPatterns = [
+  /^>\s?\S/,
+  /^\s*[-*+]\s+\S/,
+  /^\s*\d{1,3}[.)]\s+\S/,
+  /^\|.+\|$/,
+  /^(-{3,}|\*{3,}|_{3,})$/,
+];
+
 export const PasteHandler = Extension.create({
   name: "PasteHandler",
   addProseMirrorPlugins() {
@@ -101,38 +128,14 @@ export const SecurityCleanup = Extension.create({
 function looksLikeMarkdown(text: string) {
   const trimmed = text.trim();
   if (!trimmed) return false;
-  const strongSignals = [
-    /^#{1,6}\s+\S/m,
-    /^```/m,
-    /!\[[^\]\n]*\]\([^)\n]+\)/,
-    /\[[^\]\n]+\]\([^)\n]+\)/,
-    /^\S[^\r\n]*\r?\n(?:={3,}|-{3,})$/m,
-    /^---\r?\n(?:\w[\w-]*:\s?.*\r?\n)+---$/m,
-    /^\s*(?:[-*+]|\d{1,3}[.)])\s+\[[ xX]\]\s+\S/m,
-  ];
   if (strongSignals.some((pattern) => pattern.test(trimmed))) return true;
   let matchCount = 0;
-  const inlinePatterns = [
-    /\*\*[^*\n]+\*\*/g,
-    /__[^_\n]+__/g,
-    /(?:^|[^\w*])\*[^*\n]+\*(?!\w)/g,
-    /(?:^|[^\w_])_[^_\n]+_(?!\w)/g,
-    /~~[^~\n]+~~/g,
-    /`[^`\n]+`/g,
-  ];
   for (const pattern of inlinePatterns) {
     const matches = trimmed.match(pattern);
     if (matches) matchCount += matches.length;
     if (matchCount >= 2) return true;
   }
   const lines = trimmed.split(/\r?\n/);
-  const blockPatterns = [
-    /^>\s?\S/,
-    /^\s*[-*+]\s+\S/,
-    /^\s*\d{1,3}[.)]\s+\S/,
-    /^\|.+\|$/,
-    /^(-{3,}|\*{3,}|_{3,})$/,
-  ];
   for (const line of lines) {
     for (const pattern of blockPatterns) {
       if (pattern.test(line)) {

@@ -5,6 +5,10 @@ import {
   mergeAttributes,
 } from "@tiptap/core";
 
+const HIGHLIGHT_REGEX = /^==([^=\n][^=\n]*?)==/;
+const HIGHLIGHT_PASTE_REGEX = /(?:==)([^=\n][^=\n]*?)(?:==)/g;
+const HIGHLIGHT_INPUT_REGEX = /(?:==)([^=\n][^=\n]*?)(?:==)$/;
+
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     highlight: {
@@ -48,7 +52,7 @@ export const Highlight = Mark.create({
   addInputRules() {
     return [
       markInputRule({
-        find: /(?:==)([^=\n][^=\n]*?)(?:==)$/,
+        find: HIGHLIGHT_INPUT_REGEX,
         type: this.type,
       }),
     ];
@@ -57,7 +61,7 @@ export const Highlight = Mark.create({
   addPasteRules() {
     return [
       markPasteRule({
-        find: /(?:==)([^=\n][^=\n]*?)(?:==)/g,
+        find: HIGHLIGHT_PASTE_REGEX,
         type: this.type,
       }),
     ];
@@ -70,7 +74,7 @@ export const Highlight = Mark.create({
     level: "inline",
     start: (src) => src.indexOf("=="),
     tokenize(src) {
-      const match = src.match(/^==([^=\n][^=\n]*?)==/);
+      const match = HIGHLIGHT_REGEX.exec(src);
       if (!match) return undefined;
       const rawText = typeof match[1] === "string" ? match[1].trim() : "";
       if (!rawText) return undefined;

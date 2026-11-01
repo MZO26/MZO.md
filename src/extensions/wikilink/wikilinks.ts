@@ -3,6 +3,7 @@ import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import { UNTITLED } from "@shared/shared-constants";
 import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
 
+const WIKILINK_REGEX = /^\[\[([^\]]+)\]\]/;
 const UUID_PATTERN = "([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})";
 const INPUT_REGEX = /(?<!!)\[\[([^\]]+)\]\]$/;
 const PASTE_REGEX = /\[\[([^\]]+)\]\]/g;
@@ -86,7 +87,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
       return src.indexOf("[[");
     },
     tokenize(src: string) {
-      const match = src.match(/^\[\[([^\]]+)\]\]/);
+      const match = WIKILINK_REGEX.exec(src);
       if (!match) return undefined;
       const text = typeof match[1] === "string" ? match[1].trim() : "";
       if (!text) {

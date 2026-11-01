@@ -1,12 +1,20 @@
 import { InputRule, PasteRule } from "@tiptap/core";
 import { BlockMath, InlineMath } from "@tiptap/extension-mathematics";
-import { Plugin } from "@tiptap/pm/state";
+
+const INLINE_MATH_INPUT_REGEX = /(?<!\$)\$([^$\n]+?)\$(?!\$)$/;
+const INLINE_MATH_PASTE_REGEX = /(?<!\$)\$([^$\n]+?)\$(?!\$)/g;
+const INLINE_MATH_TOKENIZER_REGEX =
+  /^\$(?!\$)(?!\s)([^$\r\n]+?)(?<!\s)\$(?!\$)/;
+const INLINE_MATH_START_REGEX = /\$(?!\$)/;
+
+const BLOCK_MATH_INPUT_REGEX = /(?<!\$)\$\$([\s\S]+?)\$\$$/;
+const BLOCK_MATH_TOKENIZER_REGEX = /^\$\$\r?\n?([\s\S]+?)\r?\n?\$\$(?:\r?\n|$)/;
 
 const CustomInlineMath = InlineMath.extend({
   addInputRules() {
     return [
       new InputRule({
-        find: /(?<!\$)\$([^$\n]+)\$$/,
+        find: INLINE_MATH_INPUT_REGEX,
         handler: ({ range, match, commands }) => {
           const latex = typeof match[1] === "string" ? match[1].trim() : "";
           if (!latex) return null;
@@ -23,7 +31,7 @@ const CustomInlineMath = InlineMath.extend({
   addPasteRules() {
     return [
       new PasteRule({
-        find: /(?<!\$)\$([^$\n]+)\$(?!\$)/g,
+        find: INLINE_MATH_PASTE_REGEX,
         handler: ({ range, match, commands }) => {
           const latex = typeof match[1] === "string" ? match[1].trim() : "";
           if (!latex) return null;
@@ -36,13 +44,41 @@ const CustomInlineMath = InlineMath.extend({
       }),
     ];
   },
+
+  markdownTokenizer: {
+    name: "inlineMath",
+    level: "inline",
+    start: (src: string) => {
+      return src.search(INLINE_MATH_START_REGEX);
+    },
+    tokenize: (src: string) => {
+      const match = INLINE_MATH_TOKENIZER_REGEX.exec(src);
+      if (!match) return undefined;
+      const [raw, latex = ""] = match;
+      const trimmedLatex = latex.trim();
+      if (!trimmedLatex) return undefined;
+      return {
+        type: "inlineMath",
+        raw,
+        latex: trimmedLatex,
+      };
+    },
+  },
+  parseMarkdown: (token, helpers) => {
+    return helpers.createNode("inlineMath", {
+      latex: token["latex"],
+    });
+  },
+  renderMarkdown: (node) => {
+    return `$${node.attrs?.["latex"] ?? ""}$`;
+  },
 });
 
 const CustomBlockMath = BlockMath.extend({
   addInputRules() {
     return [
       new InputRule({
-        find: /(?<!\$)\$\$([\s\S]+?)\$\$$/,
+        find: BLOCK_MATH_INPUT_REGEX,
         handler: ({ range, match, commands }) => {
           const latex = typeof match[1] === "string" ? match[1].trim() : "";
           if (!latex) return null;
@@ -60,61 +96,24 @@ const CustomBlockMath = BlockMath.extend({
     return [];
   },
 
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        props: {
-          handlePaste: (view, event) => {
-            const clipboardData = event.clipboardData;
-            if (!clipboardData) return false;
-            const text = event.clipboardData.getData("text/plain");
-            if (!text || !text.includes("$$")) return false;
-            const parts = text
-              .split(/(\$\$[\s\S]+?\$\$)/g)
-              .filter((part) => part.length > 0);
-            const content: unknown[] = [];
-            for (const part of parts) {
-              const mathMatch = part.match(/^\$\$([\s\S]+?)\$\$$/);
-              if (mathMatch) {
-                const latex =
-                  typeof mathMatch[1] === "string"
-                    ? mathMatch[1].trim()
-                    : undefined;
-                if (!latex) continue;
-                content.push({
-                  type: this.type.name,
-                  attrs: { latex },
-                });
-                continue;
-              }
-              const paragraphs = part
-                .split(/\n{2,}/)
-                .filter(
-                  (paragraph): paragraph is string =>
-                    typeof paragraph === "string",
-                )
-                .map((paragraph) => paragraph.split(/\n+/).join(" ").trim())
-                .filter((paragraph) => paragraph.length > 0);
-              for (const paragraph of paragraphs) {
-                content.push({
-                  type: "paragraph",
-                  content: [{ type: "text", text: paragraph }],
-                });
-              }
-            }
-            if (!content.length) return false;
-            this.editor.commands.insertContentAt(
-              {
-                from: view.state.selection.from,
-                to: view.state.selection.to,
-              },
-              content,
-            );
-            return true;
-          },
-        },
-      }),
-    ];
+  markdownTokenizer: {
+    name: "blockMath",
+    level: "block",
+    start: (src) => src.indexOf("$$"),
+    tokenize: (src) => {
+      const match = BLOCK_MATH_TOKENIZER_REGEX.exec(src);
+      if (!match) return undefined;
+      const [raw, latex = ""] = match;
+      if (!latex.trim()) return undefined;
+      return {
+        type: "blockMath",
+        raw,
+        latex: latex.trim(),
+      };
+    },
+  },
+  parseMarkdown: (token, helpers) => {
+    return helpers.createNode("blockMath", { latex: token["latex"] });
   },
 });
 
