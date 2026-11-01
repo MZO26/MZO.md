@@ -1,9 +1,11 @@
-import { InputRule, mergeAttributes, Node } from "@tiptap/core";
+import { InputRule, mergeAttributes, Node, PasteRule } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
 const NOTE_TAG_REGEX =
   /^#([\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?)(?![\p{L}\p{N}_-])/u;
 const NOTE_TAG_INPUT_REGEX = /(?:^|\s)#([\p{L}\p{N}_-]+)\s$/u;
+const NOTE_TAG_PASTE_REGEX =
+  /(?:^|\s)#(?=[\p{N}_-]*[\p{L}_])([\p{L}\p{N}_-]+)(?![\p{L}\p{N}_-])/gu;
 const HEADING_REGEX = /^#{1,6}(?:\s|\t)/;
 const HEX_REGEX = /^([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/;
 
@@ -139,6 +141,31 @@ const NoteTag = Node.create<NoteTagOptions>({
           const tagText = normalizeTagId(rawTagText);
           if (!matchString || !tagText) return null;
           const hashIndex = matchString.lastIndexOf("#");
+          if (hashIndex === -1) return null;
+          const from = range.from + hashIndex;
+          const to = range.to;
+          if (from < 0 || to < from) return null;
+          commands.insertNoteTag({
+            from,
+            to,
+            id: tagText,
+          });
+          return;
+        },
+      }),
+    ];
+  },
+  addPasteRules() {
+    return [
+      new PasteRule({
+        find: NOTE_TAG_PASTE_REGEX,
+        handler: ({ range, match, commands }) => {
+          const fullMatch = match[0];
+          const rawTagText = match[1];
+          if (!fullMatch || !rawTagText) return null;
+          const tagText = normalizeTagId(rawTagText);
+          if (!tagText) return null;
+          const hashIndex = fullMatch.lastIndexOf("#");
           if (hashIndex === -1) return null;
           const from = range.from + hashIndex;
           const to = range.to;

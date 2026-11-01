@@ -256,7 +256,7 @@
   border-radius: 0.25em;
   white-space: nowrap;
   font-weight: 500 !important;
-  font-size: 1em !important;
+  font-size: 1.2rem !important;
   user-select: all;
   transition:
     border 0.2s ease,
