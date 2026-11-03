@@ -1,5 +1,6 @@
+import { useCore } from "@/utils/registry";
 import { createInfoSpan, requireElement } from "@/utils/ui";
-import type { Editor } from "@tiptap/core";
+import { type Editor } from "@tiptap/core";
 
 export interface TocItem {
   id: string;
@@ -7,11 +8,11 @@ export interface TocItem {
   text: string;
 }
 
-function getTableOfContents(editor: Editor | null) {
+function getTableOfContents(editor: Editor) {
   const headings: TocItem[] = [];
-  const headingType = editor?.schema.nodes["heading"];
+  const headingType = editor.schema.nodes["heading"];
   if (!headingType) return headings;
-  editor?.state.doc.descendants((node) => {
+  editor.state.doc.descendants((node) => {
     if (node.type.spec.code) return false;
     if (node.type === headingType) {
       const text = node.textContent.trim();
@@ -46,10 +47,11 @@ function initTableOfContents() {
         `[id="${CSS.escape(targetId)}"]`,
       );
       if (!heading) return;
-      heading.scrollIntoView({
-        behavior: "auto",
-        block: "start",
-      });
+      const { editor } = useCore("editor");
+      const pos = editor.view.posAtDOM(heading, 0);
+      editor.view.dom.focus({ preventScroll: true });
+      editor.commands.highlightHeading(pos);
+      heading.scrollIntoView({ behavior: "auto", block: "start" });
     }
   });
 

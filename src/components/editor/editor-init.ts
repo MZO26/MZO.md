@@ -13,6 +13,7 @@ import { SelectionHighlight } from "@/extensions/decorations/active-highlight";
 import { DuplicateLinkWidget } from "@/extensions/decorations/duplicate-link";
 import { NoteInfoWidget } from "@/extensions/decorations/note-info";
 import { Placeholder } from "@/extensions/decorations/placeholder";
+import { TocSelectedHeading } from "@/extensions/decorations/selected-heading";
 import { DropHandler } from "@/extensions/editor-handler/drop-handler";
 import { MasterShortcuts } from "@/extensions/editor-handler/editor-shortcuts";
 import {
@@ -213,6 +214,7 @@ function getNoteEditorExtensions() {
     SelectionHighlight,
     NoteInfoWidget,
     DuplicateLinkWidget,
+    TocSelectedHeading,
   ];
 }
 
@@ -246,7 +248,7 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
         if (!activeId) return;
         // don't navigate right away to update
         // wikilink to an active one
-        const noteId = await resolveGhostLink(title);
+        const noteId = await resolveGhostLink(editor, title);
         if (!noteId) return;
         await handleSelectNote(noteId);
         await waitForFlush(noteId);
@@ -303,7 +305,7 @@ async function initEditorContent({ note, editor }: EditorInitContentParams) {
   try {
     await checkNoteSize(note.content);
     recreateEditorState(editor, note.content);
-    resolveDocLinks(note);
+    resolveDocLinks(editor);
     updateStats(editor);
   } catch (error) {
     rendererLogger.appError("Invalid Editor content:", error);

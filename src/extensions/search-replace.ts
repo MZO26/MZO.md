@@ -1,7 +1,7 @@
 import { MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Extension, type CommandProps } from "@tiptap/core";
 import type { EditorState } from "@tiptap/pm/state";
-import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 export type DocSearchRange = { from: number; to: number };
@@ -9,6 +9,7 @@ export type DocSearchRange = { from: number; to: number };
 export type DocSearchOptions = {
   resultClass: string;
   activeResultClass: string;
+  caseSensitive: boolean;
 };
 
 export type DocSearchStorage = {
@@ -17,6 +18,8 @@ export type DocSearchStorage = {
   results: DocSearchRange[];
   activeIndex: number;
 };
+
+type PluginMeta = "search" | "navigate" | "clear";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -40,14 +43,37 @@ const docSearchKey = new PluginKey<DecorationSet>("docSearch");
 const escapeRegExp = (value: string): string =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+const createDecorations = (
+  doc: EditorState["doc"],
+  results: DocSearchRange[],
+  activeIndex: number,
+  options: DocSearchOptions,
+) => {
+  if (results.length === 0) return DecorationSet.empty;
+  return DecorationSet.create(
+    doc,
+    results.map((result, i) =>
+      Decoration.inline(result.from, result.to, {
+        class:
+          i === activeIndex
+            ? `${options.resultClass} ${options.activeResultClass}`
+            : options.resultClass,
+      }),
+    ),
+  );
+};
+
 const getMatchesAndDecorations = (
   state: EditorState,
   storage: DocSearchStorage,
   options: DocSearchOptions,
 ) => {
-  if (!storage.query || storage.query.length > MAX_SEARCH_LENGTH)
+  if (!storage.query || storage.query.length > MAX_SEARCH_LENGTH) {
+    storage.activeIndex = -1;
     return { results: [], decorations: DecorationSet.empty };
-  const regex = new RegExp(escapeRegExp(storage.query), "gi");
+  }
+  const flags = options.caseSensitive ? "g" : "gi";
+  const regex = new RegExp(escapeRegExp(storage.query), flags);
   const results: DocSearchRange[] = [];
   state.doc.descendants((node, pos) => {
     if (!node.isText || !node.text) return true;
@@ -64,18 +90,23 @@ const getMatchesAndDecorations = (
   } else if (storage.activeIndex < 0 || storage.activeIndex >= results.length) {
     storage.activeIndex = 0;
   }
-  const decorations = DecorationSet.create(
-    state.doc,
-    results.map((result, i) =>
-      Decoration.inline(result.from, result.to, {
-        class:
-          i === storage.activeIndex
-            ? `${options.resultClass} ${options.activeResultClass}`
-            : options.resultClass,
-      }),
+  return {
+    results,
+    decorations: createDecorations(
+      state.doc,
+      results,
+      storage.activeIndex,
+      options,
     ),
-  );
-  return { results, decorations };
+  };
+};
+
+const scrollMatchIntoView = (editor: CommandProps["editor"], pos: number) => {
+  requestAnimationFrame(() => {
+    const { node } = editor.view.domAtPos(pos);
+    const el = node instanceof HTMLElement ? node : node.parentElement;
+    el?.scrollIntoView({ behavior: "auto", block: "center" });
+  });
 };
 
 export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
@@ -97,85 +128,100 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
     return {
       docSearchSetQuery:
         (query) =>
-        ({ editor, state, dispatch }: CommandProps) => {
+        ({ editor, tr, dispatch }: CommandProps) => {
           editor.storage.docSearch.query = query;
-          const tr = state.tr;
-          if (dispatch) tr.setMeta("docSearchRefresh", true);
+          if (dispatch) {
+            editor.storage.docSearch.query = query;
+            editor.storage.docSearch.activeIndex = 0;
+            tr.setMeta("docSearchRefresh", "search").setMeta(
+              "addToHistory",
+              false,
+            );
+          }
           return true;
         },
       docSearchSetReplacement:
         (replacement) =>
-        ({ editor }: CommandProps) => {
-          editor.storage.docSearch.replacement = replacement;
+        ({ editor, dispatch }: CommandProps) => {
+          if (dispatch) {
+            editor.storage.docSearch.replacement = replacement;
+          }
           return true;
         },
       docSearchClear:
         () =>
-        ({ editor, state, dispatch }: CommandProps) => {
-          const storage = editor.storage.docSearch;
-          storage.query = "";
-          storage.replacement = "";
-          storage.results = [];
-          storage.activeIndex = -1;
-          const tr = state.tr;
-          if (dispatch) tr.setMeta("docSearchRefresh", true);
+        ({ editor, tr, dispatch }: CommandProps) => {
+          if (dispatch) {
+            const storage = editor.storage.docSearch;
+            storage.query = "";
+            storage.replacement = "";
+            storage.results = [];
+            storage.activeIndex = -1;
+            tr.setMeta("docSearchRefresh", "clear").setMeta(
+              "addToHistory",
+              false,
+            );
+          }
           return true;
         },
       docSearchNext:
         () =>
-        ({ editor, state, dispatch }: CommandProps) => {
+        ({ editor, tr, dispatch }: CommandProps) => {
           const s = editor.storage.docSearch;
           if (s.results.length === 0) return false;
-          s.activeIndex = (s.activeIndex + 1) % s.results.length;
-          const result = s.results[s.activeIndex];
-          if (!result) return false;
-          const { from, to } = result;
-          if (dispatch)
-            state.tr.setSelection(TextSelection.create(state.doc, from, to));
+          if (dispatch) {
+            s.activeIndex = (s.activeIndex + 1) % s.results.length;
+            const result = s.results[s.activeIndex];
+            tr.setMeta("docSearchRefresh", "navigate").setMeta(
+              "addToHistory",
+              false,
+            );
+            if (result) scrollMatchIntoView(editor, result.from);
+          }
           return true;
         },
       docSearchPrev:
         () =>
-        ({ editor, state, dispatch }: CommandProps) => {
-          const storage = editor.storage.docSearch;
-          const { results } = storage;
-          if (results.length === 0) return false;
-          storage.activeIndex =
-            storage.activeIndex <= 0
-              ? results.length - 1
-              : storage.activeIndex - 1;
-          const result = results[storage.activeIndex];
-          if (!result) return false;
-          const { from, to } = result;
-          const tr = state.tr;
-          if (dispatch)
-            tr.setSelection(TextSelection.create(state.doc, from, to));
+        ({ editor, tr, dispatch }: CommandProps) => {
+          const s = editor.storage.docSearch;
+          if (s.results.length === 0) return false;
+          if (dispatch) {
+            s.activeIndex =
+              s.activeIndex <= 0 ? s.results.length - 1 : s.activeIndex - 1;
+            const result = s.results[s.activeIndex];
+            tr.setMeta("docSearchRefresh", "navigate").setMeta(
+              "addToHistory",
+              false,
+            );
+            if (result) scrollMatchIntoView(editor, result.from);
+          }
           return true;
         },
       docSearchReplaceCurrent:
         () =>
-        ({ editor, state, dispatch }: CommandProps) => {
+        ({ editor, tr, dispatch }: CommandProps) => {
           const storage = editor.storage.docSearch;
           if (storage.activeIndex < 0) return false;
           const result = storage.results[storage.activeIndex];
           if (!result) return false;
-          const { from, to } = result;
-          const tr = state.tr;
-          if (dispatch) tr.insertText(storage.replacement, from, to);
+          if (dispatch) {
+            tr.insertText(storage.replacement, result.from, result.to);
+          }
           return true;
         },
       docSearchReplaceAll:
         () =>
-        ({ editor, state, dispatch }: CommandProps) => {
+        ({ editor, tr, dispatch }: CommandProps) => {
           const storage = editor.storage.docSearch;
           const { results } = storage;
           if (results.length === 0) return false;
-          const tr = state.tr;
-          for (let i = results.length - 1; i >= 0; i--) {
-            const result = results[i];
-            if (!result) return false;
-            const { from, to } = result;
-            if (dispatch) tr.insertText(storage.replacement, from, to);
+          if (dispatch) {
+            for (let i = results.length - 1; i >= 0; i--) {
+              const result = results[i];
+              if (result) {
+                tr.insertText(storage.replacement, result.from, result.to);
+              }
+            }
           }
           return true;
         },
@@ -190,17 +236,32 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
         state: {
           init: (_, state) => {
             const storage = this.editor.storage.docSearch;
-            return getMatchesAndDecorations(state, storage, options)
-              .decorations;
+            const { results, decorations } = getMatchesAndDecorations(
+              state,
+              storage,
+              options,
+            );
+            storage.results = results;
+            return decorations;
           },
-          apply: (tr, old, _oldState, newState) => {
+          apply: (tr, oldSet, _oldState, newState) => {
             const storage = this.editor.storage.docSearch;
-            if (!storage) return old;
-            if (
-              tr.docChanged ||
-              tr.selectionSet ||
-              tr.getMeta("docSearchRefresh")
-            ) {
+            if (!storage) return oldSet;
+            const action = tr.getMeta("docSearchRefresh") as
+              | PluginMeta
+              | undefined;
+            if (action === "clear") {
+              return DecorationSet.empty;
+            }
+            if (action === "navigate" && !tr.docChanged) {
+              return createDecorations(
+                newState.doc,
+                storage.results,
+                storage.activeIndex,
+                options,
+              );
+            }
+            if (action === "search" || tr.docChanged) {
               const { results, decorations } = getMatchesAndDecorations(
                 newState,
                 storage,
@@ -209,7 +270,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
               storage.results = results;
               return decorations;
             }
-            return old;
+            return oldSet;
           },
         },
         props: {

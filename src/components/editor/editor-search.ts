@@ -1,6 +1,6 @@
 import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
-import { debounce, rendererLogger, waitForPaint } from "@/utils/helpers";
+import { debounce } from "@/utils/helpers";
 import { requireElement } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
@@ -88,35 +88,6 @@ function initEditorSearch(
     }
   }
 
-  async function scrollToSelection(editor: Editor, container: HTMLDivElement) {
-    await waitForPaint();
-    const storage = editor.storage.docSearch;
-    if (
-      !storage?.results ||
-      storage.results.length === 0 ||
-      storage.activeIndex < 0
-    )
-      return;
-    const activeResult = storage.results[storage.activeIndex];
-    if (!activeResult) return;
-    const pos = activeResult.from;
-    if (pos > editor.state.doc.content.size) return;
-    try {
-      const coords = editor.view.coordsAtPos(pos);
-      const editorRect = editor.view.dom.getBoundingClientRect();
-      const targetTop = coords.top - editorRect.top;
-      container.scrollTo({
-        top: Math.max(0, targetTop - container.clientHeight / 2),
-        behavior: "auto",
-      });
-    } catch (error) {
-      rendererLogger.appError(
-        "[scrollToSelection]: Failed to scroll to selection:",
-        error,
-      );
-    }
-  }
-
   function updateCount() {
     const { results, activeIndex, query } = editor.storage.docSearch;
     if (!query || results.length === 0) {
@@ -128,18 +99,12 @@ function initEditorSearch(
 
   function goPrev() {
     if (editor.commands.docSearchPrev()) {
-      void scrollToSelection(editor, editorWrapper).catch(
-        rendererLogger.appError,
-      );
       updateCount();
     }
   }
 
   function goNext() {
     if (editor.commands.docSearchNext()) {
-      void scrollToSelection(editor, editorWrapper).catch((error) =>
-        rendererLogger.appError("Failed to scroll to selection", error),
-      );
       updateCount();
     }
   }

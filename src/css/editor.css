@@ -264,6 +264,21 @@
     background-color 0.2s ease;
 }
 
+@keyframes toc-heading-highlight {
+  0%,
+  20% {
+    background-color: var(--editor-highlight);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.ProseMirror .toc-heading-highlight {
+  animation: toc-heading-highlight 1500ms ease-out forwards;
+  border-radius: 4px;
+}
+
 .ProseMirror .wikilink:hover {
   box-shadow: var(--shadow);
   color: var(--text-main);
@@ -620,6 +635,12 @@
   background-color: var(--search-match-bg);
   color: var(--text-main);
   border-radius: 3px;
+  padding: 0 2px;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--search-match-bg) 60%, var(--text-main));
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .ProseMirror .doc-search-result-active {
@@ -630,6 +651,13 @@
   );
   color: var(--text-main);
   border-radius: 3px;
+  padding: 0 2px;
+  box-shadow:
+    inset 0 0 0 1.5px var(--accent-hover),
+    inset 0 0 6px 0 color-mix(in srgb, var(--accent-hover) 25%, transparent);
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .ProseMirror:focus {

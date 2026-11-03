@@ -5,16 +5,13 @@ import { noteStore, stateStore } from "@/state/state";
 import { memoize, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import {
-  isNoteID,
   type Id,
   type Note,
   type NoteListItem,
 } from "@shared/schemas/note-schema";
-import type { JSONContent } from "@tiptap/core";
+import type { Editor } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
-
-const WIKILINK_REGEX_GLOBAL = /\[\[([^\]]+)\]\]/g;
 
 export interface AutocompleteState {
   from: number;
@@ -166,7 +163,7 @@ const getSortedNotes = memoize((notes: readonly NoteListItem[]) => {
   return notes.toSorted((a, b) => a.title.length - b.title.length);
 });
 
-async function resolveGhostLink(title: Note["title"]) {
+async function resolveGhostLink(editor: Editor, title: Note["title"]) {
   const truncated = truncateTitle(title);
   if (!truncated) return;
   const normalizedOriginal = title.trim().toLowerCase();
@@ -183,38 +180,32 @@ async function resolveGhostLink(title: Note["title"]) {
     }));
   if (!noteId) return;
   const resolvedTitle = existingNote?.title ?? truncated;
-  const { editor } = useCore("editor");
   editor.commands.command(({ tr, state, dispatch }) => {
     const wikilinkType = state.schema.nodes["wikilink"];
     if (!wikilinkType) return false;
     let modified = false;
     state.doc.descendants((node, currentPos) => {
       if (node.type.spec.code) return false;
-      if (node.type === wikilinkType) {
-        const nodeId = node.attrs?.["id"];
-        const nodeTitle = node.attrs?.["title"];
-        if (!nodeId && typeof nodeTitle === "string") {
-          const normNodeTitle = nodeTitle.trim().toLowerCase();
-          const normNodeTruncated = truncateTitle(
-            nodeTitle.trim(),
-          ).toLowerCase();
-          if (
-            normNodeTitle === normalizedOriginal ||
-            normNodeTruncated === normalizedTruncated
-          ) {
-            modified = true;
-            if (dispatch) {
-              tr.setNodeMarkup(currentPos, undefined, {
-                ...node.attrs,
-                id: noteId,
-                title: resolvedTitle,
-              });
-            }
-          }
+      if (node.type !== wikilinkType) return true;
+      if (node.marks.some((mark) => mark.type.spec.code)) return false;
+      const nodeId = node.attrs["id"];
+      if (nodeId) return false;
+      const rawTitle = node.attrs["title"] || "";
+      const normalizedTitle = rawTitle.trim().toLowerCase();
+      const isMatch =
+        normalizedTitle === normalizedOriginal ||
+        truncateTitle(normalizedTitle).toLowerCase() === normalizedTruncated;
+      if (isMatch) {
+        modified = true;
+        if (dispatch) {
+          tr.setNodeMarkup(currentPos, undefined, {
+            ...node.attrs,
+            id: noteId,
+            title: resolvedTitle,
+          });
         }
-        return false;
       }
-      return true;
+      return false;
     });
     if (modified && dispatch) {
       tr.setMeta("addToHistory", false);
@@ -224,50 +215,35 @@ async function resolveGhostLink(title: Note["title"]) {
   return noteId;
 }
 
-function resolveDocLinks(note: Readonly<Note>) {
-  const { editor } = useCore("editor");
-  const matchPos: {
-    match: string;
-    from: number;
-    to: number;
-    targetId: Id;
-  }[] = [];
-  const currentLinks = new Set(getLinks(note.content));
+function resolveDocLinks(editor: Editor) {
   const notes = noteStore.get("notes");
-  const titleMap = new Map(notes.map((n) => [n.title, n.id]));
-  editor.state.doc.descendants((node, pos) => {
-    if (node.type.spec.code) return false;
-    if (!node.isText || !node.text) return true;
-    if (node.marks.some((mark) => mark.type.spec.code)) return false;
-    for (const match of node.text.matchAll(WIKILINK_REGEX_GLOBAL)) {
-      const title = typeof match[1] === "string" ? match[1].trim() : "";
-      if (!title) continue;
+  const titleMap = new Map(notes.map((n) => [n.title.trim(), n.id]));
+  editor.commands.command(({ tr, state, dispatch }) => {
+    const wikilinkType = state.schema.nodes["wikilink"];
+    if (!wikilinkType) return false;
+    let modified = false;
+    editor.state.doc.descendants((node, pos) => {
+      if (node.type.spec.code) return false;
+      if (node.type !== wikilinkType) return true;
+      if (node.marks.some((mark) => mark.type.spec.code)) return false;
+      const title =
+        typeof node.attrs["title"] === "string"
+          ? node.attrs["title"].trim()
+          : "";
+      if (!title) return false;
+      rendererLogger.devLog(`Checking wikilink: ${title} at pos ${pos}`);
       const targetId = titleMap.get(title);
-      if (targetId && !currentLinks.has(targetId)) {
-        matchPos.push({
-          match: title,
-          from: pos + match.index,
-          to: pos + match.index + match[0].length,
-          targetId: targetId,
-        });
+      if (targetId && node.attrs["id"] !== targetId) {
+        if (dispatch) {
+          tr.setNodeMarkup(pos, undefined, { ...node.attrs, id: targetId });
+        }
+        modified = true;
       }
-    }
-    return true;
+      return false;
+    });
+    if (modified && dispatch) tr.setMeta("addToHistory", false);
+    return modified;
   });
-  if (matchPos.length === 0) return;
-  matchPos.sort((a, b) => b.from - a.from);
-  for (const pos of matchPos) {
-    rendererLogger.devLog(`Replacing ${pos.targetId} with title: ${pos.match}`);
-    editor
-      .chain()
-      .insertWikiLink({
-        from: pos.from,
-        to: pos.to,
-        id: pos.targetId,
-        title: pos.match,
-      })
-      .run();
-  }
 }
 
 function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
@@ -278,44 +254,20 @@ function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
     let modified = false;
     state.doc.descendants((node, pos) => {
       if (node.type.spec.code) return false;
-      if (node.type === wikilinkType) {
-        const nodeId = node.attrs?.["id"];
-        if (nodeId && !noteIndex.has(nodeId)) {
-          modified = true;
-          if (dispatch) {
-            tr.setNodeMarkup(pos, undefined, { ...node.attrs, id: null });
-          }
+      if (node.type !== wikilinkType) return true;
+      if (node.marks.some((mark) => mark.type.spec.code)) return false;
+      const nodeId = node.attrs?.["id"];
+      if (nodeId && !noteIndex.has(nodeId)) {
+        if (dispatch) {
+          tr.setNodeMarkup(pos, undefined, { ...node.attrs, id: null });
         }
-        return false;
+        modified = true;
       }
-      return true;
+      return false;
     });
     if (modified && dispatch) tr.setMeta("addToHistory", false);
     return modified;
   });
-}
-
-function getLinks(doc: JSONContent): Id[] {
-  const seen = new Set<Id>();
-  const stack: JSONContent[] = [doc];
-  while (stack.length > 0) {
-    const node = stack.pop();
-    if (!node) continue;
-    if (node.type === "wikilink") {
-      const id = node.attrs?.["id"];
-      if (typeof id === "string" && isNoteID(id)) {
-        seen.add(id);
-      }
-      continue;
-    }
-    if (Array.isArray(node.content)) {
-      for (let i = node.content.length - 1; i >= 0; i--) {
-        const child = node.content[i];
-        if (child) stack.push(child);
-      }
-    }
-  }
-  return Array.from(seen);
 }
 
 export {

@@ -90,6 +90,21 @@ function applySidebarListeners(
     }),
   );
   searchInput.addEventListener("input", debouncedSearch);
+  searchInput.addEventListener(
+    "keydown",
+    createAsyncHandler(async (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+      if (!(e.target instanceof HTMLInputElement)) return;
+      e.preventDefault();
+      const visibleIds = noteStore.get("visibleIds");
+      if (!visibleIds || visibleIds.length === 0) return;
+      const topResult = visibleIds[0];
+      if (topResult) {
+        const loading = createGlobalSpinner();
+        await loading.wrap(() => handleSelectNote(topResult));
+      }
+    }),
+  );
   sidebar.addEventListener("contextmenu", (e) => {
     if (!(e.target instanceof Element)) return;
     const isEmptySidebar = noteStore.get("visibleIds").length === 0;
