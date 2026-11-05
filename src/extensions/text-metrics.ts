@@ -1,6 +1,11 @@
 import { Editor, Extension } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
+import {
+  EditorState,
+  NodeSelection,
+  Plugin,
+  PluginKey,
+} from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 export type CountState = {
@@ -21,9 +26,17 @@ const countNode = (
 ): CountState => {
   const text = node.textBetween(from, to, "\n", "");
   const trimmed = text.trim();
+  const characters = text.replaceAll("\n", "").length;
+  const words = trimmed ? trimmed.split(/\s+/).length : 0;
+  if (!trimmed || characters === 0) {
+    return {
+      characters: 0,
+      words: 0,
+    };
+  }
   return {
-    characters: text.replace("/\n/g", "").length,
-    words: trimmed ? trimmed.split(/\s+/).length : 0,
+    characters,
+    words,
   };
 };
 
@@ -80,7 +93,11 @@ function getSelectionMetrics(state: EditorState) {
 function getSelectionDecoration(state: EditorState): DecorationSet {
   const { selection } = state;
   if (selection.empty) return DecorationSet.empty;
-  const { $to } = selection;
+  const { $to, from, to } = selection;
+  if (from === to) return DecorationSet.empty;
+  if (selection instanceof NodeSelection) {
+    return DecorationSet.empty;
+  }
   const { characters, words, widgetKey } = getSelectionMetrics(state);
   if (characters === 0) return DecorationSet.empty;
   return DecorationSet.create(state.doc, [
