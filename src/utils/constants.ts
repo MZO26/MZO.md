@@ -68,11 +68,12 @@ const CODE_THEME_MAP = {
 const MOVEABLE_BLOCKS = new Set([
   "paragraph",
   "heading",
-  "blockQuote",
+  "blockquote",
   "codeBlock",
   "bulletList",
   "orderedList",
   "listItem",
+  "callout",
 ]);
 
 const MOVEABLE_CONTAINERS = new Set([
@@ -80,7 +81,8 @@ const MOVEABLE_CONTAINERS = new Set([
   "bulletList",
   "orderedList",
   "taskList",
-  "blockQuote",
+  "blockquote",
+  "callout",
 ]);
 
 const DOMPURIFY_CONFIG = {

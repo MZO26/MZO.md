@@ -3,7 +3,11 @@ import {
   ChevronRight,
   ChevronUp,
   createIcons,
+  Flame,
   ListChecks,
+  Pencil,
+  TriangleAlert,
+  Zap,
 } from "lucide";
 
 import {
@@ -59,6 +63,10 @@ import {
 } from "lucide";
 
 const APP_ICONS = {
+  Pencil,
+  Flame,
+  TriangleAlert,
+  Zap,
   ListChecks,
   ChevronRight,
   ChevronUp,

@@ -37,10 +37,6 @@ const NOTE_ITEM_DISPLAY_SETTINGS: readonly SelectOption<NoteItemDisplay>[] = [
     label: "Preview",
   },
   {
-    value: "tags",
-    label: "Tags",
-  },
-  {
     value: "minimal",
     label: "Minimal",
   },

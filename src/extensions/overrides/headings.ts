@@ -1,5 +1,4 @@
-import type { JSONContent } from "@tiptap/core";
-import { Extension } from "@tiptap/core";
+import { Extension, type JSONContent } from "@tiptap/core";
 import Heading from "@tiptap/extension-heading";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 
@@ -30,11 +29,11 @@ const CustomHeading = Heading.extend({
           let modified = false;
           const headingType = newState.schema.nodes["heading"];
           newState.doc.descendants((node, pos) => {
-            if (node.type.spec.code) return false;
             const hasContent = !!node.textContent.trim();
             if (node.type === headingType && hasContent && !node.attrs["id"]) {
+              if (!headingType.validContent(node.content)) return false;
               const id = crypto.randomUUID();
-              tr.setNodeMarkup(pos, undefined, { ...node.attrs, id });
+              tr.setNodeAttribute(pos, "id", id);
               modified = true;
               return false;
             }
@@ -42,6 +41,38 @@ const CustomHeading = Heading.extend({
             return true;
           });
           return modified ? tr : undefined;
+        },
+      }),
+    ];
+  },
+});
+
+const TitleEnforcer = Extension.create({
+  name: "titleEnforcer",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        appendTransaction(_, oldState, newState) {
+          if (oldState.doc === newState.doc) return null;
+          const firstNode = newState.doc.firstChild;
+          const headingType = newState.schema.nodes["heading"];
+          if (!firstNode || !headingType) return null;
+          if (firstNode.type !== headingType) {
+            const tr = newState.tr;
+            const canConvert =
+              firstNode.isTextblock &&
+              headingType.validContent(firstNode.content);
+            if (canConvert) {
+              tr.setBlockType(0, firstNode.nodeSize - 2, headingType, {
+                level: 1,
+              });
+            } else {
+              const emptyHeading = headingType.create({ level: 1 });
+              tr.insert(0, emptyHeading);
+            }
+            return tr;
+          }
+          return null;
         },
       }),
     ];
@@ -63,27 +94,5 @@ function addHeadingToDoc(doc: JSONContent, titleText: string): JSONContent {
   }
   return { ...doc, content };
 }
-
-const TitleEnforcer = Extension.create({
-  name: "titleEnforcer",
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        appendTransaction(_, oldState, newState) {
-          if (oldState.doc === newState.doc) return null;
-          const firstNode = newState.doc.firstChild;
-          const headingType = newState.schema.nodes["heading"];
-          if (!firstNode || !headingType) return null;
-          if (firstNode.type !== headingType) {
-            const tr = newState.tr;
-            tr.setNodeMarkup(0, headingType, { level: 1 });
-            return tr;
-          }
-          return null;
-        },
-      }),
-    ];
-  },
-});
 
 export { addHeadingToDoc, CustomHeading, TitleEnforcer };

@@ -77,6 +77,7 @@ class AppDB {
       this.execPragma("foreign_keys = ON", db);
       this.execPragma("busy_timeout = 5000", db);
       this.execPragma("synchronous = NORMAL", db);
+      this.execPragma("cache_size = -32000", db);
       this.createTables(db);
       this.createIndexes(db);
       const integrity = this.queryPragma<{ quick_check: string }>(

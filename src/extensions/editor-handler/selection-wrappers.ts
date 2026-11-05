@@ -152,8 +152,10 @@ const SelectionWrapper = Extension.create({
 
 const KbSelectionCommands = Extension.create({
   name: "kbSelectionCommands",
+
   addKeyboardShortcuts() {
-    function getMovableDepth($pos: ResolvedPos): number {
+    function getMovableDepth($pos: ResolvedPos) {
+      if ($pos.depth === 0) return null;
       for (let d = $pos.depth; d > 0; d--) {
         const nodeType = $pos.node(d).type.name;
         if (MOVEABLE_CONTAINERS.has(nodeType)) {
@@ -162,69 +164,101 @@ const KbSelectionCommands = Extension.create({
       }
       return 1;
     }
+
     const moveBlock = (direction: "up" | "down") => {
-      return this.editor
-        .chain()
-        .focus()
-        .command(({ tr, state, dispatch }) => {
-          const { selection } = this.editor.state;
-          const { $from } = selection;
+      return this.editor.commands.command(({ tr, state, dispatch }) => {
+        const { selection, doc } = state;
+        const { $from } = selection;
+        let blockStart: number;
+        let blockEnd: number;
+        let node = selection instanceof NodeSelection ? selection.node : null;
+        if (node) {
+          blockStart = selection.from;
+          blockEnd = selection.to;
+        } else {
           const depth = getMovableDepth($from);
-          const blockStart = $from.before(depth);
-          const blockEnd = $from.after(depth);
-          const node = state.doc.nodeAt(blockStart);
-          if (!node || !MOVEABLE_BLOCKS.has(node.type.name)) return false;
-          const $posBefore = state.doc.resolve(blockStart);
-          const $posAfter = state.doc.resolve(blockEnd);
-          const neighborNode =
-            direction === "up" ? $posBefore.nodeBefore : $posAfter.nodeAfter;
-          if (!neighborNode) return false;
-          const insertPos =
-            direction === "up"
-              ? blockStart - neighborNode.nodeSize
-              : blockStart + neighborNode.nodeSize;
-          const cursorOffset = selection.from - blockStart;
-          // get relative offset to set cursor into block
-          const newCursorPos = insertPos + cursorOffset;
-          if (dispatch) {
-            tr.delete(blockStart, blockEnd).insert(insertPos, node);
-            if (selection instanceof NodeSelection) {
-              tr.setSelection(NodeSelection.create(tr.doc, newCursorPos));
-            } else {
-              tr.setSelection(TextSelection.create(tr.doc, newCursorPos));
-            }
-          }
-          return true;
-        })
-        .run();
-    };
-    const duplicateContent = (direction: "up" | "down") => {
-      return this.editor
-        .chain()
-        .focus()
-        .command(({ tr, state, dispatch }) => {
-          const { selection } = state;
-          const { empty, $from, from, to } = selection;
-          if (empty) {
-            const depth = $from.depth;
-            const blockStart = $from.before(depth);
-            const blockEnd = $from.after(depth);
-            const node = state.doc.nodeAt(blockStart);
-            if (!node) return false;
-            if (dispatch) {
-              const insertPos = direction === "up" ? blockStart : blockEnd;
-              tr.insert(insertPos, node);
-            }
+          if (depth === null) return false;
+          blockStart = $from.before(depth);
+          blockEnd = $from.after(depth);
+          node = $from.node(depth);
+        }
+        if (!MOVEABLE_BLOCKS.has(node.type.name)) return false;
+        const neighborNode =
+          direction === "up"
+            ? doc.resolve(blockStart).nodeBefore
+            : doc.resolve(blockEnd).nodeAfter;
+        if (!neighborNode) return false;
+        const insertPos =
+          direction === "up"
+            ? blockStart - neighborNode.nodeSize
+            : blockStart + neighborNode.nodeSize;
+        const anchorOffset = selection.anchor - blockStart;
+        const headOffset = selection.head - blockStart;
+        if (dispatch) {
+          tr.delete(blockStart, blockEnd).insert(insertPos, node);
+          if (selection instanceof NodeSelection) {
+            tr.setSelection(NodeSelection.create(tr.doc, insertPos));
           } else {
-            if (dispatch) {
-              const fragment = selection.content().content;
-              const insertPos = direction === "up" ? from : to;
-              tr.insert(insertPos, fragment);
+            tr.setSelection(
+              TextSelection.create(
+                tr.doc,
+                insertPos + anchorOffset,
+                insertPos + headOffset,
+              ),
+            );
+          }
+          tr.scrollIntoView();
+        }
+        return true;
+      });
+    };
+
+    const duplicateContent = (direction: "up" | "down") => {
+      return this.editor.commands.command(({ tr, state, dispatch }) => {
+        const { selection, doc } = state;
+        const { empty, $from, from, to } = selection;
+        if (empty || selection instanceof NodeSelection) {
+          let blockStart: number;
+          let blockEnd: number;
+          let node = selection instanceof NodeSelection ? selection.node : null;
+          if (node) {
+            blockStart = selection.from;
+            blockEnd = selection.to;
+          } else {
+            const depth = getMovableDepth($from);
+            if (depth === null) return false;
+            blockStart = $from.before(depth);
+            blockEnd = $from.after(depth);
+            node = $from.node(depth);
+          }
+          if (dispatch) {
+            const insertPos = direction === "up" ? blockStart : blockEnd;
+            tr.insert(insertPos, node);
+            if (direction === "down") {
+              const offset = selection.from - blockStart;
+              const newPos = insertPos + offset;
+              tr.setSelection(
+                selection instanceof NodeSelection
+                  ? NodeSelection.create(tr.doc, insertPos)
+                  : TextSelection.create(tr.doc, newPos),
+              ).scrollIntoView();
             }
           }
           return true;
-        })
-        .run();
+        }
+        if (dispatch) {
+          const slice = selection.content();
+          const insertPos = direction === "up" ? from : to;
+          tr.insert(insertPos, slice.content);
+          if (direction === "down") {
+            const addedSize = tr.doc.content.size - doc.content.size;
+            tr.setSelection(
+              TextSelection.create(tr.doc, from + addedSize, to + addedSize),
+            ).scrollIntoView();
+          }
+        }
+        return true;
+      });
     };
     return {
       "Shift-Alt-ArrowUp": () => duplicateContent("up"),

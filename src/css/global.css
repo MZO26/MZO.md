@@ -47,6 +47,11 @@
   --pin-bg: rgba(180, 83, 75, 0.12);
   --selection-item-bg: rgba(82, 82, 91, 0.08);
   --selection-item-border: rgba(82, 82, 91, 0.22);
+  --callout-note: 59, 130, 246;
+  --callout-tip: 13, 148, 136;
+  --callout-warning: 217, 119, 6;
+  --callout-danger: 220, 38, 38;
+  --callout-info: 2, 132, 199;
 }
 
 :root[data-theme="dark"] {
@@ -77,6 +82,11 @@
   --pin-bg: rgba(196, 122, 114, 0.14);
   --selection-item-bg: rgba(161, 161, 170, 0.12);
   --selection-item-border: rgba(161, 161, 170, 0.26);
+  --callout-note: 96, 165, 250;
+  --callout-tip: 45, 212, 191;
+  --callout-warning: 251, 191, 36;
+  --callout-danger: 248, 113, 113;
+  --callout-info: 56, 189, 248;
 }
 
 [data-theme="light_warm"] {
@@ -107,6 +117,11 @@
   --pin-bg: rgba(168, 92, 63, 0.12);
   --selection-item-bg: rgba(68, 64, 60, 0.08);
   --selection-item-border: rgba(68, 64, 60, 0.22);
+  --callout-note: 79, 122, 219;
+  --callout-tip: 5, 150, 105;
+  --callout-warning: 234, 88, 12;
+  --callout-danger: 204, 60, 50;
+  --callout-info: 7, 122, 180;
 }
 
 [data-theme="dark_warm"] {
@@ -137,6 +152,11 @@
   --pin-bg: rgba(224, 154, 104, 0.12);
   --selection-item-bg: rgba(158, 152, 144, 0.12);
   --selection-item-border: rgba(158, 152, 144, 0.26);
+  --callout-note: 124, 159, 245;
+  --callout-tip: 52, 211, 153;
+  --callout-warning: 251, 191, 36;
+  --callout-danger: 251, 113, 133;
+  --callout-info: 52, 175, 225;
 }
 
 [data-theme="oled"] {
@@ -167,6 +187,11 @@
   --pin-bg: rgba(252, 165, 165, 0.15);
   --selection-item-bg: rgba(161, 161, 170, 0.12);
   --selection-item-border: rgba(161, 161, 170, 0.3);
+  --callout-note: 56, 189, 248;
+  --callout-tip: 45, 212, 191;
+  --callout-warning: 251, 191, 36;
+  --callout-danger: 251, 113, 133;
+  --callout-info: 56, 189, 248;
 }
 
 [data-font="system"] {

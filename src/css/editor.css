@@ -706,3 +706,64 @@
   outline: none;
   background-color: var(--selection-bg);
 }
+
+.callout {
+  --callout-color: var(--callout-note, 59, 130, 246);
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--callout-color), 0.2);
+  border-left: 3px solid var(--callout-color);
+  background: rgba(var(--callout-color), 0.06);
+}
+
+.callout-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--callout-color);
+  user-select: none;
+}
+
+.callout-icon {
+  flex-shrink: 0;
+}
+
+.callout-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+}
+
+.callout-content > :first-child {
+  margin-top: 0;
+}
+.callout-content > :last-child {
+  margin-bottom: 0;
+}
+
+.callout[data-callout-type="note"] {
+  --callout-color: var(--callout-note);
+}
+.callout[data-callout-type="tip"] {
+  --callout-color: var(--callout-tip);
+}
+.callout[data-callout-type="warning"] {
+  --callout-color: var(--callout-warning);
+}
+.callout[data-callout-type="danger"] {
+  --callout-color: var(--callout-danger);
+}
+.callout[data-callout-type="info"] {
+  --callout-color: var(--callout-info);
+}
+
+[data-theme="dark"] .callout,
+[data-theme="dark_warm"] .callout,
+[data-theme="oled"] .callout {
+  background: rgba(var(--callout-color), 0.1);
+  border-color: rgba(var(--callout-color), 0.25);
+}

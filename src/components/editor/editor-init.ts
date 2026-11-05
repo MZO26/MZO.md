@@ -9,6 +9,7 @@ import {
   applyView,
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
+import { Callout } from "@/extensions/callouts";
 import { SelectionHighlight } from "@/extensions/decorations/active-highlight";
 import { DuplicateLinkWidget } from "@/extensions/decorations/duplicate-link";
 import { NoteInfoWidget } from "@/extensions/decorations/note-info";
@@ -37,6 +38,7 @@ import {
   CustomInlineMath,
 } from "@/extensions/overrides/mathematics/mathematics";
 import { handleMathClick } from "@/extensions/overrides/mathematics/mathematics-dialog";
+import { TableHandler } from "@/extensions/overrides/table-handler";
 import { CustomUnderline } from "@/extensions/overrides/underline";
 import { DocSearch } from "@/extensions/search-replace";
 import { NoteTagHandler } from "@/extensions/tag/tag-handler";
@@ -65,7 +67,7 @@ import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor, type JSONContent } from "@tiptap/core";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
 import {
@@ -192,7 +194,7 @@ function getNoteEditorExtensions() {
       lowlight,
       enableTabIndentation: true,
       tabSize: 2,
-      defaultLanguage: "plaintext",
+      defaultLanguage: "text",
       HTMLAttributes: {
         spellcheck: false,
       },
@@ -207,7 +209,6 @@ function getNoteEditorExtensions() {
       katexOptions: SHARED_KATEX_OPTIONS,
     }),
     DocSearch,
-    TitleEnforcer,
     SelectionWrapper,
     SelectionMetrics,
     KbSelectionCommands,
@@ -215,6 +216,9 @@ function getNoteEditorExtensions() {
     NoteInfoWidget,
     DuplicateLinkWidget,
     TocSelectedHeading,
+    TitleEnforcer,
+    Callout,
+    TableHandler,
   ];
 }
 

@@ -292,7 +292,6 @@ function renderNoteList(sidebarParams: SidebarParams) {
     searchSnippets,
     activeTag,
     activeId,
-    display,
   } = sidebarParams;
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
@@ -311,7 +310,7 @@ function renderNoteList(sidebarParams: SidebarParams) {
     ? notes
     : notes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
   for (const note of displayNotes) {
-    const item = createNoteItem(note, display);
+    const item = createNoteItem(note);
     getSafeSnippet({ item, note, snippets: searchSnippets });
     if (note.id === activeId) {
       activeElement = item;

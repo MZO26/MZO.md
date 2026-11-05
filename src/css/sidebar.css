@@ -543,20 +543,8 @@ input::-webkit-search-cancel-button {
   contain-intrinsic-size: auto 90px;
 }
 
-.note-tags,
 .note-content {
   display: none;
-}
-
-.notes-container[data-noteItem="tags"] .note-item:not(.search) .note-tags {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 2px;
-  font-size: 0.8em;
-  border-radius: 1em;
-  font-weight: 500;
-  overflow: hidden;
 }
 
 .notes-container[data-noteItem="preview"] .note-content {

@@ -4,7 +4,6 @@ import { renderIcons } from "@/utils/icons";
 import type { SnippetGenParams } from "@/utils/types";
 import { createTemplateCloner, isDiv } from "@/utils/ui";
 import type { NoteListItem } from "@shared/schemas/note-schema";
-import type { AppSettings } from "@shared/schemas/store-schema";
 import { UNTITLED } from "@shared/shared-constants";
 import DOMPurify from "dompurify";
 
@@ -21,20 +20,7 @@ function getSafeSnippet(snippetGenParams: SnippetGenParams) {
   contentEl.innerHTML = safe;
 }
 
-function renderTags(tags: NoteListItem["tags"], container: HTMLDivElement) {
-  for (const tag of tags) {
-    const span = document.createElement("span");
-    span.classList.add("tag-node");
-    span.textContent = `#${tag}`;
-    span.title = `#${tag}`;
-    container.appendChild(span);
-  }
-}
-
-function createNoteItem(
-  note: NoteListItem,
-  display: Readonly<AppSettings["note_item_display"]>,
-) {
+function createNoteItem(note: NoteListItem) {
   const item = getNoteItemClone();
   item.setAttribute("data-id", note.id);
   item.setAttribute("data-pinned", String(!!note.pinned));
@@ -45,12 +31,6 @@ function createNoteItem(
   if (titleEl) titleEl.textContent = safeTitle;
   const dateEl = item.querySelector<HTMLDivElement>(".note-date");
   if (dateEl) dateEl.textContent = formatNoteDate(note.created_at);
-  const tagsContainer = item.querySelector<HTMLDivElement>(".note-tags");
-  if (tagsContainer) {
-    tagsContainer.replaceChildren();
-    if (display === "tags" && Array.isArray(note.tags) && note.tags.length > 0)
-      renderTags(note.tags, tagsContainer);
-  }
   return item;
 }
 

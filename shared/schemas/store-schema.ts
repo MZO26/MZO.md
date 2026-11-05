@@ -20,7 +20,7 @@ const StoreSchema = z.object({
   spellcheck: z.boolean().catch(false),
   code_theme: z.enum(["focus", "balanced", "colorless"]).catch("balanced"),
   highlight: z.enum(["context", "insight", "action"]).catch("context"),
-  note_item_display: z.enum(["preview", "tags", "minimal"]).catch("preview"),
+  note_item_display: z.enum(["preview", "minimal"]).catch("preview"),
   window_bounds: WindowBoundsSchema,
   active_tag: z.string().trim().min(1).nullish().catch(null).default(null),
 });

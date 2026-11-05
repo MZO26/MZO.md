@@ -20,7 +20,7 @@ import {
   stateStore,
 } from "@/state/state";
 import { rendererLogger } from "@/utils/helpers";
-import { useCore } from "@/utils/registry";
+import { useCore, useDialog } from "@/utils/registry";
 import { setActiveItem } from "@/utils/ui";
 
 function initSubscriptions(sidebar: HTMLDivElement) {
@@ -33,6 +33,15 @@ function initSubscriptions(sidebar: HTMLDivElement) {
         `.note-item[data-id="${CSS.escape(activeId)}"]`,
       );
       if (noteElement) setActiveItem(noteElement, sidebar);
+      const { mathDialog, settingsDialog } = useDialog(
+        "mathDialog",
+        "settingsDialog",
+      );
+      if (mathDialog.open) {
+        mathDialog.returnValue = "cancel";
+        mathDialog.close();
+      }
+      if (settingsDialog.open) settingsDialog.close();
     },
     shallowEq,
     { fireImmediately: true },

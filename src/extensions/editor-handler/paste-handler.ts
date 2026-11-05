@@ -7,9 +7,30 @@ import {
 } from "@/utils/constants";
 import { rendererLogger } from "@/utils/helpers";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
-import { Extension } from "@tiptap/core";
+import { Extension, type JSONContent } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";
+
+function resolveMarkConflicts(nodes: JSONContent[]): JSONContent[] {
+  return nodes.map((node) => {
+    if (
+      node.type === "text" &&
+      node.marks?.some((mark) => mark.type === "code")
+    ) {
+      return {
+        ...node,
+        marks: node.marks.filter((mark) => mark.type !== "bold"),
+      };
+    }
+    if (node.content) {
+      return {
+        ...node,
+        content: resolveMarkConflicts(node.content),
+      };
+    }
+    return node;
+  });
+}
 
 const strongSignals = [
   /^#{1,6}\s+\S/m,
@@ -73,10 +94,18 @@ export const PasteHandler = Extension.create({
               try {
                 event.preventDefault();
                 const json = getMarkdownManager().parse(plainText);
-                editor.commands.insertContent(json, { contentType: "json" });
+                const content = json.content;
+                if (!content) return false;
+                const resolved = resolveMarkConflicts(content);
+                editor.commands.insertContent(resolved, {
+                  contentType: "json",
+                });
                 return true;
               } catch (error) {
-                rendererLogger.appError("Failed to parse clipboard content");
+                rendererLogger.appError(
+                  "Failed to insert clipboard content",
+                  error,
+                );
                 return false;
               }
             }

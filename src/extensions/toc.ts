@@ -1,3 +1,4 @@
+import { rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import { createInfoSpan, requireElement } from "@/utils/ui";
 import { type Editor } from "@tiptap/core";
@@ -42,6 +43,7 @@ function initTableOfContents() {
     );
     if (!button) return;
     const targetId = button.getAttribute("data-target-id");
+    rendererLogger.devLog("targetId", targetId);
     if (targetId) {
       const heading = editorWrapper?.querySelector<HTMLHeadingElement>(
         `[id="${CSS.escape(targetId)}"]`,

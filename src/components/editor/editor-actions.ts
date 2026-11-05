@@ -1,3 +1,4 @@
+import { Callout } from "@/extensions/callouts";
 import { Highlight } from "@/extensions/highlight";
 import {
   CustomBlockMath,
@@ -74,6 +75,7 @@ function getRequestExtensions() {
     StarterKit,
     CustomBlockMath,
     CustomInlineMath,
+    Callout,
   ];
 }
 
