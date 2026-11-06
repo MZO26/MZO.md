@@ -1,4 +1,4 @@
-import type { Id, Note } from "@shared/schemas/note-schema";
+import type { Id, Note, SearchQuery } from "@shared/schemas/note-schema";
 import type { APP_EVENTS, EDITOR_EVENTS } from "@shared/shared-constants";
 import type { CallbackFunction } from "node:ffi";
 
@@ -22,6 +22,7 @@ type AppEventStrings = (typeof APP_EVENTS)[keyof typeof APP_EVENTS];
 type PayloadOverrides = {
   [APP_EVENTS.APPLY_VIEW]: string;
   [APP_EVENTS.HANDLE_WIKILINK_CLICK]: { id: Id | null; title: Note["title"] };
+  [APP_EVENTS.SYNC_EDITOR_SEARCH]: { query: SearchQuery };
 };
 
 class EventManager<T extends Record<string, unknown>> {

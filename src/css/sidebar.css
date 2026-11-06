@@ -438,7 +438,8 @@ input::-webkit-search-cancel-button {
 .note-title {
   grid-column: 2;
   font-size: 0.85rem;
-  padding: 0 0 12px 0;
+  padding: 0 0 10px 0;
+  margin-left: -2px;
   font-weight: bold;
   text-overflow: ellipsis;
   overflow: hidden;

@@ -3,6 +3,7 @@ import { DEBOUNCE_MS } from "@/utils/constants";
 import { debounce } from "@/utils/helpers";
 import { requireElement } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
+import type { SearchQuery } from "@shared/schemas/note-schema";
 import { APP_EVENTS, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
 
@@ -55,37 +56,36 @@ function initEditorSearch(
     updateCount();
   }
 
-  function open() {
-    inputWrapper.classList.remove("invisible");
-    input.focus();
-    input.select();
-    const globalQuery = stateStore.get("searchQuery");
-    if (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH) {
-      input.value = globalQuery;
-      editor.commands.docSearchSetQuery(globalQuery);
-      updateCount();
+  function applyQuery(rawQuery: string) {
+    const query = rawQuery.trim();
+    if (query.length > MIN_SEARCH_LENGTH) {
+      input.value = query;
+      editor.commands.docSearchSetQuery(query);
+    } else {
+      input.value = "";
+      editor.commands.docSearchClear();
     }
+    updateCount();
     updateButtons();
+  }
+
+  function open(focus: boolean = true) {
+    inputWrapper.classList.remove("invisible");
+    if (!input.value) {
+      applyQuery(stateStore.get("searchQuery") ?? "");
+    }
+    if (focus) {
+      input.focus();
+      input.select();
+    }
   }
 
   function close() {
-    input.value = "";
-    replaceInput.value = "";
     inputWrapper.classList.add("invisible");
     replaceInputWrapper.classList.add("invisible");
     chevronBtn.classList.remove("open");
-    editor.commands.docSearchClear();
-    updateButtons();
-    updateCount();
-  }
-
-  function toggle() {
-    const isClosed = inputWrapper.classList.contains("invisible");
-    if (isClosed) {
-      open();
-    } else {
-      close();
-    }
+    applyQuery("");
+    replaceInput.value = "";
   }
 
   function updateCount() {
@@ -97,27 +97,23 @@ function initEditorSearch(
     searchCount.textContent = `${activeIndex + 1} of ${results.length}`;
   }
 
-  function goPrev() {
-    if (editor.commands.docSearchPrev()) {
-      updateCount();
-    }
-  }
-
-  function goNext() {
-    if (editor.commands.docSearchNext()) {
-      updateCount();
-    }
+  function go(direction: "prev" | "next") {
+    const moved =
+      direction === "prev"
+        ? editor.commands.docSearchPrev()
+        : editor.commands.docSearchNext();
+    if (moved) updateCount();
   }
 
   inputWrapper.addEventListener("click", (event: Event) => {
     if (!(event.target instanceof Element)) return;
     if (event.target.closest(".search-prev")) {
       event.preventDefault();
-      goPrev();
+      go("prev");
       return;
     } else if (event.target.closest(".search-next")) {
       event.preventDefault();
-      goNext();
+      go("next");
       return;
     }
   });
@@ -135,6 +131,7 @@ function initEditorSearch(
         editor.commands.docSearchReplaceAll();
       }
       updateCount();
+      updateButtons();
     }
   });
 
@@ -149,7 +146,7 @@ function initEditorSearch(
     if (event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
-      event.shiftKey ? goPrev() : goNext();
+      event.shiftKey ? go("prev") : go("next");
     } else if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
@@ -161,12 +158,14 @@ function initEditorSearch(
     const isMod = event.metaKey || event.ctrlKey;
     if (event.key === "Enter") {
       event.preventDefault();
-      syncQuery();
+      if (input.value.trim().length <= MIN_SEARCH_LENGTH) return;
       if (event.altKey && isMod) {
         editor.commands.docSearchReplaceAll();
       } else {
         editor.commands.docSearchReplaceCurrent();
       }
+      updateCount();
+      updateButtons();
     } else if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
@@ -206,7 +205,24 @@ function initEditorSearch(
   }, DEBOUNCE_MS.normal);
 
   input.addEventListener("input", debouncedSearch);
-  appEvents.on(APP_EVENTS.TOGGLE_EDITOR_SEARCH, toggle);
+  appEvents.on(APP_EVENTS.TOGGLE_EDITOR_SEARCH, () => {
+    const isHidden = inputWrapper.classList.contains("invisible");
+    if (isHidden) {
+      open(true);
+    } else {
+      close();
+    }
+  });
+  appEvents.on(
+    APP_EVENTS.SYNC_EDITOR_SEARCH,
+    ({ query = "" }: { query: SearchQuery }) => {
+      const globalQuery = typeof query === "string" ? query : "";
+      applyQuery(globalQuery);
+      if (query.trim().length > MIN_SEARCH_LENGTH) {
+        open(false);
+      }
+    },
+  );
 }
 
 export { initEditorSearch };

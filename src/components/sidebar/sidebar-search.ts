@@ -7,28 +7,31 @@ import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
 import { debounce, rendererLogger } from "@/utils/helpers";
 import type { MappedMatches } from "@/utils/types";
+import { appEvents } from "@shared/event-emitter";
 import {
   isNoteID,
   type Id,
   type NoteListItem,
   type SearchQuery,
 } from "@shared/schemas/note-schema";
-import { MAX_SEARCH_LENGTH } from "@shared/shared-constants";
+import { APP_EVENTS, MAX_SEARCH_LENGTH } from "@shared/shared-constants";
+
+let currentSearchId = 0;
 
 async function handleSearch(searchInput: SearchQuery) {
   const nextQuery = searchInput.trim();
   if (nextQuery.length > MAX_SEARCH_LENGTH) return;
   const { searchQuery, activeTag } = stateStore.getState();
-  if (nextQuery === searchQuery) {
-    rendererLogger.devLog("Same query. Skipping search");
-    return;
-  }
+  if (nextQuery === searchQuery) return;
+  stateStore.setState({ searchQuery: nextQuery });
   if (!nextQuery) {
     restoreSidebarScope();
+    appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: "" });
     return;
   }
-  stateStore.setState({ searchQuery: nextQuery });
+  const searchId = ++currentSearchId;
   const result = await search(nextQuery);
+  if (searchId !== currentSearchId) return;
   if (!result.success) {
     rendererLogger.appError("[handleSearch]: Failed to search:", result.error);
     return;
@@ -43,6 +46,7 @@ async function handleSearch(searchInput: SearchQuery) {
     });
   }
   computeSearchResult(data, noteStore.get("noteIndex"), activeTag);
+  appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: nextQuery });
 }
 
 function computeSearchResult(

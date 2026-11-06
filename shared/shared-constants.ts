@@ -43,6 +43,7 @@ const TABLE_ACTIONS = {
 
 const APP_EVENTS = {
   TOGGLE_EDITOR_SEARCH: "app:toggle-editor-search",
+  SYNC_EDITOR_SEARCH: "app:sync-editor-search",
   TOGGLE_QUICK_SWITCH: "app:toggle-quick-switch",
   TOGGLE_SIDEBAR: "app:toggle-sidebar",
   CREATE_NEW_NOTE: "app:create-new-note",

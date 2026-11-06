@@ -310,8 +310,11 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
         lastOpenNote: result.data.id,
       };
     });
-    editor.view.dispatch(editor.state.tr.setMeta("noteInfoRefresh", true));
-    editor.view.dispatch(editor.state.tr.setMeta("duplicateLinkRefresh", true));
+    editor.view.dispatch(
+      editor.state.tr
+        .setMeta("noteInfoRefresh", true)
+        .setMeta("duplicateLinkRefresh", true),
+    );
   }
 }
 
@@ -385,7 +388,7 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   editor.view.dispatch(editor.state.tr.setMeta("duplicateLinkRefresh", true));
   const globalQuery = stateStore.get("searchQuery");
   if (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH)
-    appEvents.emit(APP_EVENTS.TOGGLE_EDITOR_SEARCH);
+    appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: globalQuery });
 }
 
 async function handleExtractToNote(id: Id, content: JSONContent) {

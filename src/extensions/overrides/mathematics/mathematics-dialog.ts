@@ -2,7 +2,7 @@ import { showDialog } from "@/utils/helpers";
 import { useCore, useDialog } from "@/utils/registry";
 import type { MathOptions } from "@/utils/types";
 import type { Editor } from "@tiptap/core";
-import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import { Node as PMNode } from "@tiptap/pm/model";
 
 async function openMathDialog(editor: Editor, options: MathOptions) {
   const { mathDialog, mathInput } = useDialog("mathDialog", "mathInput");
@@ -31,7 +31,7 @@ async function openMathDialog(editor: Editor, options: MathOptions) {
   }
 }
 
-async function handleMathClick(node: ProseMirrorNode, pos: number) {
+async function handleMathClick(node: PMNode, pos: number) {
   const { editor } = useCore("editor");
   await openMathDialog(editor, {
     mode: "update",

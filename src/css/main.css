@@ -43,7 +43,6 @@
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.math-dialog,
 .settings-modal {
   max-width: 90vw;
   max-height: 85vh;
@@ -88,6 +87,7 @@
   background-color: var(--bg-sidebar-section);
 }
 
+.math-dialog,
 .quick-switch-dialog,
 .delete-dialog {
   width: 350px;
@@ -278,23 +278,23 @@
 #math-input {
   width: 100%;
   flex: 1 1 auto;
-  height: 250px;
+  min-height: 110px;
+  max-height: 250px;
   padding: 10px;
-  font-family: inherit;
+  field-sizing: content;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 1.2rem;
   line-height: 1.6;
   white-space: pre-wrap;
-  background-color: var(--bg-editor);
+  background-color: var(--bg-sidebar-sections);
   color: var(--text-main);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   outline: none;
   resize: none;
-  field-sizing: content;
   overflow-y: auto;
   overflow-x: hidden;
-  overflow-wrap: anywhere;
-  word-break: break-all;
+  overflow-wrap: break-word;
   scrollbar-gutter: stable;
   caret-color: var(--text-main);
   transition:
@@ -1166,16 +1166,6 @@ svg.empty-state-icon {
 
   .settings-row {
     padding: 5px;
-  }
-
-  .math-dialog {
-    width: 450px;
-    height: 300px;
-  }
-
-  #math-input {
-    min-height: 100px;
-    max-height: 150px;
   }
 
   .input-wrapper-editor {
