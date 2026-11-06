@@ -235,7 +235,8 @@
   border-radius: 18px 18px 0 0;
 }
 
-.delete-dialog-title {
+.delete-dialog-title,
+.math-dialog-title {
   font-weight: 700;
 }
 
