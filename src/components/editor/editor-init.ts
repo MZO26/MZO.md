@@ -92,7 +92,6 @@ function initEditor(settings: Partial<Readonly<AppSettings>>): Editor {
         spellcheck: settings.spellcheck ? "true" : "false",
       },
     },
-    parseOptions: { preserveWhitespace: "full" },
     autofocus: true,
     onFocus: () => appEvents.emit("app:unset-hover"),
   });

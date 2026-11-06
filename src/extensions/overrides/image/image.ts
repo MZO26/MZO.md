@@ -5,7 +5,11 @@ import { compressImageInWorker } from "@/utils/workers/worker-init";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type { Editor, JSONContent } from "@tiptap/core";
 
-async function processAndInsertImages(files: File[], editor: Editor) {
+async function processAndInsertImages(
+  files: File[],
+  editor: Editor,
+  dropPos: number,
+) {
   const validFiles = files.filter(
     (file) => file.size <= MAX_SIZE && ALLOWED_TYPES.includes(file.type),
   );
@@ -31,6 +35,7 @@ async function processAndInsertImages(files: File[], editor: Editor) {
     const payload = compressedResults.filter(
       (item): item is ImagePayload => item !== null,
     );
+    if (payload.length === 0) return;
     const result = await imageWriteMany(payload);
     if (!result.success) {
       rendererLogger.appError(
@@ -39,23 +44,31 @@ async function processAndInsertImages(files: File[], editor: Editor) {
       );
       return;
     }
-    const content: JSONContent[] = [];
-    for (const src of result.data) {
-      content.push({ type: "image", attrs: { src } }, { type: "paragraph" });
+    const imageUrls = (Array.isArray(result.data) ? result.data : []).filter(
+      (src): src is string => typeof src === "string" && src.length > 0,
+    );
+    if (imageUrls.length === 0) {
+      rendererLogger.appError(
+        "[processAndInsertImages]: imageWriteMany returned no valid image URLs",
+        result,
+      );
+      return;
     }
+    const content: JSONContent[] = imageUrls.map((src) => ({
+      type: "image",
+      attrs: {
+        src,
+        alt: "",
+      },
+    }));
     editor
       .chain()
       .focus()
-      .insertContent(content, {
+      .insertContentAt(dropPos, content, {
         updateSelection: true,
       })
       .run();
-  } catch (error) {
-    rendererLogger.appError(
-      "[processAndInsertImages]: Unknown Error. Failed to process and insert image:",
-      error,
-    );
-  }
+  } catch {}
 }
 
 async function promptImageUpload(editor: Editor) {
@@ -67,7 +80,8 @@ async function promptImageUpload(editor: Editor) {
     if (!(e.target instanceof HTMLInputElement)) return;
     const files = e.target.files;
     if (!files) return;
-    await processAndInsertImages(Array.from(files), editor);
+    const pos = editor.state.selection.from;
+    await processAndInsertImages(Array.from(files), editor, pos);
   };
   input.click();
 }

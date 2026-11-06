@@ -11,8 +11,8 @@ import { MAX_BYTES_FILE } from "@shared/shared-constants";
 import { Editor, Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 
-async function processDroppedFiles(editor: Editor | null, files: File[]) {
-  if (!editor) return;
+async function processDroppedFiles(editor: Editor, files: File[], pos: number) {
+  const nodesToInsert: Record<string, unknown>[] = [];
   for (const file of files) {
     const extension = getExtension(file.name);
     if (!isValidExtension(extension)) continue;
@@ -20,25 +20,39 @@ async function processDroppedFiles(editor: Editor | null, files: File[]) {
     try {
       const content = await file.text();
       if (content.length > MAX_DROP_PASTE_CHARACTERS) continue;
-      const json = normalizeFileContent({
+      const json = await normalizeFileContent({
         fileName: file.name,
         content,
         extension,
       });
-      if (json) editor.commands.insertContent(json, { contentType: "json" });
+      if (json) {
+        if (Array.isArray(json)) {
+          nodesToInsert.push(...json);
+        } else if (json.type === "doc" && Array.isArray(json.content)) {
+          nodesToInsert.push(...json.content);
+        } else {
+          nodesToInsert.push(json);
+        }
+      }
     } catch (error) {
       rendererLogger.appError(
-        `["processDroppedFiles]: Failed to process ${file.name}:`,
+        `[processDroppedFiles]: Failed to process ${file.name}:`,
         error,
       );
     }
+  }
+  if (nodesToInsert.length > 0) {
+    const safePos = Math.min(Math.max(0, pos), editor.state.doc.content.size);
+    editor.commands.insertContentAt(safePos, nodesToInsert);
   }
 }
 
 export const DropHandler = Extension.create({
   name: "dropHandler",
+
   addProseMirrorPlugins() {
     const editor = this.editor;
+
     return [
       new Plugin({
         props: {
@@ -57,27 +71,22 @@ export const DropHandler = Extension.create({
                   isValidExtension(getExtension(file.name)),
               )
               .slice(0, MAX_DROP_LENGTH);
-
             if (dropCandidates.length === 0) return false;
             event.preventDefault();
+            const dropPos = coords?.pos ?? editor.state.selection.from;
             void (async () => {
               try {
-                if (coords) {
-                  editor.chain().focus().setTextSelection(coords.pos).run();
-                } else {
-                  editor.chain().focus().run();
-                }
-                const imageFiles = dropCandidates.filter((f) =>
-                  ALLOWED_TYPES.includes(f.type),
+                const imageFiles = dropCandidates.filter((file) =>
+                  ALLOWED_TYPES.includes(file.type),
                 );
                 const contentFiles = dropCandidates.filter(
-                  (f) => !ALLOWED_TYPES.includes(f.type),
+                  (file) => !ALLOWED_TYPES.includes(file.type),
                 );
                 if (imageFiles.length > 0) {
-                  await processAndInsertImages(imageFiles, editor);
+                  await processAndInsertImages(imageFiles, editor, dropPos);
                 }
                 if (contentFiles.length > 0) {
-                  await processDroppedFiles(editor, contentFiles);
+                  await processDroppedFiles(editor, contentFiles, dropPos);
                 }
               } catch (error) {
                 rendererLogger.appError(
@@ -93,3 +102,5 @@ export const DropHandler = Extension.create({
     ];
   },
 });
+
+export { processDroppedFiles };

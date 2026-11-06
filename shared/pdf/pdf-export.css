@@ -291,7 +291,6 @@
     page-break-inside: avoid;
     break-inside: avoid;
     page-break-after: avoid;
-    break-after: avoid;
   }
 
   .ProseMirror hr {
@@ -300,9 +299,7 @@
   }
 
   .ProseMirror blockquote,
-  .ProseMirror pre,
   .ProseMirror img,
-  .ProseMirror li,
   .ProseMirror .tableWrapper,
   .ProseMirror tr {
     page-break-inside: avoid;

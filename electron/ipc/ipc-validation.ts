@@ -6,6 +6,8 @@ import { registerSettingsIpc } from "@electron/ipc/ipc-settings";
 import { AppBackendError, AppErrorCode } from "@shared/errors";
 import type { Result, ValueOf } from "@shared/shared-types";
 import { BrowserWindow, app, type IpcMainInvokeEvent } from "electron";
+import path from "path";
+import { fileURLToPath } from "url";
 import z, { ZodError } from "zod";
 
 function registerIpc(win: BrowserWindow) {
@@ -43,28 +45,48 @@ function withErrorHandling<A extends unknown[], T>(
   };
 }
 
+const ALLOWED_DEV_ORIGINS = new Set(["http://localhost:5173"]);
+
+const APP_ROOT_PATH = path.resolve(app.getAppPath());
+
 function validateSender(event: IpcMainInvokeEvent) {
-  if (!event.senderFrame) {
+  const frame = event.frameId ? event.senderFrame : null;
+  if (!frame || frame !== event.sender.mainFrame) {
     mainLogger.appError(
-      "[IPC Sender Validation]: Blocked: IPC Without valid senderFrame",
+      "[IPC Sender Validation]: Blocked: Missing frame or non-mainFrame sender",
     );
     throw new AppBackendError(AppErrorCode.SenderError);
   }
   const mainWindow = BrowserWindow.fromWebContents(event.sender);
   if (!mainWindow) {
+    mainLogger.appError(
+      "[IPC Sender Validation]: Blocked: Sender is not a recognized BrowserWindow",
+    );
     throw new AppBackendError(AppErrorCode.SenderError);
   }
-  const senderUrl = new URL(event.senderFrame.url);
-  if (!app.isPackaged) {
-    const allowedDevOrigins = ["http://localhost:5173"];
-    if (allowedDevOrigins.includes(senderUrl.origin)) {
-      return true;
-    }
+  let senderUrl: URL;
+  try {
+    senderUrl = new URL(frame.url);
+  } catch {
+    mainLogger.appError(
+      `[IPC Sender Validation]: Blocked: Malformed URL "${frame.url}"`,
+    );
+    throw new AppBackendError(AppErrorCode.SenderError);
   }
-  const allowedProtocols = ["appimg:", "file:"];
-  if (allowedProtocols.includes(senderUrl.protocol)) {
+  if (!app.isPackaged && ALLOWED_DEV_ORIGINS.has(senderUrl.origin)) return true;
+  if (senderUrl.protocol === "file:") {
+    try {
+      const filePath = path.resolve(fileURLToPath(senderUrl));
+      if (
+        filePath.startsWith(APP_ROOT_PATH + path.sep) ||
+        filePath === APP_ROOT_PATH
+      ) {
+        return true;
+      }
+    } catch {}
+  }
+  if (senderUrl.protocol === "appimg:" && senderUrl.host === "bundle")
     return true;
-  }
   mainLogger.appError(
     `[IPC Sender Validation]: Blocked senderFrame: ${senderUrl.href}`,
   );

@@ -38,9 +38,7 @@ declare global {
         focus?: boolean,
       ) => Promise<Result<Exclude<Theme, "system">>>;
       windowPin: () => Promise<Result<boolean>>;
-      imageWriteMany: (
-        payload: ImagePayload[],
-      ) => Promise<Result<{ imageSrc: string }[]>>;
+      imageWriteMany: (payload: ImagePayload[]) => Promise<Result<string[]>>;
       onThemeChanged: (
         callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
       ) => () => void;

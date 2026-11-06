@@ -165,7 +165,7 @@ async function showNotification(
 
 async function imageWriteMany(
   payload: ImagePayload[],
-): Promise<Result<{ imageSrc: string }[]>> {
+): Promise<Result<string[]>> {
   return invoke(window.electronAPI.imageWriteMany(payload));
 }
 

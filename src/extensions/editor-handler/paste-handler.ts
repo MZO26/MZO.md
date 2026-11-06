@@ -1,15 +1,17 @@
 import { getMarkdownManager } from "@/components/editor/editor-actions";
+import { isValidExtension } from "@/components/sidebar/sidebar-file-drop";
 import { processAndInsertImages } from "@/extensions/overrides/image/image";
 import {
   ALLOWED_TYPES,
   DOMPURIFY_CONFIG,
   MAX_DROP_LENGTH,
 } from "@/utils/constants";
-import { rendererLogger } from "@/utils/helpers";
+import { getExtension, rendererLogger } from "@/utils/helpers";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { Extension, type JSONContent } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";
+import { processDroppedFiles } from "./drop-handler";
 
 function resolveMarkConflicts(nodes: JSONContent[]): JSONContent[] {
   return nodes.map((node) => {
@@ -60,29 +62,56 @@ const blockPatterns = [
 ];
 
 export const PasteHandler = Extension.create({
-  name: "PasteHandler",
+  name: "PasteHandler", // Tipp: In Tiptap nutzt man meist camelCase ("pasteHandler")
+
   addProseMirrorPlugins() {
     const editor = this.editor;
+
     return [
       new Plugin({
         props: {
           handlePaste(_view, event) {
             const clipboardData = event.clipboardData;
-            if (!clipboardData || !editor) return false;
+            if (!clipboardData) return false;
             const files = Array.from(clipboardData.files ?? []);
-            const images = files.filter((f) => ALLOWED_TYPES.includes(f.type));
-            if (images.length > 0) {
-              event.preventDefault();
-              const safeImages = images.slice(0, MAX_DROP_LENGTH);
-              void processAndInsertImages(safeImages, editor).catch(
-                (error: unknown) => {
-                  rendererLogger.appError(
-                    "[PasteHandler]: Image processing failed:",
-                    error,
-                  );
-                },
-              );
-              return true;
+            if (files.length > 0) {
+              const candidates = files
+                .filter(
+                  (f) =>
+                    ALLOWED_TYPES.includes(f.type) ||
+                    isValidExtension(getExtension(f.name)),
+                )
+                .slice(0, MAX_DROP_LENGTH);
+              if (candidates.length > 0) {
+                event.preventDefault();
+                const pastePos = editor.state.selection.from;
+                const imageFiles = candidates.filter((f) =>
+                  ALLOWED_TYPES.includes(f.type),
+                );
+                const contentFiles = candidates.filter(
+                  (f) => !ALLOWED_TYPES.includes(f.type),
+                );
+                void (async () => {
+                  try {
+                    if (imageFiles.length > 0) {
+                      await processAndInsertImages(
+                        imageFiles,
+                        editor,
+                        pastePos,
+                      );
+                    }
+                    if (contentFiles.length > 0) {
+                      await processDroppedFiles(editor, contentFiles, pastePos);
+                    }
+                  } catch (error) {
+                    rendererLogger.appError(
+                      "[PasteHandler]: File paste processing failed:",
+                      error,
+                    );
+                  }
+                })();
+                return true;
+              }
             }
             const html = clipboardData.getData("text/html");
             const plainText = clipboardData.getData("text/plain") || "";
@@ -92,18 +121,16 @@ export const PasteHandler = Extension.create({
             }
             if (!html && looksLikeMarkdown(plainText)) {
               try {
-                event.preventDefault();
                 const json = getMarkdownManager().parse(plainText);
-                const content = json.content;
+                const content = json?.content;
                 if (!content) return false;
                 const resolved = resolveMarkConflicts(content);
-                editor.commands.insertContent(resolved, {
-                  contentType: "json",
-                });
+                event.preventDefault();
+                editor.commands.insertContent(resolved);
                 return true;
               } catch (error) {
                 rendererLogger.appError(
-                  "Failed to insert clipboard content",
+                  "[PasteHandler]: Failed to insert clipboard content",
                   error,
                 );
                 return false;

@@ -5,7 +5,7 @@ import {
 import { IS_DEV_MAIN, mainLogger } from "@electron/handler/permission-handler";
 import { ALLOWED_PROTOCOLS, LOCALHOST_HOSTS } from "@shared/shared-constants";
 import { app, net, protocol, shell, type BrowserWindow } from "electron";
-import fs from "fs/promises";
+import fs, { constants } from "fs/promises";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 
@@ -63,25 +63,36 @@ async function setupLocalImageProtocol() {
         /^[/\\]+/,
         "",
       );
-      const targetFileUrl = new URL(
-        rawRelativePath,
-        pathToFileURL(realImagesDir + path.sep),
-      );
-      const intendedPath = fileURLToPath(targetFileUrl);
+      const fileName = path.basename(rawRelativePath);
+      if (!fileName) {
+        return new Response("Bad Request", {
+          status: 400,
+          headers: TEXT_HEADERS,
+        });
+      }
+      const intendedPath = path.join(realImagesDir, fileName);
       const inside = await isInsideDirectory(realImagesDir, intendedPath, {
         skipBaseRealpath: true,
       });
       if (!inside) {
         return new Response("Forbidden", {
           status: 403,
-          headers: { "Content-Type": "text/plain" },
+          headers: TEXT_HEADERS,
+        });
+      }
+      try {
+        await fs.access(intendedPath, constants.F_OK);
+      } catch {
+        return new Response("Not found", {
+          status: 404,
+          headers: TEXT_HEADERS,
         });
       }
       return await net.fetch(pathToFileURL(intendedPath).toString());
     } catch (error) {
       return new Response("Image not found", {
         status: 404,
-        headers: { "Content-Type": "text/plain" },
+        headers: TEXT_HEADERS,
       });
     }
   });
