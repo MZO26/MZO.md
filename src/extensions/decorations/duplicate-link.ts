@@ -129,8 +129,10 @@ export const DuplicateLinkWidget = Extension.create({
             if (tr.getMeta("duplicateLinkRefresh")) {
               return createDuplicateDecoration(newState);
             }
-            if (!tr.docChanged) return oldSet;
-            return createDuplicateDecoration(newState);
+            if (tr.docChanged) {
+              return oldSet.map(tr.mapping, tr.doc);
+            }
+            return oldSet;
           },
         },
         props: {
