@@ -1,19 +1,20 @@
 # MZO.md (Note-App)
 
-A minimalist, local-first note app for desktop.
+A local-first knowledge-base note app for desktop with a focus on Markdown.
 
 Built with Electron, TypeScript, SQLite, and TipTap / ProseMirror.
 
 ## Features
 
 - Local-first storage with SQLite
-- Fast note-search with FTS5
+- Search notes with FTS5 (Full-text-search)
 - Markdown-focused editing with TipTap / ProseMirror
 - Connect and organize notes with links and tags
 - Export notes to Markdown, Plain Text, HTML, JSON and PDF
 - Import notes from Markdown, Plain Text, HTML and JSON
-- Focus Mode and adjustable editor width (Ultrawide support)
-- Light and dark theme support
+
+> [!INFO]
+> Math Formulas with Katex don't get exported to PDF
 
 ## Stack
 
@@ -64,7 +65,6 @@ npm install
 | <kbd>Mod</kbd> + <kbd>N</kbd>                                 | Create new note     |
 | <kbd>Mod</kbd> + <kbd>G</kbd>                                 | Open global search  |
 | <kbd>Mod</kbd> + <kbd>F</kbd>                                 | Open doc search     |
-| <kbd>Mod</kbd> + <kbd>S</kbd>                                 | Toggle selection    |
 | <kbd>Mod</kbd> + <kbd>O</kbd>                                 | Toggle sidebar      |
 | <kbd>Mod</kbd> + <kbd>.</kbd>                                 | Toggle toolbar      |
 | <kbd>Mod</kbd> + <kbd>W</kbd>                                 | Set editor width    |
@@ -105,6 +105,7 @@ npm install
 | **Lists**                                              |              |                                |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd>       | `1. `        | Ordered list                   |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>       | `- `         | Bullet list                    |
+| <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>       | `[]`         | Task List                      |
 | <kbd>Tab</kbd>                                         |              | Indent list item               |
 | <kbd>Shift</kbd> + <kbd>Tab</kbd>                      |              | Outdent list item              |
 | <kbd>Enter</kbd>                                       |              | Next list item                 |
@@ -147,7 +148,7 @@ npm install
 
 ```mermaid
 flowchart TD
-    A[Renderer] -- IPC via preload --> B[Main Process]
+    A[Renderer] -- "IPC (invoke / handle)" <--> B[Main Process]
     B --> C[(SQLite Database)]
 ```
 

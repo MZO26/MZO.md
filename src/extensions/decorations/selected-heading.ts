@@ -15,7 +15,7 @@ export interface TocSelectedHeadingStorage {
 
 type PluginMeta = { clear: true } | { from: number; to: number; clear?: false };
 
-export const tocSelectedHeadingKey = new PluginKey<DecorationSet>(
+const tocSelectedHeadingKey = new PluginKey<DecorationSet>(
   "tocSelectedHeading",
 );
 

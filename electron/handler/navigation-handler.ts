@@ -81,7 +81,7 @@ async function setupLocalImageProtocol() {
         });
       }
       try {
-        await fs.access(intendedPath, constants.F_OK);
+        await fs.access(intendedPath, constants.F_OK | constants.R_OK);
       } catch {
         return new Response("Not found", {
           status: 404,
