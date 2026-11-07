@@ -16,6 +16,23 @@ function registerIpc(win: BrowserWindow) {
   registerSettingsIpc(win);
 }
 
+/**
+ * Wraps an async function to return a {@link Result} instead of throwing.
+ *
+ * - `AppBackendError` → its `.code` is propagated.
+ * - `ZodError` → mapped to `AppErrorCode.InvalidData`.
+ * - Anything else → logged and mapped to `AppErrorCode.UnknownError`.
+ *
+ * @param fn - The async function to guard.
+ * @returns A function with the same signature that resolves to `Result<T>`.
+ *
+ * @example
+ * const safeFetch = withErrorHandling(fetchNote);
+ * const res = await safeFetch(id);
+ * if (res.success) render(res.data);
+ * else show(res.error);
+ */
+
 function withErrorHandling<A extends unknown[], T>(
   fn: (...args: A) => Promise<T>,
 ) {
@@ -48,6 +65,31 @@ function withErrorHandling<A extends unknown[], T>(
 const ALLOWED_DEV_ORIGINS = new Set(["http://localhost:5173"]);
 
 const APP_ROOT_PATH = path.resolve(app.getAppPath());
+
+/**
+ * Validates that an IPC invoke request originates from a trusted sender.
+ *
+ * Checks (in order):
+ * 1. The sender frame exists and is the main frame.
+ * 2. The sender belongs to a recognized `BrowserWindow`.
+ * 3. The sender URL is well-formed.
+ * 4. The origin is allowed:
+ *    - Dev builds: any origin in `ALLOWED_DEV_ORIGINS`.
+ *    - `file:` protocol: path must resolve within `APP_ROOT_PATH`.
+ *    - `appimg://bundle`: custom app protocol (always allowed).
+ *
+ * All failures are logged and throw an {@link AppBackendError}.
+ *
+ * @param event - The IPC invoke event from the renderer.
+ * @returns `true` if the sender is trusted.
+ * @throws {AppBackendError} If any validation check fails.
+ *
+ * @example
+ * ipcMain.handle("notes:save", (event, payload) => {
+ *   validateSender(event);
+ *   // … safe to proceed
+ * });
+ */
 
 function validateSender(event: IpcMainInvokeEvent) {
   const frame = event.frameId ? event.senderFrame : null;
@@ -105,7 +147,24 @@ const LIMITS = {
   WRITE_FLUSH: 5,
 } as const;
 
+/** Timestamp (ms) captured at application startup. */
+
 const APP_START_TIME = Date.now();
+
+/**
+ * Checks whether an IPC channel call is within the allowed rate limit.
+ *
+ * Bypassed entirely in dev builds and during the first 5 seconds after
+ * app start (startup grace period). Otherwise enforces a per-channel
+ * cooldown tracked in `IPC_TIMERS`.
+ *
+ * @param channel - The IPC channel name being invoked.
+ * @param cooldownMs - Minimum interval between calls to this channel (ms).
+ * @returns `true` if the call is allowed, `false` if rate-limited.
+ *
+ * @example
+ * if (!checkRateLimit(IPC_CHANNELS.NOTE_SAVE, LIMITS.NOTE_SAVE)) return;
+ */
 
 function checkRateLimit(
   channel: ValueOf<typeof IPC_CHANNELS>,
@@ -121,6 +180,21 @@ function checkRateLimit(
   IPC_TIMERS.set(channel, now);
   return true;
 }
+
+/**
+ * Validates an untrusted payload against a Zod schema.
+ *
+ * On failure, logs the prettified error and re-throws the `ZodError`.
+ * On success, returns the parsed (and narrowed) data.
+ *
+ * @param schema - The Zod schema to validate against.
+ * @param payload - The untrusted input (e.g. from IPC).
+ * @returns The validated, typed data.
+ * @throws {ZodError} If validation fails.
+ *
+ * @example
+ * const safe = validation(NoteCreateSchema, rawPayload); // NoteCreate
+ */
 
 function validation<T extends z.ZodType>(schema: T, payload: unknown) {
   const result = schema.safeParse(payload);

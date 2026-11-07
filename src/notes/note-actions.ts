@@ -48,6 +48,37 @@ import {
 } from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
 
+/**
+ * Creates a new note, optionally pre-filled with the active tag and a title.
+ *
+ * If `shouldNavigate` is set and another note is currently active, waits for
+ * its pending flush to complete first (`waitForFlush`) so no unsaved state is
+ * lost. Then builds an empty doc (with the active tag injected), optionally
+ * adds a heading from `activeTitle`, and calls `createNote`.
+ *
+ * On success:
+ * - Prepends the new note to `notes` and `visibleIds`; registers it in `noteIndex`.
+ * - Inserts the id at the front of `recentNotes` (capped at 5 entries, stale
+ *   ids pruned).
+ * - If `shouldNavigate`: sets `activeId`, recreates the editor with the new
+ *   content, updates stats, and persists initial cursor/scroll position +
+ *   `lastOpenNote`.
+ *
+ * On failure, logs an app error and returns `undefined`.
+ *
+ * @param [options] – Optional creation context.
+ * @param [options.activeTitle] – Title to pre-fill; falls back to `UNTITLED`.
+ * @param [options.shouldNavigate=false] – If `true`, switches the editor to
+ *   the new note after creation (flushes the previous one first).
+ *
+ * @returns The created note's id, or `undefined` if creation failed.
+ *
+ * @example
+ * const id = await handleCreateNote();                          // blank note, no navigation
+ * const id2 = await handleCreateNote({ activeTitle: "Ideas" }); // titled, no navigation
+ * const id3 = await handleCreateNote({ shouldNavigate: true }); // blank + switch to it
+ */
+
 async function handleCreateNote(options?: {
   activeTitle?: NoteListItem["title"];
   shouldNavigate?: boolean;
@@ -102,6 +133,33 @@ async function handleCreateNote(options?: {
   }
   return result.data.id;
 }
+
+/**
+ * Imports one or more files as new notes and prepends them to the local store.
+ *
+ * Normalizes the incoming `FilePathRequest` (dialog picks are passed through,
+ * external paths are reshaped to `{ source: "external", … }`), then runs a
+ * three-step pipeline:
+ * 1. `importNote` – reads and parses the file(s) on disk.
+ * 2. `setImportedContent` – transforms raw imported data into create payloads.
+ * 3. `createManyNotes` – persists the processed notes to the backend.
+ *
+ * Any step failure logs a scoped app error and aborts before local state is touched.
+ *
+ * On full success:
+ * - Shows an "Import Complete" notification with file count, duplicates skipped,
+ *   and error count (stats come from the `importNote` response).
+ * - Prepends all new notes to `notes` and `visibleIds`; registers them in `noteIndex`.
+ * - Clears `hoverId`.
+ *
+ * Does NOT change `activeId` or open the imported note.
+ *
+ * @param request - File path(s) and source context for the import.
+ *
+ * @example
+ * await handleImportNote({ source: "dialog", filePaths: ["/path/to/note.md"], checked: true });
+ * await handleImportNote({ source: "external", filePaths: ["/a.md", "/b.md"], checked: false });
+ */
 
 async function handleImportNote(request: FilePathRequest) {
   const imported = await importNote(
@@ -158,6 +216,28 @@ async function handleImportNote(request: FilePathRequest) {
   stateStore.setState({ hoverId: null });
 }
 
+/**
+ * Deletes multiple notes from the backend and removes all local references in one pass.
+ *
+ * Cancels any pending debounced save if the active note is among the targets,
+ * calls `deleteManyNotes`, then on success:
+ * - Removes every target id from `notes`, `visibleIds`, and `noteIndex`.
+ * - Prunes `recentNotes` to only ids that still exist in the updated index.
+ * - Clears `hoverId`; if the active note was deleted, also resets `activeId`.
+ * - Strips cursor/scroll positions for all deleted ids; if the active note was
+ *   among them, clears `lastOpenNote`.
+ * - If the active note survived: checks whether it holds links to any of the
+ *   deleted ids, downgrades those doc links via `downgradeDocLinks`, and
+ *   refreshes the duplicate-link UI.
+ *
+ * On backend failure, logs an app error and returns without touching local state.
+ *
+ * @param ids - The note ids to delete.
+ *
+ * @example
+ * await handleDeleteManyNotes(["note-abc123", "note-def456"]); // batch delete + cleanup
+ */
+
 async function handleDeleteManyNotes(ids: Id[]) {
   const activeId = stateStore.get("activeId") as Id | null;
   const deletedIds = new Set<Id>(ids);
@@ -208,6 +288,26 @@ async function handleDeleteManyNotes(ids: Id[]) {
   }
 }
 
+/**
+ * Deletes a note from the backend and removes all local references.
+ *
+ * Cancels any pending debounced save for the target note, calls `deleteNote`,
+ * then on success:
+ * - Removes the note from `notes`, `visibleIds`, `noteIndex`, and `recentNotes`.
+ * - Clears `hoverId`; if the deleted note was the active one, also resets `activeId`.
+ * - Strips cursor/scroll positions for that id; if it was active, clears `lastOpenNote`.
+ * - If the deleted note was NOT active but another note still is: checks whether
+ *   the active note holds links to the deleted id, downgrades those doc links via
+ *   `downgradeDocLinks`, and refreshes the duplicate-link UI.
+ *
+ * On backend failure, logs an app error and returns without touching local state.
+ *
+ * @param id - The note to delete.
+ *
+ * @example
+ * await handleDeleteNote("note-abc123"); // deletes + full local cleanup
+ */
+
 async function handleDeleteNote(id: Id) {
   const activeId = stateStore.get("activeId") as Id | null;
   const isActiveDeletedId = activeId === id;
@@ -254,6 +354,27 @@ async function handleDeleteNote(id: Id) {
     editor.view.dispatch(editor.state.tr.setMeta("duplicateLinkRefresh", true));
   }
 }
+
+/**
+ * Saves the active note to the backend and syncs local state.
+ *
+ * Builds the full update payload (title, snippet, content, plain text,
+ * doc links) from the current editor state, calls `updateNote`, then:
+ * - Updates the note in the store (list + index).
+ * - Clears the dirty flag.
+ * - If the active tag filter no longer matches, resets the view.
+ * - If the note is still active: updates stats, saves cursor/scroll
+ *   position, and refreshes note-info / duplicate-link UI.
+ *
+ * No-op if `id` does not match the current `activeId`.
+ *
+ * @param id - The note to save.
+ * @param flush - If `true`, bypasses any internal debouncing in `updateNote`.
+ *
+ * @example
+ * await handleSaveNote("note-abc123");          // normal save
+ * await handleSaveNote("note-abc123", true);    // forced immediate save
+ */
 
 async function handleSaveNote(id: Id, flush: boolean = false) {
   const activeId = stateStore.get("activeId") as Id | null;
@@ -320,6 +441,19 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
 
 const debouncedSaveNote = debounce(handleSaveNote, DEBOUNCE_MS.slow);
 
+/**
+ * Forces an immediate save of a note, cancelling any pending debounce.
+ *
+ * If the note is no longer in the index (e.g. deleted), clears the dirty
+ * flag and resets `activeId` if it was pointing to that note.
+ *
+ * @param id - The note to flush, or `null` to abort.
+ * @returns `true` if the note is still active after the save, `false` otherwise.
+ *
+ * @example
+ * const stillActive = await waitForFlush(activeId); // e.g. before switching notes
+ */
+
 async function waitForFlush(id: Id | null) {
   if (!id || stateStore.get("activeId") !== id) return false;
   const noteIndex = noteStore.get("noteIndex");
@@ -335,6 +469,26 @@ async function waitForFlush(id: Id | null) {
   await handleSaveNote(id, true);
   return stateStore.get("activeId") === id;
 }
+
+/**
+ * Selects and loads a note into the editor.
+ *
+ * Sequence:
+ * 1. Flushes any pending debounced save of the current note.
+ * 2. Saves cursor/scroll position of the previously active note.
+ * 3. Switches to read-only, fetches the target note, initializes editor content.
+ * 4. Restores editability, sets selection, refreshes doc links and recent list.
+ *
+ * Includes race-condition guards: if `activeId` changes during an `await`,
+ * the remaining steps are skipped silently.
+ *
+ * @param id - The note to select.
+ * @param options.skipRecent – If `true`, do not add this note to the recent-notes list.
+ *
+ * @example
+ * await handleSelectNote("note-abc123");
+ * await handleSelectNote("note-abc123", { skipRecent: true }); // e.g. from "open in new tab"
+ */
 
 async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   const { editor, editorWrapper } = useCore("editor", "editorWrapper");
@@ -391,6 +545,30 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
     appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: globalQuery });
 }
 
+/**
+ * Extracts a content selection into a new standalone note, linking it back to the source.
+ *
+ * Wraps the provided `content` fragment into a full document (`wrapAsDoc`),
+ * injects the active tag, and builds a create payload. The source note's id is
+ * appended to the `links` array so the new note carries a back-reference to
+ * where it was extracted from. Calls `createNote`, then on success:
+ * - Prepends the new note to `notes`, `visibleIds`, and `noteIndex`.
+ * - Clears `hoverId`.
+ *
+ * Does NOT navigate, update `recentNotes`, or touch the editor.
+ *
+ * No-op (returns `undefined`) if `wrapAsDoc` cannot produce a valid document.
+ *
+ * @param id – The source note id this content was extracted from; stored as a link in the new note.
+ * @param content – The ProseMirror JSON content to extract.
+ *
+ * @returns `{ id, title }` of the created note, or `undefined` on failure.
+ *
+ * @example
+ * const result = await handleExtractToNote("note-source-abc", selectedJSON);
+ * // result → { id: "note-new-xyz", title: "Meeting notes (excerpt)" }
+ */
+
 async function handleExtractToNote(id: Id, content: JSONContent) {
   const doc = wrapAsDoc(content);
   if (!doc) return;
@@ -410,7 +588,7 @@ async function handleExtractToNote(id: Id, content: JSONContent) {
   const result = await createNote(payload);
   if (!result.success) {
     rendererLogger.appError(
-      "[handleCreateNote]: Failed to create note:",
+      "[handleExtractToNote]: Failed to create note:",
       result.error,
     );
     return;
@@ -423,6 +601,29 @@ async function handleExtractToNote(id: Id, content: JSONContent) {
   stateStore.setState({ hoverId: null });
   return { id: result.data.id, title: result.data.title };
 }
+
+/**
+ * Duplicates an existing note and prepends the copy to the local store.
+ *
+ * Copies all content fields (title, snippet, plain_text, tags, doc links)
+ * from the source note, but:
+ * - Drops `id`, `created_at`, `updated_at` (regenerated in backend).
+ * - Carries over only **outgoing** link ids (`dir === "out"`); incoming links
+ *   are intentionally not replicated.
+ * - Forces `pinned: false`.
+ *
+ * Calls `createNote`, then on success:
+ * - Prepends the new note to `notes`, `visibleIds`, and `noteIndex`.
+ * - Clears `hoverId`.
+ *
+ * Does NOT navigate, update `recentNotes`, or modify the editor.
+ *
+ * @param note The source note to duplicate (read-only reference).
+ *
+ * @example
+ * const note = noteStore.get("noteIndex").get(id);
+ * if (note) await handleDuplicateNote(note);
+ */
 
 async function handleDuplicateNote(note: Readonly<Note>) {
   const {

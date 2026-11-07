@@ -2,6 +2,7 @@ import { createLogger } from "@shared/log";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 import { DEFAULT_SETTINGS } from "@shared/shared-constants";
 
+/** localStorage key under which the persisted app state is stored. */
 const STORAGE_KEY = "app_store";
 
 interface Store<T> {
@@ -85,6 +86,8 @@ const LOCAL_STORE_BASE = createStore(LOCAL_STORE);
 // get dev state from vite since state should be independent of main / renderer for using request extensions from editor
 const isDev = import.meta.env.DEV;
 
+/** Logger dedicated to store/state operations (dev-aware). */
+
 const stateLogger = createLogger(isDev);
 
 const stateStore = isDev ? withLogger(STATE_STORE_BASE) : STATE_STORE_BASE;
@@ -99,6 +102,16 @@ const localStore = isDev
   ? withLogger(withStorage(LOCAL_STORE_BASE, STORAGE_KEY))
   : withStorage(LOCAL_STORE_BASE, STORAGE_KEY);
 
+/**
+ * Typed wrapper around `Object.keys`.
+ *
+ * @param obj - The object to read keys from.
+ * @returns An array of the object's own string keys.
+ *
+ * @example
+ * keysOf({ a: 1, b: "x" }); // ["a", "b"]
+ */
+
 function keysOf<T extends Record<string, unknown>>(obj: T): (keyof T)[] {
   return Object.keys(obj) as (keyof T)[];
 }
@@ -111,9 +124,27 @@ function createStore<T extends Record<string, unknown>>(
   const listeners = new Set<
     (state: Readonly<T>, prevState: Readonly<T>) => void
   >();
+
+  /**
+   * Returns the current state snapshot (read-only reference).
+   *
+   * @returns The current state object.
+   */
+
   function getState(): Readonly<T> {
     return state;
   }
+
+  /**
+   * Reads a single key from the current state.
+   *
+   * @param key - The state property to read.
+   * @returns The value stored under `key`.
+   *
+   * @example
+   * store.get("theme"); // "dark"
+   */
+
   function get<K extends keyof T>(key: K): Readonly<T[K]> {
     return state[key];
   }
@@ -127,6 +158,22 @@ function createStore<T extends Record<string, unknown>>(
       }
     });
   }
+
+  /**
+   * Partially updates the state and notifies all subscribers.
+   *
+   * Accepts either a plain object or an updater function. The update is
+   * shallow-merged into the current state. No-op if no value actually
+   * changed (compared via `Object.is`).
+   *
+   * @param newState - Partial update object, or a function receiving the current state and returning a partial update.
+   * @throws If called from within a listener (re-entrancy guard).
+   *
+   * @example
+   * store.setState({ theme: "light" });
+   * store.setState((s) => ({ count: s.count + 1 }));
+   */
+
   function setState(
     newState: Partial<T> | ((state: Readonly<T>) => Partial<T>),
   ) {
@@ -152,12 +199,42 @@ function createStore<T extends Record<string, unknown>>(
       isUpdating = false;
     }
   }
+
+  /**
+   * Registers a listener that fires on every state change.
+   *
+   * @param listener - Called with the new and previous state.
+   * @returns An unsubscribe function.
+   *
+   * @example
+   * const off = store.subscribe((state, prev) => console.log(state));
+   * off(); // unsubscribe
+   */
+
   function subscribe(
     listener: (state: Readonly<T>, prevState: Readonly<T>) => void,
   ) {
     listeners.add(listener);
     return () => listeners.delete(listener);
   }
+
+  /**
+   * Registers a selector-based listener that only fires when the selected
+   * slice changes.
+   *
+   * @param selector - Extracts the relevant slice from the full state.
+   * @param listener - Called with the new and previous selected value.
+   * @param isEqual - Custom equality check for the selected slice; defaults to `Object.is`.
+   * @param options.fireImmediately – If `true`, invokes the listener once on subscription with the current value.
+   * @returns An unsubscribe function.
+   *
+   * @example
+   * const off = store.subscribeSel(
+   *   (s) => s.theme,
+   *   (theme, prev) => applyTheme(theme),
+   * );
+   */
+
   function subscribeSel<S>(
     selector: (state: Readonly<T>) => S,
     listener: (selected: S, previous: S) => void,
@@ -179,6 +256,24 @@ function createStore<T extends Record<string, unknown>>(
 
   return { getState, get, setState, subscribe, subscribeSel };
 }
+
+/**
+ * Wraps a store with localStorage persistence.
+ *
+ * On initialization, hydrates the store from `localStorage` if a saved
+ * snapshot exists. After every `setState` call, serializes the full state
+ * back to storage. Read/write errors are logged and swallowed (non-fatal).
+ *
+ * The original store is not mutated; a new store object with the wrapped
+ * `setState` is returned.
+ *
+ * @param store - The base store to persist.
+ * @param key - The localStorage key under which the state is stored.
+ * @returns A new store with persistence built into `setState`.
+ *
+ * @example
+ * const themeStore = withStorage(createStore({ theme: "dark" }), STORAGE_KEY.THEME);
+ */
 
 function withStorage<T extends Record<string, unknown>>(
   store: Store<T>,
@@ -219,6 +314,19 @@ function withStorage<T extends Record<string, unknown>>(
   };
 }
 
+/**
+ * Wraps a store with dev-logging around every `setState` call.
+ *
+ * Logs the resolved update and the resulting full state in a collapsed
+ * console group (`[store update]`). The original store is not mutated.
+ *
+ * @param store - The base store to instrument.
+ * @returns A new store with logging built into `setState`.
+ *
+ * @example
+ * const themeStore = withLogger(createStore({ theme: "dark" }));
+ */
+
 function withLogger<T extends object>(store: Store<T>): Store<T> {
   const originalSetState = store.setState;
   const loggedSetState: Store<T>["setState"] = (newState) => {
@@ -245,6 +353,28 @@ function withLogger<T extends object>(store: Store<T>): Store<T> {
     setState: loggedSetState,
   };
 }
+
+/**
+ * Shallow structural equality check (one level deep).
+ *
+ * - Primitives: compared via {@link Object.is} (handles `NaN`, `-0`).
+ * - `Map` / `Set`: same size + every entry present in both.
+ * - Arrays / plain objects: same key count, every own key present in both
+ *   with values equal via `Object.is` (i.e. nested structures compared by reference).
+ *
+ * Unlike a simple `===`, this distinguishes structurally equal objects
+ * (`{a:1}` vs `{a:1}`) while remaining O(n) and allocation-free.
+ *
+ * @param a - First value.
+ * @param b - Second value.
+ * @returns `true` if both values are shallowly equal.
+ *
+ * @example
+ * shallowEq({ x: 1 }, { x: 1 });           // true
+ * shallowEq(new Set([1, 2]), new Set([1, 2])); // true
+ * shallowEq([1, obj], [1, obj]);           // true (same reference)
+ * shallowEq([1, { a: 1 }], [1, { a: 1 }]); // false (different references)
+ */
 
 function shallowEq<A>(a: A, b: A): boolean {
   if (Object.is(a, b)) return true;

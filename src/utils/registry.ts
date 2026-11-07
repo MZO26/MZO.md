@@ -151,9 +151,69 @@ function initDialogRegistry() {
   });
 }
 
+/**
+ * Accesses DOM elements and the editor instance from the core registry.
+ *
+ * Available keys: `editor`, `appContainer`, `sidebar`, `sidebarContainer`,
+ * `editorWrapper`, `editorContainer`.
+ *
+ * @param keys - One or more keys from {@link CoreRegistry}.
+ * @returns A readonly object with the requested entries.
+ * @throws If any key has not been registered yet (see {@link initCoreRegistry}).
+ *
+ * @example
+ * const { editor, appContainer } = useCore("editor", "appContainer");
+ */
+
 const useCore = fromRegistry("core");
+
+/**
+ * Accesses UI elements (counters, inputs, layout sections) from the UI registry.
+ *
+ * Available keys: `wordCountEl`, `charCountEl`, `readingTime`, `searchInput`,
+ * `sidebarHeader`, `sidebarFooter`, `selectionFooter`, `quickActionContainer`.
+ *
+ * @param keys - One or more keys from {@link UIRegistry}.
+ * @returns A readonly object with the requested entries.
+ * @throws If any key has not been registered yet (see {@link initUIRegistry}).
+ *
+ * @example
+ * const { wordCountEl, searchInput } = useUI("wordCountEl", "searchInput");
+ */
+
 const useUI = fromRegistry("ui");
+
+/**
+ * Accesses `<template>` elements and the editor view from the template registry.
+ *
+ * Available keys: `editorEmptyStateTemplate`, `editorView`,
+ * `sidebarEmptyStateTemplate`, `noteItemTemplate`, `tagsPopoverTemplate`.
+ *
+ * @param keys - One or more keys from {@link TemplateRegistry}.
+ * @returns A readonly object with the requested entries.
+ * @throws If any key has not been registered yet (see {@link initTemplateRegistry}).
+ *
+ * @example
+ * const { noteItemTemplate } = useTemplates("noteItemTemplate");
+ */
+
 const useTemplates = fromRegistry("template");
+
+/**
+ * Accesses `<dialog>` elements and their inner controls from the dialog registry.
+ *
+ * Available keys: `deleteDialog`, `settingsDialog`, `settingsContainer`,
+ * `switchDialog`, `switchListEl`, `switchListSearchInput`, `mathDialog`,
+ * `mathInput`.
+ *
+ * @param keys - One or more keys from {@link DialogRegistry}.
+ * @returns A readonly object with the requested entries.
+ * @throws If any key has not been registered yet (see {@link initDialogRegistry}).
+ *
+ * @example
+ * const { settingsDialog, mathInput } = useDialog("settingsDialog", "mathInput");
+ */
+
 const useDialog = fromRegistry("dialog");
 
 export {

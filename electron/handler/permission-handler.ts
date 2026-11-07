@@ -11,6 +11,8 @@ const allowedPermissions = [
   "notifications",
 ];
 
+/** Application-wide logger for the main process (dev-aware via `IS_DEV_MAIN`). */
+
 const mainLogger = createLogger(IS_DEV_MAIN);
 
 const csp =

@@ -23,8 +23,6 @@ const workOnImageCompression = createWorker<
   Uint8Array
 >(imageWorker);
 
-// wrapper around worker to get arrayBuffer
-
 async function compressImageInWorker(
   file: File,
   maxWidth: number = IMAGE_MAX_WIDTH,

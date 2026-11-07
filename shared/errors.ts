@@ -1,3 +1,10 @@
+/**
+ * Application-level backend error carrying a machine-readable {@link AppErrorCode}.
+ *
+ * @param code - The specific error code for programmatic handling.
+ * @param message - Optional human-readable message; defaults to `code`.
+ */
+
 class AppBackendError extends Error {
   constructor(
     public readonly code: AppErrorCode,
@@ -7,6 +14,13 @@ class AppBackendError extends Error {
     this.name = "AppBackendError";
   }
 }
+
+/**
+ * Error thrown by a background worker task, carrying a {@link WorkerErrorCode}.
+ *
+ * @param code - The specific error code for programmatic handling.
+ * @param message - Optional human-readable message; defaults to `code`.
+ */
 
 class WorkerTaskError extends Error {
   constructor(

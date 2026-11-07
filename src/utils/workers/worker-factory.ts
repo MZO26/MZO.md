@@ -3,6 +3,26 @@ import type { WorkerResult } from "@/utils/types";
 import { handleWorkerError, WorkerErrorCode } from "@shared/errors";
 import type { Id } from "@shared/schemas/note-schema";
 
+/**
+ * Creates a promisified message-passing wrapper around a Web Worker.
+ *
+ * Each call posts a payload to the worker and waits for the matching
+ * response (correlated via a random UUID). Includes:
+ * - Timeout guard (`MAX_WORKER_TIMEOUT_MS`) → resolves with `TimeoutError`.
+ * - Worker crash handler → resolves with `UnknownError`.
+ * - Listener cleanup after every completed call.
+ *
+ * The returned promise **never rejects**; failures are encoded in the
+ * `WorkerResult` shape.
+ *
+ * @param worker - An existing `Worker` instance, or `null` if not yet initialized.
+ * @returns A function that sends a task to the worker and resolves with the typed result.
+ *
+ * @example
+ * const runWorker = createWorker<ImageData, ProcessedImage>(myWorker);
+ * const { success, data } = await runWorker(canvas, [canvas]);
+ */
+
 function createWorker<T, R>(worker: Worker | null) {
   return function work(
     payload: T,

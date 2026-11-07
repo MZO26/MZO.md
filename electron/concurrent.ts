@@ -1,5 +1,22 @@
 import { AppBackendError, AppErrorCode } from "@shared/errors";
 
+/**
+ * Processes an array of items with a maximum concurrency limit, preserving
+ * result order.
+ *
+ * Spawns at most `concurrency` async workers that pull items from a shared
+ * iterator. Results are written to their original index position.
+ *
+ * @param items - The items to process.
+ * @param concurrency - Maximum number of in-flight operations (must be ≥ 1).
+ * @param processItem - Async function called for each item with its original index.
+ * @returns An array of results in the same order as `items`.
+ * @throws {AppBackendError} If `concurrency` is not a positive integer.
+ *
+ * @example
+ * const results = await processWithLimit(urls, 5, (url, i) => fetchFile(url));
+ */
+
 async function processWithLimit<T, R>(
   items: readonly T[],
   concurrency: number,
