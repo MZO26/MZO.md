@@ -13,7 +13,7 @@ Built with Electron, TypeScript, SQLite, and TipTap / ProseMirror.
 - Export notes to Markdown, Plain Text, HTML, JSON and PDF
 - Import notes from Markdown, Plain Text, HTML and JSON
 
-> [!INFO]
+> [!NOTE]
 > Math Formulas with Katex don't get exported to PDF
 
 ## Stack
