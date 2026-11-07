@@ -7,6 +7,7 @@ const INLINE_MATH_TOKENIZER_REGEX =
   /^\$(?!\$)(?!\s)([^$\r\n]+?)(?<!\s)\$(?!\$)/;
 
 const BLOCK_MATH_INPUT_REGEX = /(?<!\$)\$\$([\s\S]+?)\$\$$/;
+const BLOCK_MATH_PASTE_REGEX = /(?<!\$)\$\$([\s\S]+?)\$\$(?!\$)/g;
 const BLOCK_MATH_TOKENIZER_REGEX = /^\$\$\r?\n?([\s\S]+?)\r?\n?\$\$(?:\r?\n|$)/;
 
 const CustomInlineMath = InlineMath.extend({
@@ -89,7 +90,20 @@ const CustomBlockMath = BlockMath.extend({
   },
 
   addPasteRules() {
-    return [];
+    return [
+      new PasteRule({
+        find: BLOCK_MATH_PASTE_REGEX,
+        handler: ({ range, match, commands }) => {
+          const latex = typeof match[1] === "string" ? match[1].trim() : "";
+          if (!latex) return null;
+          commands.insertContentAt(range, {
+            type: this.type.name,
+            attrs: { latex },
+          });
+          return;
+        },
+      }),
+    ];
   },
 
   markdownTokenizer: {

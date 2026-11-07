@@ -134,9 +134,9 @@ function processUrl(url: string) {
   return "block";
 }
 
-async function navigationHandler(win: BrowserWindow) {
+function navigationHandler(win: BrowserWindow) {
   win.webContents.setWindowOpenHandler(({ url }) => {
-    const decision = void processUrl(url);
+    const decision = processUrl(url);
     if (decision === "external") {
       void shell.openExternal(url);
     }
@@ -144,7 +144,7 @@ async function navigationHandler(win: BrowserWindow) {
   });
 
   win.webContents.on("will-navigate", (e, url) => {
-    const decision = void processUrl(url);
+    const decision = processUrl(url);
     if (decision === "external") {
       e.preventDefault();
       void shell.openExternal(url);
@@ -156,7 +156,7 @@ async function navigationHandler(win: BrowserWindow) {
   });
 
   win.webContents.on("will-redirect", (e, url) => {
-    const decision = void processUrl(url);
+    const decision = processUrl(url);
     if (decision === "external") {
       e.preventDefault();
       void shell.openExternal(url);
@@ -168,20 +168,21 @@ async function navigationHandler(win: BrowserWindow) {
   });
 
   win.webContents.on("will-frame-navigate", (e) => {
-    const decision = void processUrl(e.url);
-    if (decision === "external") {
-      e.preventDefault();
-      void shell.openExternal(e.url);
-      return;
-    }
-    if (decision === "block") {
+    if (e.isMainFrame) return;
+    const decision = processUrl(e.url);
+    if (decision === "external" || decision === "block") {
       e.preventDefault();
     }
   });
 
-  win.webContents.session.on("will-download", (e, item) => {
+  const onWillDownload = (
+    e: Electron.Event,
+    item: Electron.DownloadItem,
+    webContents: Electron.WebContents,
+  ) => {
+    if (webContents.id !== win.webContents.id) return;
     const url = item.getURL();
-    const decision = void processUrl(url);
+    const decision = processUrl(url);
     if (decision === "external") {
       e.preventDefault();
       void shell.openExternal(url);
@@ -191,12 +192,16 @@ async function navigationHandler(win: BrowserWindow) {
       e.preventDefault();
       mainLogger.devLog(`Blocked attempt to download: ${url}`);
     }
+  };
+  win.webContents.session.on("will-download", onWillDownload);
+  win.once("closed", () => {
+    win.webContents?.session.removeListener("will-download", onWillDownload);
   });
-
   win.webContents.on("will-attach-webview", (e) => {
     e.preventDefault();
   });
 }
+
 export {
   navigationHandler,
   processUrl,

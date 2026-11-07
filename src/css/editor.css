@@ -732,6 +732,7 @@
 
 .callout-icon {
   flex-shrink: 0;
+  margin-top: 0.35rem;
 }
 
 .callout-icon svg {
