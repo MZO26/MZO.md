@@ -12,9 +12,8 @@ import {
 import { updateSelectionUI } from "@/components/sidebar/sidebar-ui";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
-import { confirmWithDialog } from "@/settings/setting-actions";
 import { noteStore, stateStore } from "@/state/state";
-import { rendererLogger } from "@/utils/helpers";
+import { confirmWithDialog, rendererLogger } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import { requireElement } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";

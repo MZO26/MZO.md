@@ -335,9 +335,44 @@ function showDialog(dialog: HTMLDialogElement) {
   });
 }
 
+/**
+ * Shows a confirm dialog and resolves to a boolean.
+ *
+ * Sets the dialog title, resets `returnValue` to `""` (so dismissing via
+ * Escape or backdrop click yields `false`, not a stale value), awaits
+ * {@link showDialog}, clears the title, and returns whether the user
+ * explicitly confirmed.
+ *
+ * @param dialog The `<dialog>` element to show.
+ * @param titleEl Element inside the dialog that receives the title text.
+ * @param title Confirmation prompt text.
+ * @returns `true` if the user clicked confirm, `false` for cancel or dismiss.
+ *
+ * @example
+ * const ok = await confirmWithDialog(
+ *   requireElement<HTMLDialogElement>("#confirm-dialog"),
+ *   requireElement<HTMLElement>("#confirm-title"),
+ *   "Delete this note?",
+ * );
+ * if (ok) await handleDeleteNote("note-abc123");
+ */
+
+async function confirmWithDialog(
+  dialog: HTMLDialogElement,
+  titleEl: HTMLElement,
+  title: string,
+) {
+  titleEl.textContent = title;
+  dialog.returnValue = "";
+  const result = await showDialog(dialog);
+  titleEl.textContent = "";
+  return result === "confirm";
+}
+
 export {
   clearAllMemoizedCaches,
   compareNotes,
+  confirmWithDialog,
   createAsyncHandler,
   debounce,
   getExtension,

@@ -8,7 +8,7 @@ import {
 } from "@/api/api";
 import { settingsStore } from "@/state/state";
 import { CODE_THEME_MAP, THEME_MAP } from "@/utils/constants";
-import { rendererLogger, showDialog } from "@/utils/helpers";
+import { rendererLogger } from "@/utils/helpers";
 import { isFocusActive } from "@/utils/shortcuts";
 import type { QuickAction } from "@/utils/types";
 import type {
@@ -160,24 +160,11 @@ async function getQuickAction(action: QuickAction) {
   }
 }
 
-async function confirmWithDialog(
-  dialog: HTMLDialogElement,
-  titleEl: HTMLElement,
-  title: string,
-) {
-  titleEl.textContent = title;
-  dialog.returnValue = "";
-  const result = await showDialog(dialog);
-  titleEl.textContent = "";
-  return result === "confirm";
-}
-
 export {
   applyAppTheme,
   applyFontFamily,
   applyFontSize,
   applyLineHeight,
-  confirmWithDialog,
   getQuickAction,
   handleUpdateSettings,
   resolveTheme,

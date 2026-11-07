@@ -34,9 +34,12 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-export let win: BrowserWindow | null = null;
+const FLUSH_TIMEOUT_MS = 5000;
 
+export let win: BrowserWindow | null = null;
 let isReadyToClose = false;
+let isFlushing = false;
+let flushTimeout: NodeJS.Timeout | null = null;
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -54,7 +57,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 registerCustomProtocol();
 setupGlobalErrorHandling({
-  ignore: ["DownloadItem", "net::ERR_ABORTED", "net::ERR_CONNECTION_REFUSED"],
+  ignore: [
+    "DownloadItem",
+    "net::ERR_ABORTED",
+    "net::ERR_CONNECTION_REFUSED",
+    "Object has been destroyed",
+  ],
 });
 
 function initSettings(): Readonly<AppSettings> {
@@ -116,9 +124,6 @@ async function createWindow() {
   win = new BrowserWindow(windowConfig);
   navigationHandler(win);
   win.setMenuBarVisibility(false);
-  win.webContents.once("dom-ready", () => {
-    win?.show();
-  });
   if (!app.isPackaged && process.env["ELECTRON_RENDERER_URL"]) {
     win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
     win.webContents.openDevTools();
@@ -126,10 +131,23 @@ async function createWindow() {
     win.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
   win.on("close", (e) => {
+    if (win?.isDestroyed()) return;
     if (!isReadyToClose) {
       e.preventDefault();
-      saveWindowBounds();
-      win?.webContents.send(IPC_CHANNELS.REQUEST_FLUSH);
+      if (!isFlushing) {
+        isFlushing = true;
+        try {
+          saveWindowBounds();
+        } catch {}
+        if (!win?.isDestroyed())
+          win?.webContents.send(IPC_CHANNELS.REQUEST_FLUSH);
+        flushTimeout = setTimeout(() => {
+          mainLogger.devLog("Flush timeout - forced close");
+          isReadyToClose = true;
+          isFlushing = false;
+          if (!win?.isDestroyed()) win?.close();
+        }, FLUSH_TIMEOUT_MS);
+      }
       return;
     }
   });
@@ -147,7 +165,10 @@ app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
   session.defaultSession.setSpellCheckerLanguages(["en-US", "de-DE"]);
   ipcMain.on(IPC_CHANNELS.CONFIRM_FLUSH, () => {
+    if (flushTimeout) clearTimeout(flushTimeout);
+    flushTimeout = null;
     isReadyToClose = true;
+    isFlushing = false;
     win?.close();
   });
   await createWindow();

@@ -63,7 +63,6 @@ function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
     const rect = button.getBoundingClientRect();
     popover.style.top = `${rect.bottom + window.scrollY}px`;
     popover.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
-    popover.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
   }
 
   function open() {
