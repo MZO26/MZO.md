@@ -9,14 +9,50 @@ import {
 import { settingsStore } from "@/state/state";
 import { CODE_THEME_MAP, THEME_MAP } from "@/utils/constants";
 import { rendererLogger } from "@/utils/helpers";
+import { useCore } from "@/utils/registry";
 import { isFocusActive } from "@/utils/shortcuts";
-import type { QuickAction } from "@/utils/types";
 import type {
   AppSettings,
   CodeTheme,
+  FontFamily,
+  FontSize,
+  HighlightTheme,
+  LineHeight,
+  NoteItemDisplay,
   Theme,
 } from "@shared/schemas/store-schema";
 import type { ResolvedTheme, Result } from "@shared/shared-types";
+
+const THEME_VALUES = [
+  "system",
+  "light",
+  "light_warm",
+  "dark",
+  "dark_warm",
+  "oled",
+] as const;
+
+const CODE_THEME_VALUES = ["focus", "balanced", "colorless"] as const;
+
+const HIGHLIGHT_THEME_VALUES = ["context", "insight", "action"] as const;
+
+const FONT_FAMILY_VALUES = ["system", "arial", "serif"] as const;
+
+const FONT_SIZE_VALUES = ["16", "18", "20"] as const;
+
+const LINE_HEIGHT_VALUES = ["1.4", "1.5", "1.6"] as const;
+
+const NOTE_ITEM_DISPLAY_VALUES = ["preview", "minimal"] as const;
+
+function isValid<T extends readonly string[]>(
+  value: unknown,
+  validValues: T,
+): value is T[number] {
+  return (
+    typeof value === "string" &&
+    (validValues as readonly string[]).includes(value)
+  );
+}
 
 const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -50,59 +86,176 @@ async function applyAppTheme(
   };
 }
 
-function applyLineHeight(
-  editorWrapper: HTMLDivElement,
-  lineHeightSelect: HTMLSelectElement,
-  val: AppSettings["line_height"],
-) {
-  let current = Number(val) || 1.5;
-  current = Math.max(1.4, Math.min(current, 1.6));
-  const strCurrent = String(current);
-  editorWrapper.style.setProperty("--editor-line-height", strCurrent);
-  if (
-    lineHeightSelect.querySelector<HTMLOptionElement>(
-      `option[value="${CSS.escape(strCurrent)}"]`,
-    )
-  ) {
-    editorWrapper.setAttribute("data-line-height", strCurrent);
-    lineHeightSelect.value = strCurrent;
+async function updateTheme(newTheme: Theme, options?: { skipUpdate: boolean }) {
+  if (!isValid(newTheme, THEME_VALUES)) return;
+  const result = await applyAppTheme(newTheme);
+  if (!result.success) {
+    rendererLogger.appError(
+      "[applyAppTheme]: Failed to apply theme",
+      result.error,
+    );
+    return;
   }
+  if (!options?.skipUpdate)
+    await handleUpdateSettings({
+      theme: result.data.theme,
+      code_theme: result.data.codeTheme,
+    });
 }
 
-function applyFontSize(
-  editorWrapper: HTMLDivElement,
-  fontSizeSelect: HTMLSelectElement,
-  val: AppSettings["font_size"],
+async function updateCodeTheme(
+  newTheme: CodeTheme,
+  options?: { skipUpdate: boolean },
 ) {
-  let current = Number(val) || 18;
+  if (!isValid(newTheme, CODE_THEME_VALUES)) return;
+  const resolvedTheme = resolveTheme(settingsStore.get("theme"));
+  rendererLogger.devLog(resolvedTheme);
+  const mappedCodeTheme = CODE_THEME_MAP[newTheme][resolvedTheme];
+  document.documentElement.dataset["codetheme"] = mappedCodeTheme;
+  if (!options?.skipUpdate)
+    await handleUpdateSettings({ code_theme: newTheme });
+}
+
+async function updateHighlightTheme(
+  newTheme: HighlightTheme,
+  options?: { skipUpdate: boolean },
+) {
+  if (!isValid(newTheme, HIGHLIGHT_THEME_VALUES)) return;
+  document.documentElement.setAttribute("data-highlight", newTheme);
+  if (!options?.skipUpdate)
+    await handleUpdateSettings({
+      highlight: newTheme,
+    });
+}
+
+async function updateFontFamily(
+  newValue: FontFamily,
+  options?: { skipUpdate: boolean },
+) {
+  if (!isValid(newValue, FONT_FAMILY_VALUES)) return;
+  const { editorWrapper } = useCore("editorWrapper");
+  const current = newValue || "system";
+  editorWrapper.style.setProperty("--editor-font-family", current);
+  editorWrapper.setAttribute("data-font-family", current);
+  if (!options?.skipUpdate)
+    await handleUpdateSettings({ font_family: newValue });
+}
+
+async function updateFontSize(
+  newValue: FontSize,
+  options?: { skipUpdate: boolean },
+) {
+  if (!isValid(newValue, FONT_SIZE_VALUES)) return;
+  let current = Number(newValue) || 18;
   current = Math.max(16, Math.min(current, 20));
   const strCurrent = String(current);
+  const { editorWrapper } = useCore("editorWrapper");
   editorWrapper.style.setProperty("--editor-font-size", `${strCurrent}px`);
-  if (
-    fontSizeSelect.querySelector<HTMLOptionElement>(
-      `option[value="${CSS.escape(strCurrent)}"]`,
-    )
-  ) {
-    editorWrapper.setAttribute("data-font-size", strCurrent);
-    fontSizeSelect.value = strCurrent;
+  editorWrapper.setAttribute("data-font-size", strCurrent);
+  if (!options?.skipUpdate) await handleUpdateSettings({ font_size: newValue });
+}
+
+async function updateLineHeight(
+  newValue: LineHeight,
+  options?: { skipUpdate: boolean },
+) {
+  if (!isValid(newValue, LINE_HEIGHT_VALUES)) return;
+  let current = Number(newValue) || 1.5;
+  current = Math.max(1.4, Math.min(current, 1.6));
+  const strCurrent = String(current);
+  const { editorWrapper } = useCore("editorWrapper");
+  editorWrapper.style.setProperty("--editor-line-height", strCurrent);
+  editorWrapper.setAttribute("data-line-height", strCurrent);
+  if (!options?.skipUpdate)
+    await handleUpdateSettings({ line_height: newValue });
+}
+
+async function updateNoteListItemDisplay(
+  newValue: NoteItemDisplay,
+  options?: { skipUpdate: boolean },
+) {
+  if (!isValid(newValue, NOTE_ITEM_DISPLAY_VALUES)) return;
+  const { sidebar } = useCore("sidebar");
+  sidebar.setAttribute("data-noteItem", newValue);
+  if (!options?.skipUpdate)
+    await handleUpdateSettings({ note_item_display: newValue });
+}
+
+async function updateSpellcheck(
+  newValue: boolean,
+  options?: { skipUpdate: boolean },
+) {
+  const { editor } = useCore("editor");
+  const enabled = newValue === true;
+  editor.view.dom.spellcheck = enabled;
+  editor.commands.focus();
+  if (!options?.skipUpdate) await handleUpdateSettings({ spellcheck: enabled });
+}
+
+async function backupDb() {
+  const dbBackup = await databaseBackup();
+  if (!dbBackup.success) {
+    rendererLogger.appError(
+      "[quickActions -> backup-db]: Failed to backup db:",
+      dbBackup.error,
+    );
+    await showNotification("Failed to save Backup", "");
+    return;
+  }
+  await showNotification("Backup saved", "");
+}
+
+async function restoreDbBackup() {
+  const restore = await databaseBackupRestore();
+  if (!restore.success) {
+    rendererLogger.appError(
+      "[quickActions -> backup-db-restore]: Failed to restore db:",
+      restore.error,
+    );
+    await showNotification("Failed to restore Backup", "");
+    return;
+  }
+  await showNotification("Backup restored", "");
+}
+
+async function openPath() {
+  const open = await openAppPath();
+  if (!open.success) {
+    rendererLogger.appError(
+      "[quickActions -> open-path]: Failed to open app path:",
+      open.error,
+    );
   }
 }
 
-function applyFontFamily(
-  editorWrapper: HTMLDivElement,
-  fontFamilySelect: HTMLSelectElement,
-  val: AppSettings["font_family"],
-) {
-  const current = val || "system";
-  editorWrapper.style.setProperty("--editor-font-family", current);
-  if (
-    fontFamilySelect.querySelector<HTMLOptionElement>(
-      `option[value="${CSS.escape(current)}"]`,
-    )
-  ) {
-    editorWrapper.setAttribute("data-font-family", current);
-    fontFamilySelect.value = current;
-  }
+async function applySettings(settings: AppSettings) {
+  const { editor, sidebar, editorWrapper } = useCore(
+    "editor",
+    "sidebar",
+    "editorWrapper",
+  );
+  await applyAppTheme(settings["theme"]);
+  document.documentElement.setAttribute(
+    "data-highlight",
+    settings["highlight"],
+  );
+  sidebar.setAttribute("data-noteItem", settings["note_item_display"]);
+  editorWrapper.style.setProperty(
+    "--editor-font-family",
+    settings["font_family"],
+  );
+  editorWrapper.setAttribute("data-font-family", settings["font_family"]);
+  editorWrapper.style.setProperty(
+    "--editor-line-height",
+    settings["line_height"],
+  );
+  editorWrapper.setAttribute("data-font-size", settings["font_size"]);
+  editorWrapper.style.setProperty(
+    "--editor-font-size",
+    `${String(settings["font_size"])}px`,
+  );
+  editorWrapper.setAttribute("data-line-height", settings["line_height"]);
+  editor.view.dom.spellcheck = settings["spellcheck"] === true;
 }
 
 async function handleUpdateSettings(settings: Partial<Readonly<AppSettings>>) {
@@ -118,54 +271,20 @@ async function handleUpdateSettings(settings: Partial<Readonly<AppSettings>>) {
   settingsStore.setState(settings);
 }
 
-async function getQuickAction(action: QuickAction) {
-  switch (action) {
-    case "open-path":
-      const open = await openAppPath();
-      if (!open.success) {
-        rendererLogger.appError(
-          "[quickActions -> open-path]: Failed to open app path:",
-          open.error,
-        );
-        return;
-      }
-      break;
-    case "backup-db":
-      const dbBackup = await databaseBackup();
-      if (!dbBackup.success) {
-        rendererLogger.appError(
-          "[quickActions -> backup-db]: Failed to backup db:",
-          dbBackup.error,
-        );
-        await showNotification("Failed to save Backup", "");
-        return;
-      }
-      await showNotification("Backup saved", "");
-      return;
-    case "backup-db-restore":
-      const restore = await databaseBackupRestore();
-      if (!restore.success) {
-        rendererLogger.appError(
-          "[quickActions -> backup-db-restore]: Failed to restore db:",
-          restore.error,
-        );
-        await showNotification("Failed to restore Backup", "");
-        return;
-      }
-      await showNotification("Backup restored", "");
-      return;
-    default:
-      action satisfies never;
-      break;
-  }
-}
-
 export {
   applyAppTheme,
-  applyFontFamily,
-  applyFontSize,
-  applyLineHeight,
-  getQuickAction,
+  applySettings,
+  backupDb,
   handleUpdateSettings,
+  openPath,
   resolveTheme,
+  restoreDbBackup,
+  updateCodeTheme,
+  updateFontFamily,
+  updateFontSize,
+  updateHighlightTheme,
+  updateLineHeight,
+  updateNoteListItemDisplay,
+  updateSpellcheck,
+  updateTheme,
 };

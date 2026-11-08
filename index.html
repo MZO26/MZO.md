@@ -41,9 +41,6 @@
                 title="Global Search"
               />
             </div>
-            <button class="all-tags-btn" title="All tags">
-              <i data-lucide="tag"></i>
-            </button>
             <button class="import-btn" title="Import File">
               <i data-lucide="file-up"></i>
             </button>
@@ -53,9 +50,6 @@
           </div>
           <div class="notes-container" tabindex="0"></div>
           <div class="sidebar-footer">
-            <button class="settings-btn" title="Settings">
-              <i data-lucide="sliders-horizontal"></i>
-            </button>
             <span class="info-span note-count" title="Total Notes"></span>
           </div>
         </div>
@@ -130,8 +124,8 @@
           <input
             type="search"
             class="search-input-quick-switch"
-            placeholder="Filter notes or create a new one..."
-            title="Filter notes or create a new one"
+            placeholder="Find or create note… (# for tags, > for commands)"
+            title="Find or create note… (# for tags, > for commands)"
             autofocus
           />
         </div>
@@ -187,36 +181,6 @@
         </div>
       </form>
     </dialog>
-    <dialog class="settings-modal">
-      <form method="dialog" novalidate>
-        <div class="settings-quick-actions"></div>
-        <button class="close-setting-modal-btn" value="cancel">
-          <i data-lucide="x"></i>
-        </button>
-        <div class="settings-selection">
-          <div class="settings-title">Settings</div>
-        </div>
-        <div class="settings-content" data-activetab="Appearance"></div>
-      </form>
-    </dialog>
-    <template id="tags-popover-template">
-      <div class="tags-popover">
-        <div class="tags-popover-header">
-          <div class="input-wrapper">
-            <input
-              type="search"
-              class="search-input"
-              placeholder="Filter all tags..."
-              title="Filter tags"
-            />
-          </div>
-          <button class="untagged-btn" title="Untagged">
-            <i data-lucide="tag-x"></i>
-          </button>
-        </div>
-        <div class="tags-popover-content"></div>
-      </div>
-    </template>
     <template id="sidebar-empty-state-template">
       <div class="sidebar-empty-state empty-state-content">
         <div class="empty-state-icon">

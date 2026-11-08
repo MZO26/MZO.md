@@ -11,7 +11,6 @@ import {
 } from "lucide";
 
 import {
-  AppWindow,
   ArchiveRestore,
   ArrowDownFromLine,
   ArrowLeftFromLine,
@@ -38,8 +37,6 @@ import {
   Link,
   List,
   ListOrdered,
-  Palette,
-  PenLine,
   Pin,
   Plus,
   Redo2,
@@ -50,11 +47,8 @@ import {
   SearchX,
   SeparatorHorizontal,
   Sigma,
-  SlidersHorizontal,
   SquareSigma,
   Strikethrough,
-  Tag,
-  TagX,
   TextQuote,
   Trash2,
   Underline,
@@ -84,14 +78,10 @@ const APP_ICONS = {
   FileQuestion,
   Pin,
   Link,
-  PenLine,
   Info,
   Sigma,
   SquareSigma,
   Trash2,
-  SlidersHorizontal,
-  Tag,
-  TagX,
   Search,
   FileClock,
   Plus,
@@ -115,11 +105,9 @@ const APP_ICONS = {
   Highlighter,
   Grid2x2,
   X,
-  AppWindow,
   Image,
   ArrowLeftFromLine,
   ArrowDownFromLine,
-  Palette,
 } as const;
 
 function renderIcons(scope: Document | HTMLElement = document): void {

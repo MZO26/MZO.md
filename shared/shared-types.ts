@@ -4,6 +4,7 @@ import type {
   ALLOWED_IMPORT_EXTENSIONS,
   APP_EVENTS,
   EDITOR_EVENTS,
+  SETTING_EVENTS,
   TABLE_ACTIONS,
 } from "@shared/shared-constants";
 import type { Editor } from "@tiptap/core";
@@ -30,6 +31,13 @@ interface EditorCommands {
   run: (args: Editor) => boolean | Promise<boolean>;
   isActive?: (args: Editor) => boolean;
   isDisabled?: (args: Editor) => boolean;
+  label: keyof typeof EDITOR_EVENTS;
+}
+
+interface SettingCommands {
+  run: () => void | Promise<void>;
+  isActive?: () => boolean;
+  label: keyof typeof SETTING_EVENTS;
 }
 
 type Success<T> = {
@@ -65,6 +73,7 @@ export type {
   PDFAssets,
   ResolvedTheme,
   Result,
+  SettingCommands,
   TableAction,
   ValueOf,
 };

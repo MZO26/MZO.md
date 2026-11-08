@@ -2,22 +2,12 @@ import {
   createNoteItem,
   getSafeSnippet,
 } from "@/components/sidebar/sidebar-note-items";
-import { applyView } from "@/components/sidebar/sidebar-views";
-import { localStore, noteStore } from "@/state/state";
-import {
-  DEBOUNCE_MS,
-  SIDEBAR_ALL_NOTES_LIMIT,
-  UNTAGGED,
-} from "@/utils/constants";
-import { createAsyncHandler, debounce, rendererLogger } from "@/utils/helpers";
+import { localStore } from "@/state/state";
+import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@/utils/constants";
+import { rendererLogger } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
 import { useCore } from "@/utils/registry";
-import type {
-  AllTagsMenu,
-  FilterMode,
-  SelectionParams,
-  SidebarParams,
-} from "@/utils/types";
+import type { FilterMode, SelectionParams, SidebarParams } from "@/utils/types";
 import {
   createIconButton,
   createInfoSpan,
@@ -39,154 +29,6 @@ function updateSelectionUI(selectionParams: SelectionParams) {
     const isSelected = selectionMode && !!id && selectedIds.has(id);
     item.classList.toggle("is-selected", isSelected);
   }
-}
-
-const tagsPopoverClone = createTemplateCloner("tagsPopoverTemplate", isDiv);
-
-let tagPopoverClone: AllTagsMenu | null = null;
-
-function createAllTagsPopover(button: HTMLButtonElement): AllTagsMenu {
-  const popover = tagsPopoverClone();
-  const content = requireElement<HTMLDivElement>(
-    ".tags-popover-content",
-    popover,
-  );
-  const filterInput = requireElement<HTMLInputElement>(
-    ".search-input",
-    popover,
-  );
-  let isOpen = false;
-  document.body.appendChild(popover);
-  renderIcons(popover);
-
-  function positionPopover() {
-    const rect = button.getBoundingClientRect();
-    popover.style.top = `${rect.bottom + window.scrollY}px`;
-    popover.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
-  }
-
-  function open() {
-    if (isOpen) return;
-    positionPopover();
-    filterInput.value = "";
-    popover.classList.remove("hidden");
-    isOpen = true;
-  }
-
-  function close() {
-    if (!isOpen) return;
-    filterInput.value = "";
-    popover.classList.add("hidden");
-    isOpen = false;
-  }
-
-  function toggle() {
-    isOpen ? close() : open();
-  }
-
-  function precomputeTags(tags: string[]) {
-    const tagCount = tags.reduce(
-      (acc, tag) => {
-        acc[tag] = (acc[tag] ?? 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-    const uniqueSortedTags = Object.keys(tagCount).sort((a, b) =>
-      a.localeCompare(b),
-    );
-    return { uniqueSortedTags, tagCount };
-  }
-
-  function render(tags: string[]) {
-    const { uniqueSortedTags, tagCount } = precomputeTags(tags);
-    if (uniqueSortedTags.length === 0) {
-      content.replaceChildren(createInfoSpan("No tags here."));
-      return;
-    }
-    const frag = document.createDocumentFragment();
-    for (const tag of uniqueSortedTags) {
-      const item = document.createElement("span");
-      const count = tagCount[tag];
-      item.className = "tags-popover-item tag";
-      item.dataset["tag"] = tag;
-      item.title = `#${tag} (${count})`;
-      item.textContent = `#${tag} (${count})`;
-      frag.appendChild(item);
-    }
-    content.replaceChildren(frag);
-  }
-
-  function filter(query: string) {
-    const notes = noteStore.get("notes");
-    const normalizedQuery = query.toLowerCase();
-    if (!normalizedQuery) {
-      const allTags: string[] = [];
-      for (const note of notes) {
-        if (note.tags) allTags.push(...note.tags);
-      }
-      render(allTags);
-      return;
-    }
-    const matches: string[] = [];
-    for (const note of notes) {
-      if (!note.tags) continue;
-      for (const tag of note.tags) {
-        if (tag.toLowerCase().includes(normalizedQuery)) {
-          matches.push(tag);
-        }
-      }
-    }
-    render(matches);
-  }
-
-  const debouncedFilter = debounce((e: Event) => {
-    if (!(e.target instanceof HTMLInputElement)) return;
-    const value = (e.target.value ?? "").trim();
-    filter(value);
-  }, DEBOUNCE_MS.very_fast);
-
-  filterInput.addEventListener("input", debouncedFilter);
-
-  popover.addEventListener(
-    "click",
-    createAsyncHandler(async (e) => {
-      if (!(e.target instanceof Element)) return;
-      if (e.target.closest(".untagged-btn")) {
-        await applyView(UNTAGGED);
-        close();
-        return;
-      }
-      const tagElement = e.target.closest<HTMLSpanElement>(".tag");
-      const tag = tagElement?.dataset["tag"];
-      if (tag) {
-        const normalizedTag = tag.trim().toLowerCase();
-        if (normalizedTag) await applyView(tag);
-        close();
-      }
-    }),
-  );
-
-  document.addEventListener("click", (e) => {
-    if (!isOpen || !(e.target instanceof Element)) return;
-    if (popover.contains(e.target) || button.contains(e.target)) return;
-    close();
-  });
-
-  return {
-    popover,
-    content,
-    render,
-    toggle,
-    open,
-    close,
-  };
-}
-
-function showTagPopover(button: HTMLButtonElement, tags: string[]) {
-  const menu = (tagPopoverClone ??= createAllTagsPopover(button));
-  menu.render(tags);
-  menu.toggle();
 }
 
 function getTagDisplayLabel(tag: string): string {
@@ -394,10 +236,4 @@ function resizeSidebar() {
   });
 }
 
-export {
-  handleSidebarChange,
-  resizeSidebar,
-  showTagPopover,
-  toggleSidebar,
-  updateSelectionUI,
-};
+export { handleSidebarChange, resizeSidebar, toggleSidebar, updateSelectionUI };

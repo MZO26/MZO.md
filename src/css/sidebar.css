@@ -604,10 +604,6 @@ input::-webkit-search-cancel-button {
   box-shadow: none;
 }
 
-.note-count {
-  padding-right: 4px;
-}
-
 .active-tag-header,
 .sidebar-info-header,
 .note-list-info {

@@ -7,13 +7,12 @@ import {
   selectAllVisibleNotes,
   setSelectionMode,
 } from "@/components/sidebar/sidebar-selection";
-import { resizeSidebar, showTagPopover } from "@/components/sidebar/sidebar-ui";
+import { resizeSidebar } from "@/components/sidebar/sidebar-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
 import {
   handleCreateNote,
   handleImportNote,
   handleSelectNote,
-  waitForFlush,
 } from "@/notes/note-actions";
 import { localStore, noteStore, stateStore } from "@/state/state";
 import { NAV_KEYS } from "@/utils/constants";
@@ -70,14 +69,6 @@ function applySidebarListeners(
       const addNoteBtn = e.target.closest<HTMLButtonElement>(".add-note-btn");
       if (addNoteBtn) {
         await handleCreateNote({ shouldNavigate: true });
-        return;
-      }
-      const tagBtn = e.target.closest<HTMLButtonElement>(".all-tags-btn");
-      if (tagBtn) {
-        const { activeId, isDirty } = stateStore.getState();
-        if (activeId && isDirty) await waitForFlush(activeId);
-        const tags = noteStore.get("notes").flatMap((n) => n.tags ?? []);
-        showTagPopover(tagBtn, tags);
         return;
       }
       const importBtn = e.target.closest<HTMLButtonElement>(".import-btn");

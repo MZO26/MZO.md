@@ -7,7 +7,6 @@ import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { initToolbar, initTopToolbar } from "@/components/toolbar/toolbar-init";
 import { handleSelectNote } from "@/notes/note-actions";
-import { initAppSettings } from "@/settings/setting-init";
 import { localStore } from "@/state/state";
 import "@/state/state-init";
 import { initSubscriptions } from "@/state/state-init";
@@ -28,6 +27,7 @@ import {
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { isNoteID } from "@shared/schemas/note-schema";
+import { applySettings } from "./settings/setting-actions";
 
 async function initApp() {
   const notesResult = await getAll();
@@ -57,7 +57,6 @@ async function initApp() {
   syncNoteStore(notesResult.data);
   setupEditorListeners(editorWrapper, editor);
   initEditorSearch(editor, editorContainer, editorWrapper);
-  await initAppSettings(settings);
   initListeners();
   initToolbar(editorContainer);
   initTopToolbar(appContainer);
@@ -65,6 +64,7 @@ async function initApp() {
   initGlobalShortcuts();
   initNotesSidebar(sidebar);
   initQuickSwitcher(editor);
+  await applySettings(settings);
   renderIcons();
   const lastOpenNoteId = localStore.get("lastOpenNote");
   if (

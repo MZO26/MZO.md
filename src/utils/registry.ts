@@ -38,8 +38,6 @@ interface TemplateRegistry {
   sidebarEmptyStateTemplate: HTMLTemplateElement;
   // note item template
   noteItemTemplate: HTMLTemplateElement;
-  // tags popover template
-  tagsPopoverTemplate: HTMLTemplateElement;
 }
 
 interface DialogRegistry {
@@ -112,9 +110,6 @@ function initUIRegistry() {
     searchInput: requireElement<HTMLInputElement>(".search-input"),
     sidebarHeader: requireElement<HTMLDivElement>(".sidebar-header"),
     sidebarFooter: requireElement<HTMLDivElement>(".sidebar-footer"),
-    quickActionContainer: requireElement<HTMLDivElement>(
-      ".settings-quick-actions",
-    ),
   });
 }
 
@@ -130,17 +125,12 @@ function initTemplateRegistry() {
     noteItemTemplate: requireElement<HTMLTemplateElement>(
       "#note-item-template",
     ),
-    tagsPopoverTemplate: requireElement<HTMLTemplateElement>(
-      "#tags-popover-template",
-    ),
   });
 }
 
 function initDialogRegistry() {
   toRegistry("dialog")({
     deleteDialog: requireElement<HTMLDialogElement>("#delete-dialog"),
-    settingsContainer: requireElement<HTMLDivElement>(".settings-content"),
-    settingsDialog: requireElement<HTMLDialogElement>(".settings-modal"),
     switchDialog: requireElement<HTMLDialogElement>(".quick-switch-dialog"),
     switchListSearchInput: requireElement<HTMLInputElement>(
       ".search-input-quick-switch",

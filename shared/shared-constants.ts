@@ -60,7 +60,6 @@ const APP_EVENTS = {
   SET_EDITOR_WIDTH: "app:set-editor-width",
   TOGGLE_FOCUS_MODE: "app:toggle-focus-mode",
   TOGGLE_TOOLBAR: "app:toggle-toolbar",
-  OPEN_SETTINGS: "app:open-settings",
 } as const;
 
 const EDITOR_EVENTS = {
@@ -86,6 +85,36 @@ const EDITOR_EVENTS = {
   LINK: "editor:link",
   IMAGE: "editor:image",
   TABLE: "editor:table",
+} as const;
+
+const SETTING_EVENTS = {
+  THEME_SYSTEM: "setting:theme-system",
+  THEME_LIGHT: "setting:theme-light",
+  THEME_DARK: "setting:theme-dark",
+  THEME_DARK_WARM: "setting:theme-dark-warm",
+  THEME_LIGHT_WARM: "setting:theme-light-warm",
+  THEME_OLED: "setting:theme-oled",
+  FONT_FAMILY_SYSTEM: "setting:font-family-system",
+  FONT_FAMILY_ARIAL: "setting:font-family-arial",
+  FONT_FAMILY_SERIF: "setting:font-family-serif",
+  FONT_SIZE_SMALL: "setting:font-size-small",
+  FONT_SIZE_MEDIUM: "setting:font-size-medium",
+  FONT_SIZE_LARGE: "setting:font-size-large",
+  LINE_HEIGHT_SMALL: "setting:line-height-small",
+  LINE_HEIGHT_MEDIUM: "setting:line-height-medium",
+  LINE_HEIGHT_LARGE: "setting:line-height-large",
+  SPELLCHECK: "setting:spellcheck",
+  CODE_THEME_FOCUS: "setting:code-theme-focus",
+  CODE_THEME_BALANCED: "setting:code-theme-balanced",
+  CODE_THEME_COLORLESS: "setting:code-theme-colorless",
+  HIGHLIGHT_CONTEXT: "setting:highlight-context",
+  HIGHLIGHT_INSIGHT: "setting:highlight-insight",
+  HIGHLIGHT_ACTION: "setting:highlight-action",
+  NOTE_ITEM_DISPLAY_PREVIEW: "setting:note-item-display-preview",
+  NOTE_ITEM_DISPLAY_MINIMAL: "setting:note-item-display-minimal",
+  BACKUP_DB: "setting:backup-db",
+  RESTORE_DB_BACKUP: "setting:restore-db-backup",
+  OPEN_APP_PATH: "setting:open-app-path",
 } as const;
 
 const DEFAULT_SETTINGS: Readonly<AppSettings> = {
@@ -115,6 +144,7 @@ export {
   MAX_CHARACTERS,
   MAX_SEARCH_LENGTH,
   MIN_SEARCH_LENGTH,
+  SETTING_EVENTS,
   TABLE_ACTIONS,
   UNTITLED,
 };

@@ -56,11 +56,6 @@ function initGlobalShortcuts() {
       appEvents.emit(APP_EVENTS.FOCUS_GLOBAL_SEARCH);
       return;
     }
-    if (isMod && key === ",") {
-      e.preventDefault();
-      appEvents.emit(APP_EVENTS.OPEN_SETTINGS);
-      return;
-    }
     if (isMod && key === "n") {
       e.preventDefault();
       appEvents.emitAsync(APP_EVENTS.CREATE_NEW_NOTE);

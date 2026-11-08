@@ -1,5 +1,7 @@
+import type { SettingEventStrings } from "@/settings/settings-commands";
 import type { APP_ICONS } from "@/utils/icons";
 import type { WorkerErrorCode } from "@shared/errors";
+import type { EditorEventStrings } from "@shared/event-emitter";
 import type {
   Id,
   NoteListItem,
@@ -21,11 +23,6 @@ type MathOptions =
       pos: number;
       initialValue?: string;
     };
-
-type SelectOption<T extends string | boolean> = {
-  value: T;
-  label: string;
-};
 
 type WorkerSuccess<T> = {
   success: true;
@@ -90,26 +87,29 @@ type ActiveStateParams = {
   editor: Editor;
 };
 
-type QuickSwitchDisplayNote =
-  | (Pick<NoteListItem, "id" | "title"> & {
-      section:
-        | "search"
-        | "create"
-        | "recent"
-        | "backlink"
-        | "outgoing"
-        | "related";
-    })
-  | { title: string; section: "create" };
+type NoteSection = "search" | "recent" | "backlink" | "outgoing" | "related";
 
-type AllTagsMenu = {
-  popover: HTMLDivElement;
-  content: HTMLDivElement;
-  render(tags: string[]): void;
-  toggle(): void;
-  open(): void;
-  close(): void;
+type ActionEntry<Section extends string, Key> = {
+  title: string;
+  section: Section;
+  commandKey: Key;
+  isActive: boolean;
 };
+
+type QuickSwitchDisplayCommand =
+  | ActionEntry<"command", EditorEventStrings>
+  | ActionEntry<"setting", SettingEventStrings>;
+
+type QuickSwitchDisplayBadge =
+  | (Pick<NoteListItem, "id" | "title"> & { section: NoteSection })
+  | { title: string; section: "create" }
+  | QuickSwitchDisplayCommand
+  | {
+      title: string;
+      section: "tag";
+      count: number;
+      isActive?: boolean;
+    };
 
 type SettingsCategory = "Appearance" | "Editor" | "General";
 
@@ -133,7 +133,6 @@ export type {
   Action,
   ActionMap,
   ActiveStateParams,
-  AllTagsMenu,
   AppIcons,
   FilterMode,
   ImageCompressionPayload,
@@ -141,9 +140,8 @@ export type {
   MathOptions,
   QuickAction,
   QuickActionConfig,
-  QuickSwitchDisplayNote,
+  QuickSwitchDisplayBadge,
   SelectionParams,
-  SelectOption,
   SettingsCategory,
   SidebarParams,
   SnippetGenParams,
