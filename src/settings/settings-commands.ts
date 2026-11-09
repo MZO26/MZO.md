@@ -1,5 +1,6 @@
 import {
   backupDb,
+  exportCommand,
   openPath,
   restoreDbBackup,
   updateCodeTheme,
@@ -154,6 +155,10 @@ const settingsCommands: Record<SettingEventStrings, SettingCommands> = {
     isActive: () => false,
     label: "OPEN_APP_PATH",
   },
+  "setting:export-markdown": exportCommand("md"),
+  "setting:export-text": exportCommand("txt"),
+  "setting:export-html": exportCommand("html"),
+  "setting:export-pdf": exportCommand("pdf"),
 };
 
 export { settingsCommands };

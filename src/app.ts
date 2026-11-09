@@ -28,6 +28,7 @@ import {
 import { initGlobalShortcuts } from "@/utils/shortcuts";
 import { isNoteID } from "@shared/schemas/note-schema";
 import { applySettings } from "./settings/setting-actions";
+import { createGlobalSpinner } from "./utils/ui";
 
 async function initApp() {
   const notesResult = await getAll();
@@ -70,8 +71,10 @@ async function initApp() {
   if (
     isNoteID(lastOpenNoteId) &&
     notesResult.data.some((n) => n.id === lastOpenNoteId)
-  )
-    await handleSelectNote(lastOpenNoteId);
+  ) {
+    const loading = createGlobalSpinner(100);
+    await loading.wrap(() => handleSelectNote(lastOpenNoteId));
+  }
   restoreSidebarScope();
 }
 await withPerformanceLog(initApp)();

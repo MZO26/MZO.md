@@ -8,7 +8,7 @@ import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
 import { memoize, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
-import type { QuickSwitchDisplayBadge } from "@/utils/types";
+import type { NoteSection, QuickSwitchDisplayBadge } from "@/utils/types";
 import type { EditorEventStrings } from "@shared/event-emitter";
 import {
   isNoteID,
@@ -141,62 +141,53 @@ function getTags(notes: readonly NoteListItem[]): QuickSwitchDisplayBadge[] {
   ];
 }
 
-async function computeDisplayNotes() {
-  const activeId = stateStore.get("activeId") as Id | null;
-  const displayNotes: QuickSwitchDisplayBadge[] = [];
-  const { recentNotes, noteIndex } = noteStore.getState();
-  const activeNote = activeId ? noteIndex.get(activeId) : undefined;
-  const recentIds = new Set(recentNotes);
-  const backlinkIds = new Set<Id>();
-  const outgoingIds = new Set<Id>();
-  for (const id of recentNotes) {
+function toDisplayBadges(
+  ids: Iterable<Id>,
+  section: Extract<QuickSwitchDisplayBadge["section"], NoteSection>,
+  noteIndex: Map<Id, NoteListItem>,
+  { limit = Infinity }: { limit?: number } = {},
+): QuickSwitchDisplayBadge[] {
+  const badges: QuickSwitchDisplayBadge[] = [];
+  for (const id of new Set(ids)) {
+    if (badges.length >= limit) break;
     const note = noteIndex.get(id);
-    if (!note || !recentIds.has(id)) continue;
-    displayNotes.push({
-      id: note.id,
-      title: note.title,
-      section: "recent",
-    });
+    if (note) {
+      badges.push({ id: note.id, title: note.title, section });
+    }
   }
-  if (activeNote) {
-    const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote);
-    const { notes, noteIndex } = noteStore.getState();
-    const relatedNotes = await getSimilarityMatching(
-      activeNote.id,
-      notes,
+  return badges;
+}
+
+async function computeDisplayNotes(): Promise<QuickSwitchDisplayBadge[]> {
+  const activeId = stateStore.get("activeId") as Id | null;
+  const { recentNotes, notes, noteIndex } = noteStore.getState();
+  const recentBadges = toDisplayBadges(recentNotes, "recent", noteIndex);
+  const activeNote = activeId ? noteIndex.get(activeId) : undefined;
+  if (!activeNote) return recentBadges;
+  const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote);
+  const relatedNotes = await getSimilarityMatching(
+    activeNote.id,
+    notes,
+    noteIndex,
+  );
+  return [
+    ...recentBadges,
+    ...toDisplayBadges(
+      backlinks.map((l) => l.id),
+      "backlink",
       noteIndex,
-    );
-    for (const link of backlinks) {
-      const linkedNote = noteIndex.get(link.id);
-      if (!linkedNote || backlinkIds.has(linkedNote.id)) continue;
-      backlinkIds.add(linkedNote.id);
-      displayNotes.push({
-        id: linkedNote.id,
-        title: linkedNote.title,
-        section: "backlink",
-      });
-    }
-    for (const link of outgoingLinks) {
-      const linkedNote = noteIndex.get(link.id);
-      if (!linkedNote || outgoingIds.has(link.id)) continue;
-      outgoingIds.add(link.id);
-      displayNotes.push({
-        id: linkedNote.id,
-        title: linkedNote.title,
-        section: "outgoing",
-      });
-    }
-    for (const note of relatedNotes) {
-      if (relatedNotes.length === 0) return;
-      if (!noteIndex.has(note.id)) continue;
-      displayNotes.push({
-        id: note.id,
-        title: note.title,
-        section: "related",
-      });
-    }
-  }
-  return displayNotes;
+    ),
+    ...toDisplayBadges(
+      outgoingLinks.map((l) => l.id),
+      "outgoing",
+      noteIndex,
+    ),
+    ...toDisplayBadges(
+      relatedNotes.map((n) => n.id),
+      "related",
+      noteIndex,
+    ),
+  ];
 }
 
 function computeActiveNoteLinks(activeNote: NoteListItem) {
@@ -214,10 +205,9 @@ function computeActiveNoteLinks(activeNote: NoteListItem) {
 }
 
 export {
-  computeActiveNoteLinks,
   computeDisplayNotes,
   getAllUsableEditorCommands,
   getSettingsCommands,
-  getSimilarityMatching,
   getTags,
+  toDisplayBadges,
 };

@@ -6,6 +6,7 @@ import {
   restoreSidebarScope,
 } from "@/components/sidebar/sidebar-views";
 import { handleCreateNote, handleSelectNote } from "@/notes/note-actions";
+import { EXPORT_KEYS } from "@/settings/setting-actions";
 import { settingsCommands } from "@/settings/settings-commands";
 import { settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
@@ -99,7 +100,10 @@ function renderTitleList(qsState: QuickSwitchState) {
     }
     optionEl.toggleAttribute(
       "disabled",
-      item.section === "command" && !activeId,
+      item.section === "command" ||
+        ("commandKey" in item &&
+          EXPORT_KEYS.includes(item.commandKey) &&
+          !activeId),
     );
     switchListEl.appendChild(optionEl);
   }

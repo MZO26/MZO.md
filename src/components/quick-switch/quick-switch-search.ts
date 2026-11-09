@@ -3,6 +3,7 @@ import {
   getAllUsableEditorCommands,
   getSettingsCommands,
   getTags,
+  toDisplayBadges,
 } from "@/components/quick-switch/quick-switch-actions";
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
 import { setDisplay } from "@/components/quick-switch/quick-switch-ui";
@@ -140,16 +141,16 @@ function computeTitleFilterResults(query: SearchQuery) {
       b.updatedAtMs - a.updatedAtMs,
   );
   const limit = Math.min(results.length, 15);
+  const noteIndex = noteStore.get("noteIndex");
   const displayNotes: QuickSwitchDisplayBadge[] = [];
-  for (let i = 0; i < limit; i++) {
-    const r = results[i];
-    if (!r) continue;
-    displayNotes.push({
-      id: r.id,
-      title: r.title,
-      section: "search",
-    });
-  }
+  displayNotes.push(
+    ...toDisplayBadges(
+      results.map((r) => r.id),
+      "search",
+      noteIndex,
+      { limit },
+    ),
+  );
   return displayNotes;
 }
 

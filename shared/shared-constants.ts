@@ -1,10 +1,6 @@
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { JSONContent } from "@tiptap/core";
 
-const APP_VERSION = "1.2.0";
-
-const GITHUB_LINK = "https://github.com/MZO26/MZO.md";
-
 const MAX_BYTES_FILE = 4 * 1024 * 1024;
 
 const MAX_CHARACTERS = 4_000_000;
@@ -115,6 +111,10 @@ const SETTING_EVENTS = {
   BACKUP_DB: "setting:backup-db",
   RESTORE_DB_BACKUP: "setting:restore-db-backup",
   OPEN_APP_PATH: "setting:open-app-path",
+  EXPORT_MARKDOWN: "setting:export-markdown",
+  EXPORT_TEXT: "setting:export-text",
+  EXPORT_HTML: "setting:export-html",
+  EXPORT_PDF: "setting:export-pdf",
 } as const;
 
 const DEFAULT_SETTINGS: Readonly<AppSettings> = {
@@ -134,11 +134,9 @@ export {
   ALLOWED_IMPORT_EXTENSIONS,
   ALLOWED_PROTOCOLS,
   APP_EVENTS,
-  APP_VERSION,
   DEFAULT_SETTINGS,
   EDITOR_EVENTS,
   EMPTY_DOC,
-  GITHUB_LINK,
   LOCALHOST_HOSTS,
   MAX_BYTES_FILE,
   MAX_CHARACTERS,

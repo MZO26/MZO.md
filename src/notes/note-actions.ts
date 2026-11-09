@@ -22,6 +22,7 @@ import {
 } from "@/components/editor/editor-generators";
 import { initEditorContent } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
+import { findExactMatch } from "@/components/sidebar/sidebar-search";
 import { applyView } from "@/components/sidebar/sidebar-views";
 import { addHeadingToDoc } from "@/extensions/overrides/headings";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
@@ -47,6 +48,7 @@ import {
   UNTITLED,
 } from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
+import { TextSelection } from "@tiptap/pm/state";
 
 /**
  * Creates a new note, optionally pre-filled with the active tag and a title.
@@ -527,7 +529,6 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   await initEditorContent({ note: result.data, editor });
   if (stateStore.get("activeId") !== id) return;
   editor.setEditable(true, false);
-  setSelection(editor, editorWrapper, result.data.id);
   downgradeDocLinks(noteIndex);
   if (!options?.skipRecent) {
     noteStore.setState((state) => {
@@ -541,8 +542,20 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   }
   editor.view.dispatch(editor.state.tr.setMeta("duplicateLinkRefresh", true));
   const globalQuery = stateStore.get("searchQuery");
-  if (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH)
+  if (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH) {
     appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: globalQuery });
+    const pos = findExactMatch(id, editor.state.tr.doc);
+    rendererLogger.devLog("Exact match pos:", pos);
+    if (pos !== null) {
+      editor.view.dispatch(
+        editor.state.tr
+          .setSelection(TextSelection.create(editor.state.tr.doc, pos))
+          .scrollIntoView(),
+      );
+    }
+    return;
+  }
+  setSelection(editor, editorWrapper, result.data.id);
 }
 
 /**

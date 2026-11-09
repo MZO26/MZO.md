@@ -1,5 +1,3 @@
-import type { QuickActionConfig } from "@/utils/types";
-
 const NAV_KEYS = new Set(["ArrowDown", "ArrowUp", "Enter", "Backspace"]);
 
 const DEBOUNCE_MS = {
@@ -39,16 +37,6 @@ const MAX_WORKER_TIMEOUT_MS = 180_000;
 const IMAGE_MAX_WIDTH = 1600;
 
 const IMAGE_QUALITY = 0.85;
-
-const QUICK_ACTIONS: QuickActionConfig[] = [
-  { id: "open-path", icon: "FolderCog", label: "Open App Path" },
-  { id: "backup-db", icon: "DatabaseBackup", label: "Database Backup" },
-  {
-    id: "backup-db-restore",
-    icon: "ArchiveRestore",
-    label: "Restore Database from Backup",
-  },
-] as const;
 
 const THEME_MAP = {
   system: "system",
@@ -162,11 +150,19 @@ const SHARED_KATEX_OPTIONS = {
   macros: { ...KATEX_MACROS },
 };
 
+const EXPORT_LABELS = {
+  md: "EXPORT_MARKDOWN",
+  txt: "EXPORT_TEXT",
+  html: "EXPORT_HTML",
+  pdf: "EXPORT_PDF",
+} as const;
+
 export {
   ALLOWED_TYPES,
   CODE_THEME_MAP,
   DEBOUNCE_MS,
   DOMPURIFY_CONFIG,
+  EXPORT_LABELS,
   IMAGE_MAX_WIDTH,
   IMAGE_QUALITY,
   MAX_DROP_LENGTH,
@@ -179,7 +175,6 @@ export {
   MOVEABLE_CONTAINERS,
   NAV_KEYS,
   NODE_BASELINE,
-  QUICK_ACTIONS,
   SHARED_KATEX_OPTIONS,
   SIDEBAR_ALL_NOTES_LIMIT,
   THEME_MAP,

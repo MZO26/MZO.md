@@ -6,11 +6,14 @@ import {
   setTheme,
   showNotification,
 } from "@/api/api";
-import { settingsStore } from "@/state/state";
-import { CODE_THEME_MAP, THEME_MAP } from "@/utils/constants";
+import { triggerSingleExport } from "@/components/sidebar/sidebar-triggers";
+import { settingsStore, stateStore } from "@/state/state";
+import { CODE_THEME_MAP, EXPORT_LABELS, THEME_MAP } from "@/utils/constants";
 import { rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import { isFocusActive } from "@/utils/shortcuts";
+import type { ExportFormat } from "@/utils/types";
+import type { Id } from "@shared/schemas/note-schema";
 import type {
   AppSettings,
   CodeTheme,
@@ -52,6 +55,22 @@ function isValid<T extends readonly string[]>(
     typeof value === "string" &&
     (validValues as readonly string[]).includes(value)
   );
+}
+
+const EXPORT_FORMATS = ["markdown", "text", "html", "pdf"] as const;
+
+const EXPORT_KEYS = EXPORT_FORMATS.map((f) => `setting:export-${f}`);
+
+function exportCommand(format: ExportFormat) {
+  return {
+    run: () => {
+      const activeId = stateStore.get("activeId") as Id | null;
+      if (!activeId) return;
+      triggerSingleExport(activeId, format);
+    },
+    isActive: () => false,
+    label: EXPORT_LABELS[format],
+  };
 }
 
 const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -196,7 +215,7 @@ async function backupDb() {
   const dbBackup = await databaseBackup();
   if (!dbBackup.success) {
     rendererLogger.appError(
-      "[quickActions -> backup-db]: Failed to backup db:",
+      "[Backup-db]: Failed to backup db:",
       dbBackup.error,
     );
     await showNotification("Failed to save Backup", "");
@@ -209,7 +228,7 @@ async function restoreDbBackup() {
   const restore = await databaseBackupRestore();
   if (!restore.success) {
     rendererLogger.appError(
-      "[quickActions -> backup-db-restore]: Failed to restore db:",
+      "[Backup-db-restore]: Failed to restore db:",
       restore.error,
     );
     await showNotification("Failed to restore Backup", "");
@@ -222,7 +241,7 @@ async function openPath() {
   const open = await openAppPath();
   if (!open.success) {
     rendererLogger.appError(
-      "[quickActions -> open-path]: Failed to open app path:",
+      "[Open-path]: Failed to open app path:",
       open.error,
     );
   }
@@ -272,12 +291,12 @@ async function handleUpdateSettings(settings: Partial<Readonly<AppSettings>>) {
 }
 
 export {
-  applyAppTheme,
   applySettings,
   backupDb,
+  EXPORT_KEYS,
+  exportCommand,
   handleUpdateSettings,
   openPath,
-  resolveTheme,
   restoreDbBackup,
   updateCodeTheme,
   updateFontFamily,

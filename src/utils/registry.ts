@@ -27,7 +27,6 @@ interface UIRegistry {
   sidebarHeader: HTMLDivElement;
   sidebarFooter: HTMLDivElement;
   selectionFooter: HTMLDivElement;
-  quickActionContainer: HTMLDivElement;
 }
 
 interface TemplateRegistry {
@@ -161,7 +160,7 @@ const useCore = fromRegistry("core");
  * Accesses UI elements (counters, inputs, layout sections) from the UI registry.
  *
  * Available keys: `wordCountEl`, `charCountEl`, `readingTime`, `searchInput`,
- * `sidebarHeader`, `sidebarFooter`, `selectionFooter`, `quickActionContainer`.
+ * `sidebarHeader`, `sidebarFooter`, `selectionFooter`.
  *
  * @param keys - One or more keys from {@link UIRegistry}.
  * @returns A readonly object with the requested entries.
@@ -177,7 +176,7 @@ const useUI = fromRegistry("ui");
  * Accesses `<template>` elements and the editor view from the template registry.
  *
  * Available keys: `editorEmptyStateTemplate`, `editorView`,
- * `sidebarEmptyStateTemplate`, `noteItemTemplate`, `tagsPopoverTemplate`.
+ * `sidebarEmptyStateTemplate`, `noteItemTemplate`.
  *
  * @param keys - One or more keys from {@link TemplateRegistry}.
  * @returns A readonly object with the requested entries.
@@ -192,7 +191,7 @@ const useTemplates = fromRegistry("template");
 /**
  * Accesses `<dialog>` elements and their inner controls from the dialog registry.
  *
- * Available keys: `deleteDialog`, `settingsDialog`, `settingsContainer`,
+ * Available keys: `deleteDialog`,
  * `switchDialog`, `switchListEl`, `switchListSearchInput`, `mathDialog`,
  * `mathInput`.
  *
@@ -201,7 +200,7 @@ const useTemplates = fromRegistry("template");
  * @throws If any key has not been registered yet (see {@link initDialogRegistry}).
  *
  * @example
- * const { settingsDialog, mathInput } = useDialog("settingsDialog", "mathInput");
+ * const { switchDialog, mathInput } = useDialog("switchDialog", "mathInput");
  */
 
 const useDialog = fromRegistry("dialog");

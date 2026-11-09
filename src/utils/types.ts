@@ -1,4 +1,5 @@
 import type { SettingEventStrings } from "@/settings/settings-commands";
+import type { EXPORT_LABELS } from "@/utils/constants";
 import type { APP_ICONS } from "@/utils/icons";
 import type { WorkerErrorCode } from "@shared/errors";
 import type { EditorEventStrings } from "@shared/event-emitter";
@@ -111,17 +112,7 @@ type QuickSwitchDisplayBadge =
       isActive?: boolean;
     };
 
-type SettingsCategory = "Appearance" | "Editor" | "General";
-
 type AppIcons = keyof typeof APP_ICONS;
-
-type QuickAction = "open-path" | "backup-db" | "backup-db-restore";
-
-type QuickActionConfig = {
-  id: QuickAction;
-  icon: AppIcons;
-  label: string;
-};
 
 type FilterMode = "recent" | "search" | "tag";
 
@@ -129,20 +120,21 @@ type MappedMatches = Omit<SearchResult, "search_match"> & {
   snippet: string;
 };
 
+type ExportFormat = keyof typeof EXPORT_LABELS;
+
 export type {
   Action,
   ActionMap,
   ActiveStateParams,
   AppIcons,
+  ExportFormat,
   FilterMode,
   ImageCompressionPayload,
   MappedMatches,
   MathOptions,
-  QuickAction,
-  QuickActionConfig,
+  NoteSection,
   QuickSwitchDisplayBadge,
   SelectionParams,
-  SettingsCategory,
   SidebarParams,
   SnippetGenParams,
   ToolbarItem,

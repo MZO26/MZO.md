@@ -52,4 +52,4 @@ function move(delta: number, qsState: QuickSwitchState) {
   updateSelection(qsState);
 }
 
-export { handleListKeydown, move };
+export { handleListKeydown };
