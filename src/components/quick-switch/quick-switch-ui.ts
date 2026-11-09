@@ -100,10 +100,9 @@ function renderTitleList(qsState: QuickSwitchState) {
     }
     optionEl.toggleAttribute(
       "disabled",
-      item.section === "command" ||
-        ("commandKey" in item &&
-          EXPORT_KEYS.includes(item.commandKey) &&
-          !activeId),
+      (item.section === "command" ||
+        ("commandKey" in item && EXPORT_KEYS.includes(item.commandKey))) &&
+        !activeId,
     );
     switchListEl.appendChild(optionEl);
   }

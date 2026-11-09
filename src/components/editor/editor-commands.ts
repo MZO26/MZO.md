@@ -1,6 +1,8 @@
+import { type CalloutType } from "@/extensions/callouts";
 import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { promptImageUpload } from "@/extensions/overrides/image/image";
 import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
+import { CALLOUT_LABELS } from "@/utils/constants";
 import type { Action } from "@/utils/types";
 import {
   appEvents,
@@ -127,6 +129,11 @@ const editorCommands: Record<EditorEventStrings, EditorCommands> = {
     isActive: (editor) => editor.isActive("table"),
     label: "TABLE",
   },
+  "editor:callout-note": setCallout("note"),
+  "editor:callout-tip": setCallout("tip"),
+  "editor:callout-warning": setCallout("warning"),
+  "editor:callout-danger": setCallout("danger"),
+  "editor:callout-info": setCallout("info"),
 };
 
 function registerCommands(
@@ -165,6 +172,17 @@ async function toggleMathInline(editor: Editor) {
     initialValue: selectedText,
   });
   return true;
+}
+
+function setCallout(callout: CalloutType) {
+  return {
+    run: (editor: Editor) => {
+      editor.chain().focus().toggleCallout({ type: callout }).run();
+      return true;
+    },
+    isActive: (editor: Editor) => editor.isActive("callout", { type: callout }),
+    label: CALLOUT_LABELS[callout],
+  };
 }
 
 async function toggleMathBlock(editor: Editor) {

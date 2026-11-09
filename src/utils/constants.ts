@@ -157,8 +157,17 @@ const EXPORT_LABELS = {
   pdf: "EXPORT_PDF",
 } as const;
 
+const CALLOUT_LABELS = {
+  note: "CALLOUT_NOTE",
+  tip: "CALLOUT_TIP",
+  warning: "CALLOUT_WARNING",
+  danger: "CALLOUT_DANGER",
+  info: "CALLOUT_INFO",
+} as const;
+
 export {
   ALLOWED_TYPES,
+  CALLOUT_LABELS,
   CODE_THEME_MAP,
   DEBOUNCE_MS,
   DOMPURIFY_CONFIG,

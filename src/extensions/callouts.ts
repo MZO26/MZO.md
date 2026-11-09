@@ -1,9 +1,8 @@
 import { renderIcons } from "@/utils/icons";
-import type { AppIcons } from "@/utils/types";
 import { InputRule, Node, PasteRule, mergeAttributes } from "@tiptap/core";
 import { EditorState } from "@tiptap/pm/state";
 
-export type CalloutType = "note" | "tip" | "warning" | "danger" | "info";
+export type CalloutType = keyof typeof CALLOUT_CONFIG;
 
 const CALLOUT_REGEX =
   /^>[ \t]*\[!(note|tip|warning|danger|info)\][ \t]*\n((?:>[ \t]?.*(?:\n|$))*)/i;
@@ -13,13 +12,13 @@ const CALLOUT_PASTE_REGEX =
   /^(?:>\s?)?\[!(note|tip|warning|danger|info)\][ \t]*/gim;
 const CALLOUT_PREFIX_REGEX = /^>\s*\[!(?:note|tip|warning|danger|info)\]/im;
 
-const CALLOUT_CONFIG: Record<CalloutType, { label: string; icon: AppIcons }> = {
+export const CALLOUT_CONFIG = {
   note: { label: "Note", icon: "Pencil" },
   tip: { label: "Tip", icon: "Flame" },
   warning: { label: "Warning", icon: "TriangleAlert" },
   danger: { label: "Danger", icon: "Zap" },
   info: { label: "Info", icon: "Info" },
-};
+} as const;
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
