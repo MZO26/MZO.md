@@ -42,6 +42,8 @@ function getSectionLabel(
       return `Tags (${count.tag})`;
     case "create":
       return `Create new note`;
+    case "wikilink":
+      return `Link note`;
     default:
       section satisfies never;
       return "";
@@ -108,7 +110,10 @@ function renderTitleList(qsState: QuickSwitchState) {
   }
 }
 
-async function selectActive(qsState: QuickSwitchState) {
+async function selectActive(
+  qsState: QuickSwitchState,
+  event?: KeyboardEvent | MouseEvent,
+) {
   const { switchDialog } = useDialog("switchDialog");
   const selected = qsState.currentDisplayNotes[qsState.activeIndex];
   if (!selected) return;
@@ -125,18 +130,25 @@ async function selectActive(qsState: QuickSwitchState) {
       settingsCommands[selected.commandKey]?.run();
       return;
     }
-    case "create": {
-      await handleCreateNote({
-        activeTitle: truncateTitle(selected.title),
-        shouldNavigate: true,
-      });
-      restoreSidebarScope();
-      return;
-    }
     case "tag": {
       const activeTag = settingsStore.get("active_tag");
       const clickedTag =
         selected.title === "Untagged" ? UNTAGGED : selected.title;
+      const isNew = selected.count === 0 && clickedTag !== UNTAGGED;
+      if ((isNew || event?.shiftKey) && clickedTag !== UNTAGGED) {
+        const { editor } = useCore("editor");
+        if (!editor || !editor.isEditable || editor.isActive("codeBlock"))
+          return;
+        const normalized = selected.title.replace(/[#\s]+/g, "").toLowerCase();
+        if (!normalized) return;
+        const pos = editor.state.selection.to;
+        editor
+          .chain()
+          .focus()
+          .insertNoteTag({ from: pos, to: pos, id: normalized })
+          .run();
+        return;
+      }
       if (activeTag === clickedTag) {
         await applyView(null);
       } else {
@@ -144,11 +156,54 @@ async function selectActive(qsState: QuickSwitchState) {
       }
       return;
     }
+    case "wikilink": {
+      const { editor } = useCore("editor");
+      if (!editor || !editor.isEditable || editor.isActive("codeBlock")) return;
+      const normalizedTitle = selected.title.replace(/[\[\]]/g, "").trim();
+      if (!normalizedTitle) return;
+      const pos = editor.state.selection.to;
+      editor
+        .chain()
+        .focus()
+        .insertWikiLink({
+          from: pos,
+          to: pos,
+          id: selected.id,
+          title: normalizedTitle,
+        })
+        .run();
+      return;
+    }
+    case "create": {
+      const rawTitle = selected.title.trim();
+      if (!rawTitle) return;
+      const { editor } = useCore("editor");
+      await handleCreateNote({
+        activeTitle: truncateTitle(rawTitle),
+        shouldNavigate: true,
+      });
+      editor.commands.focus();
+      restoreSidebarScope();
+      return;
+    }
     case "search":
     case "recent":
     case "backlink":
     case "outgoing":
     case "related": {
+      if (event?.shiftKey) {
+        const { switchListSearchInput } = useDialog("switchListSearchInput");
+        const { editor } = useCore("editor");
+        const rawTitle = switchListSearchInput.value.trim();
+        if (!rawTitle) return;
+        await handleCreateNote({
+          activeTitle: truncateTitle(rawTitle),
+          shouldNavigate: true,
+        });
+        editor.commands.focus();
+        restoreSidebarScope();
+        return;
+      }
       if (stateStore.get("activeId") === selected.id) return;
       const loading = createGlobalSpinner();
       await loading.wrap(() => handleSelectNote(selected.id));

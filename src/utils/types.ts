@@ -103,6 +103,7 @@ type QuickSwitchDisplayCommand =
 
 type QuickSwitchDisplayBadge =
   | (Pick<NoteListItem, "id" | "title"> & { section: NoteSection })
+  | { id: Id | null; title: string; section: "wikilink" }
   | { title: string; section: "create" }
   | QuickSwitchDisplayCommand
   | {

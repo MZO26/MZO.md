@@ -64,7 +64,48 @@ async function filterTitles(query: SearchQuery, qsState: QuickSwitchState) {
     const tagQuery = nextQuery.slice(1).trim().toLowerCase();
     const notes = noteStore.get("notes");
     const matchedTags = filterByTitle(tagQuery, getTags(notes));
+    const normalizedQuery = tagQuery.trim().toLowerCase();
+    const exactMatch = matchedTags.some(
+      (t) => t.title.toLowerCase() === normalizedQuery,
+    );
+    if (tagQuery.length > 0 && !exactMatch) {
+      matchedTags.push({
+        title: tagQuery,
+        section: "tag",
+        count: 0,
+        isActive: false,
+      });
+    }
     await setDisplay(matchedTags, qsState);
+    return;
+  }
+  if (nextQuery.startsWith("[[")) {
+    const linkQuery = nextQuery
+      .slice(2)
+      .replace(/[\[\]]/g, "")
+      .trim();
+    const rawNotes = linkQuery
+      ? computeTitleFilterResults(linkQuery)
+      : ((await computeDisplayNotes()) ?? []);
+    if (queryId !== qsState.currentQueryId) return;
+    const notesToLink = rawNotes.flatMap((n) =>
+      "id" in n
+        ? [{ id: n.id, title: n.title, section: "wikilink" as const }]
+        : [],
+    );
+    const normalizedQuery = linkQuery.toLowerCase();
+    const exactMatch = notesToLink.some(
+      (n) => n.title.toLowerCase() === normalizedQuery,
+    );
+    await setDisplay(
+      [
+        ...notesToLink,
+        ...(linkQuery && !exactMatch
+          ? [{ id: null, title: linkQuery, section: "wikilink" as const }]
+          : []),
+      ],
+      qsState,
+    );
     return;
   }
   if (nextQuery.startsWith("/") || nextQuery.startsWith(">")) {

@@ -34,7 +34,7 @@ async function handleListKeydown(
       break;
     case "Enter":
       event.preventDefault();
-      await selectActive(qsState);
+      await selectActive(qsState, event);
       break;
   }
 }

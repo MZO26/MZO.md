@@ -1,4 +1,3 @@
-import { truncateTitle } from "@/components/editor/editor-generators";
 import { computeDisplayNotes } from "@/components/quick-switch/quick-switch-actions";
 import { handleListKeydown } from "@/components/quick-switch/quick-switch-navigation";
 import { filterTitles } from "@/components/quick-switch/quick-switch-search";
@@ -6,11 +5,10 @@ import {
   selectActive,
   setDisplay,
 } from "@/components/quick-switch/quick-switch-ui";
-import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
-import { handleCreateNote, waitForFlush } from "@/notes/note-actions";
+import { waitForFlush } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
-import { createAsyncHandler, debounce, waitForPaint } from "@/utils/helpers";
+import { debounce, waitForPaint } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayBadge } from "@/utils/types";
 import { appEvents } from "@shared/event-emitter";
@@ -82,7 +80,7 @@ function initQuickSwitcher(editor: Editor) {
     const optionEl = event.target.closest<HTMLDivElement>("[data-index]");
     if (!optionEl?.dataset["index"]) return;
     qsState.activeIndex = Number(optionEl.dataset["index"]);
-    selectActive(qsState);
+    selectActive(qsState, event);
   }
 
   const debouncedTitleFilter = debounce((e: Event) => {
@@ -94,21 +92,6 @@ function initQuickSwitcher(editor: Editor) {
   switchListSearchInput.addEventListener("input", debouncedTitleFilter);
   document.addEventListener("keydown", (e: KeyboardEvent) =>
     handleListKeydown(e, qsState, switchDialog),
-  );
-  switchListSearchInput.addEventListener(
-    "keydown",
-    createAsyncHandler(async (event) => {
-      if (event.shiftKey && event.key === "Enter") {
-        event.preventDefault();
-        const value = (switchListSearchInput.value ?? "").trim();
-        await handleCreateNote({
-          activeTitle: truncateTitle(value),
-          shouldNavigate: true,
-        });
-        editor.commands.focus();
-        restoreSidebarScope();
-      }
-    }),
   );
   switchListEl.addEventListener("click", handleListClick);
   document.addEventListener("keydown", handleDocumentKeydown);
