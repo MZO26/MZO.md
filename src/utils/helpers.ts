@@ -174,6 +174,38 @@ function withPerformanceLog<A extends unknown[], T>(
   };
 }
 
+/** Creates a new guarded instance. Call `.invalidate()` to cancel all in-flight calls. */
+/**
+ * Wraps an async function so only the latest call can write results.
+ *
+ * Receives an `isStale()` guard – check it after every `await` before
+ * touching shared state. Replaces the manual counter-capture-compare pattern.
+ *
+ * @example
+ * const search = withLatestGuard(async (isStale, q) => {
+ *   const results = await api.search(q);
+ *   if (isStale()) return;
+ *   render(results);
+ * });
+ *
+ * // Cancel in-flight calls (e.g. panel closes):
+ * search.invalidate();
+ */
+
+function withLatestGuard<A extends unknown[], T>(
+  fn: (isStale: () => boolean, ...args: A) => Promise<T>,
+) {
+  let latestId = 0;
+  const wrapped = (...args: A): Promise<T> => {
+    const callId = ++latestId;
+    return fn(() => callId !== latestId, ...args);
+  };
+  wrapped.invalidate = () => {
+    ++latestId;
+  };
+  return wrapped;
+}
+
 /** Registry of registered cache-invalidation callbacks. */
 const activeCaches = new Set<() => void>();
 
@@ -381,5 +413,6 @@ export {
   showDialog,
   sleep,
   waitForPaint,
+  withLatestGuard,
   withPerformanceLog,
 };

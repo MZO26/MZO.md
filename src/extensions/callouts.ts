@@ -12,7 +12,7 @@ const CALLOUT_PASTE_REGEX =
   /^(?:>\s?)?\[!(note|tip|warning|danger|info)\][ \t]*/gim;
 const CALLOUT_PREFIX_REGEX = /^>\s*\[!(?:note|tip|warning|danger|info)\]/im;
 
-export const CALLOUT_CONFIG = {
+const CALLOUT_CONFIG = {
   note: { label: "Note", icon: "Pencil" },
   tip: { label: "Tip", icon: "Flame" },
   warning: { label: "Warning", icon: "TriangleAlert" },

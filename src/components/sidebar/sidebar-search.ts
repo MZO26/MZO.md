@@ -5,7 +5,7 @@ import {
 } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
-import { debounce, rendererLogger } from "@/utils/helpers";
+import { debounce, rendererLogger, withLatestGuard } from "@/utils/helpers";
 import type { MappedMatches } from "@/utils/types";
 import { appEvents } from "@shared/event-emitter";
 import {
@@ -17,49 +17,49 @@ import {
 import { APP_EVENTS, MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Node as PMNode } from "@tiptap/pm/model";
 
-let currentSearchId = 0;
-
-async function handleSearch(
-  searchInput: SearchQuery,
-  options?: { quickSwitchScope?: boolean },
-) {
-  const nextQuery = searchInput.trim();
-  if (nextQuery.length > MAX_SEARCH_LENGTH) return;
-  const isQuickSwitch = !!options?.quickSwitchScope;
-  if (!isQuickSwitch) {
-    const { searchQuery } = stateStore.getState();
-    if (nextQuery === searchQuery) return;
-    stateStore.setState({ searchQuery: nextQuery });
-    if (!nextQuery) {
-      restoreSidebarScope();
-      appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: "" });
+const handleSearch = withLatestGuard(
+  async (
+    isStale,
+    searchInput: SearchQuery,
+    options?: { quickSwitchScope?: boolean },
+  ) => {
+    const nextQuery = searchInput.trim();
+    if (nextQuery.length > MAX_SEARCH_LENGTH) return;
+    const isQuickSwitch = !!options?.quickSwitchScope;
+    if (!isQuickSwitch) {
+      const { searchQuery } = stateStore.getState();
+      if (nextQuery === searchQuery) return;
+      stateStore.setState({ searchQuery: nextQuery });
+      if (!nextQuery) {
+        restoreSidebarScope();
+        appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: "" });
+        return;
+      }
+    } else if (!nextQuery) {
+      return [];
+    }
+    const result = await search(nextQuery);
+    if (isStale()) return;
+    if (!result.success) {
+      rendererLogger.appError(
+        "[handleSearch]: Failed to search:",
+        result.error,
+      );
       return;
     }
-  } else if (!nextQuery) {
-    return [];
-  }
-  const searchId = ++currentSearchId;
-  const result = await search(nextQuery);
-  if (searchId !== currentSearchId) return;
-  if (!result.success) {
-    rendererLogger.appError("[handleSearch]: Failed to search:", result.error);
-    return;
-  }
-  const data: MappedMatches[] = [];
-  for (const row of result.data) {
-    data.push({
+    const data: MappedMatches[] = result.data.map((row) => ({
       id: row.id,
       title: row.title,
       snippet: row.search_match,
       rank: row.rank,
-    });
-  }
-  if (isQuickSwitch) return data;
-  const { activeTag } = stateStore.getState();
-  computeSearchResult(data, noteStore.get("noteIndex"), activeTag);
-  appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: nextQuery });
-  return data;
-}
+    }));
+    if (isQuickSwitch) return data;
+    const { activeTag } = stateStore.getState();
+    computeSearchResult(data, noteStore.get("noteIndex"), activeTag);
+    appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: nextQuery });
+    return data;
+  },
+);
 
 function computeSearchResult(
   matches: MappedMatches[],
@@ -107,7 +107,7 @@ function findExactMatch(id: Id, doc: PMNode, snippet?: string) {
 const debouncedSearch = debounce((e: Event) => {
   if (!(e.target instanceof HTMLInputElement)) return;
   const value = (e.target.value ?? "").trim();
-  handleSearch(value);
+  void handleSearch(value).catch(rendererLogger.appError);
 }, DEBOUNCE_MS.very_fast);
 
 export { debouncedSearch, findExactMatch, handleSearch };

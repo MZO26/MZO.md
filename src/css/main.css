@@ -304,9 +304,9 @@
   margin: 0 auto;
   display: flex;
   justify-content: safe center;
-  gap: 8px;
+  gap: 6px;
   height: 42px;
-  padding: 0 8px 2px 8px;
+  padding: 0 8px 2px 0;
   overflow-y: hidden;
   overflow-x: auto;
   flex-wrap: nowrap;

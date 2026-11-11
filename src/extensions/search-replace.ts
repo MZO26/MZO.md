@@ -40,9 +40,6 @@ declare module "@tiptap/core" {
 
 const docSearchKey = new PluginKey<DecorationSet>("docSearch");
 
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 const createDecorations = (
   doc: EditorState["doc"],
   results: DocSearchRange[],
@@ -73,11 +70,11 @@ const getMatchesAndDecorations = (
     return { results: [], decorations: DecorationSet.empty };
   }
   const flags = options.caseSensitive ? "g" : "gi";
-  const regex = new RegExp(escapeRegExp(storage.query), flags);
+  const escaped = new RegExp(RegExp.escape(storage.query), flags);
   const results: DocSearchRange[] = [];
   state.doc.descendants((node, pos) => {
     if (!node.isText || !node.text) return true;
-    for (const match of node.text.matchAll(regex)) {
+    for (const match of node.text.matchAll(escaped)) {
       results.push({
         from: pos + match.index,
         to: pos + match.index + match[0].length,

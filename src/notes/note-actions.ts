@@ -476,26 +476,32 @@ async function waitForFlush(id: Id | null) {
  * Selects and loads a note into the editor.
  *
  * Sequence:
- * 1. Flushes any pending debounced save of the current note.
+ * 1. Flushes pending debounced save of the current note.
  * 2. Saves cursor/scroll position of the previously active note.
  * 3. Switches to read-only, fetches the target note, initializes editor content.
- * 4. Restores editability, sets selection, refreshes doc links and recent list.
+ * 4. Restores editability, downgrades doc links, refreshes recent list.
+ * 5. If a snippet or search query is present: emits `SYNC_EDITOR_SEARCH`,
+ *    locates the exact match in the document, and positions the cursor there.
+ *    Otherwise falls back to the saved selection for this note.
  *
- * Includes race-condition guards: if `activeId` changes during an `await`,
- * the remaining steps are skipped silently.
+ * Race guard: if `activeId` changes during any `await`, remaining steps are skipped.
  *
  * @param id - The note to select.
  * @param options.skipRecent – If `true`, do not add this note to the recent-notes list.
+ * @param options.snippet – Highlighted snippet from a search result; used to locate and scroll to the match.
+ * @param options.query – Explicit query to sync into the editor search; overrides the global search query.
  *
  * @example
  * await handleSelectNote("note-abc123");
- * await handleSelectNote("note-abc123", { skipRecent: true }); // e.g. from "open in new tab"
+ * await handleSelectNote("note-abc123", { skipRecent: true, snippet: "…exact text…" });
+ * await handleSelectNote("note-abc123", { query: "custom override" });
  */
 
 async function handleSelectNote(
   id: Id,
-  options?: { skipRecent?: boolean; snippet?: string },
+  options?: { skipRecent?: boolean; snippet?: string; query?: string },
 ) {
+  const { skipRecent = false, snippet, query } = options ?? {};
   const { editor, editorWrapper } = useCore("editor", "editorWrapper");
   const activeId = stateStore.get("activeId") as Id | null;
   debouncedSaveNote.flush();
@@ -529,7 +535,7 @@ async function handleSelectNote(
   if (stateStore.get("activeId") !== id) return;
   editor.setEditable(true, false);
   downgradeDocLinks(noteIndex);
-  if (!options?.skipRecent) {
+  if (!skipRecent) {
     noteStore.setState((state) => {
       const recentNotes = state.recentNotes.filter(
         (noteId) => noteId !== result.data.id && state.noteIndex.has(noteId),
@@ -541,12 +547,15 @@ async function handleSelectNote(
   }
   editor.view.dispatch(editor.state.tr.setMeta("duplicateLinkRefresh", true));
   const globalQuery = stateStore.get("searchQuery");
+  const effectiveQuery = query ?? globalQuery;
   if (
-    options?.snippet ||
-    (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH)
+    snippet ||
+    (effectiveQuery && effectiveQuery.trim().length > MIN_SEARCH_LENGTH)
   ) {
-    if (globalQuery) {
-      appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: globalQuery });
+    if (effectiveQuery) {
+      appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, {
+        query: effectiveQuery,
+      });
     }
     const pos = findExactMatch(id, editor.state.tr.doc, options?.snippet);
     rendererLogger.devLog("Exact match pos:", pos);

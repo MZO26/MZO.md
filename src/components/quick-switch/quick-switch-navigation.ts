@@ -5,6 +5,8 @@ import {
 } from "@/components/quick-switch/quick-switch-ui";
 import { NAV_KEYS } from "@/utils/constants";
 
+const PAD = 10;
+
 async function handleListKeydown(
   event: KeyboardEvent,
   qsState: QuickSwitchState,
@@ -52,4 +54,23 @@ function move(delta: number, qsState: QuickSwitchState) {
   updateSelection(qsState);
 }
 
-export { handleListKeydown };
+function scrollItemIntoView(list: HTMLDivElement, item: HTMLDivElement) {
+  const itemTop = item.offsetTop;
+  const itemBottom = itemTop + item.offsetHeight;
+  const viewTop = list.scrollTop;
+  const viewBottom = viewTop + list.clientHeight;
+  let target = viewTop;
+  if (itemTop < viewTop + PAD) {
+    target = Math.max(0, itemTop - PAD);
+  } else if (itemBottom > viewBottom - PAD) {
+    target = itemBottom - PAD - list.clientHeight;
+  }
+  // header is first element
+  if (item === list.children[1]) {
+    list.scrollTop = 0;
+    return;
+  }
+  list.scrollTo({ top: target, behavior: "auto" });
+}
+
+export { handleListKeydown, scrollItemIntoView };

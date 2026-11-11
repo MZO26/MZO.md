@@ -20,7 +20,6 @@ export type QuickSwitchState = {
   activeIndex: number;
   currentDisplayNotes: readonly QuickSwitchDisplayBadge[];
   lastQuery: SearchQuery;
-  currentQueryId: number;
 };
 
 function initQuickSwitcher(editor: Editor) {
@@ -28,7 +27,6 @@ function initQuickSwitcher(editor: Editor) {
     activeIndex: 0,
     currentDisplayNotes: [],
     lastQuery: "",
-    currentQueryId: 0,
   };
   const { switchDialog, switchListEl, switchListSearchInput } = useDialog(
     "switchDialog",
@@ -40,13 +38,13 @@ function initQuickSwitcher(editor: Editor) {
     qsState.activeIndex = 0;
     qsState.currentDisplayNotes = [];
     qsState.lastQuery = "";
-    qsState.currentQueryId = 0;
   }
 
   async function toggleSwitcher() {
     const { activeId, isDirty } = stateStore.getState();
     if (activeId && isDirty) await waitForFlush(activeId);
     if (switchDialog.open) {
+      filterTitles.invalidate();
       resetQuickSwitchState();
       switchListSearchInput.value = "";
       switchDialog.close();
@@ -55,7 +53,7 @@ function initQuickSwitcher(editor: Editor) {
     resetQuickSwitchState();
     switchListSearchInput.value = "";
     const defaults = (await computeDisplayNotes()) ?? [];
-    setDisplay(defaults, qsState);
+    await setDisplay(defaults, qsState);
     if (editor.isFocused) editor.commands.blur();
     switchDialog.showModal();
     // wait for visibility transition to focus correctly
@@ -80,7 +78,7 @@ function initQuickSwitcher(editor: Editor) {
     const optionEl = event.target.closest<HTMLDivElement>("[data-index]");
     if (!optionEl?.dataset["index"]) return;
     qsState.activeIndex = Number(optionEl.dataset["index"]);
-    selectActive(qsState, event);
+    void selectActive(qsState, event).catch(rendererLogger.appError);
   }
 
   const debouncedTitleFilter = debounce((e: Event) => {

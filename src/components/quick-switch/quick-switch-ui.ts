@@ -1,6 +1,7 @@
 import { editorCommands } from "@/components/editor/editor-commands";
 import { truncateTitle } from "@/components/editor/editor-generators";
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
+import { scrollItemIntoView } from "@/components/quick-switch/quick-switch-navigation";
 import {
   applyView,
   restoreSidebarScope,
@@ -18,8 +19,6 @@ import {
   createTooltipContent,
 } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
-
-const PAD = 10;
 
 function getSectionLabel(
   section: QuickSwitchDisplayBadge["section"],
@@ -234,12 +233,15 @@ async function selectActive(
       return;
     }
     case "fulltext": {
-      if (stateStore.get("activeId") !== selected.id) {
-        const loading = createGlobalSpinner();
-        await loading.wrap(() =>
-          handleSelectNote(selected.id, { snippet: selected.snippet }),
-        );
-      }
+      const { switchListSearchInput } = useDialog("switchListSearchInput");
+      const normalized = switchListSearchInput.value.trim().slice(1);
+      const loading = createGlobalSpinner();
+      await loading.wrap(() =>
+        handleSelectNote(selected.id, {
+          snippet: selected.snippet,
+          query: normalized,
+        }),
+      );
       restoreSidebarScope();
       return;
     }
@@ -247,25 +249,6 @@ async function selectActive(
       section satisfies never;
       return "";
   }
-}
-
-function scrollItemIntoView(list: HTMLDivElement, item: HTMLDivElement) {
-  const itemTop = item.offsetTop;
-  const itemBottom = itemTop + item.offsetHeight;
-  const viewTop = list.scrollTop;
-  const viewBottom = viewTop + list.clientHeight;
-  let target = viewTop;
-  if (itemTop < viewTop + PAD) {
-    target = Math.max(0, itemTop - PAD);
-  } else if (itemBottom > viewBottom - PAD) {
-    target = itemBottom - PAD - list.clientHeight;
-  }
-  // header is first element
-  if (item === list.children[1]) {
-    list.scrollTop = 0;
-    return;
-  }
-  list.scrollTo({ top: target, behavior: "auto" });
 }
 
 function updateSelection(qsState: QuickSwitchState) {
