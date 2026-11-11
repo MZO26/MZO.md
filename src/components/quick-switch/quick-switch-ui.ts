@@ -19,6 +19,8 @@ import {
 } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
 
+const PAD = 10;
+
 function getSectionLabel(
   section: QuickSwitchDisplayBadge["section"],
   count: Record<QuickSwitchDisplayBadge["section"], number>,
@@ -44,6 +46,8 @@ function getSectionLabel(
       return `Create new note`;
     case "wikilink":
       return `Link note`;
+    case "fulltext":
+      return `Full-text matches`;
     default:
       section satisfies never;
       return "";
@@ -65,49 +69,68 @@ function renderTitleList(qsState: QuickSwitchState) {
   const { switchListEl } = useDialog("switchListEl");
   switchListEl.replaceChildren();
   if (qsState.currentDisplayNotes.length === 0) {
-    const span = createInfoSpan("Nothing to display.", "quick-switch-empty");
-    switchListEl.appendChild(span);
+    switchListEl.appendChild(
+      createInfoSpan("Nothing to display.", "quick-switch-empty"),
+    );
     return;
   }
-  let lastSection: QuickSwitchDisplayBadge["section"] | null = null;
-  const count = getSectionCount(qsState);
   const activeId = stateStore.get("activeId") as Id | null;
+  let lastSection: QuickSwitchDisplayBadge["section"] | null = null;
   for (const [index, item] of qsState.currentDisplayNotes.entries()) {
     if (item.section !== lastSection) {
-      const header = document.createElement("div");
-      header.className = "quick-switch-section-header";
-      header.textContent = getSectionLabel(item.section, count);
-      switchListEl.appendChild(header);
+      switchListEl.appendChild(createSectionHeader(item.section, qsState));
       lastSection = item.section;
     }
-    const optionEl = document.createElement("div");
-    optionEl.className =
-      index === qsState.activeIndex
-        ? "quick-switch-item active"
-        : "quick-switch-item";
-    optionEl.dataset["index"] = String(index);
-    const transformed = createTooltipContent(item.title);
-    const titleEl = createInfoSpan(transformed);
-    optionEl.appendChild(titleEl);
-    optionEl.title = item.title;
-    const isActive = "isActive" in item && Boolean(item.isActive);
-    if (isActive) {
-      optionEl.classList.add("is-command-active");
-    }
-    if (item.section === "tag") {
-      const label = isActive ? ` ${item.count} ✓ ` : String(item.count);
-      optionEl.appendChild(createInfoSpan(label, "quick-switch-command-badge"));
-    } else if (isActive) {
-      optionEl.appendChild(createInfoSpan(" ✓ ", "quick-switch-command-badge"));
-    }
-    optionEl.toggleAttribute(
-      "disabled",
-      (item.section === "command" ||
-        ("commandKey" in item && EXPORT_KEYS.includes(item.commandKey))) &&
-        !activeId,
+    switchListEl.appendChild(
+      createOptionEl(item, index, qsState.activeIndex, activeId),
     );
-    switchListEl.appendChild(optionEl);
   }
+}
+
+function createSectionHeader(
+  section: QuickSwitchDisplayBadge["section"],
+  qsState: QuickSwitchState,
+) {
+  const header = document.createElement("div");
+  header.className = "quick-switch-section-header";
+  header.textContent = getSectionLabel(section, getSectionCount(qsState));
+  return header;
+}
+
+function createOptionEl(
+  item: QuickSwitchDisplayBadge,
+  index: number,
+  activeIndex: number,
+  activeId: Id | null,
+) {
+  const element = document.createElement("div");
+  element.className = "quick-switch-item";
+  if (index === activeIndex) element.classList.add("active");
+  element.dataset["index"] = String(index);
+  element.title = item.title;
+  element.appendChild(createInfoSpan(createTooltipContent(item.title)));
+  const isActive = "isActive" in item && Boolean(item.isActive);
+  if (isActive) element.classList.add("is-command-active");
+  if (item.section === "fulltext") {
+    element.classList.add("has-snippet");
+    const snippetEl = document.createElement("span");
+    snippetEl.className = "quick-switch-item-snippet";
+    snippetEl.innerHTML = item.snippet;
+    element.appendChild(snippetEl);
+  }
+  if (item.section === "tag") {
+    const label = isActive ? ` ${item.count} ✓ ` : String(item.count);
+    element.appendChild(createInfoSpan(label, "quick-switch-command-badge"));
+  } else if (isActive) {
+    element.appendChild(createInfoSpan(" ✓ ", "quick-switch-command-badge"));
+  }
+  element.toggleAttribute(
+    "disabled",
+    (item.section === "command" ||
+      ("commandKey" in item && EXPORT_KEYS.includes(item.commandKey))) &&
+      !activeId,
+  );
+  return element;
 }
 
 async function selectActive(
@@ -210,10 +233,39 @@ async function selectActive(
       restoreSidebarScope();
       return;
     }
+    case "fulltext": {
+      if (stateStore.get("activeId") !== selected.id) {
+        const loading = createGlobalSpinner();
+        await loading.wrap(() =>
+          handleSelectNote(selected.id, { snippet: selected.snippet }),
+        );
+      }
+      restoreSidebarScope();
+      return;
+    }
     default:
       section satisfies never;
       return "";
   }
+}
+
+function scrollItemIntoView(list: HTMLDivElement, item: HTMLDivElement) {
+  const itemTop = item.offsetTop;
+  const itemBottom = itemTop + item.offsetHeight;
+  const viewTop = list.scrollTop;
+  const viewBottom = viewTop + list.clientHeight;
+  let target = viewTop;
+  if (itemTop < viewTop + PAD) {
+    target = Math.max(0, itemTop - PAD);
+  } else if (itemBottom > viewBottom - PAD) {
+    target = itemBottom - PAD - list.clientHeight;
+  }
+  // header is first element
+  if (item === list.children[1]) {
+    list.scrollTop = 0;
+    return;
+  }
+  list.scrollTo({ top: target, behavior: "auto" });
 }
 
 function updateSelection(qsState: QuickSwitchState) {
@@ -225,10 +277,7 @@ function updateSelection(qsState: QuickSwitchState) {
     const isActive = index === qsState.activeIndex;
     item.classList.toggle("active", isActive);
     if (isActive) {
-      item.scrollIntoView({
-        block: "nearest",
-        behavior: "auto",
-      });
+      scrollItemIntoView(switchListEl, item);
     }
   }
 }

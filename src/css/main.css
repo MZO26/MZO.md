@@ -813,7 +813,8 @@ svg.empty-state-icon {
 .quick-switch-dialog {
   margin: 12vh auto auto;
   width: 400px;
-  height: fit-content;
+  max-height: 70vh;
+  padding: 0 5px 15px 5px;
   background: var(--bg-sidebar);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
@@ -832,14 +833,16 @@ svg.empty-state-icon {
 .quick-switch-dialog .input-wrapper {
   max-width: 370px;
   margin: 20px auto 0px auto;
+  flex-shrink: 0;
 }
 
 .quick-switch-list {
-  padding: 15px 5px;
+  padding: 10px 5px;
   height: auto;
   max-height: 400px;
   min-height: 0;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .quick-switch-empty {
@@ -885,6 +888,21 @@ svg.empty-state-icon {
 .quick-switch-item[disabled] {
   opacity: 0.5;
   pointer-events: none;
+}
+
+.quick-switch-item.has-snippet {
+  height: 76px;
+  flex-wrap: wrap;
+  align-content: center;
+  row-gap: 4px;
+}
+
+.quick-switch-item-snippet {
+  flex-basis: 100%;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+  overflow: hidden;
 }
 
 .quick-switch-item > span:first-child {

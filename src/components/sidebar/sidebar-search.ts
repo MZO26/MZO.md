@@ -19,16 +19,24 @@ import { Node as PMNode } from "@tiptap/pm/model";
 
 let currentSearchId = 0;
 
-async function handleSearch(searchInput: SearchQuery) {
+async function handleSearch(
+  searchInput: SearchQuery,
+  options?: { quickSwitchScope?: boolean },
+) {
   const nextQuery = searchInput.trim();
   if (nextQuery.length > MAX_SEARCH_LENGTH) return;
-  const { searchQuery, activeTag } = stateStore.getState();
-  if (nextQuery === searchQuery) return;
-  stateStore.setState({ searchQuery: nextQuery });
-  if (!nextQuery) {
-    restoreSidebarScope();
-    appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: "" });
-    return;
+  const isQuickSwitch = !!options?.quickSwitchScope;
+  if (!isQuickSwitch) {
+    const { searchQuery } = stateStore.getState();
+    if (nextQuery === searchQuery) return;
+    stateStore.setState({ searchQuery: nextQuery });
+    if (!nextQuery) {
+      restoreSidebarScope();
+      appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: "" });
+      return;
+    }
+  } else if (!nextQuery) {
+    return [];
   }
   const searchId = ++currentSearchId;
   const result = await search(nextQuery);
@@ -46,8 +54,11 @@ async function handleSearch(searchInput: SearchQuery) {
       rank: row.rank,
     });
   }
+  if (isQuickSwitch) return data;
+  const { activeTag } = stateStore.getState();
   computeSearchResult(data, noteStore.get("noteIndex"), activeTag);
   appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: nextQuery });
+  return data;
 }
 
 function computeSearchResult(
@@ -71,8 +82,8 @@ function computeSearchResult(
   });
 }
 
-function findExactMatch(id: Id, doc: PMNode) {
-  const raw = noteStore.get("searchSnippets")?.[id];
+function findExactMatch(id: Id, doc: PMNode, snippet?: string) {
+  const raw = snippet ?? noteStore.get("searchSnippets")?.[id];
   if (!raw) return null;
   const marks: string[] = [...raw.matchAll(/<mark[^>]*>(.*?)<\/mark>/g)]
     .map((m) => m[1])
@@ -99,4 +110,4 @@ const debouncedSearch = debounce((e: Event) => {
   handleSearch(value);
 }, DEBOUNCE_MS.very_fast);
 
-export { debouncedSearch, findExactMatch };
+export { debouncedSearch, findExactMatch, handleSearch };

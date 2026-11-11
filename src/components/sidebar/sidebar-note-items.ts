@@ -9,15 +9,29 @@ import DOMPurify from "dompurify";
 
 const getNoteItemClone = createTemplateCloner("noteItemTemplate", isDiv);
 
-function getSafeSnippet(snippetGenParams: SnippetGenParams) {
-  const { item, note, snippets } = snippetGenParams;
-  const contentEl = item.querySelector<HTMLDivElement>(".note-content");
-  if (!contentEl) return;
+function sanitizeSnippets({
+  note,
+  snippets,
+}: Pick<SnippetGenParams, "note" | "snippets">) {
   const searchSnippet = snippets?.[note.id];
   const displaySnippet = searchSnippet ?? note.snippet;
   const safe = DOMPurify.sanitize(displaySnippet, DOMPURIFY_CONFIG);
-  item.classList.toggle("search", !!searchSnippet);
-  contentEl.innerHTML = safe;
+  return safe;
+}
+
+function applySnippet({
+  item,
+  searchSnippet,
+  isSearch,
+}: {
+  item: HTMLDivElement;
+  searchSnippet: string | null;
+  isSearch: boolean;
+}) {
+  const contentEl = item.querySelector<HTMLDivElement>(".note-content");
+  if (!contentEl) return;
+  contentEl.innerHTML = searchSnippet ?? "";
+  item.classList.toggle("search", isSearch);
 }
 
 function createNoteItem(note: NoteListItem) {
@@ -34,4 +48,4 @@ function createNoteItem(note: NoteListItem) {
   return item;
 }
 
-export { createNoteItem, getSafeSnippet };
+export { applySnippet, createNoteItem, sanitizeSnippets };

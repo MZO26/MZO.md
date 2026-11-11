@@ -1,6 +1,7 @@
 import {
+  applySnippet,
   createNoteItem,
-  getSafeSnippet,
+  sanitizeSnippets,
 } from "@/components/sidebar/sidebar-note-items";
 import { localStore } from "@/state/state";
 import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@/utils/constants";
@@ -152,7 +153,9 @@ function renderNoteList(sidebarParams: SidebarParams) {
     : notes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
   for (const note of displayNotes) {
     const item = createNoteItem(note);
-    getSafeSnippet({ item, note, snippets: searchSnippets });
+    const safe = sanitizeSnippets({ note, snippets: searchSnippets });
+    const hasSearchSnippet = !!searchSnippets?.[note.id];
+    applySnippet({ item, searchSnippet: safe, isSearch: hasSearchSnippet });
     if (note.id === activeId) {
       activeElement = item;
     }

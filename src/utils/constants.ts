@@ -1,7 +1,7 @@
 const NAV_KEYS = new Set(["ArrowDown", "ArrowUp", "Enter", "Backspace"]);
 
 const DEBOUNCE_MS = {
-  very_fast: 100,
+  very_fast: 150,
   fast: 200,
   normal: 300,
   slow: 2000,

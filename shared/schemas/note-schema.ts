@@ -131,7 +131,10 @@ const DbCreateSchema = CreateNotePayloadSchema.omit({
 const SearchResultSchema = NoteSchema.pick({
   id: true,
   title: true,
-}).extend({ search_match: QuerySchema, rank: z.number() });
+}).extend({
+  search_match: QuerySchema,
+  rank: z.number(),
+});
 
 const NoteMenuPayloadSchema = z.object({
   selectedIds: IdsSchema,

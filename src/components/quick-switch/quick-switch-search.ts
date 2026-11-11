@@ -7,15 +7,20 @@ import {
 } from "@/components/quick-switch/quick-switch-actions";
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
 import { setDisplay } from "@/components/quick-switch/quick-switch-ui";
+import { sanitizeSnippets } from "@/components/sidebar/sidebar-note-items";
+import { handleSearch } from "@/components/sidebar/sidebar-search";
 import { noteStore } from "@/state/state";
-import type { QuickSwitchDisplayBadge } from "@/utils/types";
+import type {
+  QuickSwitchDisplayBadge,
+  QuickSwitchFullTextItem,
+} from "@/utils/types";
 import {
   isNoteID,
   type Id,
   type NoteListItem,
   type SearchQuery,
 } from "@shared/schemas/note-schema";
-import { MAX_SEARCH_LENGTH } from "@shared/shared-constants";
+import { MAX_SEARCH_LENGTH, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 
 const WORD_BOUNDARY = /[\s\-_/:.|()[\]{}]/;
 
@@ -53,9 +58,41 @@ async function filterTitles(query: SearchQuery, qsState: QuickSwitchState) {
   const queryId = ++qsState.currentQueryId;
   if (!nextQuery || nextQuery.length > MAX_SEARCH_LENGTH) {
     qsState.lastQuery = "";
-    if (queryId !== qsState.currentQueryId) return;
     const defaults = (await computeDisplayNotes()) ?? [];
+    if (queryId !== qsState.currentQueryId) return;
     await setDisplay(defaults, qsState);
+    return;
+  }
+  if (nextQuery.startsWith("?")) {
+    const query = nextQuery.slice(1).trim();
+    if (query.length < MIN_SEARCH_LENGTH) {
+      await setDisplay([], qsState);
+      return;
+    }
+    const matches = await handleSearch(query, { quickSwitchScope: true });
+    if (queryId !== qsState.currentQueryId || !matches) return;
+    if (qsState.lastQuery === query) return;
+    qsState.lastQuery = query;
+    const noteIndex = noteStore.get("noteIndex");
+    const mapped: QuickSwitchFullTextItem[] = matches
+      .slice(0, 10)
+      .flatMap((m) => {
+        const note = noteIndex.get(m.id);
+        if (!note) return [];
+        return [
+          {
+            id: m.id,
+            title: m.title,
+            snippet: sanitizeSnippets({
+              note,
+              snippets: { [m.id]: m.snippet },
+            }),
+            rank: m.rank,
+            section: "fulltext" as const,
+          },
+        ];
+      });
+    await setDisplay(mapped, qsState);
     return;
   }
   if (nextQuery === qsState.lastQuery) return;

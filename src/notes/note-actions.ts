@@ -492,14 +492,13 @@ async function waitForFlush(id: Id | null) {
  * await handleSelectNote("note-abc123", { skipRecent: true }); // e.g. from "open in new tab"
  */
 
-async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
+async function handleSelectNote(
+  id: Id,
+  options?: { skipRecent?: boolean; snippet?: string },
+) {
   const { editor, editorWrapper } = useCore("editor", "editorWrapper");
   const activeId = stateStore.get("activeId") as Id | null;
   debouncedSaveNote.flush();
-  if (activeId === id) {
-    rendererLogger.devLog("Skipping select");
-    return;
-  }
   stateStore.setState({ activeId: id, hoverId: null });
   localStore.setState((state) => {
     if (activeId) {
@@ -542,16 +541,21 @@ async function handleSelectNote(id: Id, options?: { skipRecent?: boolean }) {
   }
   editor.view.dispatch(editor.state.tr.setMeta("duplicateLinkRefresh", true));
   const globalQuery = stateStore.get("searchQuery");
-  if (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH) {
-    appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: globalQuery });
-    const pos = findExactMatch(id, editor.state.tr.doc);
+  if (
+    options?.snippet ||
+    (globalQuery && globalQuery.trim().length > MIN_SEARCH_LENGTH)
+  ) {
+    if (globalQuery) {
+      appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: globalQuery });
+    }
+    const pos = findExactMatch(id, editor.state.tr.doc, options?.snippet);
     rendererLogger.devLog("Exact match pos:", pos);
     if (pos !== null) {
+      const tr = editor.state.tr;
       editor.view.dispatch(
-        editor.state.tr
-          .setSelection(TextSelection.create(editor.state.tr.doc, pos))
-          .scrollIntoView(),
+        tr.setSelection(TextSelection.create(tr.doc, pos)).scrollIntoView(),
       );
+      editor.view.focus();
     }
     return;
   }

@@ -15,29 +15,27 @@ class NotesSearch {
     this.createVirtualTable();
     this.buildIndex();
     this.prepareStmt();
+    setTimeout(() => this.optimizeFts(), 5000).unref();
   }
 
   private prepareStmt() {
     this.searchStmt = this.db.prepare(`
-    WITH matched_notes AS (
-        SELECT
-        rowid,
-        bm25(notes_fts, 10.0, 1.0) as rank,
-        snippet(notes_fts, -1, '<mark class="active-search-highlight">', '</mark>', '...', 12) AS search_match
-        FROM notes_fts
-        WHERE notes_fts MATCH $ftsQuery
-        ORDER BY rank ASC
-        LIMIT 50
-    )
-    SELECT
-        n.id,
-        n.title,
-        m.search_match,
-        m.rank
-    FROM matched_notes m
-    JOIN notes n ON n.rowid = m.rowid
-    ORDER BY m.rank ASC
-    `);
+    SELECT n.id, n.title, 
+    CASE WHEN octet_length(n.plain_text) <= 100000 
+      THEN snippet(notes_fts, 1, '<mark class="active-search-highlight">', '</mark>', '...', 12)
+      ELSE NULL
+    END AS search_match,
+    CASE WHEN octet_length(n.plain_text) > 100000 
+      THEN n.plain_text 
+      ELSE NULL 
+    END AS raw_text,
+    notes_fts.rank AS rank
+    FROM notes_fts
+    JOIN notes n ON n.rowid = notes_fts.rowid
+    WHERE notes_fts MATCH $ftsQuery
+    ORDER BY notes_fts.rank ASC
+    LIMIT 15;
+  `);
   }
 
   private createVirtualTable() {
@@ -87,11 +85,27 @@ class NotesSearch {
         INSERT INTO notes_fts(rowid, title, plain_text)
         VALUES (new.rowid, new.title, new.plain_text);
       END;
+
+      INSERT INTO notes_fts(notes_fts, rank) VALUES('rank', 'bm25(10.0, 1.0)');
+
+      INSERT INTO notes_fts(notes_fts, rank) VALUES('automerge', 8);
     `);
   }
 
   private isRebuilding = false;
   private hasRebuilt = false;
+
+  private optimizeFts() {
+    if (!this.db?.isOpen) return;
+    try {
+      mainLogger.devLog("[FTS5]: Optimizing...");
+      this.db.exec(`
+      INSERT INTO notes_fts(notes_fts) VALUES('optimize');
+    `);
+    } catch (error) {
+      mainLogger.devLog("[FTS5]: Optimize skipped or failed", error);
+    }
+  }
 
   private rebuildIndex() {
     this.db.exec(`
@@ -104,13 +118,29 @@ class NotesSearch {
   }
 
   public search(query: SearchQuery) {
-    const ftsQuery = this.normalizeFTSQuery(query);
-    if (!ftsQuery) return [];
+    const parsed = this.normalizeFTSQuery(query);
+    if (!parsed) return [];
     if (this.isRebuilding) return [];
+    const { ftsQuery, words } = parsed;
     try {
-      return this.searchStmt.all({
+      const rows = this.searchStmt.all({
         $ftsQuery: ftsQuery,
-      }) as SearchResult[];
+      }) as (SearchResult & { raw_text: string })[];
+      const matches: SearchResult[] = [];
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row) continue;
+        const finalSnippet =
+          row.search_match ??
+          this.buildManualSnippet(row.raw_text ?? "", words);
+        matches.push({
+          id: row.id,
+          title: row.title,
+          search_match: finalSnippet,
+          rank: row.rank,
+        });
+      }
+      return matches;
     } catch (error) {
       if (this.hasRebuilt) {
         mainLogger.appError("[FTS5]: Search failed again and is now disabled.");
@@ -133,6 +163,26 @@ class NotesSearch {
     }
   }
 
+  private buildManualSnippet(text: string, words: string[]) {
+    if (words.length === 0) return text.slice(0, 120) + "...";
+    const escaped = words.map(RegExp.escape).join("|");
+    const firstMatchRegex = new RegExp(`(${escaped})`, "i");
+    const match = firstMatchRegex.exec(text);
+    if (!match) return text.slice(0, 120) + "...";
+    const matchIndex = match.index;
+    const start = Math.max(0, matchIndex - 60);
+    const end = Math.min(text.length, matchIndex + 80);
+    const snippet =
+      (start > 0 ? "..." : "") +
+      text.slice(start, end) +
+      (end < text.length ? "..." : "");
+    const highlightRegex = new RegExp(`(${escaped})`, "gi");
+    return snippet.replace(
+      highlightRegex,
+      '<mark class="active-search-highlight">$1</mark>',
+    );
+  }
+
   private normalizeFTSQuery(input: SearchQuery) {
     const trimmed = input.trim();
     if (trimmed.length < MIN_SEARCH_LENGTH) return "";
@@ -141,12 +191,16 @@ class NotesSearch {
       const clean = raw.replace(/"/g, "");
       if (clean) words.push(clean);
     }
-    if (words.length === 0) return "";
-    return words
-      .map((word, index) =>
-        index === words.length - 1 ? `"${word}"*` : `"${word}"`,
-      )
+    const l = words.length;
+    if (l === 0) return "";
+    const ftsQuery = words
+      .map((word, i) => {
+        if (i === l - 1 && word.length >= 3) return `"${word}"*`;
+        return `"${word}"`;
+      })
       .join(" AND ");
+
+    return { ftsQuery, words };
   }
 }
 

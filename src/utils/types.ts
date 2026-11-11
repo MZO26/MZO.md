@@ -97,6 +97,14 @@ type ActionEntry<Section extends string, Key> = {
   isActive: boolean;
 };
 
+type QuickSwitchFullTextItem = {
+  id: Id;
+  title: string;
+  snippet: string;
+  rank: number;
+  section: "fulltext";
+};
+
 type QuickSwitchDisplayCommand =
   | ActionEntry<"command", EditorEventStrings>
   | ActionEntry<"setting", SettingEventStrings>;
@@ -111,7 +119,8 @@ type QuickSwitchDisplayBadge =
       section: "tag";
       count: number;
       isActive?: boolean;
-    };
+    }
+  | QuickSwitchFullTextItem;
 
 type AppIcons = keyof typeof APP_ICONS;
 
@@ -135,6 +144,7 @@ export type {
   MathOptions,
   NoteSection,
   QuickSwitchDisplayBadge,
+  QuickSwitchFullTextItem,
   SelectionParams,
   SidebarParams,
   SnippetGenParams,
