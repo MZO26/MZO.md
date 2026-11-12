@@ -10,8 +10,6 @@ const ZOOMS = [1, 1.1, 1.25] as const;
 
 function getClosestZoom(value: number) {
   return ZOOMS.reduce((closest, current) =>
-    // calculate distance between electron zoom value
-    // and value from zoom array
     Math.abs(current - value) < Math.abs(closest - value) ? current : closest,
   );
 }

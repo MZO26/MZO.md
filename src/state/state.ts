@@ -1,3 +1,4 @@
+import type { EDITOR_WIDTH } from "@/utils/constants";
 import { createLogger } from "@shared/log";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 import { DEFAULT_SETTINGS } from "@shared/shared-constants";
@@ -48,6 +49,7 @@ interface LocalStore {
   cursorPos: Record<Id, number>;
   scrollTop: Record<Id, number>;
   sidebarWidth: number;
+  editorWidth: (typeof EDITOR_WIDTH)[number];
   toolbarCollapsed: boolean;
   sidebarCollapsed: boolean;
   lastOpenNote: Id | null;
@@ -57,6 +59,7 @@ const LOCAL_STORE: Readonly<LocalStore> = {
   cursorPos: {},
   scrollTop: {},
   sidebarWidth: 320,
+  editorWidth: "normal",
   toolbarCollapsed: false,
   sidebarCollapsed: false,
   lastOpenNote: null,

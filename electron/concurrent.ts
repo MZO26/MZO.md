@@ -1,43 +1,69 @@
 import { AppBackendError, AppErrorCode } from "@shared/errors";
 
 /**
- * Processes an array of items with a maximum concurrency limit, preserving
- * result order.
+ * Processes items from any iterable with a bounded concurrency limit,
+ * preserving result order.
  *
  * Spawns at most `concurrency` async workers that pull items from a shared
- * iterator. Results are written to their original index position.
+ * iterator. Each result is written to its sequential index position, so the
+ * returned array mirrors the iteration order of the input.
  *
- * @param items - The items to process.
- * @param concurrency - Maximum number of in-flight operations (must be ≥ 1).
- * @param processItem - Async function called for each item with its original index.
- * @returns An array of results in the same order as `items`.
- * @throws {AppBackendError} If `concurrency` is not a positive integer.
+ * @template T - Type of each input item.
+ * @template R - Type of each processed result.
  *
- * @example
- * const results = await processWithLimit(urls, 5, (url, i) => fetchFile(url));
+ * @param items - Any iterable collection (Array, Set, Map, custom iterator).
+ * @param concurrency - Maximum number of in-flight `processItem` calls (must be a positive integer ≥ 1).
+ * @param processItem - Async callback invoked for each item; receives the item
+ *   and its 0-based position in iteration order.
+ * @returns A fully-resolved array of results in the same order as the input iterable.
+ * @throws {AppBackendError} If `concurrency` is not a positive integer
+ *   (thrown with error code `CancelledOperation`).
+ *
+@example
+ * ```ts
+ * const paths = ["./report.pdf", "./invoice.pdf", "./notes.txt"];
+ * // buffers[0] ↔ "./report.pdf", buffers[1] ↔ "./invoice.pdf", …
+ * const buffers = await processWithLimit(paths, 2, async (p) => fs.readFile(p));
+ * ```
  */
 
 async function processWithLimit<T, R>(
-  items: readonly T[],
+  items: Iterable<T>,
   concurrency: number,
   processItem: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
   if (!Number.isInteger(concurrency) || concurrency < 1) {
     throw new AppBackendError(AppErrorCode.CancelledOperation);
   }
-  const results = new Array<R>(items.length);
-  const queue = items.entries();
+  const knownSize = Array.isArray(items)
+    ? items.length
+    : items instanceof Set || items instanceof Map
+      ? items.size
+      : undefined;
+  if (knownSize === 0) return [];
+  const workerCount =
+    knownSize !== undefined ? Math.min(concurrency, knownSize) : concurrency;
+  const iterator = items[Symbol.iterator]();
+  const results: R[] = [];
+  let nextIndex = 0;
   async function worker(): Promise<void> {
-    for (const [index, item] of queue) {
-      results[index] = await processItem(item, index);
+    while (true) {
+      const next = iterator.next();
+      if (next.done) break;
+      const index = nextIndex++;
+      results[index] = await processItem(next.value, index);
     }
   }
   const workers: Promise<void>[] = [];
-  for (let i = 0; i < Math.min(concurrency, items.length); i++) {
+  for (let i = 0; i < workerCount; i++) {
     workers.push(worker());
   }
-  await Promise.all(workers);
-  return results;
+  try {
+    await Promise.all(workers);
+    return results;
+  } finally {
+    iterator.return?.();
+  }
 }
 
 export { processWithLimit };

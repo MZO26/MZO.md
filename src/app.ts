@@ -5,8 +5,9 @@ import { initEditorSearch } from "@/components/editor/editor-search";
 import { initQuickSwitcher } from "@/components/quick-switch/quick-switch-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
-import { initToolbar, initTopToolbar } from "@/components/toolbar/toolbar-init";
+import { initToolbar } from "@/components/toolbar/toolbar-init";
 import { handleSelectNote } from "@/notes/note-actions";
+import { applySettings } from "@/settings/setting-actions";
 import { localStore } from "@/state/state";
 import "@/state/state-init";
 import { initSubscriptions } from "@/state/state-init";
@@ -26,9 +27,8 @@ import {
   useCore,
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
+import { createGlobalSpinner } from "@/utils/ui";
 import { isNoteID } from "@shared/schemas/note-schema";
-import { applySettings } from "./settings/setting-actions";
-import { createGlobalSpinner } from "./utils/ui";
 
 async function initApp() {
   const notesResult = await getAll();
@@ -45,14 +45,12 @@ async function initApp() {
   initTemplateRegistry();
   initUIRegistry();
   initDialogRegistry();
-  const { editor, editorWrapper, editorContainer, appContainer, sidebar } =
-    useCore(
-      "editor",
-      "editorWrapper",
-      "editorContainer",
-      "appContainer",
-      "sidebar",
-    );
+  const { editor, editorWrapper, editorContainer, sidebar } = useCore(
+    "editor",
+    "editorWrapper",
+    "editorContainer",
+    "sidebar",
+  );
   initSubscriptions(sidebar);
   syncStateStore(settingsResult);
   syncNoteStore(notesResult.data);
@@ -60,7 +58,6 @@ async function initApp() {
   initEditorSearch(editor, editorContainer, editorWrapper);
   initListeners();
   initToolbar(editorContainer);
-  initTopToolbar(appContainer);
   startAppClock();
   initGlobalShortcuts();
   initNotesSidebar(sidebar);

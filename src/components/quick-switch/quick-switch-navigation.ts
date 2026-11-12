@@ -5,8 +5,6 @@ import {
 } from "@/components/quick-switch/quick-switch-ui";
 import { NAV_KEYS } from "@/utils/constants";
 
-const PAD = 10;
-
 async function handleListKeydown(
   event: KeyboardEvent,
   qsState: QuickSwitchState,
@@ -54,23 +52,25 @@ function move(delta: number, qsState: QuickSwitchState) {
   updateSelection(qsState);
 }
 
-function scrollItemIntoView(list: HTMLDivElement, item: HTMLDivElement) {
-  const itemTop = item.offsetTop;
-  const itemBottom = itemTop + item.offsetHeight;
-  const viewTop = list.scrollTop;
-  const viewBottom = viewTop + list.clientHeight;
-  let target = viewTop;
-  if (itemTop < viewTop + PAD) {
-    target = Math.max(0, itemTop - PAD);
-  } else if (itemBottom > viewBottom - PAD) {
-    target = itemBottom - PAD - list.clientHeight;
-  }
-  // header is first element
+function scrollItemIntoView(
+  list: HTMLDivElement,
+  item: HTMLDivElement,
+  stickyHeaderHeight = 0,
+  padding = 10,
+) {
   if (item === list.children[1]) {
     list.scrollTop = 0;
     return;
   }
-  list.scrollTo({ top: target, behavior: "auto" });
+  const listRect = list.getBoundingClientRect();
+  const itemRect = item.getBoundingClientRect();
+  const visibleTop = listRect.top + stickyHeaderHeight + padding;
+  const visibleBottom = listRect.bottom - padding;
+  if (itemRect.top < visibleTop) {
+    list.scrollTop -= visibleTop - itemRect.top;
+  } else if (itemRect.bottom > visibleBottom) {
+    list.scrollTop += itemRect.bottom - visibleBottom;
+  }
 }
 
 export { handleListKeydown, scrollItemIntoView };

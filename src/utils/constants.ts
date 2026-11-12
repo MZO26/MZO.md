@@ -167,12 +167,22 @@ const CALLOUT_LABELS = {
   info: "CALLOUT_INFO",
 } as const;
 
+const EDITOR_WIDTH_LABELS = {
+  comfortable: "SET_EDITOR_WIDTH_COMFORTABLE",
+  normal: "SET_EDITOR_WIDTH_NORMAL",
+  wide: "SET_EDITOR_WIDTH_WIDE",
+};
+
+const EDITOR_WIDTH = ["comfortable", "normal", "wide"] as const;
+
 export {
   ALLOWED_TYPES,
   CALLOUT_LABELS,
   CODE_THEME_MAP,
   DEBOUNCE_MS,
   DOMPURIFY_CONFIG,
+  EDITOR_WIDTH,
+  EDITOR_WIDTH_LABELS,
   EXPORT_LABELS,
   IMAGE_MAX_WIDTH,
   IMAGE_QUALITY,

@@ -1,6 +1,6 @@
 import { mainLogger } from "@electron/handler/permission-handler";
 
-function setupGlobalErrorHandling({ ignore = [] }: { ignore: string[] }) {
+function setupGlobalErrorHandling({ ignore = [] }: { ignore?: string[] } = {}) {
   process.on("unhandledRejection", (reason) => {
     const msg = reason instanceof Error ? reason.message : String(reason);
     if (ignore.some((pattern) => msg.includes(pattern))) return;

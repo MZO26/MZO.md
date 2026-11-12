@@ -126,18 +126,17 @@ function handleSidebarChange(sidebarParams: SidebarParams) {
   renderNoteList(sidebarParams);
 }
 
-function renderNoteList(sidebarParams: SidebarParams) {
+function renderNoteList({
+  visibleNotes,
+  query,
+  searchSnippets,
+  activeTag,
+  activeId,
+}: SidebarParams) {
   const { sidebar } = useCore("sidebar");
-  const {
-    visibleNotes: notes,
-    query: searchQuery,
-    searchSnippets,
-    activeTag,
-    activeId,
-  } = sidebarParams;
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
-  const currentMode: FilterMode = searchQuery
+  const currentMode: FilterMode = query
     ? "search"
     : activeTag
       ? "tag"
@@ -147,10 +146,11 @@ function renderNoteList(sidebarParams: SidebarParams) {
     fragment.appendChild(headerElement);
   }
   const isFiltered = !!activeTag;
-  const isLimited = !isFiltered && notes.length > SIDEBAR_ALL_NOTES_LIMIT;
+  const isLimited =
+    !isFiltered && visibleNotes.length > SIDEBAR_ALL_NOTES_LIMIT;
   const displayNotes = isFiltered
-    ? notes
-    : notes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
+    ? visibleNotes
+    : visibleNotes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
   for (const note of displayNotes) {
     const item = createNoteItem(note);
     const safe = sanitizeSnippets({ note, snippets: searchSnippets });
@@ -164,7 +164,7 @@ function renderNoteList(sidebarParams: SidebarParams) {
   if (isLimited) {
     fragment.appendChild(
       createInfoSpan(
-        `Showing ${SIDEBAR_ALL_NOTES_LIMIT} of ${notes.length} notes.\nUse search or tags to narrow the list.`,
+        `Showing ${SIDEBAR_ALL_NOTES_LIMIT} of ${visibleNotes.length} notes.\nUse search or tags to narrow the list.`,
         "note-list-info",
       ),
     );

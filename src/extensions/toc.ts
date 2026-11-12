@@ -45,15 +45,19 @@ function initTableOfContents() {
     const targetId = button.getAttribute("data-target-id");
     rendererLogger.devLog("targetId", targetId);
     if (targetId) {
-      const heading = editorWrapper?.querySelector<HTMLHeadingElement>(
+      if (!editorWrapper) return;
+      const heading = editorWrapper.querySelector<HTMLHeadingElement>(
         `[id="${CSS.escape(targetId)}"]`,
       );
       if (!heading) return;
       const { editor } = useCore("editor");
       const pos = editor.view.posAtDOM(heading, 0);
-      editor.view.dom.focus({ preventScroll: true });
       editor.commands.highlightHeading(pos);
-      heading.scrollIntoView({ behavior: "auto", block: "start" });
+      editor.view.dom.focus({ preventScroll: true });
+      const wrapperRect = editorWrapper.getBoundingClientRect();
+      const headingRect = heading.getBoundingClientRect();
+      const topOffset = 16;
+      editorWrapper.scrollTop += headingRect.top - wrapperRect.top - topOffset;
     }
   });
 

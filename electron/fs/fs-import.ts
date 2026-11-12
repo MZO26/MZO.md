@@ -15,12 +15,12 @@ async function batchImport(filePaths: string[]) {
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "Images");
   await fs.mkdir(imagesFolder, { recursive: true });
-  const uniqueFilePaths = Array.from(new Set<string>(filePaths));
+  const uniqueFilePaths = new Set<string>(filePaths).values();
   const seenFileNames = new Set<string>();
   let duplicateCount = 0;
   let errorCount = 0;
   const imported = await processWithLimit(
-    [...uniqueFilePaths],
+    uniqueFilePaths,
     3,
     async (file): Promise<ImportRequest | null> => {
       try {

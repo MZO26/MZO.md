@@ -1,20 +1,5 @@
 import type { ActionMap } from "@/utils/types";
 
-const TOP_TOOLBAR_ACTIONS: ActionMap = {
-  editorWidth: {
-    action: "app:set-editor-width",
-    icon: "RulerDimensionLine",
-  },
-  focus: {
-    action: "app:toggle-focus-mode",
-    icon: "Focus",
-  },
-  toggleToolbar: {
-    action: "app:toggle-toolbar",
-    icon: "ArrowDownFromLine",
-  },
-};
-
 const TOOLBAR_ACTIONS: ActionMap = {
   toggleSidebar: {
     action: "app:toggle-sidebar",
@@ -123,4 +108,4 @@ const TOOLBAR_ACTIONS: ActionMap = {
   },
 };
 
-export { TOOLBAR_ACTIONS, TOP_TOOLBAR_ACTIONS };
+export { TOOLBAR_ACTIONS };

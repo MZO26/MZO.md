@@ -8,10 +8,7 @@ import {
   buttonMap,
   updateActiveStates,
 } from "@/components/toolbar/toolbar-factory";
-import {
-  setFocusMode,
-  setToolbarCollapsed,
-} from "@/components/toolbar/toolbar-features";
+import { setFocusMode, setToolbarCollapsed } from "@/settings/setting-actions";
 import {
   localStore,
   noteStore,
@@ -33,15 +30,11 @@ function initSubscriptions(sidebar: HTMLDivElement) {
         `.note-item[data-id="${CSS.escape(activeId)}"]`,
       );
       if (noteElement) setActiveItem(noteElement, sidebar);
-      const { mathDialog, settingsDialog } = useDialog(
-        "mathDialog",
-        "settingsDialog",
-      );
+      const { mathDialog } = useDialog("mathDialog");
       if (mathDialog.open) {
         mathDialog.returnValue = "cancel";
         mathDialog.close();
       }
-      if (settingsDialog.open) settingsDialog.close();
     },
     shallowEq,
     { fireImmediately: true },

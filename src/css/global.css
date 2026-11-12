@@ -234,7 +234,12 @@ body {
   background-color: transparent;
   color: var(--text-main);
   transition: color 0.3s ease;
-  overflow: hidden;
+}
+
+html,
+body,
+.app-container {
+  overflow: clip;
 }
 
 button {
@@ -284,60 +289,6 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
-}
-
-select {
-  appearance: base-select;
-  width: 200px;
-  outline: none;
-  text-align: center;
-  color: var(--text-main);
-  background-color: var(--bg-sidebar);
-  font-size: 14px;
-  padding: 8px 36px 8px 12px;
-  border: 1px solid var(--border-color);
-  box-shadow: none;
-  border-radius: 4px;
-  cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition:
-    background-color 0.3s ease,
-    border 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-select::picker(select) {
-  appearance: base-select;
-  overflow: hidden;
-  color: var(--text-muted);
-  background-color: var(--bg-sidebar);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 4px;
-}
-
-select:hover,
-select:focus-within {
-  background-color: var(--accent-hover);
-  border-color: var(--border-color);
-  color: var(--text-main);
-  box-shadow: var(--shadow);
-}
-
-label {
-  font-size: 14px;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-input::selection {
-  background-color: var(--selection-bg);
-  color: var(--text-main);
 }
 
 .lucide {

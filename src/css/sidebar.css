@@ -7,8 +7,6 @@
   position: relative;
   border-right: 1px solid var(--border-color);
   box-shadow: none;
-  container-type: inline-size;
-  container-name: sidebar;
 }
 
 .notes-container.is-drop-target {

@@ -659,9 +659,9 @@ async function handleDuplicateNote(note: Readonly<Note>) {
     updated_at,
     ...rest
   } = note;
-  const outgoingLinkIds = originalLinks
-    .filter((link) => link.dir === "out")
-    .map((link) => link.id);
+  const outgoingLinkIds = originalLinks.flatMap((link) =>
+    link.dir === "out" ? [link.id] : [],
+  );
   const data: CreateNotePayload = {
     ...rest,
     links: outgoingLinkIds,

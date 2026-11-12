@@ -12,7 +12,7 @@ function isSelectionActive() {
 }
 
 function isEditorFocused(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) return;
+  if (!(target instanceof HTMLElement)) return false;
   return !!target.closest(".ProseMirror");
 }
 

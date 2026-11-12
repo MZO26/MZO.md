@@ -106,9 +106,10 @@ function createOptionEl(
   element.className = "quick-switch-item";
   if (index === activeIndex) element.classList.add("active");
   element.dataset["index"] = String(index);
-  element.title = item.title;
-  element.appendChild(createInfoSpan(createTooltipContent(item.title)));
-  const isActive = "isActive" in item && Boolean(item.isActive);
+  const formatted = createTooltipContent(item.title);
+  element.title = formatted;
+  element.appendChild(createInfoSpan(formatted));
+  const isActive = "isActive" in item && item.isActive;
   if (isActive) element.classList.add("is-command-active");
   if (item.section === "fulltext") {
     element.classList.add("has-snippet");

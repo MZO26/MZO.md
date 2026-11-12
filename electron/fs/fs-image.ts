@@ -34,7 +34,7 @@ async function handleImageWriteMany(validatedData: ImagePayload[]) {
     }
   }
   await processWithLimit(
-    [...uniqueWrites.values()],
+    uniqueWrites.values(),
     5,
     async ({ filePath, imageBuffer }: UniqueImageWrite) => {
       try {

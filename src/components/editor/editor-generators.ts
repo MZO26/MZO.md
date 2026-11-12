@@ -54,19 +54,18 @@ function extractText(doc: JSONContent) {
 }
 
 function textConverter(plainText: string): JSONContent[] | undefined {
-  if (!plainText) return undefined;
-  const cleanText = plainText
-    .replace(/\r\n?/g, "\n")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-  return cleanText
-    .split("\n")
-    .filter((line) => line.trim() !== "")
-    .map((line) => ({
-      type: "paragraph",
-      content: [{ type: "text", text: line }],
-    }));
+  const cleanText = plainText.trim();
+  if (!cleanText) return undefined;
+  return cleanText.split(/\r?\n/).reduce<JSONContent[]>((acc, rawLine) => {
+    const line = rawLine.trim();
+    if (line !== "") {
+      acc.push({
+        type: "paragraph",
+        content: [{ type: "text", text: line }],
+      });
+    }
+    return acc;
+  }, []);
 }
 
 function wrapAsDoc(content: unknown): JSONContent | undefined {

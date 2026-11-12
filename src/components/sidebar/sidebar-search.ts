@@ -85,9 +85,10 @@ function computeSearchResult(
 function findExactMatch(id: Id, doc: PMNode, snippet?: string) {
   const raw = snippet ?? noteStore.get("searchSnippets")?.[id];
   if (!raw) return null;
-  const marks: string[] = [...raw.matchAll(/<mark[^>]*>(.*?)<\/mark>/g)]
-    .map((m) => m[1])
-    .filter((s): s is string => s !== undefined && s.length > 0);
+  const marks: string[] = [];
+  for (const [, text] of raw.matchAll(/<mark[^>]*>(.*?)<\/mark>/g)) {
+    if (text) marks.push(text);
+  }
   if (marks.length === 0) return null;
   const searchTerm = marks.reduce((a, b) => (b.length < a.length ? b : a));
   let foundPos = null as number | null;

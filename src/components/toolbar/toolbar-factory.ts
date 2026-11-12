@@ -9,7 +9,6 @@ import type {
 } from "@/utils/types";
 import { createIconButton } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
-import { APP_EVENTS } from "@shared/shared-constants";
 
 let cachedActions: [string, Action][] | null = null;
 let buttonMap = new Map<string, HTMLButtonElement>();
@@ -82,19 +81,6 @@ function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
       updateActiveStates({ buttonElements: buttonMap, actions, editor });
     }
   });
-  appEvents.on(APP_EVENTS.TOGGLE_TOOLBAR, async () => {
-    localStore.setState((state) => ({
-      ...state,
-      toolbarCollapsed: !state.toolbarCollapsed,
-    }));
-  });
-}
-
-function buildTopToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
-  container.replaceChildren();
-  const { fragment, buttonMap } = createToolbarFragment(actions);
-  container.appendChild(fragment);
-  return buttonMap;
 }
 
 function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
@@ -111,7 +97,6 @@ function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
 
 export {
   buildToolbarMenu,
-  buildTopToolbarMenu,
   buttonMap,
   setupToolbarListeners,
   updateActiveStates,

@@ -27,9 +27,6 @@ export const CodeblockHandler = Extension.create({
           const isCloser = CLOSERS.includes(key);
           const opener = isOpener(key) ? key : undefined;
           const closeChar = opener ? KEY_MAP[opener] : "";
-          // empty selection combined with input of
-          // closer char and the char after also is a
-          // closer -> skip char and move text-selection
           if (empty && isCloser && charAfter === key) {
             if (dispatch) {
               tr.setSelection(TextSelection.create(tr.doc, from + 1));

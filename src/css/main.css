@@ -319,78 +319,15 @@
     transform 0.3s ease;
 }
 
-.toolbar-hover-zone {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  -webkit-app-region: no-drag;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.top-toolbar-dots {
-  position: absolute;
-  top: 10px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background-color: var(--text-muted);
-  box-shadow:
-    -10px 0 0 0 var(--text-muted),
-    10px 0 0 0 var(--text-muted);
-  transition: opacity 0.2s ease;
-}
-
-.toolbar-hover-zone:hover .top-toolbar-dots {
-  opacity: 0;
-}
-
-.top-toolbar {
-  opacity: 0;
-  visibility: hidden;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 0;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  border-radius: 10px;
-  cursor: pointer;
-  justify-content: center;
-  margin: 0 auto;
-  width: max-content;
-  transition:
-    opacity 0.3s ease-in-out,
-    visibility 0.3s ease-in-out;
-}
-
-.toolbar-hover-zone:hover .top-toolbar {
-  opacity: 1;
-  visibility: visible;
-}
-
-.top-toolbar > button {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
-  -webkit-app-region: no-drag;
-}
-
-.app-container[data-width="comfortable"] .ProseMirror,
-.app-container[data-width="comfortable"].top-toolbar {
+.app-container[data-width="comfortable"] .ProseMirror {
   max-width: min(80ch, 100%);
 }
 
-.app-container[data-width="normal"] .ProseMirror,
-.app-container[data-width="normal"] .top-toolbar {
+.app-container[data-width="normal"] .ProseMirror {
   max-width: min(95ch, 100%);
 }
 
-.app-container[data-width="wide"] .ProseMirror,
-.app-container[data-width="wide"] .top-toolbar {
+.app-container[data-width="wide"] .ProseMirror {
   max-width: min(110ch, 100%);
 }
 
@@ -446,11 +383,6 @@
   transition:
     opacity 0.3s ease,
     transform 0.3s ease;
-}
-
-.app-container.collapsed .toolbar-hover-zone,
-.app-container.focus .toolbar-hover-zone {
-  padding-right: 0px;
 }
 
 .editor-header {
@@ -606,28 +538,6 @@ svg.empty-state-icon {
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.app-pin-btn {
-  -webkit-app-region: no-drag;
-  min-height: 0 !important;
-  min-width: 0 !important;
-  height: 20px;
-  width: 20px;
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.pin {
-  color: var(--pin-color);
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
-}
-
-.pin .lucide {
-  color: inherit;
 }
 
 .toc {
@@ -811,6 +721,8 @@ svg.empty-state-icon {
 }
 
 .quick-switch-dialog {
+  display: flex;
+  flex-direction: column;
   margin: 12vh auto auto;
   width: 400px;
   max-height: 70vh;
@@ -837,9 +749,11 @@ svg.empty-state-icon {
 }
 
 .quick-switch-list {
+  flex: 1 1 auto;
   padding: 10px 5px;
   height: auto;
   max-height: 400px;
+  min-height: 150px;
   min-height: 0;
   overflow-y: auto;
   scrollbar-gutter: stable;
@@ -963,13 +877,6 @@ svg.empty-state-icon {
 @keyframes spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@container (max-width: 450px) {
-  .top-toolbar,
-  .top-toolbar-dots {
-    display: none;
   }
 }
 

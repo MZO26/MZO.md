@@ -58,35 +58,34 @@ export const DropHandler = Extension.create({
         props: {
           handleDrop(view, event, _slice, moved) {
             if (moved) return false;
-            const files = Array.from(event.dataTransfer?.files ?? []);
-            if (files.length === 0) return false;
+            const files = event.dataTransfer?.files;
+            if (!files || files.length === 0) return false;
             const coords = view.posAtCoords({
               left: event.clientX,
               top: event.clientY,
             });
-            const dropCandidates = files
+            const dropCandidates = Iterator.from(files)
               .filter(
-                (file) =>
-                  ALLOWED_TYPES.includes(file.type) ||
-                  isValidExtension(getExtension(file.name)),
+                (f) =>
+                  ALLOWED_TYPES.includes(f.type) ||
+                  isValidExtension(getExtension(f.name)),
               )
-              .slice(0, MAX_DROP_LENGTH);
+              .take(MAX_DROP_LENGTH)
+              .toArray();
             if (dropCandidates.length === 0) return false;
             event.preventDefault();
             const dropPos = coords?.pos ?? editor.state.selection.from;
+            const { images = [], content = [] } = Object.groupBy(
+              dropCandidates,
+              (f) => (ALLOWED_TYPES.includes(f.type) ? "images" : "content"),
+            );
             void (async () => {
               try {
-                const imageFiles = dropCandidates.filter((file) =>
-                  ALLOWED_TYPES.includes(file.type),
-                );
-                const contentFiles = dropCandidates.filter(
-                  (file) => !ALLOWED_TYPES.includes(file.type),
-                );
-                if (imageFiles.length > 0) {
-                  await processAndInsertImages(imageFiles, editor, dropPos);
+                if (images.length > 0) {
+                  await processAndInsertImages(images, editor, dropPos);
                 }
-                if (contentFiles.length > 0) {
-                  await processDroppedFiles(editor, contentFiles, dropPos);
+                if (content.length > 0) {
+                  await processDroppedFiles(editor, content, dropPos);
                 }
               } catch (error) {
                 rendererLogger.appError(

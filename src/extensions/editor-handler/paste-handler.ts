@@ -62,7 +62,7 @@ const blockPatterns = [
 ];
 
 export const PasteHandler = Extension.create({
-  name: "PasteHandler", // Tipp: In Tiptap nutzt man meist camelCase ("pasteHandler")
+  name: "PasteHandler",
 
   addProseMirrorPlugins() {
     const editor = this.editor;
@@ -72,46 +72,39 @@ export const PasteHandler = Extension.create({
         props: {
           handlePaste(_view, event) {
             const clipboardData = event.clipboardData;
-            if (!clipboardData) return false;
-            const files = Array.from(clipboardData.files ?? []);
-            if (files.length > 0) {
-              const candidates = files
-                .filter(
-                  (f) =>
-                    ALLOWED_TYPES.includes(f.type) ||
-                    isValidExtension(getExtension(f.name)),
-                )
-                .slice(0, MAX_DROP_LENGTH);
-              if (candidates.length > 0) {
-                event.preventDefault();
-                const pastePos = editor.state.selection.from;
-                const imageFiles = candidates.filter((f) =>
-                  ALLOWED_TYPES.includes(f.type),
-                );
-                const contentFiles = candidates.filter(
-                  (f) => !ALLOWED_TYPES.includes(f.type),
-                );
-                void (async () => {
-                  try {
-                    if (imageFiles.length > 0) {
-                      await processAndInsertImages(
-                        imageFiles,
-                        editor,
-                        pastePos,
-                      );
-                    }
-                    if (contentFiles.length > 0) {
-                      await processDroppedFiles(editor, contentFiles, pastePos);
-                    }
-                  } catch (error) {
-                    rendererLogger.appError(
-                      "[PasteHandler]: File paste processing failed:",
-                      error,
-                    );
+            if (!clipboardData || clipboardData.files.length === 0)
+              return false;
+            const pasteCandidates = Iterator.from(clipboardData.files)
+              .filter(
+                (f) =>
+                  ALLOWED_TYPES.includes(f.type) ||
+                  isValidExtension(getExtension(f.name)),
+              )
+              .take(MAX_DROP_LENGTH)
+              .toArray();
+            if (pasteCandidates.length > 0) {
+              event.preventDefault();
+              const pastePos = editor.state.selection.from;
+              const { images = [], content = [] } = Object.groupBy(
+                pasteCandidates,
+                (f) => (ALLOWED_TYPES.includes(f.type) ? "images" : "content"),
+              );
+              void (async () => {
+                try {
+                  if (images.length > 0) {
+                    await processAndInsertImages(images, editor, pastePos);
                   }
-                })();
-                return true;
-              }
+                  if (content.length > 0) {
+                    await processDroppedFiles(editor, content, pastePos);
+                  }
+                } catch (error) {
+                  rendererLogger.appError(
+                    "[PasteHandler]: File paste processing failed:",
+                    error,
+                  );
+                }
+              })();
+              return true;
             }
             const html = clipboardData.getData("text/html");
             const plainText = clipboardData.getData("text/plain") || "";

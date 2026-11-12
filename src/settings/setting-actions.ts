@@ -7,8 +7,14 @@ import {
   showNotification,
 } from "@/api/api";
 import { triggerSingleExport } from "@/components/sidebar/sidebar-triggers";
-import { settingsStore, stateStore } from "@/state/state";
-import { CODE_THEME_MAP, EXPORT_LABELS, THEME_MAP } from "@/utils/constants";
+import { localStore, settingsStore, stateStore } from "@/state/state";
+import {
+  CODE_THEME_MAP,
+  EDITOR_WIDTH,
+  EDITOR_WIDTH_LABELS,
+  EXPORT_LABELS,
+  THEME_MAP,
+} from "@/utils/constants";
 import { rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import { isFocusActive } from "@/utils/shortcuts";
@@ -24,6 +30,7 @@ import type {
   NoteItemDisplay,
   Theme,
 } from "@shared/schemas/store-schema";
+import type { SETTING_EVENTS } from "@shared/shared-constants";
 import type { ResolvedTheme, Result } from "@shared/shared-types";
 
 const THEME_VALUES = [
@@ -247,11 +254,34 @@ async function openPath() {
   }
 }
 
+function setEditorWidth(width: (typeof EDITOR_WIDTH)[number]) {
+  return {
+    run: () => {
+      const { appContainer } = useCore("appContainer");
+      localStore.setState({ editorWidth: width });
+      appContainer.setAttribute("data-width", width);
+    },
+    isActive: () => localStore.get("editorWidth") === width,
+    label: EDITOR_WIDTH_LABELS[width] as keyof typeof SETTING_EVENTS,
+  };
+}
+
+function setFocusMode(focus: boolean) {
+  const { appContainer } = useCore("appContainer");
+  appContainer.classList.toggle("focus", focus);
+}
+
+function setToolbarCollapsed(collapsed: boolean) {
+  const { appContainer } = useCore("appContainer");
+  appContainer.classList.toggle("toolbar-collapsed", collapsed);
+}
+
 async function applySettings(settings: AppSettings) {
-  const { editor, sidebar, editorWrapper } = useCore(
+  const { editor, sidebar, editorWrapper, appContainer } = useCore(
     "editor",
     "sidebar",
     "editorWrapper",
+    "appContainer",
   );
   await applyAppTheme(settings["theme"]);
   document.documentElement.setAttribute(
@@ -275,6 +305,10 @@ async function applySettings(settings: AppSettings) {
   );
   editorWrapper.setAttribute("data-line-height", settings["line_height"]);
   editor.view.dom.spellcheck = settings["spellcheck"] === true;
+  appContainer.setAttribute(
+    "data-width",
+    localStore.get("editorWidth") ?? "normal",
+  );
 }
 
 async function handleUpdateSettings(settings: Partial<Readonly<AppSettings>>) {
@@ -298,6 +332,9 @@ export {
   handleUpdateSettings,
   openPath,
   restoreDbBackup,
+  setEditorWidth,
+  setFocusMode,
+  setToolbarCollapsed,
   updateCodeTheme,
   updateFontFamily,
   updateFontSize,
