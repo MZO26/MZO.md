@@ -1,108 +1,108 @@
 import type { ActionMap } from "@/utils/types";
 
 const TOOLBAR_ACTIONS: ActionMap = {
-  toggleSidebar: {
+  TOGGLE_SIDEBAR: {
     action: "app:toggle-sidebar",
-    icon: "ArrowLeftFromLine",
+    icon: "SquarePaddingLeft",
   },
-  undo: {
+  UNDO: {
     action: "editor:undo",
     icon: "Undo2",
   },
-  redo: {
+  REDO: {
     action: "editor:redo",
     icon: "Redo2",
   },
-  search: {
+  SEARCH: {
     action: "app:toggle-editor-search",
     icon: "Search",
   },
-  quickSwitch: {
+  QUICK_SWITCH: {
     action: "app:toggle-quick-switch",
     icon: "FileClock",
   },
-  divider1: { type: "divider" },
-  bold: {
+  DIVIDER1: { type: "divider" },
+  BOLD: {
     action: "editor:bold",
     icon: "Bold",
   },
-  italic: {
+  ITALIC: {
     action: "editor:italic",
     icon: "Italic",
   },
-  strike: {
+  STRIKE: {
     action: "editor:strike",
     icon: "Strikethrough",
   },
-  underline: {
+  UNDERLINE: {
     action: "editor:underline",
     icon: "Underline",
   },
-  highlight: {
+  HIGHLIGHT: {
     action: "editor:highlight",
     icon: "Highlighter",
   },
-  mathInline: {
+  MATH_INLINE: {
     action: "editor:math-inline",
     icon: "Sigma",
   },
-  divider2: { type: "divider" },
-  heading1: {
+  DIVIDER2: { type: "divider" },
+  HEADING1: {
     action: "editor:heading1",
     icon: "Heading1",
   },
-  heading2: {
+  HEADING2: {
     action: "editor:heading2",
     icon: "Heading2",
   },
-  heading3: {
+  HEADING3: {
     action: "editor:heading3",
     icon: "Heading3",
   },
-  divider3: { type: "divider" },
-  bulletList: {
+  DIVIDER3: { type: "divider" },
+  BULLET_LIST: {
     action: "editor:bullet-list",
     icon: "List",
   },
-  orderedList: {
+  ORDERED_LIST: {
     action: "editor:ordered-list",
     icon: "ListOrdered",
   },
-  taskList: {
+  TASK_LIST: {
     action: "editor:task-list",
     icon: "ListChecks",
   },
-  blockQuote: {
+  BLOCK_QUOTE: {
     action: "editor:block-quote",
     icon: "TextQuote",
   },
-  divider4: { type: "divider" },
-  inlineCode: {
+  DIVIDER4: { type: "divider" },
+  INLINE_CODE: {
     action: "editor:inline-code",
     icon: "Code",
   },
-  codeBlock: {
+  CODE_BLOCK: {
     action: "editor:code-block",
     icon: "CodeXml",
   },
-  mathBlock: {
+  MATH_BLOCK: {
     action: "editor:math-block",
     icon: "SquareSigma",
   },
-  horizontalRule: {
+  HORIZONTAL_RULE: {
     action: "editor:horizontal-rule",
     icon: "SeparatorHorizontal",
   },
-  divider5: { type: "divider" },
-  link: {
+  DIVIDER5: { type: "divider" },
+  LINK: {
     action: "editor:link",
     icon: "Link",
   },
-  image: {
+  IMAGE: {
     action: "editor:image",
     icon: "Image",
   },
-  table: {
+  TABLE: {
     action: "editor:table",
     icon: "Grid2x2",
   },

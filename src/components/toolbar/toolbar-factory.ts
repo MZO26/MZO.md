@@ -1,5 +1,6 @@
 import { getCommandState } from "@/components/editor/editor-commands";
 import { localStore } from "@/state/state";
+import { withRafSchedule } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import type {
   Action,
@@ -10,8 +11,7 @@ import type {
 import { createIconButton } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 
-let cachedActions: [string, Action][] | null = null;
-let buttonMap = new Map<string, HTMLButtonElement>();
+const buttonMap = new Map<string, HTMLButtonElement>();
 
 function createButton(key: string, item: Action) {
   const btn = createIconButton(item.icon, key);
@@ -29,10 +29,9 @@ function createDivider() {
 function createToolbarFragment(actions: ActionMap) {
   const fragment = document.createDocumentFragment();
   for (const [key, item] of Object.entries(actions)) {
-    if ("type" in item && item.type === "divider") {
+    if (!isAction(item)) {
       fragment.appendChild(createDivider());
     } else {
-      if (!item || !isAction(item)) continue;
       const actionBtn = createButton(key, item);
       fragment.appendChild(actionBtn);
       buttonMap.set(key, actionBtn);
@@ -41,31 +40,34 @@ function createToolbarFragment(actions: ActionMap) {
   return { fragment, buttonMap };
 }
 
-function getActions(actions: ActionMap): [string, Action][] {
-  return (cachedActions ??= Object.entries(actions).filter(
-    (entry): entry is [string, Action] => isAction(entry[1]),
-  ));
-}
-
 function isAction(item: ToolbarItem): item is Action {
   return !("type" in item && item.type === "divider") && "action" in item;
 }
 
-function updateActiveStates(params: ActiveStateParams): void {
-  const { buttonElements, actions, editor } = params;
-  const actionEntries = getActions(actions);
-  for (const [key, item] of actionEntries) {
-    const btn = buttonElements.get(key);
-    if (!btn) continue;
-    const { isActive, isDisabled } = getCommandState(editor, item.action);
-    if (btn.classList.contains("is-active") !== isActive) {
-      btn.classList.toggle("is-active", isActive);
+const updateActiveStates = withRafSchedule(
+  (params: ActiveStateParams): void => {
+    const { buttonElements, actions, editor } = params;
+    const valid = Object.entries(actions).reduce<[string, Action][]>(
+      (acc, [key, value]) => {
+        if (!isAction(value)) return acc;
+        acc.push([key, value]);
+        return acc;
+      },
+      [],
+    );
+    for (const [key, item] of valid) {
+      const btn = buttonElements.get(key);
+      if (!btn) continue;
+      const { isActive, isDisabled } = getCommandState(editor, item.action);
+      if (btn.classList.contains("is-active") !== isActive) {
+        btn.classList.toggle("is-active", isActive);
+      }
+      if (btn.disabled !== isDisabled) {
+        btn.disabled = isDisabled;
+      }
     }
-    if (btn.disabled !== isDisabled) {
-      btn.disabled = isDisabled;
-    }
-  }
-}
+  },
+);
 
 function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
   const { editor } = useCore("editor");
@@ -84,7 +86,7 @@ function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
 }
 
 function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
-  container.addEventListener("click", (e) => {
+  const handleToolbarClick = (e: PointerEvent) => {
     if (!(e.target instanceof Element)) return;
     const btn = e.target.closest<HTMLButtonElement>("[data-action]");
     const key = btn?.getAttribute("data-action");
@@ -92,7 +94,11 @@ function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
     const item = actions[key];
     if (!item || !isAction(item)) return;
     appEvents.emit(item.action);
-  });
+  };
+  container.addEventListener("click", handleToolbarClick);
+  return function unsubscribe() {
+    container.removeEventListener("click", handleToolbarClick);
+  };
 }
 
 export {

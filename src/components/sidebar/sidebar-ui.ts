@@ -201,7 +201,7 @@ function resizeSidebar() {
   let startWidth = 0;
   let currentWidth = 0;
 
-  resizer.addEventListener("pointerdown", (e: PointerEvent) => {
+  const pointerDownHandler = (e: PointerEvent) => {
     isResizing = true;
     startX = e.clientX;
     startWidth = sidebarContainer.getBoundingClientRect().width;
@@ -209,9 +209,8 @@ function resizeSidebar() {
     resizer.setPointerCapture(e.pointerId);
     document.body.classList.add("is-dragging");
     document.body.style.userSelect = "none";
-  });
-
-  document.addEventListener("pointermove", (e: PointerEvent) => {
+  };
+  const pointerMoveHandler = (e: PointerEvent) => {
     if (!isResizing || isUpdatePending) return;
     isUpdatePending = true;
     requestAnimationFrame(() => {
@@ -224,9 +223,8 @@ function resizeSidebar() {
       );
       isUpdatePending = false;
     });
-  });
-
-  document.addEventListener("pointerup", (e: PointerEvent) => {
+  };
+  const pointerUpHandler = (e: PointerEvent) => {
     if (isResizing) {
       isResizing = false;
       if (resizer.hasPointerCapture(e.pointerId)) {
@@ -236,7 +234,15 @@ function resizeSidebar() {
       document.body.style.userSelect = "";
       localStore.setState({ sidebarWidth: currentWidth });
     }
-  });
+  };
+  resizer.addEventListener("pointerdown", pointerDownHandler);
+  document.addEventListener("pointermove", pointerMoveHandler);
+  document.addEventListener("pointerup", pointerUpHandler);
+  return function unsubscribe() {
+    resizer.removeEventListener("pointerdown", pointerDownHandler);
+    document.removeEventListener("pointermove", pointerMoveHandler);
+    document.removeEventListener("pointerup", pointerUpHandler);
+  };
 }
 
 export { handleSidebarChange, resizeSidebar, toggleSidebar, updateSelectionUI };

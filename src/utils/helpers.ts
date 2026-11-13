@@ -206,6 +206,54 @@ function withLatestGuard<A extends unknown[], T>(
   return wrapped;
 }
 
+/** Schedules a callback via `requestAnimationFrame`, collapsing rapid calls into one per frame. */
+/**
+ * Wraps a function so it executes at most once per animation frame.
+ *
+ * Rapid successive calls are coalesced – only the **latest** arguments
+ * are passed to `fn` when the frame fires. Call `.cancel()` to discard
+ * a pending frame and its queued args (e.g. on unmount or panel close).
+ *
+ * @example
+ * const onResize = withRafSchedule((width: number, height: number) => {
+ *   layout(width, height);
+ * });
+ *
+ * window.addEventListener("resize", () => onResize(el.clientWidth, el.clientHeight));
+ * // 30 resize events in one frame → layout() runs ONCE with the final dimensions
+ *
+ * // Discard pending work (e.g. component unmounts):
+ * onResize.cancel();
+ */
+
+function withRafSchedule<A extends unknown[]>(fn: (...args: A) => void) {
+  let rafId: number | null = null;
+  let latestArgs: A | null = null;
+  const scheduled = (...args: A): void => {
+    latestArgs = args;
+    if (rafId !== null) {
+      rendererLogger.devLog("Early return. Callback id found");
+      return;
+    }
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      if (latestArgs !== null) {
+        const argsToUse = latestArgs;
+        latestArgs = null;
+        fn(...argsToUse);
+      }
+    });
+  };
+  scheduled.cancel = (): void => {
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+      latestArgs = null;
+    }
+  };
+  return scheduled;
+}
+
 /** Registry of registered cache-invalidation callbacks. */
 const activeCaches = new Set<() => void>();
 
@@ -415,4 +463,5 @@ export {
   waitForPaint,
   withLatestGuard,
   withPerformanceLog,
+  withRafSchedule,
 };

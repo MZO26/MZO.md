@@ -14,7 +14,6 @@ import {
   isNoteID,
   type Id,
   type Link,
-  type Note,
   type NoteListItem,
 } from "@shared/schemas/note-schema";
 
@@ -24,10 +23,7 @@ function tokenize(text: string): string[] {
   return matches ?? [];
 }
 
-function checkNoteSimilarity(
-  titleA: Note["title"],
-  titleB: Note["title"],
-): number {
+function checkNoteSimilarity(titleA: string, titleB: string) {
   const setA = new Set(tokenize(titleA));
   const setB = new Set(tokenize(titleB));
   if (setA.size === 0 && setB.size === 0) return 1.0;

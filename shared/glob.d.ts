@@ -27,6 +27,10 @@ import type { ImportStats, Result, TableAction } from "@shared/shared-types";
 
 declare global {
   interface Window {
+    env: {
+      platform: "darwin" | "win32" | "linux";
+      isMac: boolean;
+    };
     electronAPI: {
       getPathForFile: (file: File) => string;
       showNotification: (

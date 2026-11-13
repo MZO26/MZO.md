@@ -117,12 +117,23 @@
           <input
             type="search"
             class="search-input-quick-switch"
-            placeholder="Find or create note… (# for tags, > for commands)"
-            title="Find or create note… (# for tags, > for commands)"
+            placeholder="Find or create a note…"
             autofocus
           />
         </div>
         <div class="quick-switch-list"></div>
+        <div class="quick-switch-footer">
+          <div class="qs-hints-left">
+            <span><kbd>?</kbd> Text</span>
+            <span><kbd>#</kbd> Tag</span>
+            <span><kbd>[[</kbd> Link</span>
+            <span><kbd>&gt;</kbd> Cmd</span>
+          </div>
+          <div class="qs-hints-right">
+            <span><kbd data-shortcut="enter"></kbd> Select</span>
+            <span><kbd data-shortcut="shift+enter"></kbd> Create</span>
+          </div>
+        </div>
       </form>
     </dialog>
     <dialog id="delete-dialog" class="delete-dialog">

@@ -103,26 +103,26 @@ function createInfoSpan(
 }
 
 /**
- * Formats a camelCase / PascalCase identifier into human-readable Title Case.
+ * Formats a snake_case identifier into human-readable Title Case.
  *
- * Inserts spaces at letter→uppercase and letter→digit boundaries, then
- * capitalizes the first character. Intended for converting code-style names
- * (e.g. icon keys, data attributes) into display text.
+ * Replaces underscores with spaces, lowercases everything, then
+ * capitalizes the first character of each word. Intended for converting
+ * code-style keys (e.g. action names, data attributes) into display text.
  *
- * @param baseText – The raw identifier or label to format.
+ * @param baseText – The raw snake_case identifier to format.
  * @returns The formatted string.
  *
  * @example
- * createTooltipContent("deleteNote");    // "Delete Note"
- * createTooltipContent("copyLink2");     // "Copy Link 2"
- * createTooltipContent("pin");           // "Pin"
+ * createTooltipContent("SET_EDITOR_WIDTH_WIDE");  // "Set Editor Width Wide"
+ * createTooltipContent("TOGGLE_FOCUS_MODE");      // "Toggle Focus Mode"
+ * createTooltipContent("pin");                    // "Pin"
  */
 
 function createTooltipContent(baseText: string) {
   return baseText
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/([a-zA-Z])(\d)/g, "$1 $2")
-    .replace(/^./, (char) => char.toUpperCase());
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /**

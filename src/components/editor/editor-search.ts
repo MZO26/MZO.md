@@ -159,6 +159,7 @@ function initEditorSearch(
     if (event.key === "Enter") {
       event.preventDefault();
       if (input.value.trim().length <= MIN_SEARCH_LENGTH) return;
+      editor.commands.docSearchSetReplacement(replaceInput.value);
       if (event.altKey && isMod) {
         editor.commands.docSearchReplaceAll();
       } else {
@@ -190,9 +191,7 @@ function initEditorSearch(
       const clickedInput = inputWrapper.contains(event.target);
       const clickedReplace = replaceInputWrapper.contains(event.target);
       const clickedToolbar = event.target.closest("#toolbar");
-      if (clickedInput || clickedReplace || clickedToolbar) {
-        return;
-      }
+      if (clickedInput || clickedReplace || clickedToolbar) return;
       event.preventDefault();
       close();
       return;

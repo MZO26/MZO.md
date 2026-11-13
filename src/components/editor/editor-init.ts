@@ -65,8 +65,8 @@ import { createGlobalSpinner, requireElement } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import { MAX_CHARACTERS } from "@shared/shared-constants";
-import { Editor, type JSONContent } from "@tiptap/core";
+import { APP_EVENTS, MAX_CHARACTERS } from "@shared/shared-constants";
+import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
@@ -93,11 +93,11 @@ function initEditor(settings: Partial<Readonly<AppSettings>>): Editor {
       },
     },
     autofocus: true,
-    onFocus: () => appEvents.emit("app:unset-hover"),
+    onFocus: () => appEvents.emit(APP_EVENTS.UNSET_HOVER),
   });
   editor.on("update", ({ transaction }) => {
     if (!transaction.docChanged) return;
-    appEvents.emit("app:save-note");
+    appEvents.emitAsync(APP_EVENTS.SAVE_NOTE);
   });
   return editor;
 }
@@ -116,7 +116,7 @@ function getNoteEditorExtensions() {
     Highlight,
     WikilinkHandler.configure({
       onClick: async (id, title) =>
-        appEvents.emitAsync("app:handle-wikilink-click", { id, title }),
+        appEvents.emitAsync(APP_EVENTS.HANDLE_WIKILINK_CLICK, { id, title }),
     }),
     Placeholder,
     TextMetrics.configure({
@@ -134,7 +134,8 @@ function getNoteEditorExtensions() {
       HTMLAttributes: { loading: "lazy" },
     }),
     NoteTagHandler.configure({
-      onClick: async (id: string) => appEvents.emitAsync("app:apply-view", id),
+      onClick: async (id: string) =>
+        appEvents.emitAsync(APP_EVENTS.APPLY_VIEW, id),
     }),
     Table.configure({
       resizable: true,
@@ -222,30 +223,35 @@ function getNoteEditorExtensions() {
 }
 
 function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
-  registerCommands(editor, editorCommands);
-  appEvents.on("app:save-note", () => {
-    const activeId = stateStore.get("activeId") as Id | null;
-    if (!activeId) return;
-    if (!stateStore.get("isDirty")) stateStore.setState({ isDirty: true });
-    debouncedSaveNote(activeId, false);
-  });
-  appEvents.on("app:unset-hover", () => {
-    if (stateStore.get("hoverId") !== null) {
-      rendererLogger.devLog("Resetting hover");
-      stateStore.setState({ hoverId: null });
-    }
-  });
-  appEvents.on("app:apply-view", async (id: string) => {
-    const normalizedTag = id?.trim().toLowerCase();
-    const { activeId, isDirty } = stateStore.getState();
-    if (!normalizedTag || !activeId) return;
-    const saved = isDirty ? await waitForFlush(activeId) : true;
-    if (!saved) return;
-    await applyView(normalizedTag);
-  });
-  appEvents.on(
-    "app:handle-wikilink-click",
-    async ({ id, title }: { id: Id | null; title: Note["title"] }) => {
+  const unsubCommands = registerCommands(editor, editorCommands);
+  const unsubAppEvents = appEvents.onMany({
+    [APP_EVENTS.SAVE_NOTE]: () => {
+      const activeId = stateStore.get("activeId") as Id | null;
+      if (!activeId) return;
+      if (!stateStore.get("isDirty")) stateStore.setState({ isDirty: true });
+      debouncedSaveNote(activeId, false);
+    },
+    [APP_EVENTS.UNSET_HOVER]: () => {
+      if (stateStore.get("hoverId") !== null) {
+        rendererLogger.devLog("Resetting hover");
+        stateStore.setState({ hoverId: null });
+      }
+    },
+    [APP_EVENTS.APPLY_VIEW]: async (id: string) => {
+      const normalizedTag = id?.trim().toLowerCase();
+      const { activeId, isDirty } = stateStore.getState();
+      if (!normalizedTag || !activeId) return;
+      const saved = isDirty ? await waitForFlush(activeId) : true;
+      if (!saved) return;
+      await applyView(normalizedTag);
+    },
+    [APP_EVENTS.HANDLE_WIKILINK_CLICK]: async ({
+      id,
+      title,
+    }: {
+      id: Id | null;
+      title: Note["title"];
+    }) => {
       if (!id || !isNoteID(id)) {
         const activeId = stateStore.get("activeId") as Id | null;
         if (!activeId) return;
@@ -267,46 +273,47 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
       await loading.wrap(() => handleSelectNote(id));
       restoreSidebarScope();
     },
-  );
-  editorWrapper.addEventListener("contextmenu", (event: MouseEvent) => {
+  });
+  const handleContextMenu = (event: MouseEvent) => {
     if (!(event.target instanceof HTMLElement)) return;
     if (event.target.closest(".selectedCell")) {
       event.preventDefault();
       window.electronAPI.showContextMenu("table");
     }
-  });
-  editorWrapper.addEventListener(
-    "error",
-    (event: ErrorEvent) => {
-      if (!(event.target instanceof HTMLImageElement)) return;
-      if (event.target.tagName === "IMG") {
-        const pos = editor.view.posAtDOM(event.target, 0);
-        if (pos !== null) {
-          editor
-            .chain()
-            .focus()
-            .deleteRange({ from: pos, to: pos + 1 })
-            .run();
-        }
-      }
-    },
-    true,
-  );
+  };
+  const handleErrorEvent = (event: ErrorEvent) => {
+    if (!(event.target instanceof HTMLImageElement)) return;
+    const pos = editor.view.posAtDOM(event.target, 0);
+    if (pos !== null) {
+      editor
+        .chain()
+        .focus()
+        .deleteRange({ from: pos, to: pos + 1 })
+        .run();
+    }
+  };
+  editorWrapper.addEventListener("contextmenu", handleContextMenu);
+  editorWrapper.addEventListener("error", handleErrorEvent, { capture: true });
+  return function unsubscribe() {
+    unsubAppEvents();
+    unsubCommands();
+    editorWrapper.removeEventListener("contextmenu", handleContextMenu);
+    editorWrapper.removeEventListener("error", handleErrorEvent, {
+      capture: true,
+    });
+  };
 }
 
-type EditorInitContentParams = {
+async function initEditorContent({
+  note,
+  editor,
+}: {
   note: Readonly<Note>;
   editor: Editor;
-};
-
-async function checkNoteSize(doc: JSONContent) {
-  rendererLogger.devLog(`Node amount: ${doc.content?.length}`);
-  if (doc.content && doc.content.length > NODE_BASELINE) await sleep(YIELD_MS);
-}
-
-async function initEditorContent({ note, editor }: EditorInitContentParams) {
+}) {
   try {
-    await checkNoteSize(note.content);
+    if (note.content.content && note.content.content.length > NODE_BASELINE)
+      await sleep(YIELD_MS);
     recreateEditorState(editor, note.content);
     resolveDocLinks(editor);
     updateStats(editor);

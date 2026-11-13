@@ -6,19 +6,17 @@ import {
   Flame,
   ListChecks,
   Pencil,
+  SquarePaddingLeft,
   TriangleAlert,
   Zap,
 } from "lucide";
 
 import {
   ArchiveRestore,
-  ArrowDownFromLine,
-  ArrowLeftFromLine,
   Bold,
   Code,
   CodeXml,
   Database,
-  DatabaseBackup,
   FileClock,
   FileQuestion,
   FileSymlink,
@@ -63,6 +61,7 @@ const APP_ICONS = {
   Zap,
   ListChecks,
   ChevronRight,
+  SquarePaddingLeft,
   ChevronUp,
   ChevronDown,
   Database,
@@ -100,14 +99,11 @@ const APP_ICONS = {
   TextQuote,
   Code,
   CodeXml,
-  DatabaseBackup,
   SeparatorHorizontal,
   Highlighter,
   Grid2x2,
   X,
   Image,
-  ArrowLeftFromLine,
-  ArrowDownFromLine,
 } as const;
 
 function renderIcons(scope: Document | HTMLElement = document): void {

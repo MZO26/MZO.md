@@ -1,5 +1,6 @@
 import { MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Extension, type CommandProps } from "@tiptap/core";
+import { Node as PMNode } from "@tiptap/pm/model";
 import type { EditorState } from "@tiptap/pm/state";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -60,6 +61,38 @@ const createDecorations = (
   );
 };
 
+function buildRegex(query: string, caseSensitive: boolean): RegExp | null {
+  if (!query) return null;
+  const flags = caseSensitive ? "g" : "gi";
+  const isRegexLiteral =
+    query.length > 2 && query.startsWith("/") && query.endsWith("/");
+  if (isRegexLiteral) {
+    const pattern = query.slice(1, -1);
+    try {
+      return new RegExp(pattern, flags);
+    } catch {
+      return null;
+    }
+  }
+  return new RegExp(RegExp.escape(query), flags);
+}
+
+function getReplacement(
+  doc: PMNode,
+  result: DocSearchRange,
+  query: string,
+  replacement: string,
+  caseSensitive: boolean,
+): string {
+  if (query.length <= 2 || !query.startsWith("/") || !query.endsWith("/")) {
+    return replacement;
+  }
+  const regex = buildRegex(query, caseSensitive);
+  return regex
+    ? doc.textBetween(result.from, result.to).replace(regex, replacement)
+    : replacement;
+}
+
 const getMatchesAndDecorations = (
   state: EditorState,
   storage: DocSearchStorage,
@@ -69,12 +102,28 @@ const getMatchesAndDecorations = (
     storage.activeIndex = -1;
     return { results: [], decorations: DecorationSet.empty };
   }
-  const flags = options.caseSensitive ? "g" : "gi";
-  const escaped = new RegExp(RegExp.escape(storage.query), flags);
+  const r = buildRegex(storage.query, options.caseSensitive ?? false);
+  if (!r) return { results: [], decorations: DecorationSet.empty };
   const results: DocSearchRange[] = [];
   state.doc.descendants((node, pos) => {
+    const wikilink = node.type.schema.nodes["wikilink"];
+    const noteTag = node.type.schema.nodes["noteTag"];
+    if (node.type.name === wikilink?.name || node.type.name === noteTag?.name) {
+      const rawText = String(node.attrs?.["title"] ?? node.attrs?.["id"] ?? "");
+      if (!rawText) return false;
+      const searchableText =
+        node.type.name === noteTag?.name ? `#${rawText}` : `[[${rawText}]]`;
+      if (searchableText.search(r) !== -1) {
+        results.push({
+          from: pos,
+          to: pos + node.nodeSize,
+        });
+      }
+      return false;
+    }
     if (!node.isText || !node.text) return true;
-    for (const match of node.text.matchAll(escaped)) {
+    for (const match of node.text.matchAll(r)) {
+      if (match[0].length === 0 || match.index === undefined) continue;
       results.push({
         from: pos + match.index,
         to: pos + match.index + match[0].length,
@@ -202,7 +251,14 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           const result = storage.results[storage.activeIndex];
           if (!result) return false;
           if (dispatch) {
-            tr.insertText(storage.replacement, result.from, result.to);
+            const text = getReplacement(
+              tr.doc,
+              result,
+              storage.query,
+              storage.replacement,
+              this.options.caseSensitive ?? false,
+            );
+            tr.insertText(text, result.from, result.to);
           }
           return true;
         },
@@ -215,9 +271,15 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           if (dispatch) {
             for (let i = results.length - 1; i >= 0; i--) {
               const result = results[i];
-              if (result) {
-                tr.insertText(storage.replacement, result.from, result.to);
-              }
+              if (!result) continue;
+              const text = getReplacement(
+                tr.doc,
+                result,
+                storage.query,
+                storage.replacement,
+                this.options.caseSensitive ?? false,
+              );
+              tr.insertText(text, result.from, result.to);
             }
           }
           return true;

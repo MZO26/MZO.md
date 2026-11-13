@@ -40,6 +40,10 @@ function subscribe<A extends unknown[]>(
 }
 if (process.contextIsolated) {
   try {
+    contextBridge.exposeInMainWorld("env", {
+      platform: process.platform,
+      isMac: process.platform === "darwin",
+    });
     contextBridge.exposeInMainWorld("electronAPI", {
       getPathForFile: (file: File) => webUtils.getPathForFile(file),
       showNotification: (

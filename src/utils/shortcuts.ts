@@ -46,11 +46,6 @@ function initGlobalShortcuts() {
       appEvents.emit(APP_EVENTS.TOGGLE_SIDEBAR);
       return;
     }
-    if (isMod && key === "w") {
-      e.preventDefault();
-      appEvents.emit(APP_EVENTS.SET_EDITOR_WIDTH);
-      return;
-    }
     if (isMod && key === "g") {
       e.preventDefault();
       appEvents.emit(APP_EVENTS.FOCUS_GLOBAL_SEARCH);

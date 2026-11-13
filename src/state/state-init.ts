@@ -3,7 +3,7 @@ import { updateHover } from "@/components/sidebar/sidebar-navigation";
 import { updateSelection } from "@/components/sidebar/sidebar-selection";
 import { toggleSidebar } from "@/components/sidebar/sidebar-ui";
 import { sidebarListener } from "@/components/sidebar/sidebar-views";
-import { TOOLBAR_ACTIONS } from "@/components/toolbar/toolbar-actions-init";
+import { TOOLBAR_ACTIONS } from "@/components/toolbar/toolbar-actions";
 import {
   buttonMap,
   updateActiveStates,

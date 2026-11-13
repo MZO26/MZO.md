@@ -43,7 +43,7 @@ async function processWithLimit<T, R>(
   if (knownSize === 0) return [];
   const workerCount =
     knownSize !== undefined ? Math.min(concurrency, knownSize) : concurrency;
-  const iterator = items[Symbol.iterator]();
+  const iterator = Iterator.from(items);
   const results: R[] = [];
   let nextIndex = 0;
   async function worker(): Promise<void> {

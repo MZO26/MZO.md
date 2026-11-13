@@ -12,13 +12,16 @@ import { settingsCommands } from "@/settings/settings-commands";
 import { settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
 import { useCore, useDialog } from "@/utils/registry";
-import type { QuickSwitchDisplayBadge } from "@/utils/types";
+import type { QuickSwitchDisplayBadge, ShortcutToken } from "@/utils/types";
 import {
   createGlobalSpinner,
   createInfoSpan,
   createTooltipContent,
 } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
+
+const IS_MAC: boolean =
+  window.env?.isMac ?? navigator.userAgent.includes("Mac");
 
 function getSectionLabel(
   section: QuickSwitchDisplayBadge["section"],
@@ -115,6 +118,7 @@ function createOptionEl(
     element.classList.add("has-snippet");
     const snippetEl = document.createElement("span");
     snippetEl.className = "quick-switch-item-snippet";
+    // already sanitized via dompurify
     snippetEl.innerHTML = item.snippet;
     element.appendChild(snippetEl);
   }
@@ -275,4 +279,34 @@ async function setDisplay(
   renderTitleList(qsState);
 }
 
-export { selectActive, setDisplay, updateSelection };
+const KEY_LABELS: Record<ShortcutToken, string> = {
+  mod: IS_MAC ? "⌘" : "Ctrl+",
+  alt: IS_MAC ? "⌥" : "Alt+",
+  shift: "⇧",
+  enter: "↵",
+};
+
+function formatShortcut(combo: string): string {
+  return combo
+    .toLowerCase()
+    .split("+")
+    .map((part) => {
+      const k = part.trim();
+      return k in KEY_LABELS ? KEY_LABELS[k as ShortcutToken] : k.toUpperCase();
+    })
+    .join("");
+}
+
+function setShortcuts(root: ParentNode = document) {
+  for (const element of root.querySelectorAll<HTMLElement>(
+    "kbd[data-shortcut]",
+  )) {
+    const shortcut = element.dataset["shortcut"];
+    if (shortcut) {
+      element.textContent = formatShortcut(shortcut);
+      element.removeAttribute("data-shortcut");
+    }
+  }
+}
+
+export { selectActive, setDisplay, setShortcuts, updateSelection };

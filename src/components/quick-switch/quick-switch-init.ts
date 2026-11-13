@@ -4,6 +4,7 @@ import { filterTitles } from "@/components/quick-switch/quick-switch-search";
 import {
   selectActive,
   setDisplay,
+  setShortcuts,
 } from "@/components/quick-switch/quick-switch-ui";
 import { waitForFlush } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
@@ -33,6 +34,8 @@ function initQuickSwitcher(editor: Editor) {
     "switchListEl",
     "switchListSearchInput",
   );
+
+  setShortcuts(switchDialog);
 
   function resetQuickSwitchState() {
     qsState.activeIndex = 0;
@@ -68,7 +71,7 @@ function initQuickSwitcher(editor: Editor) {
       (event.key === "p" || event.key === "P");
     if (isEscape || isCtrlP) {
       event.preventDefault();
-      toggleSwitcher();
+      void toggleSwitcher().catch(rendererLogger.appError);
     }
   }
 
@@ -88,16 +91,25 @@ function initQuickSwitcher(editor: Editor) {
     void filterTitles(value, qsState).catch(rendererLogger.devLog);
   }, DEBOUNCE_MS.very_fast);
 
+  const onListKeydown = (e: KeyboardEvent) =>
+    handleListKeydown(e, qsState, switchDialog);
+
   switchListSearchInput.addEventListener("input", debouncedTitleFilter);
-  document.addEventListener("keydown", (e: KeyboardEvent) =>
-    handleListKeydown(e, qsState, switchDialog),
-  );
+
+  document.addEventListener("keydown", onListKeydown);
   switchListEl.addEventListener("click", handleListClick);
   document.addEventListener("keydown", handleDocumentKeydown);
-  appEvents.on(
+  const unsubAppEvents = appEvents.on(
     APP_EVENTS.TOGGLE_QUICK_SWITCH,
     async () => await toggleSwitcher(),
   );
+  return function unsubscribe() {
+    unsubAppEvents();
+    switchListSearchInput.removeEventListener("input", debouncedTitleFilter);
+    switchListEl.removeEventListener("click", handleListClick);
+    document.removeEventListener("keydown", onListKeydown);
+    document.removeEventListener("keydown", handleDocumentKeydown);
+  };
 }
 
 export { initQuickSwitcher };

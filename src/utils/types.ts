@@ -132,6 +132,8 @@ type MappedMatches = Omit<SearchResult, "search_match"> & {
 
 type ExportFormat = keyof typeof EXPORT_LABELS;
 
+type ShortcutToken = "mod" | "shift" | "alt" | "enter";
+
 export type {
   Action,
   ActionMap,
@@ -146,6 +148,7 @@ export type {
   QuickSwitchDisplayBadge,
   QuickSwitchFullTextItem,
   SelectionParams,
+  ShortcutToken,
   SidebarParams,
   SnippetGenParams,
   ToolbarItem,
