@@ -118,13 +118,13 @@ function createInfoSpan(
  * createTooltipContent("pin");                    // "Pin"
  */
 
-function createTooltipContent(baseText: string) {
+function createTooltipContent(baseText: string): string {
   return baseText
-    .replace(/_/g, " ")
+    .replace(/[\s_]+/g, " ")
+    .trim()
     .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    .replace(/(^|\s)\p{L}/gu, (match) => match.toUpperCase());
 }
-
 /**
  * Creates a global loading-spinner controller with a configurable show-delay.
  *

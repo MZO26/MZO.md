@@ -1,5 +1,5 @@
 import type { SettingEventStrings } from "@/settings/settings-commands";
-import type { EXPORT_LABELS } from "@/utils/constants";
+import type { EXPORT_LABELS, NOTE_SECTION } from "@/utils/constants";
 import type { APP_ICONS } from "@/utils/icons";
 import type { WorkerErrorCode } from "@shared/errors";
 import type { EditorEventStrings } from "@shared/event-emitter";
@@ -88,7 +88,7 @@ type ActiveStateParams = {
   editor: Editor;
 };
 
-type NoteSection = "search" | "recent" | "backlink" | "outgoing" | "related";
+type NoteSection = (typeof NOTE_SECTION)[number];
 
 type ActionEntry<Section extends string, Key> = {
   title: string;

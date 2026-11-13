@@ -10,7 +10,7 @@ import { handleCreateNote, handleSelectNote } from "@/notes/note-actions";
 import { EXPORT_KEYS } from "@/settings/setting-actions";
 import { settingsCommands } from "@/settings/settings-commands";
 import { settingsStore, stateStore } from "@/state/state";
-import { UNTAGGED } from "@/utils/constants";
+import { NOTE_SECTION, UNTAGGED } from "@/utils/constants";
 import { useCore, useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayBadge, ShortcutToken } from "@/utils/types";
 import {
@@ -109,9 +109,11 @@ function createOptionEl(
   element.className = "quick-switch-item";
   if (index === activeIndex) element.classList.add("active");
   element.dataset["index"] = String(index);
-  const formatted = createTooltipContent(item.title);
-  element.title = formatted;
-  element.appendChild(createInfoSpan(formatted));
+  const title = NOTE_SECTION.some((s) => s === item.section)
+    ? item.title
+    : createTooltipContent(item.title);
+  element.title = title;
+  element.appendChild(createInfoSpan(title));
   const isActive = "isActive" in item && item.isActive;
   if (isActive) element.classList.add("is-command-active");
   if (item.section === "fulltext") {

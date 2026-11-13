@@ -108,7 +108,7 @@ function getSettingsCommands() {
 }
 
 function getTags(notes: readonly NoteListItem[]): QuickSwitchDisplayBadge[] {
-  const tagCount: Record<string, number> = {};
+  const tagCount = new Map<string, number>();
   let untaggedCount = 0;
   for (const note of notes) {
     if (!note.tags?.length) {
@@ -116,25 +116,23 @@ function getTags(notes: readonly NoteListItem[]): QuickSwitchDisplayBadge[] {
       continue;
     }
     for (const tag of note.tags) {
-      tagCount[tag] = (tagCount[tag] ?? 0) + 1;
+      tagCount.set(tag, (tagCount.get(tag) ?? 0) + 1);
     }
   }
-  return [
-    ...Object.entries(tagCount)
-      .sort((a, b) => b[1] - a[1])
-      .map(([tag, count]) => ({
-        title: tag,
-        section: "tag" as const,
-        count,
-        isActive: !!(settingsStore.get("active_tag") === tag),
-      })),
-    {
-      title: "Untagged",
-      section: "tag" as const,
-      count: untaggedCount,
-      isActive: settingsStore.get("active_tag") === UNTAGGED,
-    },
-  ];
+  const activeTag = settingsStore.get("active_tag");
+  const badge = (
+    title: string,
+    count: number,
+    isActive: boolean,
+  ): QuickSwitchDisplayBadge => ({
+    title,
+    section: "tag",
+    count,
+    isActive,
+  });
+  const entries = [...tagCount.entries()].sort(([, a], [, b]) => b - a);
+  entries.push([UNTAGGED, untaggedCount]);
+  return entries.map(([tag, count]) => badge(tag, count, activeTag === tag));
 }
 
 function toDisplayBadges(

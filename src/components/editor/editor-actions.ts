@@ -140,6 +140,77 @@ function isSafeExternalUrl(url: string) {
   return ALLOWED_PROTOCOLS.has(parsed.protocol);
 }
 
+function resolveMarkConflicts(nodes: JSONContent[]): JSONContent[] {
+  return nodes.map((node) => {
+    if (
+      node.type === "text" &&
+      node.marks?.some((mark) => mark.type === "code")
+    ) {
+      return {
+        ...node,
+        marks: node.marks.filter((mark) => mark.type !== "bold"),
+      };
+    }
+    if (node.content) {
+      return {
+        ...node,
+        content: resolveMarkConflicts(node.content),
+      };
+    }
+    return node;
+  });
+}
+
+function looksLikeMarkdown(text: string) {
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+  if (strongSignals.some((pattern) => pattern.test(trimmed))) return true;
+  let matchCount = 0;
+  for (const pattern of inlinePatterns) {
+    const matches = trimmed.match(pattern);
+    if (matches) matchCount += matches.length;
+    if (matchCount >= 2) return true;
+  }
+  const lines = trimmed.split(/\r?\n/);
+  for (const line of lines) {
+    for (const pattern of blockPatterns) {
+      if (pattern.test(line)) {
+        matchCount++;
+        if (matchCount >= 2) return true;
+        break;
+      }
+    }
+  }
+  return false;
+}
+
+const strongSignals = [
+  /^#{1,6}\s+\S/m,
+  /^```/m,
+  /!\[[^\]\n]*\]\([^)\n]+\)/,
+  /\[[^\]\n]+\]\([^)\n]+\)/,
+  /^\S[^\r\n]*\r?\n(?:={3,}|-{3,})$/m,
+  /^---\r?\n(?:\w[\w-]*:\s?.*\r?\n)+---$/m,
+  /^\s*(?:[-*+]|\d{1,3}[.)])\s+\[[ xX]\]\s+\S/m,
+];
+
+const inlinePatterns = [
+  /\*\*[^*\n]+\*\*/g,
+  /__[^_\n]+__/g,
+  /(?:^|[^\w*])\*[^*\n]+\*(?!\w)/g,
+  /(?:^|[^\w_])_[^_\n]+_(?!\w)/g,
+  /~~[^~\n]+~~/g,
+  /`[^`\n]+`/g,
+];
+
+const blockPatterns = [
+  /^>\s?\S/,
+  /^\s*[-*+]\s+\S/,
+  /^\s*\d{1,3}[.)]\s+\S/,
+  /^\|.+\|$/,
+  /^(-{3,}|\*{3,}|_{3,})$/,
+];
+
 export {
   getCachedEditorExtensions,
   getEditorPos,
@@ -147,6 +218,8 @@ export {
   getMarkdownContentBetween,
   getMarkdownManager,
   isSafeExternalUrl,
+  looksLikeMarkdown,
   recreateEditorState,
+  resolveMarkConflicts,
   setSelection,
 };

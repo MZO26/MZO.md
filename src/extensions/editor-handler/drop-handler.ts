@@ -1,3 +1,4 @@
+import { resolveMarkConflicts } from "@/components/editor/editor-actions";
 import { isValidExtension } from "@/components/sidebar/sidebar-file-drop";
 import { processAndInsertImages } from "@/extensions/overrides/image/image";
 import { normalizeFileContent } from "@/notes/import-actions";
@@ -25,14 +26,14 @@ async function processDroppedFiles(editor: Editor, files: File[], pos: number) {
         content,
         extension,
       });
-      if (json) {
-        if (Array.isArray(json)) {
-          nodesToInsert.push(...json);
-        } else if (json.type === "doc" && Array.isArray(json.content)) {
-          nodesToInsert.push(...json.content);
-        } else {
-          nodesToInsert.push(json);
-        }
+      if (!json) return;
+      if (Array.isArray(json)) {
+        nodesToInsert.push(...json);
+      } else if (json.type === "doc" && Array.isArray(json.content)) {
+        const resolved = resolveMarkConflicts(json.content);
+        nodesToInsert.push(...resolved);
+      } else {
+        nodesToInsert.push(json);
       }
     } catch (error) {
       rendererLogger.appError(

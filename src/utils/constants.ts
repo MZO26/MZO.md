@@ -175,6 +175,14 @@ const EDITOR_WIDTH_LABELS = {
 
 const EDITOR_WIDTH = ["comfortable", "normal", "wide"] as const;
 
+const NOTE_SECTION = [
+  "search",
+  "recent",
+  "backlink",
+  "outgoing",
+  "related",
+] as const;
+
 export {
   ALLOWED_TYPES,
   CALLOUT_LABELS,
@@ -196,6 +204,7 @@ export {
   MOVEABLE_CONTAINERS,
   NAV_KEYS,
   NODE_BASELINE,
+  NOTE_SECTION,
   QUICK_SWITCH_FTS_LIMIT,
   SHARED_KATEX_OPTIONS,
   SIDEBAR_ALL_NOTES_LIMIT,
