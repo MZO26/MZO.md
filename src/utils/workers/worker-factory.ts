@@ -24,10 +24,7 @@ import type { Id } from "@shared/schemas/note-schema";
  */
 
 function createWorker<T, R>(worker: Worker | null) {
-  return function work(
-    payload: T,
-    transferables: Transferable[] = [],
-  ): Promise<WorkerResult<R>> {
+  return function work(payload: T, transferables: Transferable[] = []): Promise<WorkerResult<R>> {
     return new Promise((resolve) => {
       if (!worker) {
         resolve({ success: false, error: WorkerErrorCode.InitializeError });
@@ -39,9 +36,7 @@ function createWorker<T, R>(worker: Worker | null) {
         worker.removeEventListener("message", handleMessage);
         worker.removeEventListener("error", handleError);
       };
-      const handleMessage = (
-        event: MessageEvent<{ id: Id } & WorkerResult<R>>,
-      ) => {
+      const handleMessage = (event: MessageEvent<{ id: Id } & WorkerResult<R>>) => {
         if (event.data.id === id) {
           workerDone();
           if (event.data.success) {

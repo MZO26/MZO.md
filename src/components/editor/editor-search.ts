@@ -18,10 +18,7 @@ function initEditorSearch(
   editorContainer: HTMLDivElement,
   editorWrapper: HTMLDivElement,
 ) {
-  const inputWrapper = requireElement<HTMLDivElement>(
-    ".input-wrapper-editor",
-    editorContainer,
-  );
+  const inputWrapper = requireElement<HTMLDivElement>(".input-wrapper-editor", editorContainer);
   const input = requireElement<HTMLInputElement>(".search-input-editor");
   const replaceInputWrapper = requireElement<HTMLDivElement>(
     ".input-wrapper-editor-replace",
@@ -31,20 +28,12 @@ function initEditorSearch(
     ".replace-input-editor",
     replaceInputWrapper,
   );
-  const chevronBtn = requireElement<HTMLButtonElement>(
-    ".input-wrapper-chevron",
-    inputWrapper,
-  );
-  const searchCount = requireElement<HTMLSpanElement>(
-    ".search-count",
-    inputWrapper,
-  );
+  const chevronBtn = requireElement<HTMLButtonElement>(".input-wrapper-chevron", inputWrapper);
+  const searchCount = requireElement<HTMLSpanElement>(".search-count", inputWrapper);
 
   function updateButtons() {
     const disabled = input.value.trim() === "" || !hasSearchMatch(editor);
-    const buttons = inputWrapper.querySelectorAll<HTMLButtonElement>(
-      ".search-prev, .search-next",
-    );
+    const buttons = inputWrapper.querySelectorAll<HTMLButtonElement>(".search-prev, .search-next");
     for (const button of buttons) {
       button.disabled = disabled;
     }
@@ -99,9 +88,7 @@ function initEditorSearch(
 
   function go(direction: "prev" | "next") {
     const moved =
-      direction === "prev"
-        ? editor.commands.docSearchPrev()
-        : editor.commands.docSearchNext();
+      direction === "prev" ? editor.commands.docSearchPrev() : editor.commands.docSearchNext();
     if (moved) updateCount();
   }
 
@@ -212,16 +199,13 @@ function initEditorSearch(
       close();
     }
   });
-  appEvents.on(
-    APP_EVENTS.SYNC_EDITOR_SEARCH,
-    ({ query = "" }: { query: SearchQuery }) => {
-      const globalQuery = typeof query === "string" ? query : "";
-      applyQuery(globalQuery);
-      if (query.trim().length > MIN_SEARCH_LENGTH) {
-        open(false);
-      }
-    },
-  );
+  appEvents.on(APP_EVENTS.SYNC_EDITOR_SEARCH, ({ query = "" }: { query: SearchQuery }) => {
+    const globalQuery = typeof query === "string" ? query : "";
+    applyQuery(globalQuery);
+    if (query.trim().length > MIN_SEARCH_LENGTH) {
+      open(false);
+    }
+  });
 }
 
 export { initEditorSearch };

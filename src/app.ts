@@ -11,11 +11,7 @@ import { applySettings } from "@/settings/setting-actions";
 import { localStore } from "@/state/state";
 import "@/state/state-init";
 import { initSubscriptions } from "@/state/state-init";
-import {
-  syncNoteStore,
-  syncSettingsStore,
-  syncStateStore,
-} from "@/state/state-sync";
+import { syncNoteStore, syncSettingsStore, syncStateStore } from "@/state/state-sync";
 import { startAppClock } from "@/utils/date";
 import { rendererLogger, withPerformanceLog } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
@@ -34,10 +30,7 @@ async function initApp() {
   const notesResult = await getAll();
   const settingsResult = await getAllSettings();
   if (!notesResult.success) {
-    rendererLogger.appError(
-      "[getAll]: Failed to fetch all notes:",
-      notesResult.error,
-    );
+    rendererLogger.appError("[getAll]: Failed to fetch all notes:", notesResult.error);
     throw new Error(notesResult.error);
   }
   const settings = syncSettingsStore(settingsResult);
@@ -65,10 +58,7 @@ async function initApp() {
   await applySettings(settings);
   renderIcons();
   const lastOpenNoteId = localStore.get("lastOpenNote");
-  if (
-    isNoteID(lastOpenNoteId) &&
-    notesResult.data.some((n) => n.id === lastOpenNoteId)
-  ) {
+  if (isNoteID(lastOpenNoteId) && notesResult.data.some((n) => n.id === lastOpenNoteId)) {
     const loading = createGlobalSpinner(100);
     await loading.wrap(() => handleSelectNote(lastOpenNoteId));
   }

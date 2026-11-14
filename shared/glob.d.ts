@@ -1,9 +1,4 @@
-import type {
-  MenuType,
-  Notification,
-  Url,
-  ZoomAction,
-} from "@shared/schemas/electron-schema";
+import type { MenuType, Notification, Url, ZoomAction } from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
@@ -37,10 +32,7 @@ declare global {
         title: Notification["title"],
         body: Notification["body"],
       ) => Promise<Result<void>>;
-      setTheme: (
-        theme: Theme,
-        focus?: boolean,
-      ) => Promise<Result<Exclude<Theme, "system">>>;
+      setTheme: (theme: Theme, focus?: boolean) => Promise<Result<Exclude<Theme, "system">>>;
       windowPin: () => Promise<Result<boolean>>;
       imageWriteMany: (payload: ImagePayload[]) => Promise<Result<string[]>>;
       onThemeChanged: (
@@ -61,31 +53,17 @@ declare global {
       getById: (id: Id) => Promise<Result<Readonly<Note>>>;
       getManyById: (ids: Id[]) => Promise<Result<readonly Note[]>>;
       create: (payload: CreateNotePayload) => Promise<Result<NoteListItem>>;
-      createMany: (
-        payload: CreateNotePayload[],
-      ) => Promise<Result<readonly NoteListItem[]>>;
-      update: (
-        payload: UpdateNotePayload,
-        flush: boolean,
-      ) => Promise<Result<NoteListItem>>;
+      createMany: (payload: CreateNotePayload[]) => Promise<Result<readonly NoteListItem[]>>;
+      update: (payload: UpdateNotePayload, flush: boolean) => Promise<Result<NoteListItem>>;
       delete: (id: Id) => Promise<Result<void>>;
       deleteMany: (ids: Id[]) => Promise<Result<void>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
       onTriggerExport: (
-        callback: (
-          ids: Id[],
-          extension: ExportContent["extension"],
-        ) => Promise<void>,
+        callback: (ids: Id[], extension: ExportContent["extension"]) => Promise<void>,
       ) => () => void;
-      onTriggerCopyRichText: (
-        callback: (ids: Id[]) => Promise<void>,
-      ) => () => void;
-      onTriggerCopyMarkdown: (
-        callback: (ids: Id[]) => Promise<void>,
-      ) => () => void;
-      noteExportMany: (
-        payload: ExportContent[],
-      ) => Promise<Result<ExportContent[]>>;
+      onTriggerCopyRichText: (callback: (ids: Id[]) => Promise<void>) => () => void;
+      onTriggerCopyMarkdown: (callback: (ids: Id[]) => Promise<void>) => () => void;
+      noteExportMany: (payload: ExportContent[]) => Promise<Result<ExportContent[]>>;
       noteImport: (
         payload: FilePathRequest,
       ) => Promise<Result<{ data: ImportRequest[]; stats: ImportStats }>>;
@@ -93,12 +71,8 @@ declare global {
       onTriggerDuplicate: (callback: (id: Id) => Promise<void>) => () => void;
       onTriggerPin: (callback: (ids: Id[]) => Promise<void>) => () => void;
       onTriggerSelect: (callback: (ids: Id[]) => void) => () => void;
-      onTriggerCopySelectionRichText: (
-        callback: () => Promise<void>,
-      ) => () => void;
-      onTriggerCopySelectionMarkdown: (
-        callback: () => Promise<void>,
-      ) => () => void;
+      onTriggerCopySelectionRichText: (callback: () => Promise<void>) => () => void;
+      onTriggerCopySelectionMarkdown: (callback: () => Promise<void>) => () => void;
       onTriggerExtractToNote: (callback: () => Promise<void>) => () => void;
       getRelatedNotes: (payload: { id: Id }) => Promise<Result<RelatedNotes[]>>;
       pin: (id: Id) => Promise<Result<boolean>>;

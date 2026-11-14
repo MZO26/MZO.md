@@ -1,28 +1,15 @@
 import { Callout } from "@/extensions/callouts";
 import { Highlight } from "@/extensions/highlight";
-import {
-  CustomBlockMath,
-  CustomInlineMath,
-} from "@/extensions/overrides/mathematics/mathematics";
+import { CustomBlockMath, CustomInlineMath } from "@/extensions/overrides/mathematics/mathematics";
 import { NoteTag } from "@/extensions/tag/tag";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { localStore } from "@/state/state";
 import { clearAllMemoizedCaches, rendererLogger } from "@/utils/helpers";
 import type { Id } from "@shared/schemas/note-schema";
 import { ALLOWED_PROTOCOLS } from "@shared/shared-constants";
-import {
-  createDocument,
-  getHTMLFromFragment,
-  type Editor,
-  type JSONContent,
-} from "@tiptap/core";
+import { createDocument, getHTMLFromFragment, type Editor, type JSONContent } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
-import {
-  Table,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@tiptap/extension-table";
+import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import { MarkdownManager } from "@tiptap/markdown";
 import { EditorState } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
@@ -34,14 +21,9 @@ let editorExtensions: ReturnType<typeof getRequestExtensions> | undefined;
 let markdownManager: MarkdownManager | undefined;
 
 function recreateEditorState(editor: Editor, doc: JSONContent) {
-  const newDoc = createDocument(
-    doc,
-    editor.schema,
-    editor.options.parseOptions,
-    {
-      errorOnInvalidContent: false,
-    },
-  );
+  const newDoc = createDocument(doc, editor.schema, editor.options.parseOptions, {
+    errorOnInvalidContent: false,
+  });
   const newState = EditorState.create({
     schema: editor.schema,
     doc: newDoc,
@@ -79,11 +61,7 @@ function getRequestExtensions() {
   ];
 }
 
-function getHTMLContentBetween(
-  editor: Editor,
-  from: number,
-  to: number,
-): string {
+function getHTMLContentBetween(editor: Editor, from: number, to: number): string {
   const { doc } = editor.state;
   const safeFrom = Math.max(0, Math.min(from, doc.content.size));
   const safeTo = Math.max(safeFrom, Math.min(to, doc.content.size));
@@ -99,11 +77,7 @@ function getHTMLContentBetween(
   }
 }
 
-function getMarkdownContentBetween(
-  editor: Editor,
-  from: number,
-  to: number,
-): string {
+function getMarkdownContentBetween(editor: Editor, from: number, to: number): string {
   const { doc } = editor.state;
   const safeFrom = Math.max(0, Math.min(from, doc.content.size));
   const safeTo = Math.max(safeFrom, Math.min(to, doc.content.size));
@@ -115,10 +89,7 @@ function getMarkdownContentBetween(
     };
     return getMarkdownManager().serialize(json);
   } catch (error) {
-    rendererLogger.appError(
-      "[getMarkdownContentBetween]: Failed to serialize json:",
-      error,
-    );
+    rendererLogger.appError("[getMarkdownContentBetween]: Failed to serialize json:", error);
     return "";
   }
 }
@@ -155,10 +126,7 @@ function isSafeExternalUrl(url: string) {
 
 function resolveMarkConflicts(nodes: JSONContent[]): JSONContent[] {
   return nodes.map((node) => {
-    if (
-      node.type === "text" &&
-      node.marks?.some((mark) => mark.type === "code")
-    ) {
+    if (node.type === "text" && node.marks?.some((mark) => mark.type === "code")) {
       return {
         ...node,
         marks: node.marks.filter((mark) => mark.type !== "bold"),

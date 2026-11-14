@@ -80,10 +80,7 @@ class AppDB {
       this.execPragma("cache_size = -32000", db);
       this.createTables(db);
       this.createIndexes(db);
-      const integrity = this.queryPragma<{ quick_check: string }>(
-        "quick_check",
-        db,
-      );
+      const integrity = this.queryPragma<{ quick_check: string }>("quick_check", db);
       if (integrity?.quick_check !== "ok") {
         throw new AppBackendError(AppErrorCode.DBError);
       }
@@ -518,8 +515,7 @@ class AppDB {
   public togglePin(id: Id) {
     const now = new Date().toISOString();
     const result = this.togglePinStmt.get({ $updated_at: now, $id: id }) as
-      | { pinned: BoolDb }
-      | undefined;
+      { pinned: BoolDb } | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -581,9 +577,7 @@ class AppDB {
   }
 
   public execPragma(name: string, db: DatabaseSync = this.getDb()) {
-    const sql = name.trim().toUpperCase().startsWith("PRAGMA ")
-      ? name
-      : `PRAGMA ${name}`;
+    const sql = name.trim().toUpperCase().startsWith("PRAGMA ") ? name : `PRAGMA ${name}`;
     db.prepare(sql).run();
   }
 
@@ -591,9 +585,7 @@ class AppDB {
     sql: string,
     db: DatabaseSync = this.getDb(),
   ): T | undefined {
-    const command = sql.trim().toUpperCase().startsWith("PRAGMA ")
-      ? sql
-      : `PRAGMA ${sql}`;
+    const command = sql.trim().toUpperCase().startsWith("PRAGMA ") ? sql : `PRAGMA ${sql}`;
     return db.prepare(command).get() as T | undefined;
   }
 
@@ -602,10 +594,7 @@ class AppDB {
     try {
       this.db.close();
     } catch (error) {
-      mainLogger.appError(
-        "[Database Error]: Failed to close database connection:",
-        error,
-      );
+      mainLogger.appError("[Database Error]: Failed to close database connection:", error);
     } finally {
       this.db = undefined;
     }
@@ -623,16 +612,11 @@ class AppDB {
     try {
       await backup(db, destination, {
         progress: (info) => {
-          mainLogger.devLog(
-            `Backup progress: ${info.remainingPages} pages left.`,
-          );
+          mainLogger.devLog(`Backup progress: ${info.remainingPages} pages left.`);
         },
       });
     } catch (error) {
-      mainLogger.appError(
-        `[Database Error]: Failed to backup to ${destination}`,
-        error,
-      );
+      mainLogger.appError(`[Database Error]: Failed to backup to ${destination}`, error);
       throw new AppBackendError(AppErrorCode.DBError);
     }
   }

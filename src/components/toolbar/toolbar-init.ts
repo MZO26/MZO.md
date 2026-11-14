@@ -10,15 +10,9 @@ import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 function initToolbar(editorContainer: HTMLDivElement) {
-  const toolbarContainer = requireElement<HTMLDivElement>(
-    "#toolbar",
-    editorContainer,
-  );
+  const toolbarContainer = requireElement<HTMLDivElement>("#toolbar", editorContainer);
   buildToolbarMenu(toolbarContainer, TOOLBAR_ACTIONS);
-  const unsubListeners = setupToolbarListeners(
-    toolbarContainer,
-    TOOLBAR_ACTIONS,
-  );
+  const unsubListeners = setupToolbarListeners(toolbarContainer, TOOLBAR_ACTIONS);
   const unsubAppEvents = appEvents.onMany({
     [APP_EVENTS.TOGGLE_TOOLBAR]: () => {
       updateActiveStates.cancel();

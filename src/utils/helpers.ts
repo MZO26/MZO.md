@@ -33,10 +33,7 @@ type Debounced<Args extends unknown[], R> = {
  * setTimeout(() => save.flush(), 500); // force-execute if pending
  */
 
-function debounce<A extends unknown[], R>(
-  fn: (...args: A) => R,
-  wait: number,
-): Debounced<A, R> {
+function debounce<A extends unknown[], R>(fn: (...args: A) => R, wait: number): Debounced<A, R> {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let lastArgs: A | null = null;
   function cancel(): void {
@@ -90,10 +87,7 @@ function createAsyncHandler<T extends Event>(
       try {
         await callback(e);
       } catch (error) {
-        rendererLogger.appError(
-          "[createAsyncHandler]: Failed to invoke callback",
-          error,
-        );
+        rendererLogger.appError("[createAsyncHandler]: Failed to invoke callback", error);
       } finally {
         isProcessing = false;
       }
@@ -131,9 +125,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function waitForPaint(frames = 2): Promise<void> {
   for (let i = 0; i < frames; i++) {
-    await new Promise<void>((resolve) =>
-      requestAnimationFrame(() => resolve()),
-    );
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   }
 }
 
@@ -153,9 +145,7 @@ async function waitForPaint(frames = 2): Promise<void> {
  * const items = await load("page-1"); // logs: "Invoking function fetchItems" 42ms
  */
 
-function withPerformanceLog<A extends unknown[], T>(
-  fn: (...args: A) => Promise<T>,
-) {
+function withPerformanceLog<A extends unknown[], T>(fn: (...args: A) => Promise<T>) {
   if (!import.meta.env.DEV) return fn;
   return async (...args: A): Promise<T> => {
     const timerLabel = `Invoking function ${fn.name}`;
@@ -334,10 +324,7 @@ function memoize<A extends unknown[], R>(
  * omitKeys({ a: 1, b: 2, c: 3 }, new Set(["a", "c"])); // { b: 2 }
  */
 
-function omitKeys<K extends Id, V>(
-  record: Record<K, V>,
-  keysToRemove: Set<Id> | Id,
-): Record<K, V> {
+function omitKeys<K extends Id, V>(record: Record<K, V>, keysToRemove: Set<Id> | Id): Record<K, V> {
   const next = {} as Record<K, V>;
   const isSet = keysToRemove instanceof Set;
   for (const key in record) {
@@ -435,11 +422,7 @@ async function showDialog(dialog: HTMLDialogElement) {
  * if (ok) await handleDeleteNote("note-abc123");
  */
 
-async function confirmWithDialog(
-  dialog: HTMLDialogElement,
-  titleEl: HTMLElement,
-  title: string,
-) {
+async function confirmWithDialog(dialog: HTMLDialogElement, titleEl: HTMLElement, title: string) {
   titleEl.textContent = title;
   dialog.returnValue = "";
   const result = await showDialog(dialog);

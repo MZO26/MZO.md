@@ -10,11 +10,7 @@
 }
 
 .notes-container.is-drop-target {
-  background: color-mix(
-    in srgb,
-    var(--tag-bg) 18%,
-    var(--background-color, transparent)
-  );
+  background: color-mix(in srgb, var(--tag-bg) 18%, var(--background-color, transparent));
 }
 
 .notes-container.is-drop-target::after {
@@ -267,13 +263,14 @@ body.is-dragging * {
   cursor: pointer;
 }
 
-:is(
-  .input-wrapper-chevron,
-  .replace-one,
-  .replace-all,
-  .search-prev,
-  .search-next
-):is(:hover, :active, :focus, :focus-within, .is-active, :focus-visible) {
+:is(.input-wrapper-chevron, .replace-one, .replace-all, .search-prev, .search-next):is(
+  :hover,
+  :active,
+  :focus,
+  :focus-within,
+  .is-active,
+  :focus-visible
+) {
   background: transparent;
   outline: none;
   box-shadow: none;

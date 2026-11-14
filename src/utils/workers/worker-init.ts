@@ -18,10 +18,7 @@ const markdownWorker =
 
 const workOnMarkdownParsing = createWorker<string, string>(markdownWorker);
 
-const workOnImageCompression = createWorker<
-  ImageCompressionPayload,
-  Uint8Array
->(imageWorker);
+const workOnImageCompression = createWorker<ImageCompressionPayload, Uint8Array>(imageWorker);
 
 async function compressImageInWorker(
   file: File,

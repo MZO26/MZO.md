@@ -12,8 +12,7 @@ const timeFormatter = new Intl.DateTimeFormat("de-DE", {
 function createDateTimeUpdater() {
   let displayElement: HTMLDivElement | null = null;
   return function updateDateTime() {
-    displayElement ??=
-      document.querySelector<HTMLDivElement>("#datetime-display");
+    displayElement ??= document.querySelector<HTMLDivElement>("#datetime-display");
     if (!displayElement) return;
     const now = new Date();
     displayElement.textContent = `${dateFormatter.format(now)} - ${timeFormatter.format(now)}`;
@@ -25,8 +24,7 @@ const updateDateTime = createDateTimeUpdater();
 function startAppClock() {
   updateDateTime();
   const now = new Date();
-  const msUntilNextMinute =
-    (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+  const msUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
   setTimeout(() => {
     updateDateTime();
     setInterval(updateDateTime, 60000);

@@ -74,10 +74,7 @@ function fromRegistry<T extends keyof AppRegistry>(registryKey: T) {
     const entryObject = registry[registryKey];
     for (const key of keys) {
       const item = entryObject[key];
-      if (!item)
-        throw new Error(
-          `Element "${String(key)}" is missing from the registry.`,
-        );
+      if (!item) throw new Error(`Element "${String(key)}" is missing from the registry.`);
       result[key] = item;
     }
     return result as Required<Readonly<Pick<AppRegistry[T], K>>>;
@@ -114,16 +111,10 @@ function initUIRegistry() {
 
 function initTemplateRegistry() {
   toRegistry("template")({
-    editorEmptyStateTemplate: requireElement<HTMLTemplateElement>(
-      "#editor-empty-state-template",
-    ),
+    editorEmptyStateTemplate: requireElement<HTMLTemplateElement>("#editor-empty-state-template"),
     editorView: requireElement<HTMLDivElement>(".editor-view"),
-    sidebarEmptyStateTemplate: requireElement<HTMLTemplateElement>(
-      "#sidebar-empty-state-template",
-    ),
-    noteItemTemplate: requireElement<HTMLTemplateElement>(
-      "#note-item-template",
-    ),
+    sidebarEmptyStateTemplate: requireElement<HTMLTemplateElement>("#sidebar-empty-state-template"),
+    noteItemTemplate: requireElement<HTMLTemplateElement>("#note-item-template"),
   });
 }
 
@@ -131,9 +122,7 @@ function initDialogRegistry() {
   toRegistry("dialog")({
     deleteDialog: requireElement<HTMLDialogElement>("#delete-dialog"),
     switchDialog: requireElement<HTMLDialogElement>(".quick-switch-dialog"),
-    switchListSearchInput: requireElement<HTMLInputElement>(
-      ".search-input-quick-switch",
-    ),
+    switchListSearchInput: requireElement<HTMLInputElement>(".search-input-quick-switch"),
     switchListEl: requireElement<HTMLDivElement>(".quick-switch-list"),
     mathDialog: requireElement<HTMLDialogElement>(".math-dialog"),
     mathInput: requireElement<HTMLTextAreaElement>("#math-input"),

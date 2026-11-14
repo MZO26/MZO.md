@@ -20,8 +20,7 @@ import { isFocusActive } from "@/utils/shortcuts";
 import { type SETTING_EVENTS } from "@shared/shared-constants";
 import type { SettingCommands } from "@shared/shared-types";
 
-export type SettingEventStrings =
-  (typeof SETTING_EVENTS)[keyof typeof SETTING_EVENTS];
+export type SettingEventStrings = (typeof SETTING_EVENTS)[keyof typeof SETTING_EVENTS];
 
 const settingsCommands: Record<SettingEventStrings, SettingCommands> = {
   "setting:theme-system": {

@@ -29,8 +29,7 @@ export type CommandEventMap = Record<EditorEventStrings, boolean>;
  * Union of all editor command event name strings.
  */
 
-export type EditorEventStrings =
-  (typeof EDITOR_EVENTS)[keyof typeof EDITOR_EVENTS];
+export type EditorEventStrings = (typeof EDITOR_EVENTS)[keyof typeof EDITOR_EVENTS];
 
 /**
  * A listener callback: no-arg if the event carries no payload,
@@ -102,10 +101,7 @@ class EventManager<T extends Record<string, unknown>> {
 
   public onMany(map: ListenerMap<T>) {
     const unsubs: (() => void)[] = [];
-    const add = <K extends keyof T>(
-      key: K,
-      value: NonNullable<ListenerMap<T>[K]>,
-    ) => {
+    const add = <K extends keyof T>(key: K, value: NonNullable<ListenerMap<T>[K]>) => {
       const callbacks = Array.isArray(value) ? value : [value];
       for (const cb of callbacks) {
         unsubs.push(this.on(key, cb));
@@ -164,10 +160,7 @@ class EventManager<T extends Record<string, unknown>> {
    * @param payload - Event payload (only for events with a non-`void` type).
    */
 
-  public emit<K extends keyof T>(
-    event: K,
-    ...args: [T[K]] extends [void] ? [] : [payload: T[K]]
-  ) {
+  public emit<K extends keyof T>(event: K, ...args: [T[K]] extends [void] ? [] : [payload: T[K]]) {
     const listeners = this.store.get(event);
     if (!listeners || listeners.size === 0) return;
     for (const cb of new Set(listeners)) {
@@ -192,9 +185,7 @@ class EventManager<T extends Record<string, unknown>> {
   ): Promise<void> {
     const listeners = this.store.get(event);
     if (!listeners || listeners.size === 0) return;
-    await Promise.allSettled(
-      Array.from(listeners, (cb) => Promise.try(cb, ...args)),
-    );
+    await Promise.allSettled(Array.from(listeners, (cb) => Promise.try(cb, ...args)));
   }
 }
 

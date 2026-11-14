@@ -7,11 +7,7 @@ import { NodeSelection, TextSelection } from "@tiptap/pm/state";
 
 const SELECTION_TAG_REGEX = /^[\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?$/u;
 
-function wrapSelection(
-  editor: Editor,
-  openChar: string,
-  closeChar: string,
-): boolean {
+function wrapSelection(editor: Editor, openChar: string, closeChar: string): boolean {
   const { state } = editor;
   const { selection } = state;
   const { empty, from, to, $from, $to } = selection;
@@ -52,9 +48,7 @@ const SelectionWrapper = Extension.create({
         const charBefore = doc.textBetween(Math.max(0, from - 1), from);
         const replaced = trimmed.replace(/^#/, "");
         const isValidTag =
-          replaced.length > 0 &&
-          replaced.length <= 100 &&
-          SELECTION_TAG_REGEX.test(replaced);
+          replaced.length > 0 && replaced.length <= 100 && SELECTION_TAG_REGEX.test(replaced);
         if (!isValidTag) return false;
         const hasHashBefore = charBefore === "#";
         const replaceFrom = hasHashBefore ? from - 1 : from;
@@ -75,19 +69,12 @@ const SelectionWrapper = Extension.create({
           const trimmed = selectedText.trim();
           const normalized = trimmed.toLowerCase();
           const charBefore = doc.textBetween(Math.max(0, from - 1), from);
-          const charAfter = doc.textBetween(
-            to,
-            Math.min(doc.content.size, to + 1),
-          );
+          const charAfter = doc.textBetween(to, Math.min(doc.content.size, to + 1));
           const isValidTitle =
-            normalized.length > 0 &&
-            normalized.length <= 50 &&
-            !selectedText.includes("\n");
+            normalized.length > 0 && normalized.length <= 50 && !selectedText.includes("\n");
           if (charBefore === "[" && charAfter === "]" && isValidTitle) {
             const notes = noteStore.get("notes");
-            const existingNote = notes.find(
-              (n) => n.title.trim().toLowerCase() === normalized,
-            );
+            const existingNote = notes.find((n) => n.title.trim().toLowerCase() === normalized);
             return this.editor
               .chain()
               .insertWikiLink({
@@ -184,9 +171,7 @@ const KbSelectionCommands = Extension.create({
         }
         if (!MOVEABLE_BLOCKS.has(node.type.name)) return false;
         const neighborNode =
-          direction === "up"
-            ? doc.resolve(blockStart).nodeBefore
-            : doc.resolve(blockEnd).nodeAfter;
+          direction === "up" ? doc.resolve(blockStart).nodeBefore : doc.resolve(blockEnd).nodeAfter;
         if (!neighborNode) return false;
         const insertPos =
           direction === "up"
@@ -200,11 +185,7 @@ const KbSelectionCommands = Extension.create({
             tr.setSelection(NodeSelection.create(tr.doc, insertPos));
           } else {
             tr.setSelection(
-              TextSelection.create(
-                tr.doc,
-                insertPos + anchorOffset,
-                insertPos + headOffset,
-              ),
+              TextSelection.create(tr.doc, insertPos + anchorOffset, insertPos + headOffset),
             );
           }
           tr.scrollIntoView();

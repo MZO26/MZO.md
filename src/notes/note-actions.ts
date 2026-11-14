@@ -41,12 +41,7 @@ import {
   type UpdateNotePayload,
 } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
-import {
-  APP_EVENTS,
-  EMPTY_DOC,
-  MIN_SEARCH_LENGTH,
-  UNTITLED,
-} from "@shared/shared-constants";
+import { APP_EVENTS, EMPTY_DOC, MIN_SEARCH_LENGTH, UNTITLED } from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
@@ -105,10 +100,7 @@ async function handleCreateNote(options?: {
   };
   const result = await createNote(payload);
   if (!result.success) {
-    rendererLogger.appError(
-      "[handleCreateNote]: Failed to create note:",
-      result.error,
-    );
+    rendererLogger.appError("[handleCreateNote]: Failed to create note:", result.error);
     return;
   }
   noteStore.setState((state) => {
@@ -190,10 +182,7 @@ async function handleImportNote(request: FilePathRequest) {
   }
   const result = await createManyNotes(processedPayloads.data);
   if (!result.success) {
-    rendererLogger.appError(
-      "[handleImportNote]: Failed to create imported notes:",
-      result.error,
-    );
+    rendererLogger.appError("[handleImportNote]: Failed to create imported notes:", result.error);
     return;
   }
   const { duplicates, errors } = imported.data.stats;
@@ -249,10 +238,7 @@ async function handleDeleteManyNotes(ids: Id[]) {
   }
   const result = await deleteManyNotes(ids);
   if (!result.success) {
-    rendererLogger.appError(
-      "[handleDeleteManyNotes]: Failed to delete:",
-      result.error,
-    );
+    rendererLogger.appError("[handleDeleteManyNotes]: Failed to delete:", result.error);
     return;
   }
   noteStore.setState((state) => {
@@ -318,10 +304,7 @@ async function handleDeleteNote(id: Id) {
   }
   const result = await deleteNote(id);
   if (!result.success) {
-    rendererLogger.appError(
-      "[handleDeleteNote]: Failed to delete:",
-      result.error,
-    );
+    rendererLogger.appError("[handleDeleteNote]: Failed to delete:", result.error);
     return;
   }
   noteStore.setState((state) => {
@@ -403,9 +386,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
   const activeTag = stateStore.get("activeTag");
   const isActiveNote = stateStore.get("activeId") === id;
   const notes = noteStore.get("notes");
-  const updatedNotes = notes.map((n) =>
-    n.id === result.data.id ? result.data : n,
-  );
+  const updatedNotes = notes.map((n) => (n.id === result.data.id ? result.data : n));
   const tagStillExists =
     activeTag === null ||
     updatedNotes.some((n) =>
@@ -434,9 +415,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
       };
     });
     editor.view.dispatch(
-      editor.state.tr
-        .setMeta("noteInfoRefresh", true)
-        .setMeta("duplicateLinkRefresh", true),
+      editor.state.tr.setMeta("noteInfoRefresh", true).setMeta("duplicateLinkRefresh", true),
     );
   }
 }
@@ -524,10 +503,7 @@ async function handleSelectNote(
   const result = await getNoteById(id);
   if (stateStore.get("activeId") !== id) return;
   if (!result.success) {
-    rendererLogger.appError(
-      "[handleSelectNote]: Failed to fetch note:",
-      result.error,
-    );
+    rendererLogger.appError("[handleSelectNote]: Failed to fetch note:", result.error);
     return;
   }
   const noteIndex = noteStore.get("noteIndex");
@@ -548,10 +524,7 @@ async function handleSelectNote(
   editor.view.dispatch(editor.state.tr.setMeta("duplicateLinkRefresh", true));
   const globalQuery = stateStore.get("searchQuery");
   const effectiveQuery = query ?? globalQuery;
-  if (
-    snippet ||
-    (effectiveQuery && effectiveQuery.trim().length > MIN_SEARCH_LENGTH)
-  ) {
+  if (snippet || (effectiveQuery && effectiveQuery.trim().length > MIN_SEARCH_LENGTH)) {
     if (effectiveQuery) {
       appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, {
         query: effectiveQuery,
@@ -561,9 +534,7 @@ async function handleSelectNote(
     rendererLogger.devLog("Exact match pos:", pos);
     if (pos !== null) {
       const tr = editor.state.tr;
-      editor.view.dispatch(
-        tr.setSelection(TextSelection.create(tr.doc, pos)).scrollIntoView(),
-      );
+      editor.view.dispatch(tr.setSelection(TextSelection.create(tr.doc, pos)).scrollIntoView());
       editor.view.focus();
     }
     return;
@@ -613,10 +584,7 @@ async function handleExtractToNote(id: Id, content: JSONContent) {
   };
   const result = await createNote(payload);
   if (!result.success) {
-    rendererLogger.appError(
-      "[handleExtractToNote]: Failed to create note:",
-      result.error,
-    );
+    rendererLogger.appError("[handleExtractToNote]: Failed to create note:", result.error);
     return;
   }
   noteStore.setState((state) => ({
@@ -653,9 +621,7 @@ async function handleExtractToNote(id: Id, content: JSONContent) {
 
 async function handleDuplicateNote(note: Readonly<Note>) {
   const { links: originalLinks, ...rest } = note;
-  const outgoingLinkIds = originalLinks.flatMap((link) =>
-    link.dir === "out" ? [link.id] : [],
-  );
+  const outgoingLinkIds = originalLinks.flatMap((link) => (link.dir === "out" ? [link.id] : []));
   const data: CreateNotePayload = {
     ...rest,
     links: outgoingLinkIds,

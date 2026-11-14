@@ -59,9 +59,7 @@ const TitleEnforcer = Extension.create({
           if (!firstNode || !headingType) return null;
           if (firstNode.type !== headingType) {
             const tr = newState.tr;
-            const canConvert =
-              firstNode.isTextblock &&
-              headingType.validContent(firstNode.content);
+            const canConvert = firstNode.isTextblock && headingType.validContent(firstNode.content);
             if (canConvert) {
               tr.setBlockType(0, firstNode.nodeSize - 2, headingType, {
                 level: 1,

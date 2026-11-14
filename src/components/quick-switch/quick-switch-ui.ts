@@ -2,10 +2,7 @@ import { editorCommands } from "@/components/editor/editor-commands";
 import { truncateTitle } from "@/components/editor/editor-generators";
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
 import { scrollItemIntoView } from "@/components/quick-switch/quick-switch-navigation";
-import {
-  applyView,
-  restoreSidebarScope,
-} from "@/components/sidebar/sidebar-views";
+import { applyView, restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { handleCreateNote, handleSelectNote } from "@/notes/note-actions";
 import { EXPORT_KEYS } from "@/settings/setting-actions";
 import { settingsCommands } from "@/settings/settings-commands";
@@ -13,11 +10,7 @@ import { settingsStore, stateStore } from "@/state/state";
 import { NOTE_SECTION, UNTAGGED } from "@/utils/constants";
 import { useCore, useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayBadge, ShortcutToken } from "@/utils/types";
-import {
-  createGlobalSpinner,
-  createInfoSpan,
-  createTooltipContent,
-} from "@/utils/ui";
+import { createGlobalSpinner, createInfoSpan, createTooltipContent } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
 
 const IS_MAC: boolean = window.env.isMac ?? navigator.userAgent.includes("Mac");
@@ -70,9 +63,7 @@ function renderTitleList(qsState: QuickSwitchState) {
   const { switchListEl } = useDialog("switchListEl");
   switchListEl.replaceChildren();
   if (qsState.currentDisplayNotes.length === 0) {
-    switchListEl.appendChild(
-      createInfoSpan("Nothing to display.", "quick-switch-empty"),
-    );
+    switchListEl.appendChild(createInfoSpan("Nothing to display.", "quick-switch-empty"));
     return;
   }
   const activeId = stateStore.get("activeId") as Id | null;
@@ -82,9 +73,7 @@ function renderTitleList(qsState: QuickSwitchState) {
       switchListEl.appendChild(createSectionHeader(item.section, qsState));
       lastSection = item.section;
     }
-    switchListEl.appendChild(
-      createOptionEl(item, index, qsState.activeIndex, activeId),
-    );
+    switchListEl.appendChild(createOptionEl(item, index, qsState.activeIndex, activeId));
   }
 }
 
@@ -138,10 +127,7 @@ function createOptionEl(
   return element;
 }
 
-async function selectActive(
-  qsState: QuickSwitchState,
-  event?: KeyboardEvent | MouseEvent,
-) {
+async function selectActive(qsState: QuickSwitchState, event?: KeyboardEvent | MouseEvent) {
   const { switchDialog } = useDialog("switchDialog");
   const selected = qsState.currentDisplayNotes[qsState.activeIndex];
   if (!selected) return;
@@ -160,8 +146,7 @@ async function selectActive(
     }
     case "tag": {
       const activeTag = settingsStore.get("active_tag");
-      const clickedTag =
-        selected.title === "Untagged" ? UNTAGGED : selected.title;
+      const clickedTag = selected.title === "Untagged" ? UNTAGGED : selected.title;
       const isNew = selected.count === 0 && clickedTag !== UNTAGGED;
       if ((isNew || event?.shiftKey) && clickedTag !== UNTAGGED) {
         const { editor } = useCore("editor");
@@ -169,11 +154,7 @@ async function selectActive(
         const normalized = selected.title.replace(/[#\s]+/g, "").toLowerCase();
         if (!normalized) return;
         const pos = editor.state.selection.to;
-        editor
-          .chain()
-          .focus()
-          .insertNoteTag({ from: pos, to: pos, id: normalized })
-          .run();
+        editor.chain().focus().insertNoteTag({ from: pos, to: pos, id: normalized }).run();
         return;
       }
       if (activeTag === clickedTag) {
@@ -258,9 +239,7 @@ async function selectActive(
 
 function updateSelection(qsState: QuickSwitchState) {
   const { switchListEl } = useDialog("switchListEl");
-  const items = [
-    ...switchListEl.querySelectorAll<HTMLDivElement>(".quick-switch-item"),
-  ];
+  const items = [...switchListEl.querySelectorAll<HTMLDivElement>(".quick-switch-item")];
   for (const [index, item] of items.entries()) {
     const isActive = index === qsState.activeIndex;
     item.classList.toggle("active", isActive);
@@ -270,10 +249,7 @@ function updateSelection(qsState: QuickSwitchState) {
   }
 }
 
-function setDisplay(
-  notes: readonly QuickSwitchDisplayBadge[],
-  qsState: QuickSwitchState,
-) {
+function setDisplay(notes: readonly QuickSwitchDisplayBadge[], qsState: QuickSwitchState) {
   qsState.currentDisplayNotes = [...notes];
   qsState.activeIndex = 0;
   renderTitleList(qsState);
@@ -298,9 +274,7 @@ function formatShortcut(combo: string): string {
 }
 
 function setShortcuts(root: ParentNode = document) {
-  for (const element of root.querySelectorAll<HTMLElement>(
-    "kbd[data-shortcut]",
-  )) {
+  for (const element of root.querySelectorAll<HTMLElement>("kbd[data-shortcut]")) {
     const shortcut = element.dataset["shortcut"];
     if (shortcut) {
       element.textContent = formatShortcut(shortcut);

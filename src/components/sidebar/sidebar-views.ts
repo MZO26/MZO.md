@@ -39,10 +39,7 @@ function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
  * @returns Matching note ids in the same order as `notes`.
  */
 
-function computeIdsForTagView(
-  notes: readonly NoteListItem[],
-  tag: string | null,
-) {
+function computeIdsForTagView(notes: readonly NoteListItem[], tag: string | null) {
   const ids: Id[] = [];
   for (const note of notes) {
     if (matchesActiveTag(note, tag)) {
@@ -82,8 +79,7 @@ function selectSidebarNotes(
   } else {
     for (const id of visibleIds) {
       const note = noteIndex.get(id);
-      if (note !== undefined && matchesActiveTag(note, activeTag))
-        result.push(note);
+      if (note !== undefined && matchesActiveTag(note, activeTag)) result.push(note);
     }
   }
   return result.toSorted(compareNotes);
@@ -107,15 +103,10 @@ function selectSidebarNotes(
  * await applyView(UNTAGGED);         // show only untagged
  */
 
-async function applyView(
-  nextTag: string | null,
-  newState?: readonly NoteListItem[],
-) {
+async function applyView(nextTag: string | null, newState?: readonly NoteListItem[]) {
   const activeTag = stateStore.get("activeTag");
   if (activeTag === nextTag) {
-    rendererLogger.devLog(
-      "[applyView]: Same tag. Early return guard activated",
-    );
+    rendererLogger.devLog("[applyView]: Same tag. Early return guard activated");
     return;
   }
   stateStore.setState({ activeTag: nextTag, searchQuery: "" });

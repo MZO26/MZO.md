@@ -92,10 +92,7 @@ function createIconButton(icon: AppIcons, tooltip?: string): HTMLButtonElement {
  * // <span class="info-span link-count">3 links</span>
  */
 
-function createInfoSpan(
-  textContent: string,
-  className?: string,
-): HTMLSpanElement {
+function createInfoSpan(textContent: string, className?: string): HTMLSpanElement {
   const span = document.createElement("span");
   span.className = `info-span ${className}`;
   span.textContent = textContent;

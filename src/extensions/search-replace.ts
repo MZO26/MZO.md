@@ -64,8 +64,7 @@ const createDecorations = (
 function buildRegex(query: string, caseSensitive: boolean): RegExp | null {
   if (!query) return null;
   const flags = caseSensitive ? "g" : "gi";
-  const isRegexLiteral =
-    query.length > 2 && query.startsWith("/") && query.endsWith("/");
+  const isRegexLiteral = query.length > 2 && query.startsWith("/") && query.endsWith("/");
   if (isRegexLiteral) {
     const pattern = query.slice(1, -1);
     try {
@@ -88,9 +87,7 @@ function getReplacement(
     return replacement;
   }
   const regex = buildRegex(query, caseSensitive);
-  return regex
-    ? doc.textBetween(result.from, result.to).replace(regex, replacement)
-    : replacement;
+  return regex ? doc.textBetween(result.from, result.to).replace(regex, replacement) : replacement;
 }
 
 const getMatchesAndDecorations = (
@@ -111,8 +108,7 @@ const getMatchesAndDecorations = (
     if (node.type.name === wikilink?.name || node.type.name === noteTag?.name) {
       const rawText = String(node.attrs["title"] ?? node.attrs["id"] ?? "");
       if (!rawText) return false;
-      const searchableText =
-        node.type.name === noteTag?.name ? `#${rawText}` : `[[${rawText}]]`;
+      const searchableText = node.type.name === noteTag?.name ? `#${rawText}` : `[[${rawText}]]`;
       if (searchableText.search(r) !== -1) {
         results.push({
           from: pos,
@@ -138,12 +134,7 @@ const getMatchesAndDecorations = (
   }
   return {
     results,
-    decorations: createDecorations(
-      state.doc,
-      results,
-      storage.activeIndex,
-      options,
-    ),
+    decorations: createDecorations(state.doc, results, storage.activeIndex, options),
   };
 };
 
@@ -178,10 +169,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           if (dispatch) {
             editor.storage.docSearch.query = query;
             editor.storage.docSearch.activeIndex = 0;
-            tr.setMeta("docSearchRefresh", "search").setMeta(
-              "addToHistory",
-              false,
-            );
+            tr.setMeta("docSearchRefresh", "search").setMeta("addToHistory", false);
           }
           return true;
         },
@@ -202,10 +190,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
             storage.replacement = "";
             storage.results = [];
             storage.activeIndex = -1;
-            tr.setMeta("docSearchRefresh", "clear").setMeta(
-              "addToHistory",
-              false,
-            );
+            tr.setMeta("docSearchRefresh", "clear").setMeta("addToHistory", false);
           }
           return true;
         },
@@ -217,10 +202,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           if (dispatch) {
             s.activeIndex = (s.activeIndex + 1) % s.results.length;
             const result = s.results[s.activeIndex];
-            tr.setMeta("docSearchRefresh", "navigate").setMeta(
-              "addToHistory",
-              false,
-            );
+            tr.setMeta("docSearchRefresh", "navigate").setMeta("addToHistory", false);
             if (result) scrollMatchIntoView(editor, result.from);
           }
           return true;
@@ -231,13 +213,9 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           const s = editor.storage.docSearch;
           if (s.results.length === 0) return false;
           if (dispatch) {
-            s.activeIndex =
-              s.activeIndex <= 0 ? s.results.length - 1 : s.activeIndex - 1;
+            s.activeIndex = s.activeIndex <= 0 ? s.results.length - 1 : s.activeIndex - 1;
             const result = s.results[s.activeIndex];
-            tr.setMeta("docSearchRefresh", "navigate").setMeta(
-              "addToHistory",
-              false,
-            );
+            tr.setMeta("docSearchRefresh", "navigate").setMeta("addToHistory", false);
             if (result) scrollMatchIntoView(editor, result.from);
           }
           return true;
@@ -294,36 +272,21 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
         state: {
           init: (_, state) => {
             const storage = this.editor.storage.docSearch;
-            const { results, decorations } = getMatchesAndDecorations(
-              state,
-              storage,
-              options,
-            );
+            const { results, decorations } = getMatchesAndDecorations(state, storage, options);
             storage.results = results;
             return decorations;
           },
           apply: (tr, oldSet, _oldState, newState) => {
             const storage = this.editor.storage.docSearch;
-            const action = tr.getMeta("docSearchRefresh") as
-              | PluginMeta
-              | undefined;
+            const action = tr.getMeta("docSearchRefresh") as PluginMeta | undefined;
             if (action === "clear") {
               return DecorationSet.empty;
             }
             if (action === "navigate" && !tr.docChanged) {
-              return createDecorations(
-                newState.doc,
-                storage.results,
-                storage.activeIndex,
-                options,
-              );
+              return createDecorations(newState.doc, storage.results, storage.activeIndex, options);
             }
             if (action === "search" || tr.docChanged) {
-              const { results, decorations } = getMatchesAndDecorations(
-                newState,
-                storage,
-                options,
-              );
+              const { results, decorations } = getMatchesAndDecorations(newState, storage, options);
               storage.results = results;
               return decorations;
             }

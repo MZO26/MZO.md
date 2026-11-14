@@ -1,10 +1,6 @@
 import { rendererLogger } from "@/utils/helpers";
 import { AppErrorCode } from "@shared/errors";
-import type {
-  Notification,
-  Url,
-  ZoomAction,
-} from "@shared/schemas/electron-schema";
+import type { Notification, Url, ZoomAction } from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
@@ -16,17 +12,12 @@ import type {
   SearchResult,
   UpdateNotePayload,
 } from "@shared/schemas/note-schema";
-import type {
-  ExportRequest,
-  FilePathRequest,
-  ImportRequest,
-} from "@shared/schemas/request-schema";
+import type { ExportRequest, FilePathRequest, ImportRequest } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { ImportStats, Result } from "@shared/shared-types";
 
 function isResult(obj: unknown): obj is Result<unknown> {
-  if (typeof obj !== "object" || obj === null || !("success" in obj))
-    return false;
+  if (typeof obj !== "object" || obj === null || !("success" in obj)) return false;
   if (obj.success === true) return "data" in obj;
   if (obj.success === false) return "error" in obj;
   return false;
@@ -60,9 +51,7 @@ async function getAllBackup(): Promise<Result<readonly Note[]>> {
   return invoke(window.noteAPI.getAllBackup());
 }
 
-async function createNote(
-  payload: CreateNotePayload,
-): Promise<Result<NoteListItem>> {
+async function createNote(payload: CreateNotePayload): Promise<Result<NoteListItem>> {
   return invoke(window.noteAPI.create(payload));
 }
 
@@ -72,10 +61,7 @@ async function createManyNotes(
   return invoke(window.noteAPI.createMany(payload));
 }
 
-async function updateNote(
-  note: UpdateNotePayload,
-  flush: boolean,
-): Promise<Result<NoteListItem>> {
+async function updateNote(note: UpdateNotePayload, flush: boolean): Promise<Result<NoteListItem>> {
   return invoke(window.noteAPI.update(note, flush));
 }
 
@@ -95,15 +81,11 @@ async function getManyById(ids: Id[]): Promise<Result<readonly Note[]>> {
   return invoke(window.noteAPI.getManyById(ids));
 }
 
-async function exportNote(
-  payload: ExportRequest,
-): Promise<Result<ExportRequest>> {
+async function exportNote(payload: ExportRequest): Promise<Result<ExportRequest>> {
   return invoke(window.noteAPI.noteExport(payload));
 }
 
-async function exportManyNotes(
-  payload: ExportRequest[],
-): Promise<Result<ExportRequest[]>> {
+async function exportManyNotes(payload: ExportRequest[]): Promise<Result<ExportRequest[]>> {
   return invoke(window.noteAPI.noteExportMany(payload));
 }
 
@@ -121,9 +103,7 @@ async function pinMany(ids: Id[]): Promise<Result<boolean>> {
   return invoke(window.noteAPI.pinMany(ids));
 }
 
-async function getRelatedNotes(payload: {
-  id: Id;
-}): Promise<Result<RelatedNotes[]>> {
+async function getRelatedNotes(payload: { id: Id }): Promise<Result<RelatedNotes[]>> {
   return invoke(window.noteAPI.getRelatedNotes(payload));
 }
 
@@ -149,10 +129,7 @@ async function setSettings(
 
 // electron api
 
-async function setTheme(
-  theme: Theme,
-  focus?: boolean,
-): Promise<Result<Exclude<Theme, "system">>> {
+async function setTheme(theme: Theme, focus?: boolean): Promise<Result<Exclude<Theme, "system">>> {
   return invoke(window.electronAPI.setTheme(theme, focus));
 }
 
@@ -163,9 +140,7 @@ async function showNotification(
   return invoke(window.electronAPI.showNotification(title, body));
 }
 
-async function imageWriteMany(
-  payload: ImagePayload[],
-): Promise<Result<string[]>> {
+async function imageWriteMany(payload: ImagePayload[]): Promise<Result<string[]>> {
   return invoke(window.electronAPI.imageWriteMany(payload));
 }
 

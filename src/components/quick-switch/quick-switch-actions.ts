@@ -1,21 +1,13 @@
 import { getRelatedNotes } from "@/api/api";
 import { editorCommands } from "@/components/editor/editor-commands";
-import {
-  settingsCommands,
-  type SettingEventStrings,
-} from "@/settings/settings-commands";
+import { settingsCommands, type SettingEventStrings } from "@/settings/settings-commands";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
 import { memoize, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import type { NoteSection, QuickSwitchDisplayBadge } from "@/utils/types";
 import type { EditorEventStrings } from "@shared/event-emitter";
-import {
-  isNoteID,
-  type Id,
-  type Link,
-  type NoteListItem,
-} from "@shared/schemas/note-schema";
+import { isNoteID, type Id, type Link, type NoteListItem } from "@shared/schemas/note-schema";
 
 function tokenize(text: string): string[] {
   if (!text) return [];
@@ -41,19 +33,13 @@ function checkNoteSimilarity(titleA: string, titleB: string) {
 }
 
 const getSimilarityMatching = memoize(
-  async (
-    activeId: Id,
-    notes: readonly NoteListItem[],
-    noteIndex: Map<Id, NoteListItem>,
-  ) => {
+  async (activeId: Id, notes: readonly NoteListItem[], noteIndex: Map<Id, NoteListItem>) => {
     const comparison = noteIndex.get(activeId);
     if (!comparison) return [];
     const relatedNotesQuery = await getRelatedNotes({
       id: activeId,
     });
-    const relatedNotes = relatedNotesQuery.success
-      ? relatedNotesQuery.data
-      : [];
+    const relatedNotes = relatedNotesQuery.success ? relatedNotesQuery.data : [];
     const titleIndex = new Map(notes.map((n) => [n.title, n.id]));
     for (const index of titleIndex.entries()) {
       if (activeId === index[1]) continue;
@@ -121,11 +107,7 @@ function getTags(notes: readonly NoteListItem[]): QuickSwitchDisplayBadge[] {
     }
   }
   const activeTag = settingsStore.get("active_tag");
-  const badge = (
-    title: string,
-    count: number,
-    isActive: boolean,
-  ): QuickSwitchDisplayBadge => ({
+  const badge = (title: string, count: number, isActive: boolean): QuickSwitchDisplayBadge => ({
     title,
     section: "tag",
     count,
@@ -160,11 +142,7 @@ async function computeDisplayNotes() {
   const activeNote = activeId ? noteIndex.get(activeId) : undefined;
   if (!activeNote) return recentBadges;
   const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote);
-  const relatedNotes = await getSimilarityMatching(
-    activeNote.id,
-    notes,
-    noteIndex,
-  );
+  const relatedNotes = await getSimilarityMatching(activeNote.id, notes, noteIndex);
   return [
     ...recentBadges,
     ...toDisplayBadges(

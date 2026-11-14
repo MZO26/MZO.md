@@ -9,10 +9,7 @@ import DOMPurify from "dompurify";
 
 const getNoteItemClone = createTemplateCloner("noteItemTemplate", isDiv);
 
-function sanitizeSnippets({
-  note,
-  snippets,
-}: Pick<SnippetGenParams, "note" | "snippets">) {
+function sanitizeSnippets({ note, snippets }: Pick<SnippetGenParams, "note" | "snippets">) {
   const searchSnippet = snippets?.[note.id];
   const displaySnippet = searchSnippet ?? note.snippet;
   const safe = DOMPurify.sanitize(displaySnippet, DOMPURIFY_CONFIG);

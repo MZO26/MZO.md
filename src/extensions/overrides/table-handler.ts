@@ -51,9 +51,7 @@ export const TableHandler = Extension.create({
         }
         const mappedInsertPos = tr.mapping.map(insertPos);
         tr.insert(mappedInsertPos, newParagraph);
-        tr.setSelection(
-          TextSelection.near(tr.doc.resolve(mappedInsertPos + 1)),
-        ).scrollIntoView();
+        tr.setSelection(TextSelection.near(tr.doc.resolve(mappedInsertPos + 1))).scrollIntoView();
         view.dispatch(tr);
         return true;
       },

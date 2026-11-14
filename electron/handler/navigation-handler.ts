@@ -1,7 +1,4 @@
-import {
-  isInsideDirectory,
-  isInsideDirectorySync,
-} from "@electron/fs/fs-helpers";
+import { isInsideDirectory, isInsideDirectorySync } from "@electron/fs/fs-helpers";
 import { IS_DEV_MAIN, mainLogger } from "@electron/handler/permission-handler";
 import { ALLOWED_PROTOCOLS, LOCALHOST_HOSTS } from "@shared/shared-constants";
 import { app, net, protocol, shell, type BrowserWindow } from "electron";
@@ -32,10 +29,7 @@ async function setupLocalImageProtocol() {
     await fs.mkdir(imagesDir, { recursive: true });
     realImagesDir = await fs.realpath(imagesDir);
   } catch (setupError) {
-    mainLogger.appError(
-      "Failed to initialize image directory. Images will not load.",
-      setupError,
-    );
+    mainLogger.appError("Failed to initialize image directory. Images will not load.", setupError);
     protocol.handle("appimg", () => {
       return new Response("Image system disabled due to startup error", {
         status: 500,
@@ -59,10 +53,7 @@ async function setupLocalImageProtocol() {
       });
     }
     try {
-      const rawRelativePath = `${parsed.hostname}${parsed.pathname}`.replace(
-        /^[/\\]+/,
-        "",
-      );
+      const rawRelativePath = `${parsed.hostname}${parsed.pathname}`.replace(/^[/\\]+/, "");
       const fileName = path.basename(rawRelativePath);
       if (!fileName) {
         return new Response("Bad Request", {
@@ -124,9 +115,7 @@ function processUrl(url: string) {
     const isLocalhost = LOCALHOST_HOSTS.has(hostname);
     if (isLocalhost) {
       if (IS_DEV_MAIN) return "allow";
-      mainLogger.devLog(
-        `[processUrl]: Blocked localhost URL in production: ${url}`,
-      );
+      mainLogger.devLog(`[processUrl]: Blocked localhost URL in production: ${url}`);
       return "block";
     }
     return "external";
@@ -203,9 +192,4 @@ function navigationHandler(win: BrowserWindow) {
   });
 }
 
-export {
-  navigationHandler,
-  processUrl,
-  registerCustomProtocol,
-  setupLocalImageProtocol,
-};
+export { navigationHandler, processUrl, registerCustomProtocol, setupLocalImageProtocol };

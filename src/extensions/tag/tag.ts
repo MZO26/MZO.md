@@ -1,11 +1,9 @@
 import { InputRule, mergeAttributes, Node, PasteRule } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
-const NOTE_TAG_REGEX =
-  /^#([\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?)(?![\p{L}\p{N}_-])/u;
+const NOTE_TAG_REGEX = /^#([\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?)(?![\p{L}\p{N}_-])/u;
 const NOTE_TAG_INPUT_REGEX = /(?:^|\s)#([\p{L}\p{N}_-]+)\s$/u;
-const NOTE_TAG_PASTE_REGEX =
-  /(?:^|\s)#(?=[\p{N}_-]*[\p{L}_])([\p{L}\p{N}_-]+)(?![\p{L}\p{N}_-])/gu;
+const NOTE_TAG_PASTE_REGEX = /(?:^|\s)#(?=[\p{N}_-]*[\p{L}_])([\p{L}\p{N}_-]+)(?![\p{L}\p{N}_-])/gu;
 const HEADING_REGEX = /^#{1,6}(?:\s|\t)/;
 const HEX_REGEX = /^([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/;
 
@@ -21,11 +19,7 @@ const normalizeTagId = (value: unknown) =>
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     noteTag: {
-      insertNoteTag: (options: {
-        from: number;
-        to: number;
-        id: string;
-      }) => ReturnType;
+      insertNoteTag: (options: { from: number; to: number; id: string }) => ReturnType;
     };
   }
 }
@@ -117,10 +111,7 @@ const NoteTag = Node.create<NoteTagOptions>({
           const safeFrom = Math.max(0, Math.min(from, maxPos));
           const safeTo = Math.max(safeFrom, Math.min(to, maxPos));
           const rawCursorPos = safeFrom + node.nodeSize + 1;
-          const safeCursorPos = Math.max(
-            0,
-            Math.min(rawCursorPos, tr.doc.content.size),
-          );
+          const safeCursorPos = Math.max(0, Math.min(rawCursorPos, tr.doc.content.size));
           if (dispatch) {
             tr.replaceWith(safeFrom, safeTo, node)
               .insertText(" ", safeFrom + node.nodeSize)

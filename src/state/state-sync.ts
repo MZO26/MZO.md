@@ -4,9 +4,7 @@ import type { NoteListItem } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { Result } from "@shared/shared-types";
 
-function syncSettingsStore(
-  settingsResult: Result<Readonly<AppSettings>>,
-): Readonly<AppSettings> {
+function syncSettingsStore(settingsResult: Result<Readonly<AppSettings>>): Readonly<AppSettings> {
   if (!settingsResult.success) {
     rendererLogger.appError(
       "[syncSettingStore]: Failed to sync settings. Using defaults.",

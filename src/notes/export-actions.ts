@@ -136,9 +136,7 @@ async function getExportContent(
       const html = generateHTML(note.content, getCachedEditorExtensions());
       const noteSize = note.content.content?.length;
       const landscape =
-        typeof noteSize === "number" && noteSize > NODE_BASELINE
-          ? false
-          : needsLandscape(html);
+        typeof noteSize === "number" && noteSize > NODE_BASELINE ? false : needsLandscape(html);
       rendererLogger.devLog(landscape);
       return {
         success: true,
@@ -176,10 +174,7 @@ async function getExportContent(
     }
     default:
       extension satisfies never;
-      rendererLogger.appError(
-        "[getExportContent]: Unsupported export format:",
-        extension,
-      );
+      rendererLogger.appError("[getExportContent]: Unsupported export format:", extension);
       return {
         success: false,
         error: AppErrorCode.InvalidData,
@@ -193,9 +188,7 @@ function needsLandscape(content: string): boolean {
     const firstRow = table.querySelector<HTMLTableRowElement>("tr");
     if (!firstRow) continue;
     let columnCount = 0;
-    for (const cell of firstRow.querySelectorAll<HTMLTableCellElement>(
-      "th, td",
-    )) {
+    for (const cell of firstRow.querySelectorAll<HTMLTableCellElement>("th, td")) {
       columnCount += Number(cell.getAttribute("colspan")) || 1;
     }
     if (columnCount >= 5) return true;

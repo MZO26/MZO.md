@@ -54,42 +54,27 @@ function triggerTableMenu(action: TableAction) {
   }
 }
 
-async function triggerSingleExport(
-  id: Id,
-  extension: ExportRequest["extension"],
-) {
+async function triggerSingleExport(id: Id, extension: ExportRequest["extension"]) {
   const result = await getExportContent(id, extension);
   if (!result.success) {
-    rendererLogger.appError(
-      "[exportTrigger]: Failed to fetch note data:",
-      result.error,
-    );
+    rendererLogger.appError("[exportTrigger]: Failed to fetch note data:", result.error);
     await showNotification("Export Failed", ERROR_MESSAGES.EXPORT_ERROR);
     return;
   }
   const exported = await exportNote(result.data);
   if (!exported.success) {
-    rendererLogger.appError(
-      "[exportTrigger]: Failed to write file:",
-      exported.error,
-    );
+    rendererLogger.appError("[exportTrigger]: Failed to write file:", exported.error);
     if (exported.error === "CANCELLED_OPERATION") return;
     await showNotification("Export Failed", "");
     return;
   }
-  await showNotification(
-    "Export Complete",
-    `Exported file as .${extension.toUpperCase()}`,
-  );
+  await showNotification("Export Complete", `Exported file as .${extension.toUpperCase()}`);
 }
 
 async function triggerCopyMarkdown(id: Id) {
   const result = await getNoteById(id);
   if (!result.success) {
-    rendererLogger.appError(
-      "[onTriggerCopyMarkdown]: Failed to fetch note data:",
-      result.error,
-    );
+    rendererLogger.appError("[onTriggerCopyMarkdown]: Failed to fetch note data:", result.error);
     await showNotification("Failed to get markdown", "");
     return;
   }
@@ -103,20 +88,14 @@ async function triggerCopyMarkdown(id: Id) {
     await showNotification("Copied to clipboard", "");
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
-    rendererLogger.appError(
-      "[triggerCopyMarkdown]: Failed to copy as markdown:",
-      error,
-    );
+    rendererLogger.appError("[triggerCopyMarkdown]: Failed to copy as markdown:", error);
   }
 }
 
 async function triggerCopyRichText(id: Id) {
   const result = await getNoteById(id);
   if (!result.success) {
-    rendererLogger.appError(
-      "[onTriggerCopyRichText]: Failed to fetch note data:",
-      result.error,
-    );
+    rendererLogger.appError("[onTriggerCopyRichText]: Failed to fetch note data:", result.error);
     await showNotification("Failed to get rich text", "");
     return;
   }
@@ -133,10 +112,7 @@ async function triggerCopyRichText(id: Id) {
     await showNotification("Copied to clipboard", "");
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
-    rendererLogger.appError(
-      "[onTriggerCopyRichText]: Failed to copy markdown:",
-      error,
-    );
+    rendererLogger.appError("[onTriggerCopyRichText]: Failed to copy markdown:", error);
   }
 }
 
@@ -162,11 +138,7 @@ async function triggerCopySelectionRichText() {
   const { from, to } = state.selection;
   if (from === to) return;
   const html = getHTMLContentBetween(editor, from, to);
-  const plain = state.doc.textBetween(
-    Math.min(from, to),
-    Math.max(from, to),
-    "\n",
-  );
+  const plain = state.doc.textBetween(Math.min(from, to), Math.max(from, to), "\n");
   if (!html && !plain) return;
   try {
     await navigator.clipboard.write([
@@ -209,15 +181,8 @@ async function triggerExtractToNote() {
 
 async function triggerSingleDelete(id: Id) {
   const { deleteDialog } = useDialog("deleteDialog");
-  const titleEl = requireElement<HTMLSpanElement>(
-    ".delete-dialog-title",
-    deleteDialog,
-  );
-  const confirmed = await confirmWithDialog(
-    deleteDialog,
-    titleEl,
-    "Delete this note?",
-  );
+  const titleEl = requireElement<HTMLSpanElement>(".delete-dialog-title", deleteDialog);
+  const confirmed = await confirmWithDialog(deleteDialog, titleEl, "Delete this note?");
   if (!confirmed) return;
   await handleDeleteNote(id);
 }
@@ -225,10 +190,7 @@ async function triggerSingleDelete(id: Id) {
 async function triggerPin(id: Id) {
   const result = await pin(id);
   if (!result.success) {
-    rendererLogger.appError(
-      "[onTriggerPin]: Failed to toggle pin:",
-      result.error,
-    );
+    rendererLogger.appError("[onTriggerPin]: Failed to toggle pin:", result.error);
     return;
   }
   noteStore.setState((state) => {

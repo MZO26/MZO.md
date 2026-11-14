@@ -7,11 +7,7 @@ import {
   handleExportManyDialog,
   handleImportDialog,
 } from "@electron/fs/fs-dialog";
-import {
-  batchExport,
-  singleExport,
-  singlePDFExport,
-} from "@electron/fs/fs-export";
+import { batchExport, singleExport, singlePDFExport } from "@electron/fs/fs-export";
 import { removeUnusedImages } from "@electron/fs/fs-image";
 import { batchImport } from "@electron/fs/fs-import";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
@@ -113,9 +109,7 @@ function registerNoteIpc(win: BrowserWindow) {
         if (!checkRateLimit(IPC_CHANNELS.NOTE_UPDATE, LIMITS.WRITE_LIGHT))
           throw new AppBackendError(AppErrorCode.RateLimitError);
       } else {
-        if (
-          !checkRateLimit(IPC_CHANNELS.NOTE_UPDATE_FLUSH, LIMITS.WRITE_FLUSH)
-        ) {
+        if (!checkRateLimit(IPC_CHANNELS.NOTE_UPDATE_FLUSH, LIMITS.WRITE_FLUSH)) {
           throw new AppBackendError(AppErrorCode.RateLimitError);
         }
       }
@@ -180,9 +174,7 @@ function registerNoteIpc(win: BrowserWindow) {
     IPC_CHANNELS.NOTE_GET_RELATED_NOTES,
     withErrorHandling((e, payload: unknown) => {
       validateSender(e);
-      if (
-        !checkRateLimit(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, LIMITS.READ_NORMAL)
-      )
+      if (!checkRateLimit(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, LIMITS.READ_NORMAL))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validatedData = validation(RelatedNotesSchema, payload);
       return db.getRelatedNotes(validatedData.id);

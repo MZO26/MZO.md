@@ -1,14 +1,8 @@
 import { showNotification } from "@/api/api";
 import { recreateEditorState } from "@/components/editor/editor-actions";
-import {
-  editorCommands,
-  registerCommands,
-} from "@/components/editor/editor-commands";
+import { editorCommands, registerCommands } from "@/components/editor/editor-commands";
 import { updateStats } from "@/components/editor/editor-ui";
-import {
-  applyView,
-  restoreSidebarScope,
-} from "@/components/sidebar/sidebar-views";
+import { applyView, restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { Callout } from "@/extensions/callouts";
 import { SelectionHighlight } from "@/extensions/decorations/active-highlight";
 import { DuplicateLinkWidget } from "@/extensions/decorations/duplicate-link";
@@ -33,10 +27,7 @@ import { CodeblockHandler } from "@/extensions/overrides/codeblock/codeblock-han
 import { lowlight } from "@/extensions/overrides/codeblock/lowlight";
 import { CustomHeading, TitleEnforcer } from "@/extensions/overrides/headings";
 import { LinkWithTitle } from "@/extensions/overrides/link";
-import {
-  CustomBlockMath,
-  CustomInlineMath,
-} from "@/extensions/overrides/mathematics/mathematics";
+import { CustomBlockMath, CustomInlineMath } from "@/extensions/overrides/mathematics/mathematics";
 import { handleMathClick } from "@/extensions/overrides/mathematics/mathematics-dialog";
 import { TableHandler } from "@/extensions/overrides/table-handler";
 import { CustomUnderline } from "@/extensions/overrides/underline";
@@ -49,17 +40,9 @@ import {
   resolveGhostLink,
   WikilinkHandler,
 } from "@/extensions/wikilink/wikilink-handler";
-import {
-  debouncedSaveNote,
-  handleSelectNote,
-  waitForFlush,
-} from "@/notes/note-actions";
+import { debouncedSaveNote, handleSelectNote, waitForFlush } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
-import {
-  NODE_BASELINE,
-  SHARED_KATEX_OPTIONS,
-  YIELD_MS,
-} from "@/utils/constants";
+import { NODE_BASELINE, SHARED_KATEX_OPTIONS, YIELD_MS } from "@/utils/constants";
 import { rendererLogger, sleep } from "@/utils/helpers";
 import { createGlobalSpinner, requireElement } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
@@ -70,12 +53,7 @@ import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
-import {
-  Table,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@tiptap/extension-table";
+import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import "katex/dist/katex.min.css";
@@ -134,8 +112,7 @@ function getNoteEditorExtensions() {
       HTMLAttributes: { loading: "lazy" },
     }),
     NoteTagHandler.configure({
-      onClick: async (id: string) =>
-        appEvents.emitAsync(APP_EVENTS.APPLY_VIEW, id),
+      onClick: async (id: string) => appEvents.emitAsync(APP_EVENTS.APPLY_VIEW, id),
     }),
     Table.configure({
       resizable: true,
@@ -302,16 +279,9 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   };
 }
 
-async function initEditorContent({
-  note,
-  editor,
-}: {
-  note: Readonly<Note>;
-  editor: Editor;
-}) {
+async function initEditorContent({ note, editor }: { note: Readonly<Note>; editor: Editor }) {
   try {
-    if (note.content.content && note.content.content.length > NODE_BASELINE)
-      await sleep(YIELD_MS);
+    if (note.content.content && note.content.content.length > NODE_BASELINE) await sleep(YIELD_MS);
     recreateEditorState(editor, note.content);
     resolveDocLinks(editor);
     updateStats(editor);

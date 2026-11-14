@@ -1,8 +1,5 @@
 import { search } from "@/api/api";
-import {
-  matchesActiveTag,
-  restoreSidebarScope,
-} from "@/components/sidebar/sidebar-views";
+import { matchesActiveTag, restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
 import { debounce, rendererLogger, withLatestGuard } from "@/utils/helpers";
@@ -18,11 +15,7 @@ import { APP_EVENTS, MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import type { Node as PMNode } from "@tiptap/pm/model";
 
 const handleSearch = withLatestGuard(
-  async (
-    isStale,
-    searchInput: SearchQuery,
-    options?: { quickSwitchScope?: boolean },
-  ) => {
+  async (isStale, searchInput: SearchQuery, options?: { quickSwitchScope?: boolean }) => {
     const nextQuery = searchInput.trim();
     if (nextQuery.length > MAX_SEARCH_LENGTH) return;
     const isQuickSwitch = !!options?.quickSwitchScope;
@@ -41,10 +34,7 @@ const handleSearch = withLatestGuard(
     const result = await search(nextQuery);
     if (isStale()) return;
     if (!result.success) {
-      rendererLogger.appError(
-        "[handleSearch]: Failed to search:",
-        result.error,
-      );
+      rendererLogger.appError("[handleSearch]: Failed to search:", result.error);
       return;
     }
     const data: MappedMatches[] = result.data.map((row) => ({

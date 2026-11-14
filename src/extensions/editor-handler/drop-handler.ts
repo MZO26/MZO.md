@@ -2,11 +2,7 @@ import { resolveMarkConflicts } from "@/components/editor/editor-actions";
 import { isValidExtension } from "@/components/sidebar/sidebar-file-drop";
 import { processAndInsertImages } from "@/extensions/overrides/image/image";
 import { normalizeFileContent } from "@/notes/import-actions";
-import {
-  ALLOWED_TYPES,
-  MAX_DROP_LENGTH,
-  MAX_DROP_PASTE_CHARACTERS,
-} from "@/utils/constants";
+import { ALLOWED_TYPES, MAX_DROP_LENGTH, MAX_DROP_PASTE_CHARACTERS } from "@/utils/constants";
 import { getExtension, rendererLogger } from "@/utils/helpers";
 import { MAX_BYTES_FILE } from "@shared/shared-constants";
 import { type Editor, Extension } from "@tiptap/core";
@@ -36,10 +32,7 @@ async function processDroppedFiles(editor: Editor, files: File[], pos: number) {
         nodesToInsert.push(json);
       }
     } catch (error) {
-      rendererLogger.appError(
-        `[processDroppedFiles]: Failed to process ${file.name}:`,
-        error,
-      );
+      rendererLogger.appError(`[processDroppedFiles]: Failed to process ${file.name}:`, error);
     }
   }
   if (nodesToInsert.length > 0) {
@@ -67,18 +60,15 @@ export const DropHandler = Extension.create({
             });
             const dropCandidates = Iterator.from(files)
               .filter(
-                (f) =>
-                  ALLOWED_TYPES.includes(f.type) ||
-                  isValidExtension(getExtension(f.name)),
+                (f) => ALLOWED_TYPES.includes(f.type) || isValidExtension(getExtension(f.name)),
               )
               .take(MAX_DROP_LENGTH)
               .toArray();
             if (dropCandidates.length === 0) return false;
             event.preventDefault();
             const dropPos = coords?.pos ?? editor.state.selection.from;
-            const { images = [], content = [] } = Object.groupBy(
-              dropCandidates,
-              (f) => (ALLOWED_TYPES.includes(f.type) ? "images" : "content"),
+            const { images = [], content = [] } = Object.groupBy(dropCandidates, (f) =>
+              ALLOWED_TYPES.includes(f.type) ? "images" : "content",
             );
             void (async () => {
               try {
@@ -89,10 +79,7 @@ export const DropHandler = Extension.create({
                   await processDroppedFiles(editor, content, dropPos);
                 }
               } catch (error) {
-                rendererLogger.appError(
-                  "[DropHandler]: Failed to process dropped file:",
-                  error,
-                );
+                rendererLogger.appError("[DropHandler]: Failed to process dropped file:", error);
               }
             })();
             return true;

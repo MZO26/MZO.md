@@ -1,9 +1,4 @@
-import {
-  Mark,
-  markInputRule,
-  markPasteRule,
-  mergeAttributes,
-} from "@tiptap/core";
+import { Mark, markInputRule, markPasteRule, mergeAttributes } from "@tiptap/core";
 
 const HIGHLIGHT_REGEX = /^==([^=\n][^=\n]*?)==/;
 const HIGHLIGHT_PASTE_REGEX = /(?:==)([^=\n][^=\n]*?)(?:==)/g;

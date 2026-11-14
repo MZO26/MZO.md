@@ -121,11 +121,7 @@ const editorCommands: Record<EditorEventStrings, EditorCommands> = {
   },
   "editor:table": {
     run: (editor) =>
-      editor
-        .chain()
-        .focus()
-        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-        .run(),
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
     isActive: (editor) => editor.isActive("table"),
     label: "TABLE",
   },
@@ -136,10 +132,7 @@ const editorCommands: Record<EditorEventStrings, EditorCommands> = {
   "editor:callout-info": setCallout("info"),
 };
 
-function registerCommands(
-  editor: Editor,
-  commands: Record<EditorEventStrings, EditorCommands>,
-) {
+function registerCommands(editor: Editor, commands: Record<EditorEventStrings, EditorCommands>) {
   const listenerMap: ListenerMap<CommandEventMap> = {};
   for (const key of Object.keys(commands) as EditorEventStrings[]) {
     const cmd = commands[key];

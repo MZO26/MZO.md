@@ -66,8 +66,7 @@ export const CodeblockHandler = Extension.create({
         const { selection, doc } = this.editor.state;
         if (!selection.empty) return false;
         const absolutePos = selection.from;
-        const charBefore =
-          absolutePos > 0 ? doc.textBetween(absolutePos - 1, absolutePos) : "";
+        const charBefore = absolutePos > 0 ? doc.textBetween(absolutePos - 1, absolutePos) : "";
         const charAfter = doc.textBetween(absolutePos, absolutePos + 1);
         if (isOpener(charBefore) && KEY_MAP[charBefore] === charAfter) {
           this.editor.commands.deleteRange({
@@ -86,8 +85,7 @@ export const CodeblockHandler = Extension.create({
         const charBefore = doc.textBetween(from - 1, from);
         const charAfter = doc.textBetween(to, to + 1);
         if (charBefore in KEY_MAP) {
-          const isMatch =
-            isOpener(charBefore) && charAfter === KEY_MAP[charBefore];
+          const isMatch = isOpener(charBefore) && charAfter === KEY_MAP[charBefore];
           const { $from } = this.editor.state.selection;
           const textBefore = $from.parent.textBetween(0, $from.parentOffset);
           const lines = textBefore.split("\n");
@@ -99,9 +97,7 @@ export const CodeblockHandler = Extension.create({
             const innerIndent = currentIndent + indent;
             const insertionText = `\n${innerIndent}\n${currentIndent}`;
             this.editor.commands.insertContent(insertionText);
-            this.editor.commands.setTextSelection(
-              from + 1 + innerIndent.length,
-            );
+            this.editor.commands.setTextSelection(from + 1 + innerIndent.length);
             return true;
           }
           return this.editor.commands.insertContent(`\n${currentIndent}`);
@@ -113,8 +109,7 @@ export const CodeblockHandler = Extension.create({
 });
 
 function toggleSingleCodeBlock(editor: Editor) {
-  if (editor.isActive("codeBlock"))
-    return editor.chain().focus().toggleCodeBlock().run();
+  if (editor.isActive("codeBlock")) return editor.chain().focus().toggleCodeBlock().run();
   const { state } = editor;
   const { from, to, empty } = state.selection;
   if (empty) return editor.chain().focus().toggleCodeBlock().run();

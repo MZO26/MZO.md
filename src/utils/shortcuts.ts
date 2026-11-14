@@ -1,8 +1,8 @@
 import { handleZoom } from "@/api/api";
 import { stateStore } from "@/state/state";
+import { createAsyncHandler } from "@/utils/helpers";
 import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
-import { createAsyncHandler } from "./helpers";
 
 function isFocusActive() {
   return stateStore.get("focus") === true;
@@ -82,8 +82,7 @@ function initGlobalShortcuts() {
     }
     if (key === "Escape") {
       if (!(e.target instanceof HTMLElement)) return;
-      const openDialog =
-        document.querySelector<HTMLDialogElement>("dialog[open]");
+      const openDialog = document.querySelector<HTMLDialogElement>("dialog[open]");
       if (e.target.closest("dialog") || openDialog) {
         return;
       }
@@ -102,9 +101,4 @@ function initGlobalShortcuts() {
   window.addEventListener("keydown", keydownHandler);
 }
 
-export {
-  initGlobalShortcuts,
-  isEditorFocused,
-  isFocusActive,
-  isSelectionActive,
-};
+export { initGlobalShortcuts, isEditorFocused, isFocusActive, isSelectionActive };

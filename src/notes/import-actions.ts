@@ -19,9 +19,7 @@ import type { Result } from "@shared/shared-types";
 import { generateJSON, generateText, type JSONContent } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
-async function normalizeFileContent(
-  file: ImportContent,
-): Promise<JSONContent | undefined> {
+async function normalizeFileContent(file: ImportContent): Promise<JSONContent | undefined> {
   const { content, extension } = file;
   if (typeof content !== "string") return undefined;
   try {
@@ -33,10 +31,7 @@ async function normalizeFileContent(
           const doc = isEditorDoc(parsed) ? parsed : wrapAsDoc(parsed);
           return doc;
         } catch (error) {
-          rendererLogger.appError(
-            "[normalizeFileContent]: JSON Parse failed:",
-            error,
-          );
+          rendererLogger.appError("[normalizeFileContent]: JSON Parse failed:", error);
           return undefined;
         }
       }
@@ -47,9 +42,7 @@ async function normalizeFileContent(
       }
       case "md": {
         try {
-          const response = await withPerformanceLog(workOnMarkdownParsing)(
-            content,
-          );
+          const response = await withPerformanceLog(workOnMarkdownParsing)(content);
           if (!response.success) {
             rendererLogger.appError(
               "[normalizeFileContent]: Worker failed to parse Markdown:",
@@ -61,10 +54,7 @@ async function normalizeFileContent(
           if (!isRecord(doc)) return undefined;
           return wrapAsDoc(doc);
         } catch (error) {
-          rendererLogger.appError(
-            "[normalizeFileContent]: Failed to parse JSON",
-            error,
-          );
+          rendererLogger.appError("[normalizeFileContent]: Failed to parse JSON", error);
           return undefined;
         }
       }
@@ -85,9 +75,7 @@ async function normalizeFileContent(
   }
 }
 
-async function setImportedContent(
-  files: ImportContent[],
-): Promise<Result<CreateNotePayload[]>> {
+async function setImportedContent(files: ImportContent[]): Promise<Result<CreateNotePayload[]>> {
   try {
     const processedPayloads: CreateNotePayload[] = [];
     const activeTag = stateStore.get("activeTag");
@@ -113,10 +101,7 @@ async function setImportedContent(
     }
     return { success: true, data: processedPayloads };
   } catch (error) {
-    rendererLogger.appError(
-      "[setImportedContent]: Failed to process imported content:",
-      error,
-    );
+    rendererLogger.appError("[setImportedContent]: Failed to process imported content:", error);
     return { success: false, error: AppErrorCode.InvalidData };
   }
 }

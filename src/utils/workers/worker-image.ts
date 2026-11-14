@@ -4,9 +4,7 @@ import type { ImageCompressionPayload, WorkerRequest } from "@/utils/types";
 import { handleWorkerError } from "@/utils/workers/worker-factory";
 import type { Id } from "@shared/schemas/note-schema";
 
-self.onmessage = async (
-  e: MessageEvent<{ id: Id } & WorkerRequest<ImageCompressionPayload>>,
-) => {
+self.onmessage = async (e: MessageEvent<{ id: Id } & WorkerRequest<ImageCompressionPayload>>) => {
   const { id, payload } = e.data;
   const { buffer, mimeType, maxWidth, quality } = payload;
   try {

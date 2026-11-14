@@ -1,20 +1,11 @@
 import { computeDisplayNotes } from "@/components/quick-switch/quick-switch-actions";
 import { handleListKeydown } from "@/components/quick-switch/quick-switch-navigation";
 import { filterTitles } from "@/components/quick-switch/quick-switch-search";
-import {
-  selectActive,
-  setDisplay,
-  setShortcuts,
-} from "@/components/quick-switch/quick-switch-ui";
+import { selectActive, setDisplay, setShortcuts } from "@/components/quick-switch/quick-switch-ui";
 import { waitForFlush } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
-import {
-  createAsyncHandler,
-  debounce,
-  rendererLogger,
-  waitForPaint,
-} from "@/utils/helpers";
+import { createAsyncHandler, debounce, rendererLogger, waitForPaint } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayBadge } from "@/utils/types";
 import { appEvents } from "@shared/event-emitter";
@@ -71,9 +62,7 @@ function initQuickSwitcher(editor: Editor) {
 
   function handleDocumentKeydown(event: KeyboardEvent) {
     const isEscape = switchDialog.open && event.key === "Escape";
-    const isCtrlP =
-      (event.ctrlKey || event.metaKey) &&
-      (event.key === "p" || event.key === "P");
+    const isCtrlP = (event.ctrlKey || event.metaKey) && (event.key === "p" || event.key === "P");
     if (isEscape || isCtrlP) {
       event.preventDefault();
       void toggleSwitcher().catch(rendererLogger.appError);

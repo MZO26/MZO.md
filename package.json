@@ -5,6 +5,11 @@
   "main": "dist-electron/main/main.js",
   "scripts": {
     "typecheck": "npx tsc --noEmit",
+    "lint": "npx eslint .",
+    "lint:fix": "npx eslint . --fix",
+    "format": "npx prettier . --write",
+    "format:check": "npx prettier . --check",
+    "check": "npm run typecheck && npm run lint && npm run format:check",
     "start": "electron-vite preview",
     "dev": "electron-vite dev --watch",
     "dev:renderer": "electron-vite dev --rendererOnly",
@@ -113,6 +118,7 @@
     "electron-builder": "^26.18.0",
     "electron-vite": "^6.0.0",
     "eslint": "^10.15.0",
+    "prettier": "^3.10.1",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.5"

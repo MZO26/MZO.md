@@ -4,11 +4,7 @@ import { handleCreateNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { memoize, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
-import {
-  type Id,
-  type Note,
-  type NoteListItem,
-} from "@shared/schemas/note-schema";
+import { type Id, type Note, type NoteListItem } from "@shared/schemas/note-schema";
 import type { Editor } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -21,9 +17,7 @@ export interface AutocompleteState {
   title: string;
 }
 
-const autocompleteKey = new PluginKey<AutocompleteState>(
-  "wikilinkAutocomplete",
-);
+const autocompleteKey = new PluginKey<AutocompleteState>("wikilinkAutocomplete");
 const wikilinkClickHandlerKey = new PluginKey("wikilinkClickHandler");
 
 const WikilinkHandler = WikiLink.extend({
@@ -50,10 +44,7 @@ const WikilinkHandler = WikiLink.extend({
         if (nodeBefore?.type.name === "wikilink") {
           const title = nodeBefore.attrs["title"] || "";
           const from = $from.pos - nodeBefore.nodeSize;
-          return this.editor
-            .chain()
-            .insertContentAt({ from, to: $from.pos }, `[[${title}]`)
-            .run();
+          return this.editor.chain().insertContentAt({ from, to: $from.pos }, `[[${title}]`).run();
         }
         return false;
       },
@@ -80,12 +71,7 @@ const WikilinkHandler = WikiLink.extend({
         key: autocompleteKey,
         state: {
           init: () => null,
-          apply: (
-            tr,
-            pluginState,
-            _oldEditorState,
-            newEditorState,
-          ): AutocompleteState | null => {
+          apply: (tr, pluginState, _oldEditorState, newEditorState): AutocompleteState | null => {
             if (!tr.docChanged && !tr.selectionSet) return pluginState;
             const { selection } = newEditorState;
             const { $from, empty } = newEditorState.selection;
@@ -102,10 +88,7 @@ const WikilinkHandler = WikiLink.extend({
             }
             const $head = selection.$head;
             const lookbackStart = Math.max(0, $head.parentOffset - 60);
-            const textBefore = $head.parent.textContent.slice(
-              lookbackStart,
-              $head.parentOffset,
-            );
+            const textBefore = $head.parent.textContent.slice(lookbackStart, $head.parentOffset);
             const openBracketIdx = textBefore.lastIndexOf("[[");
             if (openBracketIdx === -1) return null;
             const rawQuery = textBefore.slice(openBracketIdx + 2);
@@ -169,9 +152,7 @@ async function resolveGhostLink(editor: Editor, title: Note["title"]) {
   const normalizedOriginal = title.trim().toLowerCase();
   const normalizedTruncated = truncated.toLowerCase();
   const notes = noteStore.get("notes");
-  const existingNote = notes.find(
-    (n) => n.title.trim().toLowerCase() === normalizedTruncated,
-  );
+  const existingNote = notes.find((n) => n.title.trim().toLowerCase() === normalizedTruncated);
   const noteId =
     existingNote?.id ??
     (await handleCreateNote({
@@ -226,10 +207,7 @@ function resolveDocLinks(editor: Editor) {
       if (node.type.spec.code) return false;
       if (node.type !== wikilinkType) return true;
       if (node.marks.some((mark) => mark.type.spec.code)) return false;
-      const title =
-        typeof node.attrs["title"] === "string"
-          ? node.attrs["title"].trim()
-          : "";
+      const title = typeof node.attrs["title"] === "string" ? node.attrs["title"].trim() : "";
       if (!title) return false;
       rendererLogger.devLog(`Checking wikilink: ${title} at pos ${pos}`);
       const targetId = titleMap.get(title);
@@ -270,9 +248,4 @@ function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
   });
 }
 
-export {
-  downgradeDocLinks,
-  resolveDocLinks,
-  resolveGhostLink,
-  WikilinkHandler,
-};
+export { downgradeDocLinks, resolveDocLinks, resolveGhostLink, WikilinkHandler };

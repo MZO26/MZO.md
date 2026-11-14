@@ -2,10 +2,7 @@ import { processWithLimit } from "@electron/concurrent";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppBackendError, AppErrorCode } from "@shared/errors";
-import {
-  FileNameSchema,
-  type ExportRequest,
-} from "@shared/schemas/request-schema";
+import { FileNameSchema, type ExportRequest } from "@shared/schemas/request-schema";
 import fs from "fs";
 import { randomUUID } from "node:crypto";
 import { open, rename, unlink } from "node:fs/promises";
@@ -31,10 +28,7 @@ const RETRYABLE_ERRORS = new Set(["EBUSY", "EPERM", "EACCES"]);
  * await safeCopy(); // retries up to 3× on EBUSY/EPERM/EACCES
  */
 
-function withRetry<A extends unknown[], T>(
-  fn: (...args: A) => Promise<T>,
-  retries: number = 2,
-) {
+function withRetry<A extends unknown[], T>(fn: (...args: A) => Promise<T>, retries: number = 2) {
   if (!Number.isInteger(retries) || retries <= 0) return fn;
   return async (...args: A): Promise<T> => {
     const start = 100;
@@ -45,9 +39,7 @@ function withRetry<A extends unknown[], T>(
       } catch (error: unknown) {
         const err = error as NodeJS.ErrnoException;
         if (i < retries && err.code && RETRYABLE_ERRORS.has(err.code)) {
-          mainLogger.devLog(
-            `Encountered ${err.code} during operation. Retrying...`,
-          );
+          mainLogger.devLog(`Encountered ${err.code} during operation. Retrying...`);
           const timeout = start * Math.pow(gr, i);
           await new Promise((resolve) => setTimeout(resolve, timeout));
           continue;
@@ -77,10 +69,7 @@ function withRetry<A extends unknown[], T>(
  * await writeAtomic("/tmp/img.png", buffer);
  */
 
-async function writeAtomic(
-  targetPath: string,
-  content: string | Buffer<ArrayBufferLike>,
-) {
+async function writeAtomic(targetPath: string, content: string | Buffer<ArrayBufferLike>) {
   const tempPath = `${targetPath}.${randomUUID()}.tmp`;
   try {
     const file = await open(tempPath, "wx");
@@ -133,19 +122,12 @@ async function sanitizeExportString(
       const internalPath = path.join(internalImgDir, fileName);
       const exportPath = path.join(assetsDir, fileName);
       try {
-        await fs.promises.copyFile(
-          internalPath,
-          exportPath,
-          fs.constants.COPYFILE_EXCL,
-        );
+        await fs.promises.copyFile(internalPath, exportPath, fs.constants.COPYFILE_EXCL);
       } catch (error: unknown) {
         const err = error as NodeJS.ErrnoException;
         if (err.code === "EEXIST") return;
         if (err.code !== "ENOENT") {
-          mainLogger.appError(
-            "[sanitizeExportString]: Failed to copy file",
-            err.code,
-          );
+          mainLogger.appError("[sanitizeExportString]: Failed to copy file", err.code);
         }
       }
     });
@@ -177,31 +159,21 @@ async function sanitizeImportString(
   internalImgDir: string,
 ) {
   const fileNames = new Set<string>();
-  const internalContent = importedContent.replace(
-    IMPORT_REGEX,
-    (_match, fileName) => {
-      fileNames.add(fileName);
-      return `appimg:///${fileName}`;
-    },
-  );
+  const internalContent = importedContent.replace(IMPORT_REGEX, (_match, fileName) => {
+    fileNames.add(fileName);
+    return `appimg:///${fileName}`;
+  });
   if (fileNames.size > 0) {
     await processWithLimit(fileNames.values(), 5, async (fileName) => {
       const sourceImagePath = path.join(importedFileDir, "assets", fileName);
       const destImagePath = path.join(internalImgDir, fileName);
       try {
-        await fs.promises.copyFile(
-          sourceImagePath,
-          destImagePath,
-          fs.constants.COPYFILE_EXCL,
-        );
+        await fs.promises.copyFile(sourceImagePath, destImagePath, fs.constants.COPYFILE_EXCL);
       } catch (error) {
         const err = error as NodeJS.ErrnoException;
         if (err.code === "EEXIST") return;
         if (err.code !== "ENOENT")
-          mainLogger.appError(
-            "[sanitizeImportString]: Failed to copy file:",
-            err.code,
-          );
+          mainLogger.appError("[sanitizeImportString]: Failed to copy file:", err.code);
       }
     });
   }
@@ -277,9 +249,7 @@ async function isInsideDirectory(
     } catch (error: unknown) {
       const err = error as NodeJS.ErrnoException;
       if (err.code !== "ENOENT") throw err;
-      const parentReal = await fs.promises.realpath(
-        path.dirname(absoluteFilePath),
-      );
+      const parentReal = await fs.promises.realpath(path.dirname(absoluteFilePath));
       targetPath = path.join(parentReal, path.basename(absoluteFilePath));
     }
     const relative = path.relative(basePath, targetPath);
@@ -320,9 +290,7 @@ function isInsideDirectorySync(
   options?: { skipBaseRealpath?: boolean },
 ): boolean {
   try {
-    const basePath = options?.skipBaseRealpath
-      ? baseDir
-      : fs.realpathSync(baseDir);
+    const basePath = options?.skipBaseRealpath ? baseDir : fs.realpathSync(baseDir);
     let targetPath: string;
     try {
       targetPath = fs.realpathSync(absoluteFilePath);

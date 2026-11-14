@@ -16,9 +16,7 @@ export interface TagAutocompleteState {
   tagId: string;
 }
 
-const tagAutocompleteKey = new PluginKey<TagAutocompleteState>(
-  "tagAutocomplete",
-);
+const tagAutocompleteKey = new PluginKey<TagAutocompleteState>("tagAutocomplete");
 const tagClickHandlerKey = new PluginKey("tagClickHandler");
 
 const NoteTagHandler = NoteTag.extend({
@@ -44,10 +42,7 @@ const NoteTagHandler = NoteTag.extend({
         if (nodeBefore?.type.name === "noteTag") {
           const title = nodeBefore.attrs["id"] || "";
           const from = $from.pos - nodeBefore.nodeSize;
-          return this.editor
-            .chain()
-            .insertContentAt({ from, to: $from.pos }, `#${title}`)
-            .run();
+          return this.editor.chain().insertContentAt({ from, to: $from.pos }, `#${title}`).run();
         }
         return false;
       },
@@ -72,12 +67,7 @@ const NoteTagHandler = NoteTag.extend({
       key: tagAutocompleteKey,
       state: {
         init: () => null,
-        apply: (
-          tr,
-          pluginState,
-          _oldEditorState,
-          newEditorState,
-        ): TagAutocompleteState | null => {
+        apply: (tr, pluginState, _oldEditorState, newEditorState): TagAutocompleteState | null => {
           if (!tr.docChanged && !tr.selectionSet) return pluginState;
           const { selection } = newEditorState;
           const { $from, empty } = newEditorState.selection;
@@ -94,10 +84,7 @@ const NoteTagHandler = NoteTag.extend({
           }
           const $head = selection.$head;
           const lookbackStart = Math.max(0, $head.parentOffset - 100);
-          const textBefore = $head.parent.textContent.slice(
-            lookbackStart,
-            $head.parentOffset,
-          );
+          const textBefore = $head.parent.textContent.slice(lookbackStart, $head.parentOffset);
           if (textBefore.lastIndexOf("#") === -1) return null;
           const match = TAG_REGEX.exec(textBefore);
           if (!match) return null;
@@ -126,8 +113,7 @@ const NoteTagHandler = NoteTag.extend({
       props: {
         decorations(state) {
           const pluginState = tagAutocompleteKey.getState(state);
-          if (!pluginState || !pluginState.autocompleteText)
-            return DecorationSet.empty;
+          if (!pluginState || !pluginState.autocompleteText) return DecorationSet.empty;
           return DecorationSet.create(state.doc, [
             Decoration.widget(
               pluginState.to,
@@ -185,14 +171,10 @@ function getTags(doc: JSONContent) {
   return Array.from(seen);
 }
 
-function addActiveTagToDoc(
-  doc: JSONContent,
-  activeTag: string | null,
-): JSONContent {
+function addActiveTagToDoc(doc: JSONContent, activeTag: string | null): JSONContent {
   if (!activeTag || activeTag === UNTAGGED) return doc;
   const normalizedTag = activeTag.trim().toLowerCase();
-  if (!normalizedTag || getTags(doc).some((t) => t === normalizedTag))
-    return doc;
+  if (!normalizedTag || getTags(doc).some((t) => t === normalizedTag)) return doc;
   const tagNode = {
     type: "noteTag",
     attrs: { id: normalizedTag },

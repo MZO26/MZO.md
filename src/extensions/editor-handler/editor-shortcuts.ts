@@ -87,8 +87,7 @@ export const MasterShortcuts = Extension.create({
           $from.marks().find((m) => m.type.name === "link") ??
           $from.nodeBefore?.marks.find((m) => m.type.name === "link") ??
           $from.nodeAfter?.marks.find((m) => m.type.name === "link");
-        const rawUrl =
-          this.editor.getAttributes("link")["href"] || linkMark?.attrs["href"];
+        const rawUrl = this.editor.getAttributes("link")["href"] || linkMark?.attrs["href"];
         if (typeof rawUrl !== "string") return false;
         const trimmed = rawUrl.trim();
         if (!trimmed) return false;
@@ -113,12 +112,7 @@ export const MasterShortcuts = Extension.create({
       },
       "Mod-k": () => {
         if (this.editor.isActive("link")) {
-          return this.editor
-            .chain()
-            .focus()
-            .extendMarkRange("link")
-            .unsetLink()
-            .run();
+          return this.editor.chain().focus().extendMarkRange("link").unsetLink().run();
         }
         return this.editor.chain().focus().setLink({ href: "" }).run();
       },

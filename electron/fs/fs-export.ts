@@ -24,18 +24,11 @@ async function singleExport(filePath: string, data: ExportRequest["content"]) {
   const absoluteTargetFolder = path.dirname(filePath);
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "Images");
-  const portableContent = await sanitizeExportString(
-    data,
-    absoluteTargetFolder,
-    imagesFolder,
-  );
+  const portableContent = await sanitizeExportString(data, absoluteTargetFolder, imagesFolder);
   try {
     await withRetry(writeAtomic)(filePath, portableContent);
   } catch (error) {
-    mainLogger.appError(
-      "[singleExport]: Failed to write repeated writeAtomic call",
-      error,
-    );
+    mainLogger.appError("[singleExport]: Failed to write repeated writeAtomic call", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }
   return filePath;
@@ -43,9 +36,7 @@ async function singleExport(filePath: string, data: ExportRequest["content"]) {
 
 async function batchExport(folder: string, payload: ExportRequest[]) {
   if (payload.length === 0) return [];
-  const uniqueExtensions = new Set(
-    payload.map((c) => c.extension.toLowerCase()),
-  );
+  const uniqueExtensions = new Set(payload.map((c) => c.extension.toLowerCase()));
   if (uniqueExtensions.size > 1) {
     const list = Array.from(uniqueExtensions).join(", ");
     mainLogger.appError(
@@ -75,15 +66,10 @@ async function batchExport(folder: string, payload: ExportRequest[]) {
       limit,
       async (item: ExportRequest): Promise<string | null> => {
         try {
-          const absoluteFilePath = await getFilePath(
-            absoluteTargetFolder,
-            item,
-          );
+          const absoluteFilePath = await getFilePath(absoluteTargetFolder, item);
           if (isPdf && item.extension === "pdf") {
             if (!pdfAssets || !hiddenWin || hiddenWin.isDestroyed()) {
-              mainLogger.appError(
-                "[batchExport]: Failed to access pdf printing requirements",
-              );
+              mainLogger.appError("[batchExport]: Failed to access pdf printing requirements");
               throw new AppBackendError(AppErrorCode.CancelledOperation);
             }
             return await exportPDFNote({
@@ -94,11 +80,7 @@ async function batchExport(folder: string, payload: ExportRequest[]) {
               assets: pdfAssets,
             });
           }
-          const portableContent = await sanitizeExportString(
-            item.content,
-            assetsDir,
-            imagesFolder,
-          );
+          const portableContent = await sanitizeExportString(item.content, assetsDir, imagesFolder);
           await writeAtomic(absoluteFilePath, portableContent);
           return absoluteFilePath;
         } catch (error) {
@@ -152,11 +134,7 @@ async function exportPDFNote(params: ExportPDFParams): Promise<string> {
   return filePath;
 }
 
-async function singlePDFExport(
-  filePath: string,
-  data: string,
-  landscape: boolean,
-) {
+async function singlePDFExport(filePath: string, data: string, landscape: boolean) {
   const hiddenWin = createHiddenPdfWindow();
   const assets = await getPDFAssets();
   try {

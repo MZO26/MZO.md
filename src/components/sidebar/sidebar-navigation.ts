@@ -18,9 +18,7 @@ async function navigateSidebar(e: KeyboardEvent) {
   switch (e.key) {
     case "ArrowDown":
       e.preventDefault();
-      activeIndex = isModifierPressed
-        ? visibleIds.length - 1
-        : move(1, activeIndex, visibleIds);
+      activeIndex = isModifierPressed ? visibleIds.length - 1 : move(1, activeIndex, visibleIds);
       break;
     case "ArrowUp":
       e.preventDefault();

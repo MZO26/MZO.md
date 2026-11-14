@@ -24,15 +24,11 @@ async function shouldRunBackup(dbBackupsDir: string) {
 }
 
 async function getSortedBackups(dbBackupsDir: string) {
-  const entries = await fs
-    .readdir(dbBackupsDir, { withFileTypes: true })
-    .catch(() => []);
+  const entries = await fs.readdir(dbBackupsDir, { withFileTypes: true }).catch(() => []);
   return entries
     .filter(
       (entry) =>
-        entry.isFile() &&
-        entry.name.startsWith("backup-") &&
-        entry.name.endsWith(".sqlite"),
+        entry.isFile() && entry.name.startsWith("backup-") && entry.name.endsWith(".sqlite"),
     )
     .map((entry) => entry.name)
     .sort((a, b) => b.localeCompare(a));
@@ -41,16 +37,10 @@ async function getSortedBackups(dbBackupsDir: string) {
 function initBackupScheduler(backupRootDir: string) {
   const dbBackupsDir = path.join(backupRootDir, "db-backups");
   void (async () => {
-    const entries = await fs
-      .readdir(dbBackupsDir, { withFileTypes: true })
-      .catch(() => []);
-    const tempFiles = entries.filter(
-      (e) => e.isFile() && e.name.endsWith(".tmp"),
-    );
+    const entries = await fs.readdir(dbBackupsDir, { withFileTypes: true }).catch(() => []);
+    const tempFiles = entries.filter((e) => e.isFile() && e.name.endsWith(".tmp"));
     await processWithLimit(tempFiles, 5, async (file) => {
-      await fs
-        .rm(path.join(dbBackupsDir, file.name), { force: true })
-        .catch(() => {});
+      await fs.rm(path.join(dbBackupsDir, file.name), { force: true }).catch(() => {});
     });
   })().catch((error) => {
     mainLogger.appError("Failed to clean leftover temp files", error);
@@ -62,16 +52,11 @@ function initBackupScheduler(backupRootDir: string) {
         const allBackups = await getSortedBackups(dbBackupsDir);
         const toDelete = allBackups.slice(MAX_BACKUPS);
         await processWithLimit(toDelete, 5, async (file) => {
-          await fs
-            .rm(path.join(dbBackupsDir, file), { force: true })
-            .catch(() => {});
+          await fs.rm(path.join(dbBackupsDir, file), { force: true }).catch(() => {});
         });
       }
     } catch (error) {
-      mainLogger.appError(
-        "[BackupScheduler]: Failed to run scheduled backup",
-        error,
-      );
+      mainLogger.appError("[BackupScheduler]: Failed to run scheduled backup", error);
     }
   }
   const runBackup = (): void => {

@@ -1,8 +1,5 @@
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
-import {
-  selectActive,
-  updateSelection,
-} from "@/components/quick-switch/quick-switch-ui";
+import { selectActive, updateSelection } from "@/components/quick-switch/quick-switch-ui";
 import { NAV_KEYS } from "@/utils/constants";
 
 async function handleListKeydown(

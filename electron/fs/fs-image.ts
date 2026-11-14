@@ -65,9 +65,7 @@ async function removeUnusedImages(hashes: string[]) {
       mainLogger.appError(`Failed to delete image: ${file}`, error);
     }
   });
-  mainLogger.devLog(
-    `Cleaned up ${hashes.length} ${hashes.length > 1 ? "images" : "image"}`,
-  );
+  mainLogger.devLog(`Cleaned up ${hashes.length} ${hashes.length > 1 ? "images" : "image"}`);
 }
 
 export { handleImageWriteMany, removeUnusedImages };

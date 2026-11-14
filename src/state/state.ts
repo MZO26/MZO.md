@@ -10,12 +10,8 @@ const STORAGE_KEY = "app_store";
 interface Store<T> {
   getState: () => Readonly<T>;
   get: <K extends keyof T>(key: K) => Readonly<T[K]>;
-  setState: (
-    newState: Partial<T> | ((state: Readonly<T>) => Partial<T>),
-  ) => void;
-  subscribe: (
-    listener: (state: Readonly<T>, prevState: Readonly<T>) => void,
-  ) => () => void;
+  setState: (newState: Partial<T> | ((state: Readonly<T>) => Partial<T>)) => void;
+  subscribe: (listener: (state: Readonly<T>, prevState: Readonly<T>) => void) => () => void;
   subscribeSel: <S>(
     selector: (state: Readonly<T>) => S,
     listener: (selected: S, previous: S) => void,
@@ -98,9 +94,7 @@ const stateStore = isDev ? withLogger(STATE_STORE_BASE) : STATE_STORE_BASE;
 
 const noteStore = isDev ? withLogger(NOTE_STORE_BASE) : NOTE_STORE_BASE;
 
-const settingsStore = isDev
-  ? withLogger(SETTINGS_STORE_BASE)
-  : SETTINGS_STORE_BASE;
+const settingsStore = isDev ? withLogger(SETTINGS_STORE_BASE) : SETTINGS_STORE_BASE;
 
 const localStore = isDev
   ? withLogger(withStorage(LOCAL_STORE_BASE, STORAGE_KEY))
@@ -124,14 +118,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function createStore<T extends Record<string, unknown>>(
-  initialState: T,
-): Store<T> {
+function createStore<T extends Record<string, unknown>>(initialState: T): Store<T> {
   let isUpdating = false;
   let state = { ...initialState };
-  const listeners = new Set<
-    (state: Readonly<T>, prevState: Readonly<T>) => void
-  >();
+  const listeners = new Set<(state: Readonly<T>, prevState: Readonly<T>) => void>();
 
   /**
    * Returns the current state snapshot (read-only reference).
@@ -182,9 +172,7 @@ function createStore<T extends Record<string, unknown>>(
    * store.setState((s) => ({ count: s.count + 1 }));
    */
 
-  function setState(
-    newState: Partial<T> | ((state: Readonly<T>) => Partial<T>),
-  ) {
+  function setState(newState: Partial<T> | ((state: Readonly<T>) => Partial<T>)) {
     if (isUpdating) {
       throw new Error("Called setState inside listener");
     }
@@ -219,9 +207,7 @@ function createStore<T extends Record<string, unknown>>(
    * off(); // unsubscribe
    */
 
-  function subscribe(
-    listener: (state: Readonly<T>, prevState: Readonly<T>) => void,
-  ) {
+  function subscribe(listener: (state: Readonly<T>, prevState: Readonly<T>) => void) {
     listeners.add(listener);
     return () => listeners.delete(listener);
   }
@@ -297,10 +283,7 @@ function withStorage<T extends Record<string, unknown>>(
           const currentState = store.getState();
           const nextState: Record<string, unknown> = { ...currentState };
           for (const stateKey of Object.keys(currentState)) {
-            if (
-              Object.hasOwn(currentState, stateKey) &&
-              Object.hasOwn(parsed, stateKey)
-            ) {
+            if (Object.hasOwn(currentState, stateKey) && Object.hasOwn(parsed, stateKey)) {
               const incomingValue = parsed[stateKey];
               if (typeof currentState[stateKey] === typeof incomingValue) {
                 nextState[stateKey] = incomingValue;
@@ -312,10 +295,7 @@ function withStorage<T extends Record<string, unknown>>(
       }
     }
   } catch (error) {
-    stateLogger.devLog(
-      `Failed to update store "${key}" from localStorage:`,
-      error,
-    );
+    stateLogger.devLog(`Failed to update store "${key}" from localStorage:`, error);
   }
   const storedSetState: Store<T>["setState"] = (newState) => {
     originalSetState(newState);
@@ -325,10 +305,7 @@ function withStorage<T extends Record<string, unknown>>(
         localStorage.setItem(key, JSON.stringify(currentState));
       }
     } catch (error) {
-      stateLogger.devLog(
-        `Failed to persist store "${key}" to localStorage:`,
-        error,
-      );
+      stateLogger.devLog(`Failed to persist store "${key}" to localStorage:`, error);
     }
   };
   return {
@@ -354,21 +331,12 @@ function withLogger<T extends object>(store: Store<T>): Store<T> {
   const originalSetState = store.setState;
   const loggedSetState: Store<T>["setState"] = (newState) => {
     const prevState = store.getState();
-    const resolvedUpdate =
-      typeof newState === "function" ? newState(prevState) : newState;
+    const resolvedUpdate = typeof newState === "function" ? newState(prevState) : newState;
     stateLogger.groupCollapsed(`[store update]`);
-    stateLogger.stateLog(
-      "color: #4caf50; font-weight: bold",
-      "Update:",
-      resolvedUpdate,
-    );
+    stateLogger.stateLog("color: #4caf50; font-weight: bold", "Update:", resolvedUpdate);
     originalSetState(resolvedUpdate);
     const nextState = store.getState();
-    stateLogger.stateLog(
-      "color: #2196f3; font-weight: bold",
-      "Next State:",
-      nextState,
-    );
+    stateLogger.stateLog("color: #2196f3; font-weight: bold", "Next State:", nextState);
     stateLogger.groupEnd();
   };
   return {
@@ -416,12 +384,7 @@ function shallowEq<A>(a: A, b: A): boolean {
     return true;
   }
   if (Array.isArray(a) !== Array.isArray(b)) return false;
-  if (
-    typeof a !== "object" ||
-    a === null ||
-    typeof b !== "object" ||
-    b === null
-  ) {
+  if (typeof a !== "object" || a === null || typeof b !== "object" || b === null) {
     return false;
   }
   const keysA = Object.keys(a) as Array<keyof A>;
@@ -435,12 +398,4 @@ function shallowEq<A>(a: A, b: A): boolean {
   return true;
 }
 
-export {
-  isRecord,
-  localStore,
-  noteStore,
-  settingsStore,
-  shallowEq,
-  stateStore,
-  type AppState,
-};
+export { isRecord, localStore, noteStore, settingsStore, shallowEq, stateStore, type AppState };

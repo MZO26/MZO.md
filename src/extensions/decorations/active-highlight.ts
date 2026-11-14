@@ -1,10 +1,5 @@
 import { Extension } from "@tiptap/core";
-import {
-  type EditorState,
-  NodeSelection,
-  Plugin,
-  PluginKey,
-} from "@tiptap/pm/state";
+import { type EditorState, NodeSelection, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 const key = new PluginKey("selectionHighlight");

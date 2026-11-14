@@ -33,9 +33,7 @@ function registerIpc(win: BrowserWindow) {
  * else show(res.error);
  */
 
-function withErrorHandling<A extends unknown[], T>(
-  fn: (...args: A) => Promise<T> | T,
-) {
+function withErrorHandling<A extends unknown[], T>(fn: (...args: A) => Promise<T> | T) {
   return async (...args: A): Promise<Result<T>> => {
     try {
       const data = await fn(...args);
@@ -94,9 +92,7 @@ const APP_ROOT_PATH = path.resolve(app.getAppPath());
 function validateSender(event: IpcMainInvokeEvent) {
   const frame = event.frameId ? event.senderFrame : null;
   if (!frame || frame !== event.sender.mainFrame) {
-    mainLogger.appError(
-      "[IPC Sender Validation]: Blocked: Missing frame or non-mainFrame sender",
-    );
+    mainLogger.appError("[IPC Sender Validation]: Blocked: Missing frame or non-mainFrame sender");
     throw new AppBackendError(AppErrorCode.SenderError);
   }
   const mainWindow = BrowserWindow.fromWebContents(event.sender);
@@ -110,28 +106,20 @@ function validateSender(event: IpcMainInvokeEvent) {
   try {
     senderUrl = new URL(frame.url);
   } catch {
-    mainLogger.appError(
-      `[IPC Sender Validation]: Blocked: Malformed URL "${frame.url}"`,
-    );
+    mainLogger.appError(`[IPC Sender Validation]: Blocked: Malformed URL "${frame.url}"`);
     throw new AppBackendError(AppErrorCode.SenderError);
   }
   if (!app.isPackaged && ALLOWED_DEV_ORIGINS.has(senderUrl.origin)) return true;
   if (senderUrl.protocol === "file:") {
     try {
       const filePath = path.resolve(fileURLToPath(senderUrl));
-      if (
-        filePath.startsWith(APP_ROOT_PATH + path.sep) ||
-        filePath === APP_ROOT_PATH
-      ) {
+      if (filePath.startsWith(APP_ROOT_PATH + path.sep) || filePath === APP_ROOT_PATH) {
         return true;
       }
     } catch {}
   }
-  if (senderUrl.protocol === "appimg:" && senderUrl.host === "bundle")
-    return true;
-  mainLogger.appError(
-    `[IPC Sender Validation]: Blocked senderFrame: ${senderUrl.href}`,
-  );
+  if (senderUrl.protocol === "appimg:" && senderUrl.host === "bundle") return true;
+  mainLogger.appError(`[IPC Sender Validation]: Blocked senderFrame: ${senderUrl.href}`);
   throw new AppBackendError(AppErrorCode.SenderError);
 }
 
@@ -166,10 +154,7 @@ const APP_START_TIME = Date.now();
  * if (!checkRateLimit(IPC_CHANNELS.NOTE_SAVE, LIMITS.NOTE_SAVE)) return;
  */
 
-function checkRateLimit(
-  channel: ValueOf<typeof IPC_CHANNELS>,
-  cooldownMs: ValueOf<typeof LIMITS>,
-) {
+function checkRateLimit(channel: ValueOf<typeof IPC_CHANNELS>, cooldownMs: ValueOf<typeof LIMITS>) {
   if (IS_DEV_MAIN) return true;
   const now = Date.now();
   if (now - APP_START_TIME < 5000) {
@@ -199,20 +184,10 @@ function checkRateLimit(
 function validation<T extends z.ZodType>(schema: T, payload: unknown) {
   const result = schema.safeParse(payload);
   if (!result.success) {
-    mainLogger.appError(
-      "[Validation]: Validation failed:",
-      z.prettifyError(result.error),
-    );
+    mainLogger.appError("[Validation]: Validation failed:", z.prettifyError(result.error));
     throw result.error;
   }
   return result.data;
 }
 
-export {
-  LIMITS,
-  checkRateLimit,
-  registerIpc,
-  validateSender,
-  validation,
-  withErrorHandling,
-};
+export { LIMITS, checkRateLimit, registerIpc, validateSender, validation, withErrorHandling };

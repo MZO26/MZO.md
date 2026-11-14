@@ -47,25 +47,14 @@ function getTaskInfo(state: EditorState): TaskInfo {
   return { tasks, completed };
 }
 
-function createNoteInfoDecoration(
-  state: EditorState,
-  oldSet?: DecorationSet,
-): DecorationSet {
+function createNoteInfoDecoration(state: EditorState, oldSet?: DecorationSet): DecorationSet {
   const first = state.doc.firstChild;
-  if (
-    !first ||
-    first.type !== state.schema.nodes["heading"] ||
-    first.content.size === 0
-  )
+  if (!first || first.type !== state.schema.nodes["heading"] || first.content.size === 0)
     return DecorationSet.empty;
   const info = getNoteInfo(state);
   if (!info) return DecorationSet.empty;
   const existing = oldSet?.find()[0];
-  if (
-    existing &&
-    existing.spec.key === info.key &&
-    existing.from === first.nodeSize
-  ) {
+  if (existing && existing.spec.key === info.key && existing.from === first.nodeSize) {
     return oldSet;
   }
   return DecorationSet.create(state.doc, [
@@ -115,8 +104,7 @@ export const NoteInfoWidget = Extension.create({
           init: (_, state) => createNoteInfoDecoration(state),
           apply: (tr, oldSet, _oldState, newState) => {
             try {
-              if (!tr.docChanged && !tr.getMeta("noteInfoRefresh"))
-                return oldSet;
+              if (!tr.docChanged && !tr.getMeta("noteInfoRefresh")) return oldSet;
               return createNoteInfoDecoration(newState, oldSet);
             } catch {
               return DecorationSet.empty;

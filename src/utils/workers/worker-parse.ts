@@ -5,9 +5,7 @@ import { handleWorkerError } from "@/utils/workers/worker-factory";
 import { WorkerErrorCode } from "@shared/errors";
 import type { Id } from "@shared/schemas/note-schema";
 
-self.onmessage = (
-  e: MessageEvent<{ id: Id } & WorkerRequest<{ markdown: string }>>,
-) => {
+self.onmessage = (e: MessageEvent<{ id: Id } & WorkerRequest<{ markdown: string }>>) => {
   const { id, payload } = e.data;
   if (typeof payload !== "string") {
     self.postMessage({

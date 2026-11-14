@@ -1,11 +1,6 @@
 import { type Editor, Extension } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import {
-  type EditorState,
-  NodeSelection,
-  Plugin,
-  PluginKey,
-} from "@tiptap/pm/state";
+import { type EditorState, NodeSelection, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 export type CountState = {
@@ -19,11 +14,7 @@ export interface TextMetricsOptions {
 
 const key = new PluginKey<CountState>("textMetrics");
 
-const countNode = (
-  node: ProseMirrorNode,
-  from = 0,
-  to = node.content.size,
-): CountState => {
+const countNode = (node: ProseMirrorNode, from = 0, to = node.content.size): CountState => {
   const text = node.textBetween(from, to, "\n", "");
   const trimmed = text.trim();
   const characters = text.replaceAll("\n", "").length;

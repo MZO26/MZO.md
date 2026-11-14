@@ -28,16 +28,14 @@ import type { ResolvedTheme } from "@shared/shared-types";
 function initListeners() {
   window.electronAPI.onTriggerTableAction((action) => triggerTableMenu(action));
 
-  window.noteAPI.onTriggerExport(
-    async (ids: Id[], extension: ExportRequest["extension"]) => {
-      const [singleId] = ids;
-      if (singleId && ids.length === 1) {
-        await triggerSingleExport(singleId, extension);
-        return;
-      }
-      await exportSelection(ids, extension);
-    },
-  );
+  window.noteAPI.onTriggerExport(async (ids: Id[], extension: ExportRequest["extension"]) => {
+    const [singleId] = ids;
+    if (singleId && ids.length === 1) {
+      await triggerSingleExport(singleId, extension);
+      return;
+    }
+    await exportSelection(ids, extension);
+  });
 
   window.noteAPI.onTriggerCopyRichText(async (ids: Id[]) => {
     const loading = createGlobalSpinner();
@@ -100,11 +98,7 @@ function initListeners() {
         };
       }
       const nextSelectedIds = state.selectedIds.union(new Set(ids));
-      if (
-        state.selectionMode &&
-        nextSelectedIds.size === state.selectedIds.size
-      )
-        return state;
+      if (state.selectionMode && nextSelectedIds.size === state.selectedIds.size) return state;
       return {
         ...state,
         selectionMode: true,
@@ -117,11 +111,9 @@ function initListeners() {
     await triggerDuplicate(id);
   });
 
-  window.electronAPI.onThemeChanged(
-    (resolvedTheme: Readonly<ResolvedTheme>) => {
-      document.documentElement.dataset["theme"] = resolvedTheme;
-    },
-  );
+  window.electronAPI.onThemeChanged((resolvedTheme: Readonly<ResolvedTheme>) => {
+    document.documentElement.dataset["theme"] = resolvedTheme;
+  });
 
   window.electronAPI.onRequestFlush(() => {
     debouncedSaveNote.flush()?.catch(rendererLogger.appError);

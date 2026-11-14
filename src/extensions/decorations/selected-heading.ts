@@ -15,9 +15,7 @@ export interface TocSelectedHeadingStorage {
 
 type PluginMeta = { clear: true } | { from: number; to: number; clear?: false };
 
-const tocSelectedHeadingKey = new PluginKey<DecorationSet>(
-  "tocSelectedHeading",
-);
+const tocSelectedHeadingKey = new PluginKey<DecorationSet>("tocSelectedHeading");
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -27,10 +25,7 @@ declare module "@tiptap/core" {
   }
 }
 
-function resolveHeadingPos(
-  doc: PMNode,
-  pos: number,
-): { from: number; to: number } | null {
+function resolveHeadingPos(doc: PMNode, pos: number): { from: number; to: number } | null {
   if (pos < 0 || pos > doc.content.size) return null;
   const $pos = doc.resolve(pos);
   if ($pos.nodeAfter?.type.name === "heading") {
@@ -78,8 +73,7 @@ export const TocSelectedHeading = Extension.create<
           const $pos = resolveHeadingPos(tr.doc, pos);
           if (!$pos) return false;
           if (dispatch) {
-            if (this.storage.highlightTimeout)
-              clearTimeout(this.storage.highlightTimeout);
+            if (this.storage.highlightTimeout) clearTimeout(this.storage.highlightTimeout);
             tr.setMeta(tocSelectedHeadingKey, {
               from: $pos.from,
               to: $pos.to,
@@ -108,9 +102,7 @@ export const TocSelectedHeading = Extension.create<
         state: {
           init: () => DecorationSet.empty,
           apply: (tr, oldSet) => {
-            const meta = tr.getMeta(tocSelectedHeadingKey) as
-              | PluginMeta
-              | undefined;
+            const meta = tr.getMeta(tocSelectedHeadingKey) as PluginMeta | undefined;
             if (meta?.clear) return DecorationSet.empty;
             if (meta && "from" in meta && "to" in meta) {
               const deco = Decoration.node(meta.from, meta.to, {

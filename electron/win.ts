@@ -31,10 +31,7 @@ function nextZoom(current: (typeof ZOOMS)[number], action: ZoomAction) {
 function isWindowVisible(x: number, y: number) {
   return screen
     .getAllDisplays()
-    .some(
-      ({ bounds: d }) =>
-        x >= d.x && y >= d.y && x < d.x + d.width && y < d.y + d.height,
-    );
+    .some(({ bounds: d }) => x >= d.x && y >= d.y && x < d.x + d.width && y < d.y + d.height);
 }
 
 function saveWindowBounds() {
@@ -44,26 +41,18 @@ function saveWindowBounds() {
   const settings = settingsService.get("window_bounds");
   try {
     const bounds =
-      typeof win.getNormalBounds === "function"
-        ? win.getNormalBounds()
-        : win.getBounds();
+      typeof win.getNormalBounds === "function" ? win.getNormalBounds() : win.getBounds();
     const preparedBounds = {
       x: bounds.x,
       y: bounds.y,
       width: Math.max(700, bounds.width),
       height: Math.max(500, bounds.height),
     };
-    const result = validation(
-      StoreSchema.shape["window_bounds"],
-      preparedBounds,
-    );
+    const result = validation(StoreSchema.shape["window_bounds"], preparedBounds);
     const mergedSettings = { ...settings, window_bounds: result };
     settingsService.updateSettings(mergedSettings);
   } catch (error) {
-    mainLogger.appError(
-      "[saveWindowBounds]: Failed to save window bounds:",
-      error,
-    );
+    mainLogger.appError("[saveWindowBounds]: Failed to save window bounds:", error);
   }
 }
 

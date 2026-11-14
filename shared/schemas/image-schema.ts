@@ -13,9 +13,4 @@ const ImagePayloadsSchema = z.array(ImagePayloadSchema);
 
 type ImagePayload = z.infer<typeof ImagePayloadSchema>;
 
-export {
-  DbImageSchema,
-  ImageHashSchema,
-  ImagePayloadsSchema,
-  type ImagePayload,
-};
+export { DbImageSchema, ImageHashSchema, ImagePayloadsSchema, type ImagePayload };

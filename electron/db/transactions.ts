@@ -148,8 +148,7 @@ class Transactions {
       const safeLinks = links ?? [];
       const safeImages = images ?? [];
       const result = this.createNoteStmt.get(noteParams) as
-        | Omit<NoteRow, "content" | "plain_text">
-        | undefined;
+        Omit<NoteRow, "content" | "plain_text"> | undefined;
       if (!result) {
         throw new AppBackendError(AppErrorCode.DBError);
       }
@@ -207,8 +206,7 @@ class Transactions {
     safeTags,
   }: CreateTransactionLogicArgs) {
     const result = this.createNoteStmt.get(noteParams) as
-      | Omit<NoteRow, "content" | "plain_text">
-      | undefined;
+      Omit<NoteRow, "content" | "plain_text"> | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -268,8 +266,7 @@ class Transactions {
     safeTags,
   }: UpdateTransactionLogicArgs) {
     const result = this.updateNoteStmt.get(noteParams) as
-      | Omit<NoteRow, "content" | "plain_text">
-      | undefined;
+      Omit<NoteRow, "content" | "plain_text"> | undefined;
     if (!result) {
       throw new AppBackendError(AppErrorCode.DBError);
     }
@@ -288,8 +285,7 @@ class Transactions {
       });
     }
     const images = db.getUsedImages(noteParams.id);
-    if (images.length === 0 && safeImages.length === 0)
-      return { result, diff: new Set() };
+    if (images.length === 0 && safeImages.length === 0) return { result, diff: new Set() };
     const seen = new Set<string>(images);
     const hashes = [];
     for (const image of safeImages) {

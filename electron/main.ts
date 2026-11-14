@@ -7,18 +7,11 @@ import {
   registerCustomProtocol,
   setupLocalImageProtocol,
 } from "@electron/handler/navigation-handler";
-import {
-  mainLogger,
-  setPermissions,
-} from "@electron/handler/permission-handler";
+import { mainLogger, setPermissions } from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { registerIpc } from "@electron/ipc/ipc-validation";
-import {
-  getTitleBarOverlay,
-  initTheme,
-  onOSThemeChange,
-} from "@electron/titlebar";
+import { getTitleBarOverlay, initTheme, onOSThemeChange } from "@electron/titlebar";
 import { isWindowVisible, saveWindowBounds } from "@electron/win";
 import { type AppSettings } from "@shared/schemas/store-schema";
 import {
@@ -70,10 +63,7 @@ function initSettings(): Readonly<AppSettings> {
     db.open();
     settingsService.initialize();
   } catch (error) {
-    mainLogger.appError(
-      "[initSettings]: Couldn't load settings from DB. Using defaults.",
-      error,
-    );
+    mainLogger.appError("[initSettings]: Couldn't load settings from DB. Using defaults.", error);
   }
   return settingsService.getSettings();
 }
@@ -111,11 +101,7 @@ async function createWindow() {
       spellcheck: true,
     },
   };
-  if (
-    bounds?.x !== undefined &&
-    bounds?.y !== undefined &&
-    isWindowVisible(bounds.x, bounds.y)
-  ) {
+  if (bounds?.x !== undefined && bounds?.y !== undefined && isWindowVisible(bounds.x, bounds.y)) {
     windowConfig.x = bounds.x;
     windowConfig.y = bounds.y;
   } else {
@@ -139,8 +125,7 @@ async function createWindow() {
         try {
           saveWindowBounds();
         } catch {}
-        if (!win?.isDestroyed())
-          win?.webContents.send(IPC_CHANNELS.REQUEST_FLUSH);
+        if (!win?.isDestroyed()) win?.webContents.send(IPC_CHANNELS.REQUEST_FLUSH);
         flushTimeout = setTimeout(() => {
           mainLogger.devLog("Flush timeout - forced close");
           isReadyToClose = true;

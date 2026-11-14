@@ -12,10 +12,7 @@ import { handleSearch } from "@/components/sidebar/sidebar-search";
 import { noteStore } from "@/state/state";
 import { QUICK_SWITCH_FTS_LIMIT } from "@/utils/constants";
 import { withLatestGuard } from "@/utils/helpers";
-import type {
-  QuickSwitchDisplayBadge,
-  QuickSwitchFullTextItem,
-} from "@/utils/types";
+import type { QuickSwitchDisplayBadge, QuickSwitchFullTextItem } from "@/utils/types";
 import {
   isNoteID,
   type Id,
@@ -34,10 +31,7 @@ function normalizeText(str: string): string {
     .trim();
 }
 
-function filterByTitle<T extends { title: string }>(
-  query: string,
-  items: readonly T[],
-): T[] {
+function filterByTitle<T extends { title: string }>(query: string, items: readonly T[]): T[] {
   const normalizedQuery = normalizeText(query).trim();
   if (!normalizedQuery) return [...items];
   const tokens = normalizedQuery.split(/\s+/);
@@ -103,9 +97,7 @@ const filterTitles = withLatestGuard(
       const tagQuery = nextQuery.slice(1).trim().toLowerCase();
       const notes = noteStore.get("notes");
       const matchedTags = filterByTitle(tagQuery, getTags(notes));
-      const exactMatch = matchedTags.some(
-        (t) => t.title.toLowerCase() === tagQuery,
-      );
+      const exactMatch = matchedTags.some((t) => t.title.toLowerCase() === tagQuery);
       if (tagQuery.length > 0 && !exactMatch) {
         matchedTags.push({
           title: tagQuery,
@@ -127,14 +119,10 @@ const filterTitles = withLatestGuard(
         : await computeDisplayNotes();
       if (isStale()) return;
       const notesToLink = rawNotes.flatMap((n) =>
-        "id" in n
-          ? [{ id: n.id, title: n.title, section: "wikilink" as const }]
-          : [],
+        "id" in n ? [{ id: n.id, title: n.title, section: "wikilink" as const }] : [],
       );
       const normalizedQuery = linkQuery.toLowerCase();
-      const exactMatch = notesToLink.some(
-        (n) => n.title.toLowerCase() === normalizedQuery,
-      );
+      const exactMatch = notesToLink.some((n) => n.title.toLowerCase() === normalizedQuery);
       setDisplay(
         [
           ...notesToLink,
@@ -148,10 +136,7 @@ const filterTitles = withLatestGuard(
     }
     if (nextQuery.startsWith("/") || nextQuery.startsWith(">")) {
       const cmdQuery = nextQuery.slice(1).trim();
-      const matchedCommands = filterByTitle(
-        cmdQuery,
-        getAllUsableEditorCommands(),
-      );
+      const matchedCommands = filterByTitle(cmdQuery, getAllUsableEditorCommands());
       const matchedSettings = filterByTitle(cmdQuery, getSettingsCommands());
       setDisplay([...matchedCommands, ...matchedSettings], qsState);
       return;
@@ -163,18 +148,13 @@ const filterTitles = withLatestGuard(
       setDisplay(
         [
           ...defaults,
-          ...(nextQuery.length > 0
-            ? [{ title: nextQuery, section: "create" as const }]
-            : []),
+          ...(nextQuery.length > 0 ? [{ title: nextQuery, section: "create" as const }] : []),
         ],
         qsState,
       );
       return;
     }
-    setDisplay(
-      [...result, { title: nextQuery, section: "create" as const }],
-      qsState,
-    );
+    setDisplay([...result, { title: nextQuery, section: "create" as const }], qsState);
   },
 );
 
@@ -198,12 +178,10 @@ function computeTitleFilterResults(query: SearchQuery) {
     let score: number = 4;
     if (normalized === normalizedQuery) score = 0;
     else if (index === 0) score = 1;
-    else if (index > 0 && WORD_BOUNDARY.test(normalized[index - 1] ?? ""))
-      score = 2;
+    else if (index > 0 && WORD_BOUNDARY.test(normalized[index - 1] ?? "")) score = 2;
     else {
       const titleWords = normalized.split(WORD_BOUNDARY);
-      if (tokens.every((t) => titleWords.some((w) => w.startsWith(t))))
-        score = 3;
+      if (tokens.every((t) => titleWords.some((w) => w.startsWith(t)))) score = 3;
     }
     results.push({
       id: note.id,

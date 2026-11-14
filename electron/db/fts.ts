@@ -39,13 +39,10 @@ class NotesSearch {
   }
 
   private createVirtualTable() {
-    const available = this.db
-      .prepare(`SELECT 1 FROM pragma_module_list WHERE name = 'fts5'`)
-      .get();
+    const available = this.db.prepare(`SELECT 1 FROM pragma_module_list WHERE name = 'fts5'`).get();
 
     if (!available) {
-      const msg =
-        "SQLite FTS5 extension not available. Ensure your SQLite build includes FTS5.";
+      const msg = "SQLite FTS5 extension not available. Ensure your SQLite build includes FTS5.";
       throw new AppBackendError(AppErrorCode.DBError, msg);
     }
     mainLogger.devLog("[FTS5]: Creating Virtual Table");
@@ -112,9 +109,7 @@ class NotesSearch {
       INSERT INTO notes_fts(notes_fts) VALUES ('rebuild');
       INSERT INTO notes_fts(notes_fts) VALUES ('optimize');
     `);
-    mainLogger.devLog(
-      "[FTS5]: Search index rebuilt and optimized successfully.",
-    );
+    mainLogger.devLog("[FTS5]: Search index rebuilt and optimized successfully.");
   }
 
   public search(query: SearchQuery) {
@@ -130,9 +125,7 @@ class NotesSearch {
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         if (!row) continue;
-        const finalSnippet =
-          row.search_match ??
-          this.buildManualSnippet(row.raw_text ?? "", words);
+        const finalSnippet = row.search_match ?? this.buildManualSnippet(row.raw_text ?? "", words);
         matches.push({
           id: row.id,
           title: row.title,
@@ -146,10 +139,7 @@ class NotesSearch {
         mainLogger.appError("[FTS5]: Search failed again and is now disabled.");
         return [];
       }
-      mainLogger.appError(
-        "[FTS5]: Search failed. Desynchronized index. Rebuilding...",
-        error,
-      );
+      mainLogger.appError("[FTS5]: Search failed. Desynchronized index. Rebuilding...", error);
       this.isRebuilding = true;
       try {
         this.rebuildIndex();
@@ -173,14 +163,9 @@ class NotesSearch {
     const start = Math.max(0, matchIndex - 60);
     const end = Math.min(text.length, matchIndex + 80);
     const snippet =
-      (start > 0 ? "..." : "") +
-      text.slice(start, end) +
-      (end < text.length ? "..." : "");
+      (start > 0 ? "..." : "") + text.slice(start, end) + (end < text.length ? "..." : "");
     const highlightRegex = new RegExp(`(${escaped})`, "gi");
-    return snippet.replace(
-      highlightRegex,
-      '<mark class="active-search-highlight">$1</mark>',
-    );
+    return snippet.replace(highlightRegex, '<mark class="active-search-highlight">$1</mark>');
   }
 
   private normalizeFTSQuery(input: SearchQuery) {

@@ -5,11 +5,7 @@ import { compressImageInWorker } from "@/utils/workers/worker-init";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type { Editor, JSONContent } from "@tiptap/core";
 
-async function processAndInsertImages(
-  files: File[],
-  editor: Editor,
-  dropPos: number,
-) {
+async function processAndInsertImages(files: File[], editor: Editor, dropPos: number) {
   const validFiles = files.filter(
     (file) => file.size <= MAX_SIZE && ALLOWED_TYPES.includes(file.type),
   );
@@ -32,9 +28,7 @@ async function processAndInsertImages(
         };
       }),
     );
-    const payload = compressedResults.filter(
-      (item): item is ImagePayload => item !== null,
-    );
+    const payload = compressedResults.filter((item): item is ImagePayload => item !== null);
     if (payload.length === 0) return;
     const result = await imageWriteMany(payload);
     if (!result.success) {

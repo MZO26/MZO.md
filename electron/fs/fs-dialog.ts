@@ -1,9 +1,6 @@
 import { validation } from "@electron/ipc/ipc-validation";
 import { AppBackendError, AppErrorCode } from "@shared/errors";
-import {
-  type ExportRequest,
-  FileNameSchema,
-} from "@shared/schemas/request-schema";
+import { type ExportRequest, FileNameSchema } from "@shared/schemas/request-schema";
 import { app, type BrowserWindow, dialog } from "electron";
 import path from "path";
 
@@ -31,10 +28,7 @@ async function handleImportDialog(win: BrowserWindow) {
 
 async function handleDBBackupDialog(win: BrowserWindow) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const defaultPath = path.join(
-    app.getPath("documents"),
-    `backup-${timestamp}.sqlite`,
-  );
+  const defaultPath = path.join(app.getPath("documents"), `backup-${timestamp}.sqlite`);
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
     title: "Backup database",
     defaultPath,
@@ -68,9 +62,7 @@ async function handleExportDialog(win: BrowserWindow, data: ExportRequest) {
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
     title: "Export Note",
     defaultPath: fileName,
-    filters: [
-      { name: data.extension.toUpperCase(), extensions: [data.extension] },
-    ],
+    filters: [{ name: data.extension.toUpperCase(), extensions: [data.extension] }],
   });
   if (canceled || !filePath) {
     throw new AppBackendError(AppErrorCode.CancelledOperation);

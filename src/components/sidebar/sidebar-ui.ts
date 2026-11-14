@@ -77,10 +77,7 @@ function handleHeaderChange(change: FilterMode, activeTag?: string) {
   }
 }
 
-const getSidebarEmptyStateClone = createTemplateCloner(
-  "sidebarEmptyStateTemplate",
-  isDiv,
-);
+const getSidebarEmptyStateClone = createTemplateCloner("sidebarEmptyStateTemplate", isDiv);
 
 let emptyStateClone: HTMLDivElement | null = null;
 
@@ -96,14 +93,8 @@ function renderSidebarEmptyState(sidebarParams: SidebarParams) {
 
 function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
   const isSearch = !!query;
-  const titleEl = requireElement<HTMLHeadingElement>(
-    ".empty-state-title",
-    emptyState,
-  );
-  const descEl = requireElement<HTMLParagraphElement>(
-    ".empty-state-description",
-    emptyState,
-  );
+  const titleEl = requireElement<HTMLHeadingElement>(".empty-state-title", emptyState);
+  const descEl = requireElement<HTMLParagraphElement>(".empty-state-description", emptyState);
   if (isSearch) {
     titleEl.textContent = "No results found";
     descEl.replaceChildren("No matching notes found");
@@ -135,21 +126,14 @@ function renderNoteList({
   const { sidebar } = useCore("sidebar");
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
-  const currentMode: FilterMode = query
-    ? "search"
-    : activeTag
-      ? "tag"
-      : "recent";
+  const currentMode: FilterMode = query ? "search" : activeTag ? "tag" : "recent";
   const headerElement = handleHeaderChange(currentMode, activeTag ?? undefined);
   if (headerElement) {
     fragment.appendChild(headerElement);
   }
   const isFiltered = !!activeTag;
-  const isLimited =
-    !isFiltered && visibleNotes.length > SIDEBAR_ALL_NOTES_LIMIT;
-  const displayNotes = isFiltered
-    ? visibleNotes
-    : visibleNotes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
+  const isLimited = !isFiltered && visibleNotes.length > SIDEBAR_ALL_NOTES_LIMIT;
+  const displayNotes = isFiltered ? visibleNotes : visibleNotes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
   for (const note of displayNotes) {
     const item = createNoteItem(note);
     const safe = sanitizeSnippets({ note, snippets: searchSnippets });
@@ -176,23 +160,13 @@ function renderNoteList({
 
 function resizeSidebar() {
   const storedWidth = localStore.get("sidebarWidth");
-  if (
-    typeof storedWidth === "number" &&
-    Number.isInteger(storedWidth) &&
-    storedWidth > 0
-  ) {
-    document.documentElement.style.setProperty(
-      "--sidebar-width",
-      `${storedWidth}px`,
-    );
+  if (typeof storedWidth === "number" && Number.isInteger(storedWidth) && storedWidth > 0) {
+    document.documentElement.style.setProperty("--sidebar-width", `${storedWidth}px`);
   }
   const minWidth = 0;
   const maxWidth = 420;
   const { sidebarContainer } = useCore("sidebarContainer");
-  const resizer = requireElement<HTMLDivElement>(
-    ".resizer-sidebar",
-    sidebarContainer,
-  );
+  const resizer = requireElement<HTMLDivElement>(".resizer-sidebar", sidebarContainer);
 
   let isResizing = false;
   let isUpdatePending = false;
@@ -216,10 +190,7 @@ function resizeSidebar() {
       const deltaX = e.clientX - startX;
       const adjustedWidth = startWidth + deltaX;
       currentWidth = Math.max(minWidth, Math.min(adjustedWidth, maxWidth));
-      document.documentElement.style.setProperty(
-        "--sidebar-width",
-        `${currentWidth}px`,
-      );
+      document.documentElement.style.setProperty("--sidebar-width", `${currentWidth}px`);
       isUpdatePending = false;
     });
   };

@@ -120,8 +120,7 @@ const DOMPURIFY_CONFIG = {
   ],
   ALLOW_ONLY_SAFE_URI_ATTRIBUTES: true,
   FORCE_BODY: true,
-  ALLOWED_URI_REGEXP:
-    /^(?:(?:https|appimg):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+  ALLOWED_URI_REGEXP: /^(?:(?:https|appimg):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
 };
 
 const KATEX_MACROS = {
@@ -175,13 +174,7 @@ const EDITOR_WIDTH_LABELS = {
 
 const EDITOR_WIDTH = ["comfortable", "normal", "wide"] as const;
 
-const NOTE_SECTION = [
-  "search",
-  "recent",
-  "backlink",
-  "outgoing",
-  "related",
-] as const;
+const NOTE_SECTION = ["search", "recent", "backlink", "outgoing", "related"] as const;
 
 export {
   ALLOWED_TYPES,

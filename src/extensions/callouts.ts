@@ -6,10 +6,8 @@ export type CalloutType = keyof typeof CALLOUT_CONFIG;
 
 const CALLOUT_REGEX =
   /^>[ \t]*\[!(note|tip|warning|danger|info)\][ \t]*\n((?:>[ \t]?.*(?:\n|$))*)/i;
-const CALLOUT_INPUT_REGEX =
-  /^(?:>\s?)?\[!(note|tip|warning|danger|info)\][\s\n]$/i;
-const CALLOUT_PASTE_REGEX =
-  /^(?:>\s?)?\[!(note|tip|warning|danger|info)\][ \t]*/gim;
+const CALLOUT_INPUT_REGEX = /^(?:>\s?)?\[!(note|tip|warning|danger|info)\][\s\n]$/i;
+const CALLOUT_PASTE_REGEX = /^(?:>\s?)?\[!(note|tip|warning|danger|info)\][ \t]*/gim;
 const CALLOUT_PREFIX_REGEX = /^>\s*\[!(?:note|tip|warning|danger|info)\]/im;
 
 const CALLOUT_CONFIG = {
@@ -95,14 +93,11 @@ export const Callout = Node.create({
         find: CALLOUT_INPUT_REGEX,
         handler: ({ state, range, match }) => {
           const type =
-            typeof match[1] === "string"
-              ? match[1].toLowerCase()
-              : ("note" as CalloutType);
+            typeof match[1] === "string" ? match[1].toLowerCase() : ("note" as CalloutType);
           const { tr } = state;
           const $from = state.doc.resolve(range.from);
           const isInsideBlockquote =
-            $from.depth >= 2 &&
-            $from.node($from.depth - 1).type.name === "blockquote";
+            $from.depth >= 2 && $from.node($from.depth - 1).type.name === "blockquote";
           tr.delete(range.from, range.to);
           if (isInsideBlockquote) {
             const blockquotePos = $from.before($from.depth - 1);
@@ -132,8 +127,7 @@ export const Callout = Node.create({
           const to = tr.mapping.map(range.to);
           const $from = tr.doc.resolve(from);
           const isInsideBlockquote =
-            $from.depth >= 2 &&
-            $from.node($from.depth - 1).type.name === "blockquote";
+            $from.depth >= 2 && $from.node($from.depth - 1).type.name === "blockquote";
           tr.delete(from, to);
           if (isInsideBlockquote) {
             const blockquotePos = $from.before($from.depth - 1);
@@ -152,10 +146,7 @@ export const Callout = Node.create({
   addKeyboardShortcuts() {
     const isBetweenCallouts = (state: EditorState) => {
       const $pos = state.selection.$anchor;
-      if (
-        $pos.parent.type.name !== "paragraph" ||
-        $pos.parent.content.size > 0
-      ) {
+      if ($pos.parent.type.name !== "paragraph" || $pos.parent.content.size > 0) {
         return false;
       }
       const parent = $pos.node($pos.depth - 1);

@@ -2,12 +2,7 @@ import { getCommandState } from "@/components/editor/editor-commands";
 import { localStore } from "@/state/state";
 import { withRafSchedule } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
-import type {
-  Action,
-  ActionMap,
-  ActiveStateParams,
-  ToolbarItem,
-} from "@/utils/types";
+import type { Action, ActionMap, ActiveStateParams, ToolbarItem } from "@/utils/types";
 import { createIconButton } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 
@@ -44,30 +39,25 @@ function isAction(item: ToolbarItem): item is Action {
   return !("type" in item) && "action" in item;
 }
 
-const updateActiveStates = withRafSchedule(
-  (params: ActiveStateParams): void => {
-    const { buttonElements, actions, editor } = params;
-    const valid = Object.entries(actions).reduce<[string, Action][]>(
-      (acc, [key, value]) => {
-        if (!isAction(value)) return acc;
-        acc.push([key, value]);
-        return acc;
-      },
-      [],
-    );
-    for (const [key, item] of valid) {
-      const btn = buttonElements.get(key);
-      if (!btn) continue;
-      const { isActive, isDisabled } = getCommandState(editor, item.action);
-      if (btn.classList.contains("is-active") !== isActive) {
-        btn.classList.toggle("is-active", isActive);
-      }
-      if (btn.disabled !== isDisabled) {
-        btn.disabled = isDisabled;
-      }
+const updateActiveStates = withRafSchedule((params: ActiveStateParams): void => {
+  const { buttonElements, actions, editor } = params;
+  const valid = Object.entries(actions).reduce<[string, Action][]>((acc, [key, value]) => {
+    if (!isAction(value)) return acc;
+    acc.push([key, value]);
+    return acc;
+  }, []);
+  for (const [key, item] of valid) {
+    const btn = buttonElements.get(key);
+    if (!btn) continue;
+    const { isActive, isDisabled } = getCommandState(editor, item.action);
+    if (btn.classList.contains("is-active") !== isActive) {
+      btn.classList.toggle("is-active", isActive);
     }
-  },
-);
+    if (btn.disabled !== isDisabled) {
+      btn.disabled = isDisabled;
+    }
+  }
+});
 
 function buildToolbarMenu(container: HTMLDivElement, actions: ActionMap) {
   const { editor } = useCore("editor");
@@ -101,9 +91,4 @@ function setupToolbarListeners(container: HTMLDivElement, actions: ActionMap) {
   };
 }
 
-export {
-  buildToolbarMenu,
-  buttonMap,
-  setupToolbarListeners,
-  updateActiveStates,
-};
+export { buildToolbarMenu, buttonMap, setupToolbarListeners, updateActiveStates };

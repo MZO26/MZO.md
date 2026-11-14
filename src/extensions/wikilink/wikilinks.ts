@@ -50,8 +50,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
     },
     title: {
       default: null,
-      parseHTML: (el) =>
-        el.getAttribute("data-title") || el.textContent.trim() || "",
+      parseHTML: (el) => el.getAttribute("data-title") || el.textContent.trim() || "",
     },
   }),
   parseHTML: () => [
@@ -64,9 +63,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
     const id = String(node.attrs["id"] ?? "").trim();
     const title = node.attrs["title"] || "";
     const validId = isNoteID(id);
-    const existingTitle = validId
-      ? noteStore.get("noteIndex").get(id)?.title
-      : undefined;
+    const existingTitle = validId ? noteStore.get("noteIndex").get(id)?.title : undefined;
     const display = existingTitle || title || UNTITLED;
     return [
       "span",
@@ -110,9 +107,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
       return { type: "wikilink", attrs: { id: text as Id, title: display } };
     }
     const normalized = text.toLowerCase();
-    const foundNote = noteStore
-      .get("notes")
-      .find((n) => n.title.toLowerCase() === normalized);
+    const foundNote = noteStore.get("notes").find((n) => n.title.toLowerCase() === normalized);
     if (foundNote && isNoteID(foundNote.id)) {
       return {
         type: "wikilink",
@@ -125,9 +120,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
   renderText({ node }) {
     const id = String(node.attrs["id"] ?? "").trim();
     const title = node.attrs["title"] || "";
-    const existingTitle = isNoteID(id)
-      ? noteStore.get("noteIndex").get(id)?.title
-      : undefined;
+    const existingTitle = isNoteID(id) ? noteStore.get("noteIndex").get(id)?.title : undefined;
     const display = existingTitle ?? title ?? UNTITLED;
     return display ? `[[${display}]]` : "";
   },
@@ -135,9 +128,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
   renderMarkdown(node) {
     const id = String(node.attrs?.["id"] ?? "").trim();
     const title = node.attrs?.["title"] ?? "";
-    const existingTitle = isNoteID(id)
-      ? noteStore.get("noteIndex").get(id)?.title
-      : undefined;
+    const existingTitle = isNoteID(id) ? noteStore.get("noteIndex").get(id)?.title : undefined;
     const display = existingTitle || title || UNTITLED;
     return display ? `[[${display}]]` : "";
   },

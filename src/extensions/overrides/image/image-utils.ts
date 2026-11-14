@@ -20,11 +20,7 @@ async function compressImage(
 ): Promise<Uint8Array> {
   const bitmap = await createImageBitmap(blob);
   try {
-    const { width, height } = getScaledSize(
-      bitmap.width,
-      bitmap.height,
-      maxWidth,
-    );
+    const { width, height } = getScaledSize(bitmap.width, bitmap.height, maxWidth);
     const canvas = new OffscreenCanvas(
       Math.max(1, Math.round(width)),
       Math.max(1, Math.round(height)),

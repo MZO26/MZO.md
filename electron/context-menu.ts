@@ -50,8 +50,7 @@ function setUpEditorMenu(win: BrowserWindow) {
     if (hasSelection) {
       items.push({
         label: "Extract content",
-        click: () =>
-          win.webContents.send(IPC_CHANNELS.TRIGGER_EXTRACT_SELECTION),
+        click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_EXTRACT_SELECTION),
       });
       pushOptionalSeparator(items);
       items.push({
@@ -60,17 +59,13 @@ function setUpEditorMenu(win: BrowserWindow) {
           {
             label: "Rich Text",
             click: () => {
-              win.webContents.send(
-                IPC_CHANNELS.TRIGGER_COPY_SELECTION_RICH_TEXT,
-              );
+              win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_SELECTION_RICH_TEXT);
             },
           },
           {
             label: "Markdown",
             click: () => {
-              win.webContents.send(
-                IPC_CHANNELS.TRIGGER_COPY_SELECTION_MARKDOWN,
-              );
+              win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_SELECTION_MARKDOWN);
             },
           },
         ],
@@ -84,10 +79,7 @@ function setUpEditorMenu(win: BrowserWindow) {
             const query = encodeURIComponent(safeSearchText);
             void shell.openExternal(`https://www.google.com/search?q=${query}`);
           } catch (error) {
-            mainLogger.appError(
-              "[setUpEditorMenu]: Failed to open search browser:",
-              error,
-            );
+            mainLogger.appError("[setUpEditorMenu]: Failed to open search browser:", error);
           }
         },
       });
@@ -98,10 +90,7 @@ function setUpEditorMenu(win: BrowserWindow) {
             try {
               win.webContents.showDefinitionForSelection();
             } catch (error) {
-              mainLogger.appError(
-                "[setUpEditorMenu]: Failed to lookup selection:",
-                error,
-              );
+              mainLogger.appError("[setUpEditorMenu]: Failed to lookup selection:", error);
             }
           },
         });
@@ -109,10 +98,7 @@ function setUpEditorMenu(win: BrowserWindow) {
     }
     if (params.misspelledWord) {
       pushOptionalSeparator(items);
-      const suggestions = params.dictionarySuggestions.slice(
-        0,
-        MAX_SPELLING_SUGGESTIONS,
-      );
+      const suggestions = params.dictionarySuggestions.slice(0, MAX_SPELLING_SUGGESTIONS);
       if (suggestions.length > 0) {
         for (const suggestion of suggestions) {
           items.push({
@@ -132,19 +118,13 @@ function setUpEditorMenu(win: BrowserWindow) {
       items.push({
         label: "Add to Dictionary",
         click: () => {
-          win.webContents.session.addWordToSpellCheckerDictionary(
-            params.misspelledWord,
-          );
+          win.webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord);
         },
       });
     }
     if (isImage || hasLink) {
-      const hasImageAddress = isImage
-        ? ExternalUrlSchema.safeParse(params.srcURL)
-        : null;
-      const hasLinkUrl = hasLink
-        ? ExternalUrlSchema.safeParse(params.linkURL)
-        : null;
+      const hasImageAddress = isImage ? ExternalUrlSchema.safeParse(params.srcURL) : null;
+      const hasLinkUrl = hasLink ? ExternalUrlSchema.safeParse(params.linkURL) : null;
       pushOptionalSeparator(items);
       if (isImage && hasImageAddress?.success) {
         items.push({
@@ -159,24 +139,15 @@ function setUpEditorMenu(win: BrowserWindow) {
             try {
               win.webContents.copyImageAt(params.x, params.y);
             } catch (error) {
-              mainLogger.appError(
-                "[setUpEditorMenu]: Failed to copy image:",
-                error,
-              );
+              mainLogger.appError("[setUpEditorMenu]: Failed to copy image:", error);
             }
           },
         });
         (items.push({
           label: "Open image",
           click: () => {
-            const hashFilename = path.basename(
-              new URL(hasImageAddress.data).pathname,
-            );
-            const localPath = path.join(
-              app.getPath("userData"),
-              "images",
-              hashFilename,
-            );
+            const hashFilename = path.basename(new URL(hasImageAddress.data).pathname);
+            const localPath = path.join(app.getPath("userData"), "images", hashFilename);
             void shell.openPath(localPath);
           },
         }),
@@ -194,10 +165,7 @@ function setUpEditorMenu(win: BrowserWindow) {
             try {
               void shell.openExternal(hasLinkUrl.data);
             } catch (error) {
-              mainLogger.appError(
-                "[setUpEditorMenu]: Failed to open link:",
-                error,
-              );
+              mainLogger.appError("[setUpEditorMenu]: Failed to open link:", error);
             }
           },
         });
@@ -217,9 +185,7 @@ function setUpEditorMenu(win: BrowserWindow) {
     menu.popup({
       window: win,
       // for apple specific context menu features to work, frame has to be passed as an explicit reference
-      ...(process.platform === "darwin" && params.frame != null
-        ? { frame: params.frame }
-        : {}),
+      ...(process.platform === "darwin" && params.frame != null ? { frame: params.frame } : {}),
     });
   });
 }
@@ -229,60 +195,39 @@ function setUpTableMenu(win: BrowserWindow) {
     {
       label: "Add Row Before",
       click: () =>
-        win.webContents.send(
-          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
-          TABLE_ACTIONS.ADD_ROW_BEFORE,
-        ),
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, TABLE_ACTIONS.ADD_ROW_BEFORE),
     },
     {
       label: "Add Row After",
       click: () =>
-        win.webContents.send(
-          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
-          TABLE_ACTIONS.ADD_ROW_AFTER,
-        ),
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, TABLE_ACTIONS.ADD_ROW_AFTER),
     },
     { type: "separator" },
     {
       label: "Add Column Before",
       click: () =>
-        win.webContents.send(
-          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
-          TABLE_ACTIONS.ADD_COLUMN_BEFORE,
-        ),
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, TABLE_ACTIONS.ADD_COLUMN_BEFORE),
     },
     {
       label: "Add Column After",
       click: () =>
-        win.webContents.send(
-          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
-          TABLE_ACTIONS.ADD_COLUMN_AFTER,
-        ),
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, TABLE_ACTIONS.ADD_COLUMN_AFTER),
     },
     { type: "separator" },
     {
       label: "Delete Row",
       click: () =>
-        win.webContents.send(
-          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
-          TABLE_ACTIONS.DELETE_ROW,
-        ),
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, TABLE_ACTIONS.DELETE_ROW),
     },
     {
       label: "Delete Column",
       click: () =>
-        win.webContents.send(
-          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
-          TABLE_ACTIONS.DELETE_COLUMN,
-        ),
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, TABLE_ACTIONS.DELETE_COLUMN),
     },
     {
       label: "Delete Table",
       click: () =>
-        win.webContents.send(
-          IPC_CHANNELS.TRIGGER_TABLE_ACTION,
-          TABLE_ACTIONS.DELETE_TABLE,
-        ),
+        win.webContents.send(IPC_CHANNELS.TRIGGER_TABLE_ACTION, TABLE_ACTIONS.DELETE_TABLE),
     },
   ]);
   return tableMenu;
@@ -290,27 +235,18 @@ function setUpTableMenu(win: BrowserWindow) {
 
 function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
   const { selectedIds, selectionMode, pinned } = payload;
-  const noteLabel =
-    selectedIds.length > 1 ? `${selectedIds.length} Notes` : "Note";
+  const noteLabel = selectedIds.length > 1 ? `${selectedIds.length} Notes` : "Note";
   const noteItemMenu = Menu.buildFromTemplate([
     {
       label: "Copy...",
       submenu: [
         {
           label: "Rich Text",
-          click: () =>
-            win.webContents.send(
-              IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT,
-              selectedIds,
-            ),
+          click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT, selectedIds),
         },
         {
           label: "Markdown",
-          click: () =>
-            win.webContents.send(
-              IPC_CHANNELS.TRIGGER_COPY_MARKDOWN,
-              selectedIds,
-            ),
+          click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_MARKDOWN, selectedIds),
         },
       ],
     },
@@ -323,10 +259,7 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
             ? "Exit selection"
             : "Select items...",
       click: () =>
-        win.webContents.send(
-          IPC_CHANNELS.TRIGGER_SELECT,
-          selectionMode ? [] : selectedIds,
-        ),
+        win.webContents.send(IPC_CHANNELS.TRIGGER_SELECT, selectionMode ? [] : selectedIds),
     },
     {
       label:
@@ -340,8 +273,7 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
     {
       label: "Duplicate Note",
       visible: selectedIds.length === 1,
-      click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_DUPLICATE, selectedIds[0]),
+      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_DUPLICATE, selectedIds[0]),
     },
     { type: "separator" },
     {
@@ -349,56 +281,30 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
       submenu: [
         {
           label: "Markdown (.md)",
-          click: () =>
-            win.webContents.send(
-              IPC_CHANNELS.TRIGGER_EXPORT,
-              selectedIds,
-              "md",
-            ),
+          click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, selectedIds, "md"),
         },
         {
           label: "HTML (.html)",
-          click: () =>
-            win.webContents.send(
-              IPC_CHANNELS.TRIGGER_EXPORT,
-              selectedIds,
-              "html",
-            ),
+          click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, selectedIds, "html"),
         },
         {
           label: "JSON Document (.json)",
-          click: () =>
-            win.webContents.send(
-              IPC_CHANNELS.TRIGGER_EXPORT,
-              selectedIds,
-              "json",
-            ),
+          click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, selectedIds, "json"),
         },
         {
           label: "Plain Text (.txt)",
-          click: () =>
-            win.webContents.send(
-              IPC_CHANNELS.TRIGGER_EXPORT,
-              selectedIds,
-              "txt",
-            ),
+          click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, selectedIds, "txt"),
         },
         {
           label: "PDF (.pdf)",
-          click: () =>
-            win.webContents.send(
-              IPC_CHANNELS.TRIGGER_EXPORT,
-              selectedIds,
-              "pdf",
-            ),
+          click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_EXPORT, selectedIds, "pdf"),
         },
       ],
     },
     { type: "separator" },
     {
       label: `Delete ${noteLabel}`,
-      click: () =>
-        win.webContents.send(IPC_CHANNELS.TRIGGER_DELETE, selectedIds),
+      click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_DELETE, selectedIds),
     },
   ]);
   return noteItemMenu;

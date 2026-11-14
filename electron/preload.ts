@@ -1,9 +1,5 @@
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
-import type {
-  MenuType,
-  Url,
-  ZoomAction,
-} from "@shared/schemas/electron-schema";
+import type { MenuType, Url, ZoomAction } from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,
@@ -19,12 +15,7 @@ import type {
 } from "@shared/schemas/request-schema";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { TableAction, ValueOf } from "@shared/shared-types";
-import {
-  contextBridge,
-  ipcRenderer,
-  webUtils,
-  type IpcRendererEvent,
-} from "electron";
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from "electron";
 
 function subscribe<A extends unknown[]>(
   channel: ValueOf<typeof IPC_CHANNELS>,
@@ -46,18 +37,14 @@ if (process.contextIsolated) {
     });
     contextBridge.exposeInMainWorld("electronAPI", {
       getPathForFile: (file: File) => webUtils.getPathForFile(file),
-      showNotification: (
-        title: Notification["title"],
-        body: Notification["body"],
-      ) => ipcRenderer.invoke(IPC_CHANNELS.SHOW_NOTIFICATION, title, body),
+      showNotification: (title: Notification["title"], body: Notification["body"]) =>
+        ipcRenderer.invoke(IPC_CHANNELS.SHOW_NOTIFICATION, title, body),
       setTheme: (theme: Theme, focus?: boolean) =>
         ipcRenderer.invoke(IPC_CHANNELS.SET_THEME, theme, focus),
       windowPin: () => ipcRenderer.invoke(IPC_CHANNELS.APP_PIN),
       imageWriteMany: (payload: ImagePayload[]) =>
         ipcRenderer.invoke(IPC_CHANNELS.WRITE_IMAGE, payload),
-      onThemeChanged: (
-        callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void,
-      ) => {
+      onThemeChanged: (callback: (resolvedTheme: Extract<Theme, "dark" | "light">) => void) => {
         subscribe(IPC_CHANNELS.THEME_CHANGED, callback);
       },
       showContextMenu: (type: MenuType, payload?: NoteMenuPayload) =>
@@ -68,35 +55,27 @@ if (process.contextIsolated) {
       onRequestFlush: (callback: () => void) =>
         subscribe(IPC_CHANNELS.REQUEST_FLUSH, () => callback()),
       confirmFlush: () => ipcRenderer.send(IPC_CHANNELS.CONFIRM_FLUSH),
-      zoom: (action: ZoomAction) =>
-        ipcRenderer.invoke(IPC_CHANNELS.APP_ZOOM, action),
-      openExternal: (url: Url) =>
-        ipcRenderer.invoke(IPC_CHANNELS.OPEN_EXTERNAL, url),
+      zoom: (action: ZoomAction) => ipcRenderer.invoke(IPC_CHANNELS.APP_ZOOM, action),
+      openExternal: (url: Url) => ipcRenderer.invoke(IPC_CHANNELS.OPEN_EXTERNAL, url),
       openAppPath: () => ipcRenderer.invoke(IPC_CHANNELS.OPEN_APP_PATH),
     });
     contextBridge.exposeInMainWorld("noteAPI", {
-      search: (query: SearchQuery) =>
-        ipcRenderer.invoke(IPC_CHANNELS.NOTE_SEARCH, query),
+      search: (query: SearchQuery) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_SEARCH, query),
       getAll: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_NOTES),
       getAllBackup: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_NOTES_BACKUP),
-      create: (payload: CreateNotePayload) =>
-        ipcRenderer.invoke(IPC_CHANNELS.NOTE_CREATE, payload),
+      create: (payload: CreateNotePayload) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_CREATE, payload),
       createMany: (payload: CreateNotePayload[]) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_CREATE_MANY, payload),
       update: (payload: UpdateNotePayload, flush: boolean) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_UPDATE, payload, flush),
       delete: (id: Id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_DELETE, id),
-      deleteMany: (ids: Id[]) =>
-        ipcRenderer.invoke(IPC_CHANNELS.NOTE_DELETE_MANY, ids),
-      noteExport: (payload: ExportRequest) =>
-        ipcRenderer.invoke(IPC_CHANNELS.NOTE_EXPORT, payload),
+      deleteMany: (ids: Id[]) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_DELETE_MANY, ids),
+      noteExport: (payload: ExportRequest) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_EXPORT, payload),
       noteExportMany: (payload: ExportManyRequest) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_EXPORT_MANY, payload),
       noteImport: (payload: FilePathRequest) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_IMPORT, payload),
-      onTriggerExport: (
-        callback: (ids: Id[], extension: ExportRequest["extension"]) => void,
-      ) => {
+      onTriggerExport: (callback: (ids: Id[], extension: ExportRequest["extension"]) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_EXPORT, callback);
       },
       onTriggerCopyRichText: (callback: (ids: Id[]) => void) => {
@@ -129,14 +108,11 @@ if (process.contextIsolated) {
       getRelatedNotes: (payload: { id: Id }) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, payload),
       getById: (id: Id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_BY_ID, id),
-      getManyById: (ids: Id[]) =>
-        ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_MANY_BY_ID, ids),
+      getManyById: (ids: Id[]) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_GET_MANY_BY_ID, ids),
       pin: (id: Id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_PIN, id),
-      pinMany: (ids: Id[]) =>
-        ipcRenderer.invoke(IPC_CHANNELS.NOTE_PIN_MANY, ids),
+      pinMany: (ids: Id[]) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_PIN_MANY, ids),
       databaseBackup: () => ipcRenderer.invoke(IPC_CHANNELS.DB_BACKUP),
-      databaseBackupRestore: () =>
-        ipcRenderer.invoke(IPC_CHANNELS.DB_BACKUP_RESTORE),
+      databaseBackupRestore: () => ipcRenderer.invoke(IPC_CHANNELS.DB_BACKUP_RESTORE),
     });
     contextBridge.exposeInMainWorld("storeAPI", {
       getAllSettings: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_SETTINGS),

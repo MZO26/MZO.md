@@ -9,20 +9,12 @@ import {
 } from "@/components/sidebar/sidebar-selection";
 import { resizeSidebar } from "@/components/sidebar/sidebar-ui";
 import { applyView } from "@/components/sidebar/sidebar-views";
-import {
-  handleCreateNote,
-  handleImportNote,
-  handleSelectNote,
-} from "@/notes/note-actions";
+import { handleCreateNote, handleImportNote, handleSelectNote } from "@/notes/note-actions";
 import { localStore, noteStore, stateStore } from "@/state/state";
 import { NAV_KEYS } from "@/utils/constants";
 import { createAsyncHandler, rendererLogger } from "@/utils/helpers";
 import { useUI } from "@/utils/registry";
-import {
-  isEditorFocused,
-  isFocusActive,
-  isSelectionActive,
-} from "@/utils/shortcuts";
+import { isEditorFocused, isFocusActive, isSelectionActive } from "@/utils/shortcuts";
 import { createGlobalSpinner } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
@@ -31,11 +23,7 @@ import { APP_EVENTS } from "@shared/shared-constants";
 
 function initNotesSidebar(sidebar: HTMLDivElement) {
   const { searchInput, sidebarHeader } = useUI("searchInput", "sidebarHeader");
-  const unsubListeners = setupSidebarListeners(
-    sidebar,
-    sidebarHeader,
-    searchInput,
-  );
+  const unsubListeners = setupSidebarListeners(sidebar, sidebarHeader, searchInput);
   const unsubFileDrop = setupSidebarFileDrop(sidebar);
   const unsubAppEvents = appEvents.onMany({
     [APP_EVENTS.TOGGLE_SIDEBAR]: () => {
@@ -45,12 +33,9 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
       }));
     },
     [APP_EVENTS.CREATE_NEW_NOTE]: () =>
-      void handleCreateNote({ shouldNavigate: true }).catch(
-        rendererLogger.appError,
-      ),
+      void handleCreateNote({ shouldNavigate: true }).catch(rendererLogger.appError),
     [APP_EVENTS.FOCUS_GLOBAL_SEARCH]: () => searchInput.focus(),
-    [APP_EVENTS.SET_SELECTION_MODE]: () =>
-      setSelectionMode(!isSelectionActive()),
+    [APP_EVENTS.SET_SELECTION_MODE]: () => setSelectionMode(!isSelectionActive()),
     [APP_EVENTS.EXIT_SELECTION_MODE]: () => setSelectionMode(false),
     [APP_EVENTS.DELETE_SELECTED]: () => {
       const { selectionMode, selectedIds } = stateStore.getState();
@@ -110,8 +95,7 @@ function setupSidebarListeners(
     if (!isNoteID(id) || !noteElement) return;
     const isPinned = noteElement.getAttribute("data-pinned") === "true";
     window.electronAPI.showContextMenu("note", {
-      selectedIds:
-        selectionMode && selectedIds.size > 0 ? Array.from(selectedIds) : [id],
+      selectedIds: selectionMode && selectedIds.size > 0 ? Array.from(selectedIds) : [id],
       selectionMode,
       pinned: !selectionMode ? isPinned : undefined,
     });
@@ -120,9 +104,7 @@ function setupSidebarListeners(
   const noteListClickHandler = createAsyncHandler(async (e: MouseEvent) => {
     if (!(e.target instanceof Element)) return;
     const actionBtn = e.target.closest<HTMLButtonElement>(".menu-btn");
-    const clearBtn = e.target.closest<HTMLButtonElement>(
-      ".active-tag-clear-btn",
-    );
+    const clearBtn = e.target.closest<HTMLButtonElement>(".active-tag-clear-btn");
     if (clearBtn) {
       const action = clearBtn.getAttribute("data-action");
       if (action === "clear-active-tag") {
@@ -143,10 +125,7 @@ function setupSidebarListeners(
       const isPinned = noteItem?.getAttribute("data-pinned") === "true";
       const { selectionMode, selectedIds } = stateStore.getState();
       window.electronAPI.showContextMenu("note", {
-        selectedIds:
-          selectionMode && selectedIds.size > 0
-            ? Array.from(selectedIds)
-            : [id],
+        selectedIds: selectionMode && selectedIds.size > 0 ? Array.from(selectedIds) : [id],
         selectionMode,
         pinned: !selectionMode ? isPinned : undefined,
       });
@@ -167,8 +146,7 @@ function setupSidebarListeners(
   const focusOutHandler = (e: FocusEvent) => {
     const relatedTarget = e.relatedTarget as Node | null;
     if (!relatedTarget) return;
-    if (isSelectionActive() && !sidebar.contains(relatedTarget))
-      setSelectionMode(false);
+    if (isSelectionActive() && !sidebar.contains(relatedTarget)) setSelectionMode(false);
   };
   const mouseUpHandler = createAsyncHandler(async (e: MouseEvent) => {
     if (e.button !== 3 && e.button !== 4) return;

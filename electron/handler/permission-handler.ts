@@ -1,8 +1,7 @@
 import { createLogger } from "@shared/log";
 import { app, session, type WebContents } from "electron";
 
-export const IS_DEV_MAIN =
-  !app.isPackaged && !!process.env["ELECTRON_RENDERER_URL"];
+export const IS_DEV_MAIN = !app.isPackaged && !!process.env["ELECTRON_RENDERER_URL"];
 
 const allowedPermissions = [
   "clipboard-read",

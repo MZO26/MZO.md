@@ -14,11 +14,7 @@ interface DuplicateItem {
 }
 
 const checkForDuplicates = memoize(
-  (
-    activeId: Id,
-    notes: Readonly<NoteListItem[]>,
-    noteIndex: Map<Id, NoteListItem>,
-  ) => {
+  (activeId: Id, notes: Readonly<NoteListItem[]>, noteIndex: Map<Id, NoteListItem>) => {
     const activeNote = noteIndex.get(activeId);
     if (!activeNote || activeNote.links.length === 0) return null;
     const linkedIds = new Set(activeNote.links.map((l) => l.id));
@@ -39,9 +35,7 @@ const checkForDuplicates = memoize(
       if (!note) continue;
       const title = note.title.trim().toLowerCase();
       // active id shouldn't count itself as duplicate
-      const matching = (titleIndex.get(title) ?? []).filter(
-        (n) => n.id !== activeId,
-      );
+      const matching = (titleIndex.get(title) ?? []).filter((n) => n.id !== activeId);
       if (matching.length > 1) {
         const targetIds = matching.map((n) => n.id);
         const info: DuplicateItem = {

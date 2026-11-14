@@ -19,14 +19,7 @@ import {
 import { ImagePayloadsSchema } from "@shared/schemas/image-schema";
 import { NoteMenuPayloadSchema } from "@shared/schemas/note-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
-import {
-  app,
-  BrowserWindow,
-  ipcMain,
-  type Menu,
-  Notification,
-  shell,
-} from "electron";
+import { app, BrowserWindow, ipcMain, type Menu, Notification, shell } from "electron";
 
 function registerElectronIpc(win: BrowserWindow) {
   ipcMain.on(

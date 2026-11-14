@@ -2,10 +2,7 @@ import { processWithLimit } from "@electron/concurrent";
 import { sanitizeImportString } from "@electron/fs/fs-helpers";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import {
-  ImportRequestSchema,
-  type ImportRequest,
-} from "@shared/schemas/request-schema";
+import { ImportRequestSchema, type ImportRequest } from "@shared/schemas/request-schema";
 import { MAX_BYTES_FILE, MAX_CHARACTERS } from "@shared/shared-constants";
 import { app } from "electron";
 import fs from "fs/promises";
@@ -44,32 +41,21 @@ async function batchImport(filePaths: string[]) {
         }
         const importedFileDir = path.dirname(file);
         const extension = extname.slice(1).toLowerCase();
-        const sanitizedContent = await sanitizeImportString(
-          content,
-          importedFileDir,
-          imagesFolder,
-        );
+        const sanitizedContent = await sanitizeImportString(content, importedFileDir, imagesFolder);
         return validation(ImportRequestSchema, {
           extension,
           fileName,
           content: sanitizedContent,
         });
       } catch (error) {
-        mainLogger.appError(
-          `[batchImport]: Failed to read/validate file: ${file}:`,
-          error,
-        );
+        mainLogger.appError(`[batchImport]: Failed to read/validate file: ${file}:`, error);
         ++errorCount;
         return null;
       }
     },
   );
-  const validNotes = imported.filter(
-    (note): note is ImportRequest => note !== null,
-  );
-  mainLogger.devLog(
-    `[batchImport]: Successfully imported ${validNotes.length} notes.`,
-  );
+  const validNotes = imported.filter((note): note is ImportRequest => note !== null);
+  mainLogger.devLog(`[batchImport]: Successfully imported ${validNotes.length} notes.`);
   mainLogger.devLog(
     `[batchImport]: ${duplicateCount} duplicates and ${errorCount} errors encountered.`,
   );

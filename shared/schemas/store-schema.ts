@@ -11,9 +11,7 @@ const WindowBoundsSchema = z
   .catch({ width: 1100, height: 800 });
 
 const StoreSchema = z.object({
-  theme: z
-    .enum(["system", "light", "dark", "light_warm", "dark_warm", "oled"])
-    .catch("system"),
+  theme: z.enum(["system", "light", "dark", "light_warm", "dark_warm", "oled"]).catch("system"),
   font_family: z.enum(["system", "arial", "serif"]).catch("system"),
   font_size: z.enum(["16", "18", "20"]).catch("18"),
   line_height: z.enum(["1.4", "1.5", "1.6"]).catch("1.5"),
@@ -66,14 +64,8 @@ type FontFamily = AppSettings["font_family"];
 type FontSize = AppSettings["font_size"];
 type LineHeight = AppSettings["line_height"];
 type CodeTheme = AppSettings["code_theme"];
-type AppearanceKeys = Pick<
-  AppSettings,
-  "theme" | "code_theme" | "highlight" | "note_item_display"
->;
-type EditorKeys = Pick<
-  AppSettings,
-  "font_family" | "font_size" | "line_height" | "spellcheck"
->;
+type AppearanceKeys = Pick<AppSettings, "theme" | "code_theme" | "highlight" | "note_item_display">;
+type EditorKeys = Pick<AppSettings, "font_family" | "font_size" | "line_height" | "spellcheck">;
 
 export {
   DbWindowBoundsCodec,

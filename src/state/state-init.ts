@@ -4,18 +4,9 @@ import { updateSelection } from "@/components/sidebar/sidebar-selection";
 import { toggleSidebar } from "@/components/sidebar/sidebar-ui";
 import { sidebarListener } from "@/components/sidebar/sidebar-views";
 import { TOOLBAR_ACTIONS } from "@/components/toolbar/toolbar-actions";
-import {
-  buttonMap,
-  updateActiveStates,
-} from "@/components/toolbar/toolbar-factory";
+import { buttonMap, updateActiveStates } from "@/components/toolbar/toolbar-factory";
 import { setFocusMode, setToolbarCollapsed } from "@/settings/setting-actions";
-import {
-  localStore,
-  noteStore,
-  settingsStore,
-  shallowEq,
-  stateStore,
-} from "@/state/state";
+import { localStore, noteStore, settingsStore, shallowEq, stateStore } from "@/state/state";
 import { rendererLogger } from "@/utils/helpers";
 import { useCore, useDialog } from "@/utils/registry";
 import { setActiveItem } from "@/utils/ui";
@@ -40,11 +31,7 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     { fireImmediately: true },
   );
 
-  stateStore.subscribeSel(
-    (state) => state.selectionMode,
-    updateSelection,
-    shallowEq,
-  );
+  stateStore.subscribeSel((state) => state.selectionMode, updateSelection, shallowEq);
 
   stateStore.subscribeSel(
     (state) => state.hoverId,
@@ -60,11 +47,7 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     },
   );
 
-  stateStore.subscribeSel(
-    (state) => state.activeTag,
-    sidebarListener,
-    shallowEq,
-  );
+  stateStore.subscribeSel((state) => state.activeTag, sidebarListener, shallowEq);
 
   const SIDEBAR_KEYS = ["title", "snippet", "pinned", "tags"] as const;
 
@@ -89,9 +72,7 @@ function initSubscriptions(sidebar: HTMLDivElement) {
         const nextNote = next.noteIndex.get(id);
         if (prevNote === nextNote) continue;
         if (!prevNote || !nextNote) return false;
-        const hasChanged = SIDEBAR_KEYS.some(
-          (key) => !shallowEq(prevNote[key], nextNote[key]),
-        );
+        const hasChanged = SIDEBAR_KEYS.some((key) => !shallowEq(prevNote[key], nextNote[key]));
         if (hasChanged) return false;
       }
       return true;
@@ -99,11 +80,7 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     { fireImmediately: true },
   );
 
-  settingsStore.subscribeSel(
-    (state) => state.note_item_display,
-    sidebarListener,
-    shallowEq,
-  );
+  settingsStore.subscribeSel((state) => state.note_item_display, sidebarListener, shallowEq);
 
   localStore.subscribeSel(
     (state) => state.sidebarCollapsed,

@@ -48,7 +48,9 @@
     "shared/**/*.d.ts",
     "electron/**/*.ts",
     "shared/**/*.ts",
-    "electron.vite.config.ts"
+    "electron.vite.config.ts",
+    "eslint.config.mts",
+    "prettier.config.mts"
   ],
   "exclude": ["node_modules", "dist", "dist-electron"]
 }

@@ -3,8 +3,7 @@ import { BlockMath, InlineMath } from "@tiptap/extension-mathematics";
 
 const INLINE_MATH_INPUT_REGEX = /(?<!\$)\$([^$\n]+?)\$(?!\$)$/;
 const INLINE_MATH_PASTE_REGEX = /(?<!\$)\$([^$\n]+?)\$(?!\$)/g;
-const INLINE_MATH_TOKENIZER_REGEX =
-  /^\$(?!\$)(?!\s)([^$\r\n]+?)(?<!\s)\$(?!\$)/;
+const INLINE_MATH_TOKENIZER_REGEX = /^\$(?!\$)(?!\s)([^$\r\n]+?)(?<!\s)\$(?!\$)/;
 
 const BLOCK_MATH_INPUT_REGEX = /(?<!\$)\$\$([\s\S]+?)\$\$$/;
 const BLOCK_MATH_PASTE_REGEX = /(?<!\$)\$\$([\s\S]+?)\$\$(?!\$)/g;

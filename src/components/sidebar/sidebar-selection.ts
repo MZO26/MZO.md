@@ -1,14 +1,5 @@
-import {
-  exportManyNotes,
-  getAllBackup,
-  getManyById,
-  pinMany,
-  showNotification,
-} from "@/api/api";
-import {
-  getCachedEditorExtensions,
-  getMarkdownManager,
-} from "@/components/editor/editor-actions";
+import { exportManyNotes, getAllBackup, getManyById, pinMany, showNotification } from "@/api/api";
+import { getCachedEditorExtensions, getMarkdownManager } from "@/components/editor/editor-actions";
 import { updateSelectionUI } from "@/components/sidebar/sidebar-ui";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
@@ -25,9 +16,7 @@ let selectionUpdatePending = false;
 
 function setSelectionMode(enabled: boolean) {
   const prevSelectedIds = stateStore.get("selectedIds");
-  const nextSelectedIds = enabled
-    ? new Set<Id>(prevSelectedIds)
-    : new Set<Id>();
+  const nextSelectedIds = enabled ? new Set<Id>(prevSelectedIds) : new Set<Id>();
   stateStore.setState({
     selectionMode: enabled,
     selectedIds: nextSelectedIds,
@@ -63,11 +52,8 @@ async function copyMarkdownSelection(selectedIds: Id[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const { notes, noteIndex } = noteStore.getState();
   const allSelected =
-    selectedIds.length === notes.length &&
-    selectedIds.every((id) => noteIndex.has(id));
-  const result = allSelected
-    ? await getAllBackup()
-    : await getManyById(selectedIds);
+    selectedIds.length === notes.length && selectedIds.every((id) => noteIndex.has(id));
+  const result = allSelected ? await getAllBackup() : await getManyById(selectedIds);
   if (!result.success) {
     rendererLogger.appError(
       "[getAllBackup | getManyById]: Failed to get notes by id:",
@@ -108,10 +94,7 @@ async function copyMarkdownSelection(selectedIds: Id[]) {
     }
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
-    rendererLogger.appError(
-      "[copyMarkdownSelection]: Failed to copy markdown:",
-      error,
-    );
+    rendererLogger.appError("[copyMarkdownSelection]: Failed to copy markdown:", error);
   }
 }
 
@@ -119,11 +102,8 @@ async function copyRichTextSelection(selectedIds: Id[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const { notes, noteIndex } = noteStore.getState();
   const allSelected =
-    selectedIds.length === notes.length &&
-    selectedIds.every((id) => noteIndex.has(id));
-  const result = allSelected
-    ? await getAllBackup()
-    : await getManyById(selectedIds);
+    selectedIds.length === notes.length && selectedIds.every((id) => noteIndex.has(id));
+  const result = allSelected ? await getAllBackup() : await getManyById(selectedIds);
   if (!result.success) {
     rendererLogger.appError(
       "[getAllBackup | getManyById]: Failed to get notes by id:",
@@ -173,25 +153,16 @@ async function copyRichTextSelection(selectedIds: Id[]) {
     }
   } catch (error) {
     await showNotification("Failed to copy to clipboard", "");
-    rendererLogger.appError(
-      "[copyMarkdownSelection]: Failed to copy markdown:",
-      error,
-    );
+    rendererLogger.appError("[copyMarkdownSelection]: Failed to copy markdown:", error);
   }
 }
 
-async function exportSelection(
-  selectedIds: Id[],
-  extension: ExportRequest["extension"],
-) {
+async function exportSelection(selectedIds: Id[], extension: ExportRequest["extension"]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const { notes, noteIndex } = noteStore.getState();
   const allSelected =
-    selectedIds.length === notes.length &&
-    selectedIds.every((id) => noteIndex.has(id));
-  const exportResult = allSelected
-    ? await getAllBackup()
-    : await getManyById(selectedIds);
+    selectedIds.length === notes.length && selectedIds.every((id) => noteIndex.has(id));
+  const exportResult = allSelected ? await getAllBackup() : await getManyById(selectedIds);
   if (!exportResult.success) {
     rendererLogger.appError(
       "[exportSelection -> getAllBackup | getManyById]: Failed to get notes by id:",
@@ -225,10 +196,7 @@ async function pinSelection(selectedIds: Id[]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
   const pinned = await pinMany(selectedIds);
   if (!pinned.success) {
-    rendererLogger.appError(
-      "[pinSelection -> pinMany]: Failed to toggle pin:",
-      pinned.error,
-    );
+    rendererLogger.appError("[pinSelection -> pinMany]: Failed to toggle pin:", pinned.error);
     return;
   }
   const selectedIdSet = new Set(selectedIds);

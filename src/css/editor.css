@@ -21,8 +21,7 @@
 }
 
 .ProseMirror > p {
-  contain-intrinsic-block-size: auto
-    calc(((var(--font-size) * var(--line-height)) * 2) + 1em);
+  contain-intrinsic-block-size: auto calc(((var(--font-size) * var(--line-height)) * 2) + 1em);
 }
 
 .ProseMirror > blockquote {
@@ -638,19 +637,14 @@
   color: var(--text-main);
   border-radius: 3px;
   padding: 0 2px;
-  box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--search-match-bg) 60%, var(--text-main));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--search-match-bg) 60%, var(--text-main));
   transition:
     background-color 120ms ease,
     box-shadow 120ms ease;
 }
 
 .ProseMirror .doc-search-result-active {
-  background-color: color-mix(
-    in srgb,
-    var(--search-match-bg) 50%,
-    var(--accent-hover)
-  );
+  background-color: color-mix(in srgb, var(--search-match-bg) 50%, var(--accent-hover));
   color: var(--text-main);
   border-radius: 3px;
   padding: 0 2px;
