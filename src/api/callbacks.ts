@@ -18,7 +18,8 @@ import {
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
 import { debouncedSaveNote } from "@/notes/note-actions";
-import { stateStore } from "@/state/state";
+import { settingsStore, stateStore } from "@/state/state";
+import { CODE_THEME_MAP } from "@/utils/constants";
 import { rendererLogger } from "@/utils/helpers";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
@@ -113,6 +114,9 @@ function initListeners() {
 
   window.electronAPI.onThemeChanged((resolvedTheme: Readonly<ResolvedTheme>) => {
     document.documentElement.dataset["theme"] = resolvedTheme;
+    const codePreference = settingsStore.get("code_theme");
+    const codeTheme = CODE_THEME_MAP[codePreference][resolvedTheme];
+    document.documentElement.dataset["codetheme"] = codeTheme;
   });
 
   window.electronAPI.onRequestFlush(() => {

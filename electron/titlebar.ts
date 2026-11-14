@@ -1,4 +1,5 @@
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
+import { getMainWindow } from "@electron/main";
 import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { NativeWindowColors } from "@shared/shared-types";
 import { BrowserWindow, nativeTheme } from "electron";
@@ -22,21 +23,30 @@ function getTitleBarOverlay(
 // tells electron if theme is dark or light
 function initTheme(validTheme: Theme): Exclude<Theme, "system"> {
   if (validTheme === "system") {
-    nativeTheme.themeSource = "system";
+    if (nativeTheme.themeSource !== "system") {
+      nativeTheme.themeSource = "system";
+    }
     return nativeTheme.shouldUseDarkColors ? "dark" : "light";
   }
-  nativeTheme.themeSource = THEME_DATA[validTheme].isDark ? "dark" : "light";
+  const targetSource = THEME_DATA[validTheme].isDark ? "dark" : "light";
+  if (nativeTheme.themeSource !== targetSource) {
+    nativeTheme.themeSource = targetSource;
+  }
   return validTheme;
 }
 
-function onOSThemeChange(win: BrowserWindow, store: AppSettings["theme"]) {
-  if (win.isDestroyed() || store !== "system") return;
+function onOSThemeChange(store: AppSettings["theme"]) {
+  const win = getMainWindow();
+  if (!win || win.isDestroyed() || store !== "system") return;
   // only update theme if user has selected system theme
   const resolvedTheme = nativeTheme.shouldUseDarkColors ? "dark" : "light";
   const newWindowTheme = getTitleBarOverlay(resolvedTheme);
   for (const window of BrowserWindow.getAllWindows()) {
+    if (window.isDestroyed()) continue;
     window.setBackgroundColor(newWindowTheme.backgroundColor);
-    window.setTitleBarOverlay(newWindowTheme.overlayOptions);
+    if (typeof window.setTitleBarOverlay === "function") {
+      window.setTitleBarOverlay(newWindowTheme.overlayOptions);
+    }
     window.webContents.send(IPC_CHANNELS.THEME_CHANGED, resolvedTheme);
   }
 }

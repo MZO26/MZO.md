@@ -72,6 +72,8 @@ function initSettings(): Readonly<AppSettings> {
   return settingsService.getSettings();
 }
 
+const isMac = process.platform === "darwin";
+
 async function createWindow() {
   isReadyToClose = false;
   isFlushing = false;
@@ -87,8 +89,8 @@ async function createWindow() {
     minWidth: 700,
     minHeight: 500,
     titleBarStyle: "hidden",
-    trafficLightPosition: { x: 15, y: 9 },
-    titleBarOverlay: windowTheme.overlayOptions,
+    ...(isMac ? { trafficLightPosition: { x: 15, y: 9 } } : {}),
+    ...(!isMac ? { titleBarOverlay: windowTheme.overlayOptions } : {}),
     autoHideMenuBar: true,
     transparent: false,
     backgroundColor: windowTheme.backgroundColor,
@@ -179,9 +181,7 @@ app
     initBackupScheduler(backupDir);
     nativeTheme.on("updated", () => {
       const currentSettings = settingsService.getSettings();
-      if (win && !win.isDestroyed()) {
-        onOSThemeChange(win, currentSettings.theme);
-      }
+      onOSThemeChange(currentSettings.theme);
     });
   })
   .catch((error: unknown) => mainLogger.appError("Error during app start", error));

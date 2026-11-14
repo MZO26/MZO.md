@@ -93,7 +93,9 @@ function registerElectronIpc() {
       const windowTheme = getTitleBarOverlay(resolvedTheme, isFocus);
       for (const window of BrowserWindow.getAllWindows()) {
         window.setBackgroundColor(windowTheme.backgroundColor);
-        window.setTitleBarOverlay(windowTheme.overlayOptions);
+        if (typeof window.setTitleBarOverlay === "function") {
+          window.setTitleBarOverlay(windowTheme.overlayOptions);
+        }
       }
       return resolvedTheme;
     }),
