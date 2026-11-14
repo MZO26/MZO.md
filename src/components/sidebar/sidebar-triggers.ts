@@ -215,7 +215,7 @@ async function triggerDuplicate(id: Id) {
     );
     return;
   }
-  await handleDuplicateNote(result.data).catch((error: Error) =>
+  await handleDuplicateNote(result.data).catch((error: unknown) =>
     rendererLogger.appError(
       "[onTriggerDuplicate -> handleDuplicateNote]: Error duplicating Note",
       error,

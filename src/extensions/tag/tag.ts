@@ -87,7 +87,7 @@ const NoteTag = Node.create<NoteTagOptions>({
       return { type: "noteTag", raw: match[0], text };
     },
   },
-  parseMarkdown(token, _helpers) {
+  parseMarkdown(token) {
     const id = normalizeTagId(token.text ?? "");
     if (!id) {
       return { type: "text", text: token.raw ?? "" };

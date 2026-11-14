@@ -1,8 +1,7 @@
 import { MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Extension, type CommandProps } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
-import type { EditorState } from "@tiptap/pm/state";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Plugin, PluginKey, type EditorState } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 export type DocSearchRange = { from: number; to: number };

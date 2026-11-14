@@ -28,13 +28,13 @@ const EMPTY_DOC = {
 const ALLOWED_IMPORT_EXTENSIONS = ["md", "html", "json", "txt"] as const;
 
 const TABLE_ACTIONS = {
-  ADD_ROW_BEFORE: "addRowBefore",
-  ADD_ROW_AFTER: "addRowAfter",
-  ADD_COLUMN_BEFORE: "addColumnBefore",
-  ADD_COLUMN_AFTER: "addColumnAfter",
-  DELETE_ROW: "deleteRow",
-  DELETE_COLUMN: "deleteColumn",
-  DELETE_TABLE: "deleteTable",
+  ADD_ROW_BEFORE: "table:add-row-before",
+  ADD_ROW_AFTER: "table:add-row-after",
+  ADD_COLUMN_BEFORE: "table:add-column-before",
+  ADD_COLUMN_AFTER: "table:add-column-after",
+  DELETE_ROW: "table:delete-row",
+  DELETE_COLUMN: "table:delete-column",
+  DELETE_TABLE: "table:delete-table",
 } as const;
 
 const APP_EVENTS = {

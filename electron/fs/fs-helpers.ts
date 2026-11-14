@@ -81,7 +81,7 @@ async function writeAtomic(targetPath: string, content: string | Buffer<ArrayBuf
     }
     await rename(tempPath, targetPath);
   } catch (error) {
-    await unlink(tempPath).catch((error) => {
+    await unlink(tempPath).catch((error: unknown) => {
       const err = error as NodeJS.ErrnoException;
       if (err.code !== "ENOENT")
         mainLogger.appError("[writeAtomic]: Failed to delete temp file", err);

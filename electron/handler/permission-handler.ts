@@ -39,12 +39,7 @@ function setPermissions() {
     });
   });
   s.setPermissionRequestHandler(
-    (
-      _webContents: WebContents,
-      permission: string,
-      callback: (isAllowed: boolean) => void,
-      _details: Electron.PermissionCheckHandlerHandlerDetails,
-    ) => {
+    (_webContents: WebContents, permission: string, callback: (isAllowed: boolean) => void) => {
       if (allowedPermissions.includes(permission)) {
         callback(true);
       } else {
@@ -53,19 +48,12 @@ function setPermissions() {
     },
   );
 
-  s.setPermissionCheckHandler(
-    (
-      _webContents: WebContents | null,
-      permission: string,
-      _requestingOrigin: string,
-      _details: Electron.PermissionCheckHandlerHandlerDetails,
-    ): boolean => {
-      if (allowedPermissions.includes(permission)) {
-        return true;
-      }
-      return false;
-    },
-  );
+  s.setPermissionCheckHandler((_webContents: WebContents | null, permission: string): boolean => {
+    if (allowedPermissions.includes(permission)) {
+      return true;
+    }
+    return false;
+  });
 }
 
 export { mainLogger, setPermissions };

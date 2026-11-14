@@ -42,7 +42,7 @@ function initBackupScheduler(backupRootDir: string) {
     await processWithLimit(tempFiles, 5, async (file) => {
       await fs.rm(path.join(dbBackupsDir, file.name), { force: true }).catch(() => {});
     });
-  })().catch((error) => {
+  })().catch((error: unknown) => {
     mainLogger.appError("Failed to clean leftover temp files", error);
   });
   async function checkAndBackup() {
@@ -116,7 +116,7 @@ async function restoreFromBackupPath(backupPath: string) {
       app.exit(0);
     });
   } catch (error) {
-    await fs.rm(tmpPath, { force: true }).catch((error) => {
+    await fs.rm(tmpPath, { force: true }).catch((error: unknown) => {
       mainLogger.appError("[DB-Restore]: Failed to remove tmpPath", error);
     });
     db.open();

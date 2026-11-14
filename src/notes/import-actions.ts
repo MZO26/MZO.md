@@ -1,18 +1,17 @@
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import {
+  ensureEditorDoc,
   snippetGenerator,
   textConverter,
   titleGenerator,
   walkDoc,
-  wrapAsDoc,
 } from "@/components/editor/editor-generators";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
-import { isRecord, stateStore } from "@/state/state";
+import { stateStore } from "@/state/state";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import { rendererLogger, withPerformanceLog } from "@/utils/helpers";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
 import { AppErrorCode } from "@shared/errors";
-import { isEditorDoc } from "@shared/schemas/editor-schema";
 import type { CreateNotePayload } from "@shared/schemas/note-schema";
 import type { ImportContent } from "@shared/schemas/request-schema";
 import type { Result } from "@shared/shared-types";
@@ -24,51 +23,29 @@ async function normalizeFileContent(file: ImportContent): Promise<JSONContent | 
   if (typeof content !== "string") return undefined;
   try {
     switch (extension) {
-      case "json": {
-        try {
-          const parsed: unknown = JSON.parse(content);
-          if (!isRecord(parsed)) return undefined;
-          const doc = isEditorDoc(parsed) ? parsed : wrapAsDoc(parsed);
-          return doc;
-        } catch (error) {
-          rendererLogger.appError("[normalizeFileContent]: JSON Parse failed:", error);
-          return undefined;
-        }
-      }
+      case "json":
+        return ensureEditorDoc(JSON.parse(content));
       case "html": {
         const safe = DOMPurify.sanitize(content, DOMPURIFY_CONFIG);
-        const doc = generateJSON(safe, getCachedEditorExtensions());
-        return isEditorDoc(doc) ? doc : wrapAsDoc(doc);
+        return generateJSON(safe, getCachedEditorExtensions());
       }
       case "md": {
-        try {
-          const response = await withPerformanceLog(workOnMarkdownParsing)(content);
-          if (!response.success) {
-            rendererLogger.appError(
-              "[normalizeFileContent]: Worker failed to parse Markdown:",
-              response.error,
-            );
-            return undefined;
-          }
-          const doc: unknown = JSON.parse(response.data);
-          if (!isRecord(doc)) return undefined;
-          return wrapAsDoc(doc);
-        } catch (error) {
-          rendererLogger.appError("[normalizeFileContent]: Failed to parse JSON", error);
+        const response = await withPerformanceLog(workOnMarkdownParsing)(content);
+        if (!response.success) {
+          rendererLogger.appError("[normalizeFileContent]: Worker failed:", response.error);
           return undefined;
         }
+        return ensureEditorDoc(JSON.parse(response.data));
       }
-      case "txt": {
-        const doc = wrapAsDoc(textConverter(content));
-        return isEditorDoc(doc) ? doc : undefined;
-      }
+      case "txt":
+        return ensureEditorDoc(textConverter(content));
       default:
         extension satisfies never;
         return undefined;
     }
   } catch (error) {
     rendererLogger.appError(
-      `[normalizeFileContent]: Normalization failed for extension .${extension}:`,
+      `[normalizeFileContent]: Normalization failed for .${extension}:`,
       error,
     );
     return undefined;
@@ -83,7 +60,12 @@ async function setImportedContent(files: ImportContent[]): Promise<Result<Create
     for (const file of files) {
       const content = file.content;
       const json = await normalizeFileContent({ ...file, content });
-      if (!json) continue;
+      if (!json) {
+        rendererLogger.appError(
+          `[setImportedContent]: Skipping file (${file.extension}), normalizeFileContent returned undefined. Content length: ${content?.length}`,
+        );
+        continue;
+      }
       const updatedJson = addActiveTagToDoc(json, activeTag);
       const text = generateText(updatedJson, extensions);
       const payload: CreateNotePayload = {

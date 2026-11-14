@@ -7,7 +7,7 @@
   "description": "A local-first note-taking app",
   "main": "dist-electron/main/main.js",
   "scripts": {
-    "typecheck": "npx tsc --noEmit",
+    "typecheck": "tsc --build --noEmit",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
     "format": "npx prettier . --write",

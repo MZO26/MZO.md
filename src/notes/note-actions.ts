@@ -14,11 +14,11 @@ import {
   setSelection,
 } from "@/components/editor/editor-actions";
 import {
+  ensureEditorDoc,
   extractText,
   snippetGenerator,
   titleGenerator,
   walkDoc,
-  wrapAsDoc,
 } from "@/components/editor/editor-generators";
 import { initEditorContent } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
@@ -567,7 +567,7 @@ async function handleSelectNote(
  */
 
 async function handleExtractToNote(id: Id, content: JSONContent) {
-  const doc = wrapAsDoc(content);
+  const doc = ensureEditorDoc(content);
   if (!doc) return;
   const activeTag = stateStore.get("activeTag");
   const editorContent = addActiveTagToDoc(doc, activeTag);

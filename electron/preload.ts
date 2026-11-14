@@ -1,5 +1,5 @@
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
-import type { MenuType, Url, ZoomAction } from "@shared/schemas/electron-schema";
+import type { MenuType, Notification, Url, ZoomAction } from "@shared/schemas/electron-schema";
 import type { ImagePayload } from "@shared/schemas/image-schema";
 import type {
   CreateNotePayload,

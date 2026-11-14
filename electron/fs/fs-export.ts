@@ -15,8 +15,7 @@ import { mainLogger } from "@electron/handler/permission-handler";
 import { AppBackendError, AppErrorCode } from "@shared/errors";
 import type { ExportRequest } from "@shared/schemas/request-schema";
 import type { PDFAssets } from "@shared/shared-types";
-import type { BrowserWindow, PrintToPDFOptions } from "electron";
-import { app } from "electron";
+import { type BrowserWindow, type PrintToPDFOptions, app } from "electron";
 import fs from "fs/promises";
 import path from "path";
 
@@ -136,8 +135,8 @@ async function exportPDFNote(params: ExportPDFParams): Promise<string> {
 
 async function singlePDFExport(filePath: string, data: string, landscape: boolean) {
   const hiddenWin = createHiddenPdfWindow();
-  const assets = await getPDFAssets();
   try {
+    const assets = await getPDFAssets();
     await exportPDFNote({
       win: hiddenWin,
       landscape,

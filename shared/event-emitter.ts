@@ -1,6 +1,5 @@
 import type { Id, Note, SearchQuery } from "@shared/schemas/note-schema";
 import type { APP_EVENTS, EDITOR_EVENTS } from "@shared/shared-constants";
-import type { CallbackFunction } from "node:ffi";
 
 /**
  * Maps event names to one or more listeners, enabling batch registration.
@@ -36,7 +35,7 @@ export type EditorEventStrings = (typeof EDITOR_EVENTS)[keyof typeof EDITOR_EVEN
  * otherwise receives the typed payload.
  */
 
-type Listener<T> = T extends void ? () => void : (payload: T) => void;
+type Listener<T> = (...args: [T] extends [void] ? [] : [payload: T]) => void;
 
 /**
  * Union of all application event name strings.
@@ -63,7 +62,7 @@ type PayloadOverrides = {
  */
 
 class EventManager<T extends Record<string, unknown>> {
-  private store = new Map<keyof T, Set<CallbackFunction>>();
+  private store = new Map<keyof T, Set<Function>>();
 
   /**
    * Registers a listener for an event.
@@ -129,10 +128,10 @@ class EventManager<T extends Record<string, unknown>> {
    */
 
   public once<K extends keyof T>(event: K, cb: Listener<T[K]>) {
-    const wrapper = ((...args: unknown[]) => {
+    const wrapper: Listener<T[K]> = (...args) => {
       unsub();
-      (cb as CallbackFunction)(...args);
-    }) as Listener<T[K]>;
+      cb(...args);
+    };
     const unsub = this.on(event, wrapper);
     return unsub;
   }
@@ -185,7 +184,7 @@ class EventManager<T extends Record<string, unknown>> {
   ): Promise<void> {
     const listeners = this.store.get(event);
     if (!listeners || listeners.size === 0) return;
-    await Promise.allSettled(Array.from(listeners, (cb) => Promise.try(cb, ...args)));
+    await Promise.allSettled(Array.from(listeners, (cb) => Promise.try(() => cb(...args))));
   }
 }
 

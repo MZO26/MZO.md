@@ -51,7 +51,7 @@ function initQuickSwitcher(editor: Editor) {
     }
     resetQuickSwitchState();
     switchListSearchInput.value = "";
-    const defaults = (await computeDisplayNotes()) ?? [];
+    const defaults = await computeDisplayNotes();
     setDisplay(defaults, qsState);
     if (editor.isFocused) editor.commands.blur();
     switchDialog.showModal();

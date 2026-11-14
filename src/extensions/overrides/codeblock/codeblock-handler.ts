@@ -90,7 +90,7 @@ export const CodeblockHandler = Extension.create({
           const textBefore = $from.parent.textBetween(0, $from.parentOffset);
           const lines = textBefore.split("\n");
           const currentLine = lines[lines.length - 1];
-          const match = currentLine ? currentLine.match(/^[\t ]*/) : null;
+          const match = currentLine ? /^[\t ]*/.exec(currentLine) : null;
           const currentIndent = match ? match[0] : "";
           const indent = "  ";
           if (isMatch) {

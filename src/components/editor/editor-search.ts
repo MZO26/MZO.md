@@ -199,7 +199,7 @@ function initEditorSearch(
       close();
     }
   });
-  appEvents.on(APP_EVENTS.SYNC_EDITOR_SEARCH, ({ query = "" }: { query: SearchQuery }) => {
+  appEvents.on(APP_EVENTS.SYNC_EDITOR_SEARCH, ({ query }: { query: SearchQuery }) => {
     const globalQuery = typeof query === "string" ? query : "";
     applyQuery(globalQuery);
     if (query.trim().length > MIN_SEARCH_LENGTH) {

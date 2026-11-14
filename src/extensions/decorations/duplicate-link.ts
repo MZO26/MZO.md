@@ -14,7 +14,7 @@ interface DuplicateItem {
 }
 
 const checkForDuplicates = memoize(
-  (activeId: Id, notes: Readonly<NoteListItem[]>, noteIndex: Map<Id, NoteListItem>) => {
+  (activeId: Id, notes: readonly NoteListItem[], noteIndex: Map<Id, NoteListItem>) => {
     const activeNote = noteIndex.get(activeId);
     if (!activeNote || activeNote.links.length === 0) return null;
     const linkedIds = new Set(activeNote.links.map((l) => l.id));

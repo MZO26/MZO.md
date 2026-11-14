@@ -96,7 +96,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
     },
   },
 
-  parseMarkdown(token, _helpers) {
+  parseMarkdown(token) {
     const text = String(token.text ?? "").trim();
     if (!text) return { type: "text", text: token.raw || "" };
     if (EXACT_UUID_REGEX.test(text)) {

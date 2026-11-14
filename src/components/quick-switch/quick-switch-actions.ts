@@ -5,7 +5,7 @@ import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
 import { memoize, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
-import type { NoteSection, QuickSwitchDisplayBadge } from "@/utils/types";
+import type { NoteSection, QuickSwitchDisplayBadge, Sections } from "@/utils/types";
 import type { EditorEventStrings } from "@shared/event-emitter";
 import { isNoteID, type Id, type Link, type NoteListItem } from "@shared/schemas/note-schema";
 
@@ -120,7 +120,7 @@ function getTags(notes: readonly NoteListItem[]): QuickSwitchDisplayBadge[] {
 
 function toDisplayBadges(
   ids: Iterable<Id>,
-  section: Extract<QuickSwitchDisplayBadge["section"], NoteSection>,
+  section: Extract<Sections, NoteSection>,
   noteIndex: Map<Id, NoteListItem>,
   { limit = Infinity }: { limit?: number } = {},
 ): QuickSwitchDisplayBadge[] {

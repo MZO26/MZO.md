@@ -117,6 +117,8 @@ type QuickSwitchDisplayBadge =
     }
   | QuickSwitchFullTextItem;
 
+type Sections = QuickSwitchDisplayBadge["section"];
+
 type AppIcons = keyof typeof APP_ICONS;
 
 type FilterMode = "recent" | "search" | "tag";
@@ -142,6 +144,7 @@ export type {
   NoteSection,
   QuickSwitchDisplayBadge,
   QuickSwitchFullTextItem,
+  Sections,
   SelectionParams,
   ShortcutToken,
   SidebarParams,

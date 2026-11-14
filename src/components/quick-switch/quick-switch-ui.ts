@@ -9,16 +9,13 @@ import { settingsCommands } from "@/settings/settings-commands";
 import { settingsStore, stateStore } from "@/state/state";
 import { NOTE_SECTION, UNTAGGED } from "@/utils/constants";
 import { useCore, useDialog } from "@/utils/registry";
-import type { QuickSwitchDisplayBadge, ShortcutToken } from "@/utils/types";
+import type { QuickSwitchDisplayBadge, Sections, ShortcutToken } from "@/utils/types";
 import { createGlobalSpinner, createInfoSpan, createTooltipContent } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
 
 const IS_MAC: boolean = window.env.isMac ?? navigator.userAgent.includes("Mac");
 
-function getSectionLabel(
-  section: QuickSwitchDisplayBadge["section"],
-  count: Record<QuickSwitchDisplayBadge["section"], number>,
-) {
+function getSectionLabel(section: Sections, count: Record<Sections, number>) {
   switch (section) {
     case "recent":
       return `Recent (${count.recent})`;
@@ -49,13 +46,10 @@ function getSectionLabel(
 }
 
 function getSectionCount(qsState: QuickSwitchState) {
-  const count = qsState.currentDisplayNotes.reduce(
-    (acc, note) => {
-      acc[note.section] = (acc[note.section] ?? 0) + 1;
-      return acc;
-    },
-    {} as Record<QuickSwitchDisplayBadge["section"], number>,
-  );
+  const count = {} as Record<Sections, number>;
+  for (const note of qsState.currentDisplayNotes) {
+    count[note.section] = (count[note.section] ?? 0) + 1;
+  }
   return count;
 }
 
@@ -67,7 +61,7 @@ function renderTitleList(qsState: QuickSwitchState) {
     return;
   }
   const activeId = stateStore.get("activeId") as Id | null;
-  let lastSection: QuickSwitchDisplayBadge["section"] | null = null;
+  let lastSection: Sections | null = null;
   for (const [index, item] of qsState.currentDisplayNotes.entries()) {
     if (item.section !== lastSection) {
       switchListEl.appendChild(createSectionHeader(item.section, qsState));
@@ -77,10 +71,7 @@ function renderTitleList(qsState: QuickSwitchState) {
   }
 }
 
-function createSectionHeader(
-  section: QuickSwitchDisplayBadge["section"],
-  qsState: QuickSwitchState,
-) {
+function createSectionHeader(section: Sections, qsState: QuickSwitchState) {
   const header = document.createElement("div");
   header.className = "quick-switch-section-header";
   header.textContent = getSectionLabel(section, getSectionCount(qsState));

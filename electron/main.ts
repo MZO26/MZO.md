@@ -184,7 +184,7 @@ app
       }
     });
   })
-  .catch((error) => mainLogger.appError("Error during app start", error));
+  .catch((error: unknown) => mainLogger.appError("Error during app start", error));
 
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {

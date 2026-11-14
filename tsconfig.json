@@ -1,56 +1,35 @@
 {
+  "files": [],
+  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }],
   "compilerOptions": {
-    "composite": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "@shared/*": ["./shared/*"],
-      "@electron/*": ["./electron/*"]
-    },
-    "rootDir": ".",
 
     "module": "esnext",
     "target": "esnext",
     "moduleResolution": "bundler",
 
-    "lib": ["esnext", "DOM", "DOM.Iterable"],
-    "types": ["node", "electron", "electron-vite/node"],
-    "noEmit": true,
-
     // Stricter Typechecking Options
+    "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "strictBuiltinIteratorReturn": true,
 
-    // Style Options
+    // Control Flow & Code Quality
     "noImplicitReturns": true,
     "noImplicitOverride": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noPropertyAccessFromIndexSignature": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
 
-    // Recommended Options
-    "strict": true,
+    // Module & Bundler Safety
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "strictBuiltinIteratorReturn": true
-  },
-  "include": [
-    "src/**/*.ts",
-    "shared/**/*.d.ts",
-    "electron/**/*.ts",
-    "shared/**/*.ts",
-    "electron.vite.config.ts",
-    "eslint.config.mts",
-    "prettier.config.mts"
-  ],
-  "exclude": ["node_modules", "dist", "dist-electron"]
+    "forceConsistentCasingInFileNames": true
+  }
 }

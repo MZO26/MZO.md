@@ -9,7 +9,6 @@ import { initToolbar } from "@/components/toolbar/toolbar-init";
 import { handleSelectNote } from "@/notes/note-actions";
 import { applySettings } from "@/settings/setting-actions";
 import { localStore } from "@/state/state";
-import "@/state/state-init";
 import { initSubscriptions } from "@/state/state-init";
 import { syncNoteStore, syncSettingsStore, syncStateStore } from "@/state/state-sync";
 import { startAppClock } from "@/utils/date";

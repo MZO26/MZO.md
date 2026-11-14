@@ -69,9 +69,16 @@ function textConverter(plainText: string): JSONContent[] | undefined {
   }, []);
 }
 
-function wrapAsDoc(content: unknown): JSONContent | undefined {
-  if (Array.isArray(content)) {
-    return { type: "doc" as const, content };
+function isNode(val: unknown): val is JSONContent {
+  return typeof val === "object" && val !== null && !Array.isArray(val) && "type" in val;
+}
+
+function ensureEditorDoc(input: unknown): JSONContent | undefined {
+  if (Array.isArray(input)) {
+    return { type: "doc", content: input.filter(isNode) };
+  }
+  if (isNode(input)) {
+    return input.type === "doc" ? input : { type: "doc", content: [input] };
   }
   return undefined;
 }
@@ -179,11 +186,11 @@ function walkDoc(doc: JSONContent) {
 }
 
 export {
+  ensureEditorDoc,
   extractText,
   snippetGenerator,
   textConverter,
   titleGenerator,
   truncateTitle,
   walkDoc,
-  wrapAsDoc,
 };

@@ -1,6 +1,5 @@
 import { Extension } from "@tiptap/core";
-import type { EditorState } from "@tiptap/pm/state";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { type EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 export interface PlaceHolderOptions {

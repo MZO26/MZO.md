@@ -387,7 +387,7 @@ function shallowEq<A>(a: A, b: A): boolean {
   if (typeof a !== "object" || a === null || typeof b !== "object" || b === null) {
     return false;
   }
-  const keysA = Object.keys(a) as Array<keyof A>;
+  const keysA = Object.keys(a) as (keyof A)[];
   const keysB = Object.keys(b);
   if (keysA.length !== keysB.length) return false;
   for (const key of keysA) {
@@ -398,4 +398,4 @@ function shallowEq<A>(a: A, b: A): boolean {
   return true;
 }
 
-export { isRecord, localStore, noteStore, settingsStore, shallowEq, stateStore, type AppState };
+export { localStore, noteStore, settingsStore, shallowEq, stateStore, type AppState };

@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["esnext"],
+    "types": ["node", "electron", "electron-vite/node"],
+    "paths": {
+      "@electron/*": ["./electron/*"],
+      "@shared/*": ["./shared/*"]
+    }
+  },
+  "include": [
+    "electron/**/*.ts",
+    "shared/**/*.ts",
+    "shared/**/*.d.ts",
+    "electron.vite.config.ts",
+    "eslint.config.mts",
+    "prettier.config.mts"
+  ]
+}
