@@ -7,7 +7,7 @@ import { type Id } from "@shared/schemas/note-schema";
 
 async function navigateSidebar(e: KeyboardEvent) {
   const visibleIds = noteStore.get("visibleIds");
-  if (!visibleIds || visibleIds.length === 0) return;
+  if (visibleIds.length === 0) return;
   const isModifierPressed = e.metaKey || e.ctrlKey;
   const { activeId, hoverId } = stateStore.getState();
   let activeIndex = hoverId ? visibleIds.indexOf(hoverId) : -1;

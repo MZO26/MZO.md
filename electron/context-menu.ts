@@ -28,7 +28,7 @@ function addAction(
 function setUpEditorMenu(win: BrowserWindow) {
   win.webContents.on("context-menu", (_event, params) => {
     const items: Electron.MenuItemConstructorOptions[] = [];
-    const hasSelection = params.selectionText?.trim().length > 0;
+    const hasSelection = params.selectionText.trim().length > 0;
     const isImage = params.mediaType === "image";
     const hasLink = !!params.linkURL;
     mainLogger.devLog(params.isEditable);
@@ -76,15 +76,13 @@ function setUpEditorMenu(win: BrowserWindow) {
         ],
       });
       pushOptionalSeparator(items);
-      const safeSearchText = params.selectionText?.trim().slice(0, 200);
+      const safeSearchText = params.selectionText.trim().slice(0, 200);
       items.push({
         label: "Search with Google",
-        click: async () => {
+        click: () => {
           try {
             const query = encodeURIComponent(safeSearchText);
-            await shell.openExternal(
-              `https://www.google.com/search?q=${query}`,
-            );
+            void shell.openExternal(`https://www.google.com/search?q=${query}`);
           } catch (error) {
             mainLogger.appError(
               "[setUpEditorMenu]: Failed to open search browser:",
@@ -185,16 +183,16 @@ function setUpEditorMenu(win: BrowserWindow) {
           items.push({
             label: "Copy Image Address",
             click: () => {
-              clipboard.writeText(hasImageAddress.data);
+              void clipboard.writeText(hasImageAddress.data);
             },
           }));
       }
       if (hasLink && hasLinkUrl?.success) {
         items.push({
           label: "Open Link",
-          click: async () => {
+          click: () => {
             try {
-              await shell.openExternal(hasLinkUrl.data);
+              void shell.openExternal(hasLinkUrl.data);
             } catch (error) {
               mainLogger.appError(
                 "[setUpEditorMenu]: Failed to open link:",
@@ -206,7 +204,7 @@ function setUpEditorMenu(win: BrowserWindow) {
         items.push({
           label: "Copy Link Address",
           click: () => {
-            clipboard.writeText(hasLinkUrl.data);
+            void clipboard.writeText(hasLinkUrl.data);
           },
         });
       }
@@ -290,7 +288,7 @@ function setUpTableMenu(win: BrowserWindow) {
   return tableMenu;
 }
 
-async function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
+function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
   const { selectedIds, selectionMode, pinned } = payload;
   const noteLabel =
     selectedIds.length > 1 ? `${selectedIds.length} Notes` : "Note";

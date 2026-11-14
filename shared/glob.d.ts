@@ -72,23 +72,34 @@ declare global {
       deleteMany: (ids: Id[]) => Promise<Result<void>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;
       onTriggerExport: (
-        callback: (ids: Id[], extension: ExportContent["extension"]) => void,
+        callback: (
+          ids: Id[],
+          extension: ExportContent["extension"],
+        ) => Promise<void>,
       ) => () => void;
-      onTriggerCopyRichText: (callback: (ids: Id[]) => void) => () => void;
-      onTriggerCopyMarkdown: (callback: (ids: Id[]) => void) => () => void;
+      onTriggerCopyRichText: (
+        callback: (ids: Id[]) => Promise<void>,
+      ) => () => void;
+      onTriggerCopyMarkdown: (
+        callback: (ids: Id[]) => Promise<void>,
+      ) => () => void;
       noteExportMany: (
         payload: ExportContent[],
       ) => Promise<Result<ExportContent[]>>;
       noteImport: (
         payload: FilePathRequest,
       ) => Promise<Result<{ data: ImportRequest[]; stats: ImportStats }>>;
-      onTriggerDelete: (callback: (ids: Id[]) => void) => () => void;
-      onTriggerDuplicate: (callback: (id: Id) => void) => () => void;
-      onTriggerPin: (callback: (ids: Id[]) => void) => () => void;
+      onTriggerDelete: (callback: (ids: Id[]) => Promise<void>) => () => void;
+      onTriggerDuplicate: (callback: (id: Id) => Promise<void>) => () => void;
+      onTriggerPin: (callback: (ids: Id[]) => Promise<void>) => () => void;
       onTriggerSelect: (callback: (ids: Id[]) => void) => () => void;
-      onTriggerCopySelectionRichText: (callback: () => void) => () => void;
-      onTriggerCopySelectionMarkdown: (callback: () => void) => () => void;
-      onTriggerExtractToNote: (callback: () => void) => () => void;
+      onTriggerCopySelectionRichText: (
+        callback: () => Promise<void>,
+      ) => () => void;
+      onTriggerCopySelectionMarkdown: (
+        callback: () => Promise<void>,
+      ) => () => void;
+      onTriggerExtractToNote: (callback: () => Promise<void>) => () => void;
       getRelatedNotes: (payload: { id: Id }) => Promise<Result<RelatedNotes[]>>;
       pin: (id: Id) => Promise<Result<boolean>>;
       pinMany: (ids: Id[]) => Promise<Result<boolean>>;

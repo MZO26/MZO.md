@@ -9,6 +9,7 @@ function extractText(doc: JSONContent) {
     const node = stack.pop();
     if (!node) continue;
     const nodeType = node.type;
+    if (!nodeType) continue;
     switch (nodeType) {
       case "text": {
         if (typeof node.text === "string") {
@@ -76,11 +77,11 @@ function wrapAsDoc(content: unknown): JSONContent | undefined {
 }
 
 function titleGenerator(doc: JSONContent) {
-  if (!doc || !Array.isArray(doc.content) || doc.content.length === 0) {
+  if (!Array.isArray(doc.content) || doc.content.length === 0) {
     return UNTITLED;
   }
   const topBlocks = doc.content.slice(0, 3);
-  const firstHeading = topBlocks.find((block) => block?.type === "heading");
+  const firstHeading = topBlocks.find((block) => block.type === "heading");
   if (firstHeading) {
     const text = extractText(firstHeading).trim();
     if (text) return truncateTitle(text);
@@ -106,13 +107,12 @@ function truncateTitle(text: string, maxLength: number = 50) {
 }
 
 function snippetGenerator(doc: JSONContent) {
-  if (!doc || !Array.isArray(doc.content) || doc.content.length === 0) {
+  if (!Array.isArray(doc.content) || doc.content.length === 0) {
     return "";
   }
   let snippet = "";
   let skippedTitle = false;
   for (const block of doc.content) {
-    if (!block) continue;
     if (block.type !== "paragraph" && block.type !== "heading") continue;
     const text = extractText(block).trim();
     if (!text) continue;
@@ -135,7 +135,9 @@ function walkDoc(doc: JSONContent) {
   while (stack.length > 0) {
     const node = stack.pop();
     if (!node) continue;
-    switch (node.type) {
+    const nodeType = node.type;
+    if (!nodeType) continue;
+    switch (nodeType) {
       case "wikilink": {
         const id = node.attrs?.["id"];
         if (typeof id === "string" && isNoteID(id)) {

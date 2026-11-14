@@ -2,6 +2,7 @@ import { openExternal } from "@/api/api";
 import { isSafeExternalUrl } from "@/components/editor/editor-actions";
 import { promptImageUpload } from "@/extensions/overrides/image/image";
 import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
+import { rendererLogger } from "@/utils/helpers";
 import { Extension } from "@tiptap/core";
 import { CellSelection } from "@tiptap/pm/tables";
 
@@ -19,11 +20,11 @@ export const MasterShortcuts = Extension.create({
       "Mod-h": () => this.editor.commands.toggleHighlight(),
       "Mod-e": () => this.editor.commands.toggleCode(),
       "Mod-Shift-e": () => {
-        openMathDialog(this.editor, {
+        void openMathDialog(this.editor, {
           mode: "insert",
           type: "inline",
           initialValue: "",
-        });
+        }).catch(rendererLogger.appError);
         return true;
       },
       "Mod-Shift-1": () => this.editor.commands.toggleHeading({ level: 1 }),
@@ -49,11 +50,11 @@ export const MasterShortcuts = Extension.create({
         return true;
       },
       "Mod-Shift-m": () => {
-        openMathDialog(this.editor, {
+        void openMathDialog(this.editor, {
           mode: "insert",
           type: "block",
           initialValue: "",
-        });
+        }).catch(rendererLogger.appError);
         return true;
       },
       "Mod-Alt-ArrowDown": () => this.editor.commands.addRowAfter(),
@@ -86,14 +87,15 @@ export const MasterShortcuts = Extension.create({
           $from.marks().find((m) => m.type.name === "link") ??
           $from.nodeBefore?.marks.find((m) => m.type.name === "link") ??
           $from.nodeAfter?.marks.find((m) => m.type.name === "link");
-        const rawUrl = (
-          this.editor.getAttributes("link")["href"] || linkMark?.attrs?.["href"]
-        )?.trim();
-        if (!rawUrl) return false;
+        const rawUrl =
+          this.editor.getAttributes("link")["href"] || linkMark?.attrs["href"];
+        if (typeof rawUrl !== "string") return false;
+        const trimmed = rawUrl.trim();
+        if (!trimmed) return false;
         try {
-          const safe = isSafeExternalUrl(rawUrl);
+          const safe = isSafeExternalUrl(trimmed);
           if (!safe) return false;
-          void openExternal(rawUrl);
+          void openExternal(trimmed);
           return true;
         } catch {
           return false;

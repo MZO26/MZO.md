@@ -11,7 +11,7 @@ import {
   type NoteRow,
   type UpdateTransaction,
 } from "@shared/schemas/note-schema";
-import { DatabaseSync, type StatementSync } from "node:sqlite";
+import type { DatabaseSync, StatementSync } from "node:sqlite";
 
 type UpdateTransactionLogicArgs = {
   noteParams: Omit<UpdateTransaction, "tags" | "links" | "images">;

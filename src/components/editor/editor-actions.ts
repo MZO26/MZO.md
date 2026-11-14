@@ -7,7 +7,7 @@ import {
 import { NoteTag } from "@/extensions/tag/tag";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { localStore } from "@/state/state";
-import { clearAllMemoizedCaches } from "@/utils/helpers";
+import { clearAllMemoizedCaches, rendererLogger } from "@/utils/helpers";
 import type { Id } from "@shared/schemas/note-schema";
 import { ALLOWED_PROTOCOLS } from "@shared/shared-constants";
 import {
@@ -91,6 +91,10 @@ function getHTMLContentBetween(
     const slice = doc.slice(safeFrom, safeTo);
     return getHTMLFromFragment(slice.content, editor.schema);
   } catch (error) {
+    rendererLogger.appError(
+      "[getHTMLContentBetween]: Failed to get HTML from json fragment:",
+      error,
+    );
     return "";
   }
 }
@@ -111,6 +115,10 @@ function getMarkdownContentBetween(
     };
     return getMarkdownManager().serialize(json);
   } catch (error) {
+    rendererLogger.appError(
+      "[getMarkdownContentBetween]: Failed to serialize json:",
+      error,
+    );
     return "";
   }
 }
@@ -131,7 +139,12 @@ function setSelection(editor: Editor, editorWrapper: HTMLDivElement, id: Id) {
       top: scrollTop[id] ?? 0,
       behavior: "auto",
     });
-  } catch (error) {}
+  } catch (error) {
+    rendererLogger.appError(
+      `[setSelection]: Failed to setSelection on cursor pos: ${cursorPos[id]}`,
+      error,
+    );
+  }
 }
 
 function isSafeExternalUrl(url: string) {

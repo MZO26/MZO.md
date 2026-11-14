@@ -2,7 +2,7 @@ import { noteStore, stateStore } from "@/state/state";
 import { formatUpdatedAt } from "@/utils/date";
 import type { Id } from "@shared/schemas/note-schema";
 import { Extension } from "@tiptap/core";
-import { EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
+import { type EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 const noteMetaKey = new PluginKey<DecorationSet>("noteMeta");
@@ -38,7 +38,7 @@ function getTaskInfo(state: EditorState): TaskInfo {
   state.doc.descendants((node) => {
     if (node.type === taskItemType) {
       tasks++;
-      if (node.attrs?.["checked"]) completed++;
+      if (node.attrs["checked"]) completed++;
       return false;
     }
     if (node.isTextblock) return false;
@@ -118,7 +118,7 @@ export const NoteInfoWidget = Extension.create({
               if (!tr.docChanged && !tr.getMeta("noteInfoRefresh"))
                 return oldSet;
               return createNoteInfoDecoration(newState, oldSet);
-            } catch (err) {
+            } catch {
               return DecorationSet.empty;
             }
           },

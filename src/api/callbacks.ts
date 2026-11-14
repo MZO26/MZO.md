@@ -19,6 +19,7 @@ import {
 } from "@/components/sidebar/sidebar-triggers";
 import { debouncedSaveNote } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
+import { rendererLogger } from "@/utils/helpers";
 import { createGlobalSpinner } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
 import type { ExportRequest } from "@shared/schemas/request-schema";
@@ -122,8 +123,8 @@ function initListeners() {
     },
   );
 
-  window.electronAPI.onRequestFlush(async () => {
-    debouncedSaveNote.flush();
+  window.electronAPI.onRequestFlush(() => {
+    debouncedSaveNote.flush()?.catch(rendererLogger.appError);
     window.electronAPI.confirmFlush();
   });
 }

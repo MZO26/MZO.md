@@ -34,7 +34,7 @@ function registerIpc(win: BrowserWindow) {
  */
 
 function withErrorHandling<A extends unknown[], T>(
-  fn: (...args: A) => Promise<T>,
+  fn: (...args: A) => Promise<T> | T,
 ) {
   return async (...args: A): Promise<Result<T>> => {
     try {

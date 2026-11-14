@@ -11,10 +11,10 @@ import type { Result } from "@shared/shared-types";
 import { generateHTML, generateText } from "@tiptap/core";
 import DOMPurify from "dompurify";
 
-async function getBatchExportContent(
+function getBatchExportContent(
   notes: readonly Note[],
   extension: ExportRequest["extension"],
-): Promise<Result<ExportRequest[]>> {
+): Result<ExportRequest[]> {
   try {
     switch (extension) {
       case "json":

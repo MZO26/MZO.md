@@ -90,6 +90,7 @@ async function setupLocalImageProtocol() {
       }
       return await net.fetch(pathToFileURL(intendedPath).toString());
     } catch (error) {
+      mainLogger.appError(error);
       return new Response("Image not found", {
         status: 404,
         headers: TEXT_HEADERS,
@@ -195,7 +196,7 @@ function navigationHandler(win: BrowserWindow) {
   };
   win.webContents.session.on("will-download", onWillDownload);
   win.once("closed", () => {
-    win.webContents?.session.removeListener("will-download", onWillDownload);
+    win.webContents.session.removeListener("will-download", onWillDownload);
   });
   win.webContents.on("will-attach-webview", (e) => {
     e.preventDefault();

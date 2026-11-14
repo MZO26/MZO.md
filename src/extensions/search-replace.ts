@@ -1,6 +1,6 @@
 import { MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import { Extension, type CommandProps } from "@tiptap/core";
-import { Node as PMNode } from "@tiptap/pm/model";
+import type { Node as PMNode } from "@tiptap/pm/model";
 import type { EditorState } from "@tiptap/pm/state";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -109,7 +109,7 @@ const getMatchesAndDecorations = (
     const wikilink = node.type.schema.nodes["wikilink"];
     const noteTag = node.type.schema.nodes["noteTag"];
     if (node.type.name === wikilink?.name || node.type.name === noteTag?.name) {
-      const rawText = String(node.attrs?.["title"] ?? node.attrs?.["id"] ?? "");
+      const rawText = String(node.attrs["title"] ?? node.attrs["id"] ?? "");
       if (!rawText) return false;
       const searchableText =
         node.type.name === noteTag?.name ? `#${rawText}` : `[[${rawText}]]`;
@@ -157,7 +157,6 @@ const scrollMatchIntoView = (editor: CommandProps["editor"], pos: number) => {
 
 export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
   name: "docSearch",
-
   addOptions() {
     return {
       resultClass: "doc-search-result",
@@ -305,7 +304,6 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
           },
           apply: (tr, oldSet, _oldState, newState) => {
             const storage = this.editor.storage.docSearch;
-            if (!storage) return oldSet;
             const action = tr.getMeta("docSearchRefresh") as
               | PluginMeta
               | undefined;

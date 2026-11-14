@@ -60,7 +60,6 @@ function createInfoHeader(text: string) {
 }
 
 function handleHeaderChange(change: FilterMode, activeTag?: string) {
-  if (!change) return;
   switch (change) {
     case "tag":
       if (!activeTag) {
@@ -154,7 +153,7 @@ function renderNoteList({
   for (const note of displayNotes) {
     const item = createNoteItem(note);
     const safe = sanitizeSnippets({ note, snippets: searchSnippets });
-    const hasSearchSnippet = !!searchSnippets?.[note.id];
+    const hasSearchSnippet = !!searchSnippets[note.id];
     applySnippet({ item, searchSnippet: safe, isSearch: hasSearchSnippet });
     if (note.id === activeId) {
       activeElement = item;

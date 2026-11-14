@@ -41,7 +41,7 @@ function createToolbarFragment(actions: ActionMap) {
 }
 
 function isAction(item: ToolbarItem): item is Action {
-  return !("type" in item && item.type === "divider") && "action" in item;
+  return !("type" in item) && "action" in item;
 }
 
 const updateActiveStates = withRafSchedule(

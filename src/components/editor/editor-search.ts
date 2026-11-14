@@ -5,7 +5,7 @@ import { requireElement } from "@/utils/ui";
 import { appEvents } from "@shared/event-emitter";
 import type { SearchQuery } from "@shared/schemas/note-schema";
 import { APP_EVENTS, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
-import { Editor } from "@tiptap/core";
+import type { Editor } from "@tiptap/core";
 
 function hasSearchMatch(editor: Editor): boolean {
   const search = editor.storage.docSearch;

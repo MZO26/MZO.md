@@ -25,12 +25,13 @@ function initTheme(validTheme: Theme): Exclude<Theme, "system"> {
     nativeTheme.themeSource = "system";
     return nativeTheme.shouldUseDarkColors ? "dark" : "light";
   }
-  nativeTheme.themeSource = THEME_DATA[validTheme]?.isDark ? "dark" : "light";
+  nativeTheme.themeSource = THEME_DATA[validTheme].isDark ? "dark" : "light";
   return validTheme;
 }
 
 function onOSThemeChange(win: BrowserWindow, store: AppSettings["theme"]) {
-  if (!win || win.isDestroyed() || store !== "system") return; // only update theme if user has selected system theme
+  if (win.isDestroyed() || store !== "system") return;
+  // only update theme if user has selected system theme
   const resolvedTheme = nativeTheme.shouldUseDarkColors ? "dark" : "light";
   const newWindowTheme = getTitleBarOverlay(resolvedTheme);
   for (const window of BrowserWindow.getAllWindows()) {

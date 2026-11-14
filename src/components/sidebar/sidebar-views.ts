@@ -23,7 +23,7 @@ let sidebarUpdatePending = false;
 
 function matchesActiveTag(note: NoteListItem, activeTag: string | null) {
   if (activeTag === null) return true;
-  if (activeTag === UNTAGGED) return !note.tags || note.tags.length === 0;
+  if (activeTag === UNTAGGED) return note.tags.length === 0;
   return note.tags.includes(activeTag);
 }
 

@@ -9,7 +9,12 @@ import {
 import { waitForFlush } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
-import { debounce, rendererLogger, waitForPaint } from "@/utils/helpers";
+import {
+  createAsyncHandler,
+  debounce,
+  rendererLogger,
+  waitForPaint,
+} from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayBadge } from "@/utils/types";
 import { appEvents } from "@shared/event-emitter";
@@ -56,7 +61,7 @@ function initQuickSwitcher(editor: Editor) {
     resetQuickSwitchState();
     switchListSearchInput.value = "";
     const defaults = (await computeDisplayNotes()) ?? [];
-    await setDisplay(defaults, qsState);
+    setDisplay(defaults, qsState);
     if (editor.isFocused) editor.commands.blur();
     switchDialog.showModal();
     // wait for visibility transition to focus correctly
@@ -91,8 +96,9 @@ function initQuickSwitcher(editor: Editor) {
     void filterTitles(value, qsState).catch(rendererLogger.devLog);
   }, DEBOUNCE_MS.very_fast);
 
-  const onListKeydown = (e: KeyboardEvent) =>
-    handleListKeydown(e, qsState, switchDialog);
+  const onListKeydown = createAsyncHandler(async (e: KeyboardEvent) =>
+    handleListKeydown(e, qsState, switchDialog),
+  );
 
   switchListSearchInput.addEventListener("input", debouncedTitleFilter);
 
@@ -101,7 +107,7 @@ function initQuickSwitcher(editor: Editor) {
   document.addEventListener("keydown", handleDocumentKeydown);
   const unsubAppEvents = appEvents.on(
     APP_EVENTS.TOGGLE_QUICK_SWITCH,
-    async () => await toggleSwitcher(),
+    () => void toggleSwitcher().catch(rendererLogger.appError),
   );
   return function unsubscribe() {
     unsubAppEvents();

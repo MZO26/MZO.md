@@ -47,7 +47,8 @@
     "src/**/*.ts",
     "shared/**/*.d.ts",
     "electron/**/*.ts",
-    "shared/**/*.ts"
+    "shared/**/*.ts",
+    "electron.vite.config.ts"
   ],
   "exclude": ["node_modules", "dist", "dist-electron"]
 }

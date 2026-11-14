@@ -17,7 +17,7 @@ function getTableOfContents(editor: Editor) {
     if (node.type.spec.code) return false;
     if (node.type === headingType) {
       const text = node.textContent.trim();
-      const { id, level } = node.attrs || {};
+      const { id, level } = node.attrs;
       if (text || typeof id === "string") {
         headings.push({
           id,

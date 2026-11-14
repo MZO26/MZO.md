@@ -51,7 +51,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
     title: {
       default: null,
       parseHTML: (el) =>
-        el.getAttribute("data-title") || el.textContent?.trim() || "",
+        el.getAttribute("data-title") || el.textContent.trim() || "",
     },
   }),
   parseHTML: () => [
@@ -61,8 +61,8 @@ const WikiLink = Node.create<WikiLinkOptions>({
   ],
 
   renderHTML({ node }) {
-    const id = String(node.attrs?.["id"] ?? "").trim();
-    const title = node.attrs?.["title"] || "";
+    const id = String(node.attrs["id"] ?? "").trim();
+    const title = node.attrs["title"] || "";
     const validId = isNoteID(id);
     const existingTitle = validId
       ? noteStore.get("noteIndex").get(id)?.title
@@ -123,8 +123,8 @@ const WikiLink = Node.create<WikiLinkOptions>({
   },
 
   renderText({ node }) {
-    const id = String(node.attrs?.["id"] ?? "").trim();
-    const title = node.attrs?.["title"] || "";
+    const id = String(node.attrs["id"] ?? "").trim();
+    const title = node.attrs["title"] || "";
     const existingTitle = isNoteID(id)
       ? noteStore.get("noteIndex").get(id)?.title
       : undefined;

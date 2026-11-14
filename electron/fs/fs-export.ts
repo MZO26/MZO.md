@@ -32,6 +32,10 @@ async function singleExport(filePath: string, data: ExportRequest["content"]) {
   try {
     await withRetry(writeAtomic)(filePath, portableContent);
   } catch (error) {
+    mainLogger.appError(
+      "[singleExport]: Failed to write repeated writeAtomic call",
+      error,
+    );
     throw new AppBackendError(AppErrorCode.FileWriteError);
   }
   return filePath;
@@ -123,7 +127,7 @@ type ExportPDFParams = GeneratePDFParams & { filePath: string };
 
 async function generatePDFBuffer(params: GeneratePDFParams): Promise<Buffer> {
   const { win, landscape, html, assets } = params;
-  if (!win || win.isDestroyed() || win.webContents.isDestroyed())
+  if (win.isDestroyed() || win.webContents.isDestroyed())
     throw new AppBackendError(AppErrorCode.CancelledOperation);
   const pdfOptions: PrintToPDFOptions = {
     pageSize: "A4",
@@ -167,7 +171,7 @@ async function singlePDFExport(
     mainLogger.appError("[singlePDFExport]: Error writing PDF file:", error);
     throw new AppBackendError(AppErrorCode.FileWriteError);
   } finally {
-    if (hiddenWin && !hiddenWin.isDestroyed()) {
+    if (!hiddenWin.isDestroyed()) {
       hiddenWin.destroy();
     }
   }

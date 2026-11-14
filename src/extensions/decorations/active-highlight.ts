@@ -1,6 +1,6 @@
 import { Extension } from "@tiptap/core";
 import {
-  EditorState,
+  type EditorState,
   NodeSelection,
   Plugin,
   PluginKey,

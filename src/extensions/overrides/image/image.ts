@@ -71,7 +71,7 @@ async function processAndInsertImages(
   } catch {}
 }
 
-async function promptImageUpload(editor: Editor) {
+function promptImageUpload(editor: Editor) {
   const input = document.createElement("input");
   input.type = "file";
   input.accept = "image/jpeg,image/png,image/gif,image/webp";

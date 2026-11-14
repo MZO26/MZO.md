@@ -32,7 +32,7 @@ function syncStateStore(settingsResult: Result<Readonly<AppSettings>>) {
   if (!settingsResult.success) {
     rendererLogger.appError(
       "[syncStateStore]: Failed to sync state. Using defaults.",
-      settingsResult?.error,
+      settingsResult.error,
     );
     return stateStore.getState();
   }

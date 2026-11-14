@@ -4,7 +4,7 @@ import {
   type ExportRequest,
   FileNameSchema,
 } from "@shared/schemas/request-schema";
-import { app, BrowserWindow, dialog } from "electron";
+import { app, type BrowserWindow, dialog } from "electron";
 import path from "path";
 
 async function handleImportDialog(win: BrowserWindow) {
@@ -22,7 +22,7 @@ async function handleImportDialog(win: BrowserWindow) {
       { name: "Text", extensions: ["txt"] },
     ],
   });
-  const hasFiles = filePaths?.length > 0;
+  const hasFiles = filePaths.length > 0;
   if (canceled || !hasFiles) {
     throw new AppBackendError(AppErrorCode.CancelledOperation);
   }

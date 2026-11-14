@@ -35,7 +35,7 @@ function setSelectionMode(enabled: boolean) {
 }
 
 function selectAllVisibleNotes() {
-  const visibleIds = noteStore.get("visibleIds") ?? [];
+  const visibleIds = noteStore.get("visibleIds");
   const selectedIds = new Set(visibleIds);
   const selectionMode = true;
   stateStore.setState({
@@ -199,10 +199,7 @@ async function exportSelection(
     );
     return;
   }
-  const exportContent = await getBatchExportContent(
-    exportResult.data,
-    extension,
-  );
+  const exportContent = getBatchExportContent(exportResult.data, extension);
   if (!exportContent.success) {
     rendererLogger.appError(
       "[exportSelection -> getBatchExportContent]: Failed to get export format",

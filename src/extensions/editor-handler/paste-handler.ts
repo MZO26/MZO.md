@@ -71,9 +71,8 @@ export const PasteHandler = Extension.create({
             if (!html && looksLikeMarkdown(plainText)) {
               try {
                 const json = getMarkdownManager().parse(plainText);
-                const content = json?.content;
-                if (!content) return false;
-                const resolved = resolveMarkConflicts(content);
+                if (!json.content) return false;
+                const resolved = resolveMarkConflicts(json.content);
                 event.preventDefault();
                 editor.commands.insertContent(resolved);
                 return true;

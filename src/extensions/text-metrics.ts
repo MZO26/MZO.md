@@ -1,7 +1,7 @@
-import { Editor, Extension } from "@tiptap/core";
+import { type Editor, Extension } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import {
-  EditorState,
+  type EditorState,
   NodeSelection,
   Plugin,
   PluginKey,

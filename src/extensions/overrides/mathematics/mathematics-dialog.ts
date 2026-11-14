@@ -1,8 +1,8 @@
-import { showDialog } from "@/utils/helpers";
+import { rendererLogger, showDialog } from "@/utils/helpers";
 import { useCore, useDialog } from "@/utils/registry";
 import type { MathOptions } from "@/utils/types";
 import type { Editor } from "@tiptap/core";
-import { Node as PMNode } from "@tiptap/pm/model";
+import { type Node as PMNode } from "@tiptap/pm/model";
 
 async function openMathDialog(editor: Editor, options: MathOptions) {
   const { mathDialog, mathInput } = useDialog("mathDialog", "mathInput");
@@ -31,14 +31,14 @@ async function openMathDialog(editor: Editor, options: MathOptions) {
   }
 }
 
-async function handleMathClick(node: PMNode, pos: number) {
+function handleMathClick(node: PMNode, pos: number) {
   const { editor } = useCore("editor");
-  await openMathDialog(editor, {
+  void openMathDialog(editor, {
     mode: "update",
     type: node.type.name === "inlineMath" ? "inline" : "block",
     pos,
     initialValue: node.attrs["latex"] ?? "",
-  });
+  }).catch(rendererLogger.appError);
 }
 
 export { handleMathClick, openMathDialog };

@@ -5,11 +5,10 @@ import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 
 export const rendererLogger = createLogger(import.meta.env.DEV);
 
-type Debounced<A extends (...args: any[]) => void> = ((
-  ...args: Parameters<A>
-) => void) & {
+type Debounced<Args extends unknown[], R> = {
+  (...args: Args): void;
   cancel: () => void;
-  flush: () => void;
+  flush: () => R | undefined;
 };
 
 /**
@@ -34,24 +33,24 @@ type Debounced<A extends (...args: any[]) => void> = ((
  * setTimeout(() => save.flush(), 500); // force-execute if pending
  */
 
-function debounce<A extends (...args: any[]) => any>(
-  fn: A,
+function debounce<A extends unknown[], R>(
+  fn: (...args: A) => R,
   wait: number,
-): Debounced<A> {
+): Debounced<A, R> {
   let timer: ReturnType<typeof setTimeout> | null = null;
-  let lastArgs: Parameters<A> | null = null;
-  function cancel() {
+  let lastArgs: A | null = null;
+  function cancel(): void {
     if (timer !== null) clearTimeout(timer);
     timer = null;
     lastArgs = null;
   }
-  function flush(): ReturnType<typeof fn> | undefined {
+  function flush(): R | undefined {
     if (timer === null || lastArgs === null) return undefined;
     const args = lastArgs;
     cancel();
     return fn(...args);
   }
-  const debounced = ((...args: Parameters<A>) => {
+  const debounced = (...args: A): void => {
     lastArgs = args;
     if (timer !== null) clearTimeout(timer);
     timer = setTimeout(() => {
@@ -62,12 +61,9 @@ function debounce<A extends (...args: any[]) => any>(
         fn(...argsToUse);
       }
     }, wait);
-  }) as Debounced<A>;
-  debounced.cancel = cancel;
-  debounced.flush = flush;
-  return debounced;
+  };
+  return Object.assign(debounced, { cancel, flush });
 }
-
 /**
  * Wraps an event callback so that only one invocation runs at a time.
  *
@@ -85,21 +81,23 @@ function debounce<A extends (...args: any[]) => any>(
 
 function createAsyncHandler<T extends Event>(
   callback: (e: T) => Promise<void> | void,
-) {
+): (e: T) => void {
   let isProcessing = false;
-  return async (e: T) => {
+  return (e: T): void => {
     if (isProcessing) return;
     isProcessing = true;
-    try {
-      await callback(e);
-    } catch (error) {
-      rendererLogger.appError(
-        "[createAsyncHandler]: Failed to invoke callback",
-        error,
-      );
-    } finally {
-      isProcessing = false;
-    }
+    void (async () => {
+      try {
+        await callback(e);
+      } catch (error) {
+        rendererLogger.appError(
+          "[createAsyncHandler]: Failed to invoke callback",
+          error,
+        );
+      } finally {
+        isProcessing = false;
+      }
+    })();
   };
 }
 
@@ -406,7 +404,7 @@ function getExtension(name: string) {
  * if (result === "confirm") save();
  */
 
-function showDialog(dialog: HTMLDialogElement) {
+async function showDialog(dialog: HTMLDialogElement) {
   return new Promise((resolve) => {
     dialog.addEventListener("close", () => resolve(dialog.returnValue), {
       once: true,

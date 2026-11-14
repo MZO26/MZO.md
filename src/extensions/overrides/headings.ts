@@ -26,7 +26,7 @@ const CustomHeading = Heading.extend({
             return undefined;
           }
           const tr = newState.tr;
-          let modified = false;
+          let modified = false as boolean;
           const headingType = newState.schema.nodes["heading"];
           newState.doc.descendants((node, pos) => {
             const hasContent = !!node.textContent.trim();

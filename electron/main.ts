@@ -125,10 +125,10 @@ async function createWindow() {
   navigationHandler(win);
   win.setMenuBarVisibility(false);
   if (!app.isPackaged && process.env["ELECTRON_RENDERER_URL"]) {
-    win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+    await win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
     win.webContents.openDevTools();
   } else {
-    win.loadFile(path.join(__dirname, "../../dist/index.html"));
+    await win.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
   win.on("close", (e) => {
     if (win?.isDestroyed()) return;
@@ -161,26 +161,25 @@ async function createWindow() {
 
 // app start
 
-app.whenReady().then(async () => {
-  Menu.setApplicationMenu(null);
-  session.defaultSession.setSpellCheckerLanguages(["en-US", "de-DE"]);
-  ipcMain.on(IPC_CHANNELS.CONFIRM_FLUSH, () => {
-    if (flushTimeout) clearTimeout(flushTimeout);
-    flushTimeout = null;
-    isReadyToClose = true;
-    isFlushing = false;
-    win?.close();
-  });
-  await createWindow();
-  setupLocalImageProtocol();
-  setPermissions();
-  const backupDir = path.join(app.getPath("userData"), "Backups");
-  initBackupScheduler(backupDir);
-  if (win) {
-    registerIpc(win);
-    setUpEditorMenu(win);
-  }
+await app.whenReady();
+Menu.setApplicationMenu(null);
+session.defaultSession.setSpellCheckerLanguages(["en-US", "de-DE"]);
+ipcMain.on(IPC_CHANNELS.CONFIRM_FLUSH, () => {
+  if (flushTimeout) clearTimeout(flushTimeout);
+  flushTimeout = null;
+  isReadyToClose = true;
+  isFlushing = false;
+  win?.close();
 });
+await createWindow();
+await setupLocalImageProtocol();
+setPermissions();
+const backupDir = path.join(app.getPath("userData"), "Backups");
+initBackupScheduler(backupDir);
+if (win) {
+  registerIpc(win);
+  setUpEditorMenu(win);
+}
 
 nativeTheme.on("updated", () => {
   const settings = settingsService.getSettings();
@@ -189,7 +188,7 @@ nativeTheme.on("updated", () => {
 
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    void createWindow();
   }
 });
 

@@ -42,7 +42,7 @@ const NoteTagHandler = NoteTag.extend({
         if (!empty) return false;
         const nodeBefore = $from.nodeBefore;
         if (nodeBefore?.type.name === "noteTag") {
-          const title = nodeBefore.attrs?.["id"] || "";
+          const title = nodeBefore.attrs["id"] || "";
           const from = $from.pos - nodeBefore.nodeSize;
           return this.editor
             .chain()
@@ -59,10 +59,10 @@ const NoteTagHandler = NoteTag.extend({
       key: tagClickHandlerKey,
       props: {
         handleClickOn: (_view, _pos, node, _nodePos, event) => {
-          if (node.type.name !== this.name || !node.attrs?.["id"]) return false;
+          if (node.type.name !== this.name || !node.attrs["id"]) return false;
           event.preventDefault();
           event.stopPropagation();
-          void this.options.onClick?.(node.attrs?.["id"]);
+          void this.options.onClick?.(node.attrs["id"]);
           return true;
         },
       },
@@ -150,7 +150,7 @@ const NoteTagHandler = NoteTag.extend({
 const getSortedTags = memoize((notes: readonly NoteListItem[]) => {
   const tagSet = new Set<Tag>();
   for (const note of notes) {
-    if (note.tags) {
+    if (note.tags.length > 0) {
       for (const tag of note.tags) {
         tagSet.add(tag);
       }

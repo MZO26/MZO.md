@@ -51,7 +51,7 @@ async function handleImageWriteMany(validatedData: ImagePayload[]) {
 }
 
 async function removeUnusedImages(hashes: string[]) {
-  if (!hashes || hashes.length === 0) return;
+  if (hashes.length === 0) return;
   const userDataPath = app.getPath("userData");
   const imagesFolder = path.join(userDataPath, "Images");
   await fs.mkdir(imagesFolder, { recursive: true });

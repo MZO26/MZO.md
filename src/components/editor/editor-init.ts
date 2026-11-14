@@ -95,9 +95,9 @@ function initEditor(settings: Partial<Readonly<AppSettings>>): Editor {
     autofocus: true,
     onFocus: () => appEvents.emit(APP_EVENTS.UNSET_HOVER),
   });
-  editor.on("update", ({ transaction }) => {
+  editor.on("update", async ({ transaction }) => {
     if (!transaction.docChanged) return;
-    appEvents.emitAsync(APP_EVENTS.SAVE_NOTE);
+    await appEvents.emitAsync(APP_EVENTS.SAVE_NOTE);
   });
   return editor;
 }
@@ -237,8 +237,9 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
         stateStore.setState({ hoverId: null });
       }
     },
+    /* eslint-disable @typescript-eslint/no-misused-promises */
     [APP_EVENTS.APPLY_VIEW]: async (id: string) => {
-      const normalizedTag = id?.trim().toLowerCase();
+      const normalizedTag = id.trim().toLowerCase();
       const { activeId, isDirty } = stateStore.getState();
       if (!normalizedTag || !activeId) return;
       const saved = isDirty ? await waitForFlush(activeId) : true;
@@ -255,12 +256,11 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
       if (!id || !isNoteID(id)) {
         const activeId = stateStore.get("activeId") as Id | null;
         if (!activeId) return;
-        // don't navigate right away to update
-        // wikilink to an active one
         const noteId = await resolveGhostLink(editor, title);
         if (!noteId) return;
         await handleSelectNote(noteId);
         await waitForFlush(noteId);
+        /* eslint-enable @typescript-eslint/no-misused-promises */
         restoreSidebarScope();
         return;
       }
@@ -284,13 +284,11 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
   const handleErrorEvent = (event: ErrorEvent) => {
     if (!(event.target instanceof HTMLImageElement)) return;
     const pos = editor.view.posAtDOM(event.target, 0);
-    if (pos !== null) {
-      editor
-        .chain()
-        .focus()
-        .deleteRange({ from: pos, to: pos + 1 })
-        .run();
-    }
+    editor
+      .chain()
+      .focus()
+      .deleteRange({ from: pos, to: pos + 1 })
+      .run();
   };
   editorWrapper.addEventListener("contextmenu", handleContextMenu);
   editorWrapper.addEventListener("error", handleErrorEvent, { capture: true });

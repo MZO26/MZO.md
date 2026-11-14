@@ -142,7 +142,6 @@ async function triggerCopyRichText(id: Id) {
 
 async function triggerCopySelectionMarkdown() {
   const { editor } = useCore("editor");
-  if (!editor) return;
   const { from, to } = editor.state.selection;
   if (from === to) return;
   const markdown = getMarkdownContentBetween(editor, from, to);
@@ -159,7 +158,6 @@ async function triggerCopySelectionMarkdown() {
 
 async function triggerCopySelectionRichText() {
   const { editor } = useCore("editor");
-  if (!editor) return;
   const { state } = editor;
   const { from, to } = state.selection;
   if (from === to) return;

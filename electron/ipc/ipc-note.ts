@@ -39,12 +39,12 @@ import {
   ExportRequestSchema,
   FilePathRequestSchema,
 } from "@shared/schemas/request-schema";
-import { BrowserWindow, ipcMain } from "electron";
+import { type BrowserWindow, ipcMain } from "electron";
 
 function registerNoteIpc(win: BrowserWindow) {
   ipcMain.handle(
     IPC_CHANNELS.GET_ALL_NOTES,
-    withErrorHandling(async (e) => {
+    withErrorHandling((e) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.GET_ALL_NOTES, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -54,7 +54,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.GET_ALL_NOTES_BACKUP,
-    withErrorHandling(async (e) => {
+    withErrorHandling((e) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.GET_ALL_NOTES_BACKUP, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -64,7 +64,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_SEARCH,
-    withErrorHandling(async (e, query: unknown) => {
+    withErrorHandling((e, query: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_SEARCH, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -75,7 +75,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_CREATE,
-    withErrorHandling(async (e, payload: unknown) => {
+    withErrorHandling((e, payload: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_CREATE, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -91,7 +91,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_CREATE_MANY,
-    withErrorHandling(async (e, payloads: unknown) => {
+    withErrorHandling((e, payloads: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_CREATE_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -125,7 +125,7 @@ function registerNoteIpc(win: BrowserWindow) {
         content: DbContentCodec.encode(validatedData.content),
       };
       const { result, imageDiff } = db.update(noteData);
-      if (imageDiff && imageDiff.length > 0) {
+      if (imageDiff.length > 0) {
         await removeUnusedImages(imageDiff);
       }
       return result;
@@ -134,7 +134,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_DELETE,
-    withErrorHandling(async (e, id: unknown) => {
+    withErrorHandling((e, id: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_DELETE, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -145,7 +145,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_DELETE_MANY,
-    withErrorHandling(async (e, ids: unknown) => {
+    withErrorHandling((e, ids: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_DELETE_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -156,7 +156,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_GET_BY_ID,
-    withErrorHandling(async (e, id: unknown) => {
+    withErrorHandling((e, id: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_GET_BY_ID, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -167,7 +167,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_GET_MANY_BY_ID,
-    withErrorHandling(async (e, id: unknown) => {
+    withErrorHandling((e, id: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_GET_MANY_BY_ID, LIMITS.READ_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -178,7 +178,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_GET_RELATED_NOTES,
-    withErrorHandling(async (e, payload: unknown) => {
+    withErrorHandling((e, payload: unknown) => {
       validateSender(e);
       if (
         !checkRateLimit(IPC_CHANNELS.NOTE_GET_RELATED_NOTES, LIMITS.READ_NORMAL)
@@ -242,7 +242,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_PIN,
-    withErrorHandling(async (e, id: unknown) => {
+    withErrorHandling((e, id: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_PIN, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -253,7 +253,7 @@ function registerNoteIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_PIN_MANY,
-    withErrorHandling(async (e, ids: unknown) => {
+    withErrorHandling((e, ids: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_PIN_MANY, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);

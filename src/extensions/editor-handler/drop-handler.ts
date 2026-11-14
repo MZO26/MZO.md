@@ -9,7 +9,7 @@ import {
 } from "@/utils/constants";
 import { getExtension, rendererLogger } from "@/utils/helpers";
 import { MAX_BYTES_FILE } from "@shared/shared-constants";
-import { Editor, Extension } from "@tiptap/core";
+import { type Editor, Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 
 async function processDroppedFiles(editor: Editor, files: File[], pos: number) {

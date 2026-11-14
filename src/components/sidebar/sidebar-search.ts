@@ -15,7 +15,7 @@ import {
   type SearchQuery,
 } from "@shared/schemas/note-schema";
 import { APP_EVENTS, MAX_SEARCH_LENGTH } from "@shared/shared-constants";
-import { Node as PMNode } from "@tiptap/pm/model";
+import type { Node as PMNode } from "@tiptap/pm/model";
 
 const handleSearch = withLatestGuard(
   async (
@@ -83,7 +83,7 @@ function computeSearchResult(
 }
 
 function findExactMatch(id: Id, doc: PMNode, snippet?: string) {
-  const raw = snippet ?? noteStore.get("searchSnippets")?.[id];
+  const raw = snippet ?? noteStore.get("searchSnippets")[id];
   if (!raw) return null;
   const marks: string[] = [];
   for (const [, text] of raw.matchAll(/<mark[^>]*>(.*?)<\/mark>/g)) {
@@ -107,7 +107,7 @@ function findExactMatch(id: Id, doc: PMNode, snippet?: string) {
 
 const debouncedSearch = debounce((e: Event) => {
   if (!(e.target instanceof HTMLInputElement)) return;
-  const value = (e.target.value ?? "").trim();
+  const value = e.target.value.trim();
   void handleSearch(value).catch(rendererLogger.appError);
 }, DEBOUNCE_MS.very_fast);
 

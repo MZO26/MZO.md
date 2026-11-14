@@ -2,6 +2,7 @@ import { handleZoom } from "@/api/api";
 import { stateStore } from "@/state/state";
 import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
+import { createAsyncHandler } from "./helpers";
 
 function isFocusActive() {
   return stateStore.get("focus") === true;
@@ -17,23 +18,23 @@ function isEditorFocused(target: EventTarget | null) {
 }
 
 function initGlobalShortcuts() {
-  window.addEventListener("keydown", (e) => {
+  const keydownHandler = createAsyncHandler(async (e: KeyboardEvent) => {
     if (!(e.target instanceof HTMLElement)) return;
     const { key, ctrlKey, metaKey } = e;
     const isMod = ctrlKey || metaKey;
     if (isMod && (key === "+" || key === "=")) {
       e.preventDefault();
-      handleZoom("in");
+      await handleZoom("in");
       return;
     }
     if (isMod && key === "-") {
       e.preventDefault();
-      handleZoom("out");
+      await handleZoom("out");
       return;
     }
     if (isMod && key === "0") {
       e.preventDefault();
-      handleZoom("reset");
+      await handleZoom("reset");
       return;
     }
     if (isMod && key === ".") {
@@ -53,7 +54,7 @@ function initGlobalShortcuts() {
     }
     if (isMod && key === "n") {
       e.preventDefault();
-      appEvents.emitAsync(APP_EVENTS.CREATE_NEW_NOTE);
+      await appEvents.emitAsync(APP_EVENTS.CREATE_NEW_NOTE);
       return;
     }
     if (key === "F11") {
@@ -70,7 +71,7 @@ function initGlobalShortcuts() {
     if (isSelectionActive() && key === "Backspace") {
       if (isEditorFocused(e.target)) return;
       e.preventDefault();
-      appEvents.emitAsync(APP_EVENTS.DELETE_SELECTED);
+      await appEvents.emitAsync(APP_EVENTS.DELETE_SELECTED);
       return;
     }
     if (isSelectionActive() && isMod && key === "a") {
@@ -98,6 +99,7 @@ function initGlobalShortcuts() {
       }
     }
   });
+  window.addEventListener("keydown", keydownHandler);
 }
 
 export {

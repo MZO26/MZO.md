@@ -34,7 +34,6 @@ function createWorker<T, R>(worker: Worker | null) {
         return;
       }
       const id = crypto.randomUUID();
-      let timer: ReturnType<typeof setTimeout>;
       const workerDone = () => {
         clearTimeout(timer);
         worker.removeEventListener("message", handleMessage);
@@ -59,7 +58,7 @@ function createWorker<T, R>(worker: Worker | null) {
         workerDone();
         resolve({ success: false, error: WorkerErrorCode.UnknownError });
       };
-      timer = setTimeout(() => {
+      const timer = setTimeout(() => {
         workerDone();
         resolve({
           success: false,

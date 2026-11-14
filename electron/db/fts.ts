@@ -96,7 +96,7 @@ class NotesSearch {
   private hasRebuilt = false;
 
   private optimizeFts() {
-    if (!this.db?.isOpen) return;
+    if (!this.db.isOpen) return;
     try {
       mainLogger.devLog("[FTS5]: Optimizing...");
       this.db.exec(`

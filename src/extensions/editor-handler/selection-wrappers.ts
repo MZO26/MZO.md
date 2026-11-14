@@ -1,7 +1,7 @@
 import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { noteStore } from "@/state/state";
 import { MOVEABLE_BLOCKS, MOVEABLE_CONTAINERS } from "@/utils/constants";
-import { Editor, Extension } from "@tiptap/core";
+import { type Editor, Extension } from "@tiptap/core";
 import type { ResolvedPos } from "@tiptap/pm/model";
 import { NodeSelection, TextSelection } from "@tiptap/pm/state";
 

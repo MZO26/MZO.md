@@ -74,8 +74,11 @@ function initBackupScheduler(backupRootDir: string) {
       );
     }
   }
-  setTimeout(checkAndBackup, 10_000);
-  setInterval(checkAndBackup, 60 * 60 * 1000);
+  const runBackup = (): void => {
+    void checkAndBackup();
+  };
+  setTimeout(runBackup, 10_000);
+  setInterval(runBackup, 60 * 60 * 1000);
 }
 
 async function runFolderBackup(backupRootDir: string) {

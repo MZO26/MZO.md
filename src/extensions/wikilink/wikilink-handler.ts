@@ -183,7 +183,7 @@ async function resolveGhostLink(editor: Editor, title: Note["title"]) {
   editor.commands.command(({ tr, state, dispatch }) => {
     const wikilinkType = state.schema.nodes["wikilink"];
     if (!wikilinkType) return false;
-    let modified = false;
+    let modified = false as boolean;
     state.doc.descendants((node, currentPos) => {
       if (node.type.spec.code) return false;
       if (node.type !== wikilinkType) return true;
@@ -221,7 +221,7 @@ function resolveDocLinks(editor: Editor) {
   editor.commands.command(({ tr, state, dispatch }) => {
     const wikilinkType = state.schema.nodes["wikilink"];
     if (!wikilinkType) return false;
-    let modified = false;
+    let modified = false as boolean;
     editor.state.doc.descendants((node, pos) => {
       if (node.type.spec.code) return false;
       if (node.type !== wikilinkType) return true;
@@ -251,12 +251,12 @@ function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
   editor.commands.command(({ tr, state, dispatch }) => {
     const wikilinkType = state.schema.nodes["wikilink"];
     if (!wikilinkType) return false;
-    let modified = false;
+    let modified = false as boolean;
     state.doc.descendants((node, pos) => {
       if (node.type.spec.code) return false;
       if (node.type !== wikilinkType) return true;
       if (node.marks.some((mark) => mark.type.spec.code)) return false;
-      const nodeId = node.attrs?.["id"];
+      const nodeId = node.attrs["id"] as Id | null;
       if (nodeId && !noteIndex.has(nodeId)) {
         if (dispatch) {
           tr.setNodeMarkup(pos, undefined, { ...node.attrs, id: null });

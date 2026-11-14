@@ -10,7 +10,7 @@ import { triggerSingleExport } from "@/components/sidebar/sidebar-triggers";
 import { localStore, settingsStore, stateStore } from "@/state/state";
 import {
   CODE_THEME_MAP,
-  EDITOR_WIDTH,
+  type EDITOR_WIDTH,
   EDITOR_WIDTH_LABELS,
   EXPORT_LABELS,
   THEME_MAP,
@@ -70,10 +70,10 @@ const EXPORT_KEYS = EXPORT_FORMATS.map((f) => `setting:export-${f}`);
 
 function exportCommand(format: ExportFormat) {
   return {
-    run: () => {
+    run: async () => {
       const activeId = stateStore.get("activeId") as Id | null;
       if (!activeId) return;
-      triggerSingleExport(activeId, format);
+      await triggerSingleExport(activeId, format);
     },
     isActive: () => false,
     label: EXPORT_LABELS[format],

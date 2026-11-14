@@ -169,13 +169,13 @@ const settingsCommands: Record<SettingEventStrings, SettingCommands> = {
   },
   "setting:toggle-sticky-window": {
     run: async () => {
-      void pinWindow().catch(rendererLogger.appError);
+      await pinWindow().catch(rendererLogger.appError);
     },
     isActive: () => false,
     label: "TOGGLE_STICKY_WINDOW",
   },
   "setting:toggle-toolbar": {
-    run: async () => {
+    run: () => {
       localStore.setState((state) => ({
         ...state,
         toolbarCollapsed: !state.toolbarCollapsed,

@@ -95,7 +95,7 @@ const editorCommands: Record<EditorEventStrings, EditorCommands> = {
     label: "INLINE_CODE",
   },
   "editor:code-block": {
-    run: (editor) => editor && toggleSingleCodeBlock(editor),
+    run: (editor) => toggleSingleCodeBlock(editor),
     isActive: (editor) => editor.isActive("codeBlock"),
     label: "CODE_BLOCK",
   },
@@ -115,7 +115,7 @@ const editorCommands: Record<EditorEventStrings, EditorCommands> = {
     label: "LINK",
   },
   "editor:image": {
-    run: async (editor) => editor && (await setImageUploadPrompt(editor)),
+    run: (editor) => setImageUploadPrompt(editor),
     isActive: (editor) => editor.isActive("image"),
     label: "IMAGE",
   },
@@ -145,7 +145,7 @@ function registerCommands(
     const cmd = commands[key];
     listenerMap[key] = () => {
       if (cmd.isDisabled?.(editor)) return;
-      cmd.run(editor);
+      void cmd.run(editor);
     };
   }
   return appEvents.onMany(listenerMap);
@@ -157,13 +157,12 @@ function getCommandState(editor: Editor, action: Action["action"]) {
   }
   const cmd = editorCommands[action as EditorEventStrings];
   return {
-    isActive: cmd?.isActive?.(editor) ?? false,
-    isDisabled: cmd?.isDisabled?.(editor) ?? false,
+    isActive: cmd.isActive?.(editor) ?? false,
+    isDisabled: cmd.isDisabled?.(editor) ?? false,
   };
 }
 
 async function toggleMathInline(editor: Editor) {
-  if (!editor) return false;
   const { from, to, empty } = editor.state.selection;
   const selectedText = empty ? "" : editor.state.doc.textBetween(from, to, "");
   await openMathDialog(editor, {
@@ -186,7 +185,6 @@ function setCallout(callout: CalloutType) {
 }
 
 async function toggleMathBlock(editor: Editor) {
-  if (!editor) return false;
   await openMathDialog(editor, {
     mode: "insert",
     type: "block",
@@ -196,16 +194,14 @@ async function toggleMathBlock(editor: Editor) {
 }
 
 function toggleLink(editor: Editor) {
-  if (!editor) return false;
   if (editor.isActive("link")) {
     return editor.chain().focus().extendMarkRange("link").unsetLink().run();
   }
   return editor.chain().focus().setLink({ href: "" }).run();
 }
 
-async function setImageUploadPrompt(editor: Editor) {
-  if (!editor) return false;
-  await promptImageUpload(editor);
+function setImageUploadPrompt(editor: Editor) {
+  promptImageUpload(editor);
   return true;
 }
 

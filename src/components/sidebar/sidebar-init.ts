@@ -44,16 +44,18 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
         sidebarCollapsed: !state.sidebarCollapsed,
       }));
     },
-    [APP_EVENTS.CREATE_NEW_NOTE]: async () =>
-      await handleCreateNote({ shouldNavigate: true }),
+    [APP_EVENTS.CREATE_NEW_NOTE]: () =>
+      void handleCreateNote({ shouldNavigate: true }).catch(
+        rendererLogger.appError,
+      ),
     [APP_EVENTS.FOCUS_GLOBAL_SEARCH]: () => searchInput.focus(),
     [APP_EVENTS.SET_SELECTION_MODE]: () =>
       setSelectionMode(!isSelectionActive()),
     [APP_EVENTS.EXIT_SELECTION_MODE]: () => setSelectionMode(false),
-    [APP_EVENTS.DELETE_SELECTED]: async () => {
+    [APP_EVENTS.DELETE_SELECTED]: () => {
       const { selectionMode, selectedIds } = stateStore.getState();
       if (selectionMode === true && selectedIds.size > 0)
-        await deleteSelection([...selectedIds]);
+        void deleteSelection([...selectedIds]).catch(rendererLogger.appError);
     },
     [APP_EVENTS.SELECT_ALL_VISIBLE]: selectAllVisibleNotes,
   });
@@ -90,7 +92,7 @@ function setupSidebarListeners(
     if (!(e.target instanceof HTMLInputElement)) return;
     e.preventDefault();
     const visibleIds = noteStore.get("visibleIds");
-    if (!visibleIds || visibleIds.length === 0) return;
+    if (visibleIds.length === 0) return;
     const topResult = visibleIds[0];
     if (topResult) {
       const loading = createGlobalSpinner();
@@ -179,7 +181,7 @@ function setupSidebarListeners(
     if (e.button === 3) {
       const id = recentNotes[currentIndex + 1];
       if (id) await handleSelectNote(id, { skipRecent: true });
-    } else if (e.button === 4) {
+    } else {
       const id = currentIndex > 0 ? recentNotes[currentIndex - 1] : undefined;
       if (id) await handleSelectNote(id, { skipRecent: true });
     }

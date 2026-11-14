@@ -1,6 +1,6 @@
 import { renderIcons } from "@/utils/icons";
 import { InputRule, Node, PasteRule, mergeAttributes } from "@tiptap/core";
-import { EditorState } from "@tiptap/pm/state";
+import type { EditorState } from "@tiptap/pm/state";
 
 export type CalloutType = keyof typeof CALLOUT_CONFIG;
 
@@ -160,8 +160,8 @@ export const Callout = Node.create({
       }
       const parent = $pos.node($pos.depth - 1);
       const index = $pos.index($pos.depth - 1);
-      const prev = parent?.maybeChild(index - 1);
-      const next = parent?.maybeChild(index + 1);
+      const prev = parent.maybeChild(index - 1);
+      const next = parent.maybeChild(index + 1);
       return prev?.type.name === this.name && next?.type.name === this.name;
     };
     return {

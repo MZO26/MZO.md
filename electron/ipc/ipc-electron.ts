@@ -23,7 +23,7 @@ import {
   app,
   BrowserWindow,
   ipcMain,
-  Menu,
+  type Menu,
   Notification,
   shell,
 } from "electron";
@@ -31,18 +31,18 @@ import {
 function registerElectronIpc(win: BrowserWindow) {
   ipcMain.on(
     IPC_CHANNELS.SHOW_CONTEXT_MENU,
-    withErrorHandling(async (e, type: unknown, payload: unknown) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    withErrorHandling((e, type: unknown, payload: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.SHOW_CONTEXT_MENU, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      if (!win) return;
       const validMenuType = validation(MenuTypeSchema, type);
       let menu: Menu;
       if (validMenuType === "table") {
         menu = setUpTableMenu(win);
       } else if (validMenuType === "note") {
         const validatedData = validation(NoteMenuPayloadSchema, payload);
-        menu = await setUpNoteMenu(win, validatedData);
+        menu = setUpNoteMenu(win, validatedData);
       } else {
         return;
       }
@@ -87,7 +87,7 @@ function registerElectronIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.SET_THEME,
-    withErrorHandling(async (e, theme: unknown, focus?: unknown) => {
+    withErrorHandling((e, theme: unknown, focus?: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.SET_THEME, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -97,7 +97,7 @@ function registerElectronIpc(win: BrowserWindow) {
       const windowTheme = getTitleBarOverlay(resolvedTheme, isFocus);
       for (const window of BrowserWindow.getAllWindows()) {
         window.setBackgroundColor(windowTheme.backgroundColor);
-        window.setTitleBarOverlay?.(windowTheme.overlayOptions);
+        window.setTitleBarOverlay(windowTheme.overlayOptions);
       }
       return resolvedTheme;
     }),
@@ -105,11 +105,11 @@ function registerElectronIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.APP_PIN,
-    withErrorHandling(async (e) => {
+    withErrorHandling((e) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.APP_PIN, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      if (win && !win.isDestroyed()) {
+      if (!win.isDestroyed()) {
         const isCurrentlyPinned = win.isAlwaysOnTop();
         const nextState = !isCurrentlyPinned;
         if (win.isMinimized()) {
@@ -129,7 +129,7 @@ function registerElectronIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.SHOW_NOTIFICATION,
-    withErrorHandling(async (e, title: unknown, body: unknown) => {
+    withErrorHandling((e, title: unknown, body: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.SHOW_NOTIFICATION, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);

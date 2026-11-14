@@ -20,8 +20,7 @@ import {
 } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
 
-const IS_MAC: boolean =
-  window.env?.isMac ?? navigator.userAgent.includes("Mac");
+const IS_MAC: boolean = window.env.isMac ?? navigator.userAgent.includes("Mac");
 
 function getSectionLabel(
   section: QuickSwitchDisplayBadge["section"],
@@ -152,11 +151,11 @@ async function selectActive(
     case "command": {
       const { editor } = useCore("editor");
       if (!stateStore.get("activeId")) return;
-      editorCommands[selected.commandKey]?.run(editor);
+      void editorCommands[selected.commandKey]?.run(editor);
       return;
     }
     case "setting": {
-      settingsCommands[selected.commandKey]?.run();
+      void settingsCommands[selected.commandKey]?.run();
       return;
     }
     case "tag": {
@@ -166,8 +165,7 @@ async function selectActive(
       const isNew = selected.count === 0 && clickedTag !== UNTAGGED;
       if ((isNew || event?.shiftKey) && clickedTag !== UNTAGGED) {
         const { editor } = useCore("editor");
-        if (!editor || !editor.isEditable || editor.isActive("codeBlock"))
-          return;
+        if (!editor.isEditable || editor.isActive("codeBlock")) return;
         const normalized = selected.title.replace(/[#\s]+/g, "").toLowerCase();
         if (!normalized) return;
         const pos = editor.state.selection.to;
@@ -187,7 +185,7 @@ async function selectActive(
     }
     case "wikilink": {
       const { editor } = useCore("editor");
-      if (!editor || !editor.isEditable || editor.isActive("codeBlock")) return;
+      if (!editor.isEditable || editor.isActive("codeBlock")) return;
       const normalizedTitle = selected.title.replace(/[\[\]]/g, "").trim();
       if (!normalizedTitle) return;
       const pos = editor.state.selection.to;
@@ -272,7 +270,7 @@ function updateSelection(qsState: QuickSwitchState) {
   }
 }
 
-async function setDisplay(
+function setDisplay(
   notes: readonly QuickSwitchDisplayBadge[],
   qsState: QuickSwitchState,
 ) {

@@ -4,6 +4,7 @@ import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 import { DEFAULT_SETTINGS } from "@shared/shared-constants";
 
 /** localStorage key under which the persisted app state is stored. */
+
 const STORAGE_KEY = "app_store";
 
 interface Store<T> {
@@ -116,7 +117,11 @@ const localStore = isDev
  */
 
 function keysOf<T extends Record<string, unknown>>(obj: T): (keyof T)[] {
-  return Object.keys(obj) as (keyof T)[];
+  return Object.keys(obj);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function createStore<T extends Record<string, unknown>>(
@@ -184,7 +189,7 @@ function createStore<T extends Record<string, unknown>>(
       throw new Error("Called setState inside listener");
     }
     const update = typeof newState === "function" ? newState(state) : newState;
-    if (!update || Object.keys(update).length === 0) return;
+    if (Object.keys(update).length === 0) return;
     let hasChanged = false;
     for (const key of keysOf(update)) {
       if (!Object.is(state[key], update[key])) {
@@ -286,9 +291,24 @@ function withStorage<T extends Record<string, unknown>>(
   try {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem(key);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        originalSetState({ ...store.getState(), ...parsed });
+      if (saved !== null) {
+        const parsed: unknown = JSON.parse(saved);
+        if (isRecord(parsed)) {
+          const currentState = store.getState();
+          const nextState: Record<string, unknown> = { ...currentState };
+          for (const stateKey of Object.keys(currentState)) {
+            if (
+              Object.hasOwn(currentState, stateKey) &&
+              Object.hasOwn(parsed, stateKey)
+            ) {
+              const incomingValue = parsed[stateKey];
+              if (typeof currentState[stateKey] === typeof incomingValue) {
+                nextState[stateKey] = incomingValue;
+              }
+            }
+          }
+          originalSetState(nextState as T);
+        }
       }
     }
   } catch (error) {
@@ -408,10 +428,7 @@ function shallowEq<A>(a: A, b: A): boolean {
   const keysB = Object.keys(b);
   if (keysA.length !== keysB.length) return false;
   for (const key of keysA) {
-    if (
-      !Object.prototype.hasOwnProperty.call(b, key) ||
-      !Object.is(a[key], b[key])
-    ) {
+    if (!Object.hasOwn(b, key) || !Object.is(a[key], b[key])) {
       return false;
     }
   }
@@ -419,6 +436,7 @@ function shallowEq<A>(a: A, b: A): boolean {
 }
 
 export {
+  isRecord,
   localStore,
   noteStore,
   settingsStore,

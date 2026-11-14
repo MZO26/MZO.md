@@ -409,7 +409,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
   const tagStillExists =
     activeTag === null ||
     updatedNotes.some((n) =>
-      activeTag === UNTAGGED ? !n.tags?.length : n.tags?.includes(activeTag),
+      activeTag === UNTAGGED ? !n.tags.length : n.tags.includes(activeTag),
     );
   noteStore.setState((state) => {
     const noteIndex = new Map(state.noteIndex);
@@ -504,7 +504,7 @@ async function handleSelectNote(
   const { skipRecent = false, snippet, query } = options ?? {};
   const { editor, editorWrapper } = useCore("editor", "editorWrapper");
   const activeId = stateStore.get("activeId") as Id | null;
-  debouncedSaveNote.flush();
+  debouncedSaveNote.flush()?.catch(rendererLogger.appError);
   stateStore.setState({ activeId: id, hoverId: null });
   localStore.setState((state) => {
     if (activeId) {
@@ -599,7 +599,7 @@ async function handleExtractToNote(id: Id, content: JSONContent) {
   const doc = wrapAsDoc(content);
   if (!doc) return;
   const activeTag = stateStore.get("activeTag");
-  let editorContent = addActiveTagToDoc(doc, activeTag);
+  const editorContent = addActiveTagToDoc(doc, activeTag);
   const text = extractText(editorContent);
   const extractedData = walkDoc(editorContent);
   const payload: CreateNotePayload = {
@@ -652,13 +652,7 @@ async function handleExtractToNote(id: Id, content: JSONContent) {
  */
 
 async function handleDuplicateNote(note: Readonly<Note>) {
-  const {
-    id: originalId,
-    links: originalLinks,
-    created_at,
-    updated_at,
-    ...rest
-  } = note;
+  const { links: originalLinks, ...rest } = note;
   const outgoingLinkIds = originalLinks.flatMap((link) =>
     link.dir === "out" ? [link.id] : [],
   );

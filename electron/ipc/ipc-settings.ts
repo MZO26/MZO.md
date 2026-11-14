@@ -11,12 +11,12 @@ import { getClosestZoom, nextZoom } from "@electron/win";
 import { AppBackendError, AppErrorCode } from "@shared/errors";
 import { ZoomActionSchema } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
-import { BrowserWindow, ipcMain } from "electron";
+import { type BrowserWindow, ipcMain } from "electron";
 
 function registerSettingsIpc(win: BrowserWindow) {
   ipcMain.handle(
     IPC_CHANNELS.APP_ZOOM,
-    withErrorHandling(async (e, action: unknown) => {
+    withErrorHandling((e, action: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.APP_ZOOM, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -33,7 +33,7 @@ function registerSettingsIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.GET_SETTING,
-    withErrorHandling(async (e, key: unknown) => {
+    withErrorHandling((e, key: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.GET_SETTING, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -44,7 +44,7 @@ function registerSettingsIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.GET_ALL_SETTINGS,
-    withErrorHandling(async (e) => {
+    withErrorHandling((e) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.GET_ALL_SETTINGS, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
@@ -55,7 +55,7 @@ function registerSettingsIpc(win: BrowserWindow) {
 
   ipcMain.handle(
     IPC_CHANNELS.SET_SETTING,
-    withErrorHandling(async (e, settings: unknown) => {
+    withErrorHandling((e, settings: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.SET_SETTING, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);

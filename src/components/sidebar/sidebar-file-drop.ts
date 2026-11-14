@@ -56,7 +56,7 @@ function setupSidebarFileDrop(sidebar: HTMLDivElement) {
     const validFilePaths = new Set<string>();
     for (const file of files) {
       if (!isValidExtension(getExtension(file.name))) continue;
-      const filePath = window.electronAPI.getPathForFile?.(file);
+      const filePath = window.electronAPI.getPathForFile(file);
       if (filePath) validFilePaths.add(filePath);
     }
     if (validFilePaths.size === 0) return;

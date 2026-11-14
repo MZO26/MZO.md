@@ -1,5 +1,5 @@
 import { Extension } from "@tiptap/core";
-import { ResolvedPos } from "@tiptap/pm/model";
+import { type ResolvedPos } from "@tiptap/pm/model";
 import { TextSelection } from "@tiptap/pm/state";
 
 function getTableDepthIfLastRow($pos: ResolvedPos) {

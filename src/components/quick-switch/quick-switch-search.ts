@@ -60,15 +60,15 @@ const filterTitles = withLatestGuard(
     const nextQuery = query.trim();
     if (!nextQuery || nextQuery.length > MAX_SEARCH_LENGTH) {
       qsState.lastQuery = "";
-      const defaults = (await computeDisplayNotes()) ?? [];
+      const defaults = await computeDisplayNotes();
       if (isStale()) return;
-      await setDisplay(defaults, qsState);
+      setDisplay(defaults, qsState);
       return;
     }
     if (nextQuery.startsWith("?")) {
       const query = nextQuery.slice(1).trim();
       if (query.length < MIN_SEARCH_LENGTH) {
-        await setDisplay([], qsState);
+        setDisplay([], qsState);
         return;
       }
       if (qsState.lastQuery === query) return;
@@ -94,7 +94,7 @@ const filterTitles = withLatestGuard(
             },
           ];
         });
-      await setDisplay(mapped, qsState);
+      setDisplay(mapped, qsState);
       return;
     }
     if (nextQuery === qsState.lastQuery) return;
@@ -114,7 +114,7 @@ const filterTitles = withLatestGuard(
           isActive: false,
         });
       }
-      await setDisplay(matchedTags, qsState);
+      setDisplay(matchedTags, qsState);
       return;
     }
     if (nextQuery.startsWith("[[")) {
@@ -124,7 +124,7 @@ const filterTitles = withLatestGuard(
         .trim();
       const rawNotes = linkQuery
         ? computeTitleFilterResults(linkQuery)
-        : ((await computeDisplayNotes()) ?? []);
+        : await computeDisplayNotes();
       if (isStale()) return;
       const notesToLink = rawNotes.flatMap((n) =>
         "id" in n
@@ -135,7 +135,7 @@ const filterTitles = withLatestGuard(
       const exactMatch = notesToLink.some(
         (n) => n.title.toLowerCase() === normalizedQuery,
       );
-      await setDisplay(
+      setDisplay(
         [
           ...notesToLink,
           ...(linkQuery && !exactMatch
@@ -153,14 +153,14 @@ const filterTitles = withLatestGuard(
         getAllUsableEditorCommands(),
       );
       const matchedSettings = filterByTitle(cmdQuery, getSettingsCommands());
-      await setDisplay([...matchedCommands, ...matchedSettings], qsState);
+      setDisplay([...matchedCommands, ...matchedSettings], qsState);
       return;
     }
     const result = computeTitleFilterResults(nextQuery);
     if (result.length === 0) {
-      const defaults = (await computeDisplayNotes()) ?? [];
+      const defaults = await computeDisplayNotes();
       if (isStale()) return;
-      await setDisplay(
+      setDisplay(
         [
           ...defaults,
           ...(nextQuery.length > 0
@@ -171,7 +171,7 @@ const filterTitles = withLatestGuard(
       );
       return;
     }
-    await setDisplay(
+    setDisplay(
       [...result, { title: nextQuery, section: "create" as const }],
       qsState,
     );

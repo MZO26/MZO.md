@@ -1,4 +1,4 @@
-import { Editor, Extension } from "@tiptap/core";
+import { type Editor, Extension } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
 const KEY_MAP = {

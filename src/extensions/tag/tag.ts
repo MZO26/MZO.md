@@ -56,7 +56,7 @@ const NoteTag = Node.create<NoteTagOptions>({
   parseHTML: () => [{ tag: 'span[data-type="noteTag"]' }],
 
   renderHTML({ node, HTMLAttributes }) {
-    const id = normalizeTagId(node.attrs?.["id"] ?? "");
+    const id = normalizeTagId(node.attrs["id"] ?? "");
     return [
       "span",
       mergeAttributes(HTMLAttributes, {
@@ -69,7 +69,7 @@ const NoteTag = Node.create<NoteTagOptions>({
   },
 
   renderText({ node }) {
-    const id = normalizeTagId(node.attrs?.["id"] ?? "");
+    const id = normalizeTagId(node.attrs["id"] ?? "");
     // zero width character to not trigger heading regex
     return id ? `\u200B#${id}` : "";
   },

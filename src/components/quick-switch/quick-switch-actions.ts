@@ -71,7 +71,8 @@ const getSimilarityMatching = memoize(
       }
     }
     rendererLogger.devLog(
-      `[getSimilarityMatching]: matched notes: ${relatedNotes}`,
+      "[getSimilarityMatching]: matched notes:",
+      relatedNotes.map((n) => ({ id: n.id, title: n.title })),
     );
     return relatedNotes;
   },
@@ -111,7 +112,7 @@ function getTags(notes: readonly NoteListItem[]): QuickSwitchDisplayBadge[] {
   const tagCount = new Map<string, number>();
   let untaggedCount = 0;
   for (const note of notes) {
-    if (!note.tags?.length) {
+    if (!note.tags.length) {
       untaggedCount++;
       continue;
     }
@@ -152,7 +153,7 @@ function toDisplayBadges(
   return badges;
 }
 
-async function computeDisplayNotes(): Promise<QuickSwitchDisplayBadge[]> {
+async function computeDisplayNotes() {
   const activeId = stateStore.get("activeId") as Id | null;
   const { recentNotes, notes, noteIndex } = noteStore.getState();
   const recentBadges = toDisplayBadges(recentNotes, "recent", noteIndex);
@@ -191,7 +192,7 @@ function computeActiveNoteLinks(activeNote: NoteListItem) {
     if (link.id === activeNote.id) continue;
     if (link.dir === "in") {
       backlinks.push(link);
-    } else if (link.dir === "out") {
+    } else {
       outgoingLinks.push(link);
     }
   }

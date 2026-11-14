@@ -7,7 +7,7 @@ import {
   wrapAsDoc,
 } from "@/components/editor/editor-generators";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
-import { stateStore } from "@/state/state";
+import { isRecord, stateStore } from "@/state/state";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import { rendererLogger, withPerformanceLog } from "@/utils/helpers";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
@@ -28,10 +28,10 @@ async function normalizeFileContent(
     switch (extension) {
       case "json": {
         try {
-          const parsed = JSON.parse(content);
-          if (isEditorDoc(parsed)) return parsed;
-          const doc = wrapAsDoc(parsed);
-          return isEditorDoc(doc) ? doc : undefined;
+          const parsed: unknown = JSON.parse(content);
+          if (!isRecord(parsed)) return undefined;
+          const doc = isEditorDoc(parsed) ? parsed : wrapAsDoc(parsed);
+          return doc;
         } catch (error) {
           rendererLogger.appError(
             "[normalizeFileContent]: JSON Parse failed:",
@@ -43,7 +43,7 @@ async function normalizeFileContent(
       case "html": {
         const safe = DOMPurify.sanitize(content, DOMPURIFY_CONFIG);
         const doc = generateJSON(safe, getCachedEditorExtensions());
-        return isEditorDoc(doc) ? doc : undefined;
+        return isEditorDoc(doc) ? doc : wrapAsDoc(doc);
       }
       case "md": {
         try {
@@ -57,11 +57,13 @@ async function normalizeFileContent(
             );
             return undefined;
           }
-          const doc = response.success ? JSON.parse(response.data) : undefined;
-          return isEditorDoc(doc) ? doc : undefined;
+          const doc: unknown = JSON.parse(response.data);
+          if (!isRecord(doc)) return undefined;
+          return wrapAsDoc(doc);
         } catch (error) {
           rendererLogger.appError(
             "[normalizeFileContent]: Failed to parse JSON",
+            error,
           );
           return undefined;
         }
@@ -91,10 +93,10 @@ async function setImportedContent(
     const activeTag = stateStore.get("activeTag");
     const extensions = getCachedEditorExtensions();
     for (const file of files) {
-      let content = file.content;
+      const content = file.content;
       const json = await normalizeFileContent({ ...file, content });
       if (!json) continue;
-      let updatedJson = addActiveTagToDoc(json, activeTag);
+      const updatedJson = addActiveTagToDoc(json, activeTag);
       const text = generateText(updatedJson, extensions);
       const payload: CreateNotePayload = {
         title: titleGenerator(updatedJson),

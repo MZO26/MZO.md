@@ -2,8 +2,8 @@ import { noteStore, stateStore } from "@/state/state";
 import { memoize } from "@/utils/helpers";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 import { Extension } from "@tiptap/core";
-import { Node as PMNode } from "@tiptap/pm/model";
-import { EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
+import type { Node as PMNode } from "@tiptap/pm/model";
+import { type EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 interface DuplicateItem {
@@ -69,7 +69,7 @@ function findWikilinkNodes(
   doc.descendants((node, pos) => {
     if (node.type.spec.code) return false;
     if (node.type === wikilinkType) {
-      if (duplicates.has(node.attrs?.["id"])) {
+      if (duplicates.has(node.attrs["id"])) {
         results.push({ node, pos });
       }
       return false;
@@ -91,7 +91,7 @@ function createDuplicateDecoration(state: EditorState): DecorationSet {
   return DecorationSet.create(
     state.doc,
     matches.flatMap(({ node, pos }) => {
-      const dupInfo = duplicates.get(node.attrs?.["id"]);
+      const dupInfo = duplicates.get(node.attrs["id"]);
       if (!dupInfo) return [];
       return Decoration.widget(
         pos,
@@ -100,7 +100,7 @@ function createDuplicateDecoration(state: EditorState): DecorationSet {
           dom.className = "duplicate-link-widget";
           dom.contentEditable = "false";
           const titleEl = document.createElement("span");
-          titleEl.textContent = `${dupInfo.duplicates} Duplicates with title: ${node.attrs?.["title"]}`;
+          titleEl.textContent = `${dupInfo.duplicates} Duplicates with title: ${node.attrs["title"]}`;
           dom.appendChild(titleEl);
           return dom;
         },

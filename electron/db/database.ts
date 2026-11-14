@@ -400,9 +400,7 @@ class AppDB {
       updated_at: now,
     };
     const dbContent = validation(CreateTransactionSchema, dbPayload);
-    const result = this.getTransactions().safeCreate(dbContent);
-    if (!result) throw new AppBackendError(AppErrorCode.DBError);
-    return result;
+    return this.getTransactions().safeCreate(dbContent);
   }
 
   public createMany(payloads: DbCreateArgs[]) {
@@ -425,9 +423,7 @@ class AppDB {
       };
       dbContents.push(dbPayload);
     }
-    const result = this.getTransactions().safeCreateMany(dbContents);
-    if (!result) throw new AppBackendError(AppErrorCode.DBError);
-    return result;
+    return this.getTransactions().safeCreateMany(dbContents);
   }
 
   public update(payload: DbUpdateArgs) {
@@ -443,21 +439,15 @@ class AppDB {
       images: uniqueImages,
       updated_at: now,
     };
-    const result = this.getTransactions().safeUpdate(dbPayload);
-    if (!result) throw new AppBackendError(AppErrorCode.DBError);
-    return result;
+    return this.getTransactions().safeUpdate(dbPayload);
   }
 
   public delete(id: Id) {
-    const result = this.getTransactions().safeDelete(id);
-    if (!result) throw new AppBackendError(AppErrorCode.DBError);
-    return result;
+    return this.getTransactions().safeDelete(id);
   }
 
   public deleteMany(ids: Id[]) {
-    const result = this.getTransactions().safeDeleteMany(ids);
-    if (!result) throw new AppBackendError(AppErrorCode.DBError);
-    return result;
+    return this.getTransactions().safeDeleteMany(ids);
   }
 
   public getAll() {
