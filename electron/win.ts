@@ -1,7 +1,7 @@
 import { mainLogger } from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { validation } from "@electron/ipc/ipc-validation";
-import { win } from "@electron/main";
+import { getMainWindow } from "@electron/main";
 import type { ZoomAction } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
 import { screen } from "electron";
@@ -35,9 +35,8 @@ function isWindowVisible(x: number, y: number) {
 }
 
 function saveWindowBounds() {
-  if (!win || win.isDestroyed() || win.isMinimized()) {
-    return;
-  }
+  const win = getMainWindow();
+  if (!win) return;
   const settings = settingsService.get("window_bounds");
   try {
     const bounds =

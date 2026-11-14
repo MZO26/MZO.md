@@ -1,6 +1,7 @@
 import { setUpNoteMenu, setUpTableMenu } from "@electron/context-menu";
 import { handleImageWriteMany } from "@electron/fs/fs-image";
 import { processUrl } from "@electron/handler/navigation-handler";
+import { mainLogger } from "@electron/handler/permission-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import {
   checkRateLimit,
@@ -21,7 +22,7 @@ import { NoteMenuPayloadSchema } from "@shared/schemas/note-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
 import { app, BrowserWindow, ipcMain, type Menu, Notification, shell } from "electron";
 
-function registerElectronIpc(win: BrowserWindow) {
+function registerElectronIpc() {
   ipcMain.on(
     IPC_CHANNELS.SHOW_CONTEXT_MENU,
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -30,6 +31,8 @@ function registerElectronIpc(win: BrowserWindow) {
       if (!checkRateLimit(IPC_CHANNELS.SHOW_CONTEXT_MENU, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
       const validMenuType = validation(MenuTypeSchema, type);
+      const win = BrowserWindow.fromWebContents(e.sender);
+      if (!win) return;
       let menu: Menu;
       if (validMenuType === "table") {
         menu = setUpTableMenu(win);
@@ -102,21 +105,20 @@ function registerElectronIpc(win: BrowserWindow) {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.APP_PIN, LIMITS.WRITE_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
-      if (!win.isDestroyed()) {
-        const isCurrentlyPinned = win.isAlwaysOnTop();
-        const nextState = !isCurrentlyPinned;
-        if (win.isMinimized()) {
-          win.restore();
-        }
-        win.setAlwaysOnTop(nextState, "floating");
-        if (process.platform === "darwin") {
-          win.setVisibleOnAllWorkspaces(nextState, {
-            visibleOnFullScreen: nextState,
-          });
-        }
-        return nextState;
+      const win = BrowserWindow.fromWebContents(e.sender);
+      if (!win || win.isDestroyed()) return false;
+      const isCurrentlyPinned = win.isAlwaysOnTop();
+      const nextState = !isCurrentlyPinned;
+      if (win.isMinimized()) {
+        win.restore();
       }
-      return false;
+      win.setAlwaysOnTop(nextState, "floating");
+      if (process.platform === "darwin") {
+        win.setVisibleOnAllWorkspaces(nextState, {
+          visibleOnFullScreen: nextState,
+        });
+      }
+      return nextState;
     }),
   );
 
@@ -144,6 +146,7 @@ function registerElectronIpc(win: BrowserWindow) {
       return await handleImageWriteMany(validatedData);
     }),
   );
+  mainLogger.devLog("[registerIpc]: Electron IPC registered");
 }
 
 export { registerElectronIpc };

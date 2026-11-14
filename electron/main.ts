@@ -29,10 +29,14 @@ import { fileURLToPath } from "node:url";
 
 const FLUSH_TIMEOUT_MS = 5000;
 
-export let win: BrowserWindow | null = null;
+let win: BrowserWindow | null = null;
 let isReadyToClose = false;
 let isFlushing = false;
 let flushTimeout: NodeJS.Timeout | null = null;
+
+export function getMainWindow(): BrowserWindow | null {
+  return win && !win.isDestroyed() ? win : null;
+}
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -69,7 +73,9 @@ function initSettings(): Readonly<AppSettings> {
 }
 
 async function createWindow() {
-  const settings = initSettings();
+  isReadyToClose = false;
+  isFlushing = false;
+  const settings = settingsService.getSettings();
   const preloadPath = path.join(__dirname, "../preload/preload.js");
   const activeTheme = initTheme(settings.theme);
   const windowTheme = getTitleBarOverlay(activeTheme);
@@ -110,12 +116,13 @@ async function createWindow() {
   win = new BrowserWindow(windowConfig);
   navigationHandler(win);
   win.setMenuBarVisibility(false);
-  if (!app.isPackaged && process.env["ELECTRON_RENDERER_URL"]) {
-    await win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
-    win.webContents.openDevTools();
-  } else {
-    await win.loadFile(path.join(__dirname, "../../dist/index.html"));
-  }
+  setUpEditorMenu(win);
+  win.once("ready-to-show", () => {
+    win?.show();
+  });
+  win.webContents.on("did-finish-load", () => {
+    win?.webContents.setZoomFactor(1.1);
+  });
   win.on("close", (e) => {
     if (win?.isDestroyed()) return;
     if (!isReadyToClose) {
@@ -136,40 +143,48 @@ async function createWindow() {
       return;
     }
   });
-  win.once("ready-to-show", () => {
-    win?.show();
+  win.on("closed", () => {
+    win = null;
   });
-  win.webContents.on("did-finish-load", () => {
-    win?.webContents.setZoomFactor(1.1);
-  });
+  if (!app.isPackaged && process.env["ELECTRON_RENDERER_URL"]) {
+    await win.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+    win.webContents.openDevTools();
+  } else {
+    await win.loadFile(path.join(__dirname, "../../dist/index.html"));
+  }
+  return win;
 }
 
 // app start
 
-await app.whenReady();
-Menu.setApplicationMenu(null);
-session.defaultSession.setSpellCheckerLanguages(["en-US", "de-DE"]);
-ipcMain.on(IPC_CHANNELS.CONFIRM_FLUSH, () => {
-  if (flushTimeout) clearTimeout(flushTimeout);
-  flushTimeout = null;
-  isReadyToClose = true;
-  isFlushing = false;
-  win?.close();
-});
-await createWindow();
-await setupLocalImageProtocol();
-setPermissions();
-const backupDir = path.join(app.getPath("userData"), "Backups");
-initBackupScheduler(backupDir);
-if (win) {
-  registerIpc(win);
-  setUpEditorMenu(win);
-}
-
-nativeTheme.on("updated", () => {
-  const settings = settingsService.getSettings();
-  if (win && !win.isDestroyed()) onOSThemeChange(win, settings.theme);
-});
+app
+  .whenReady()
+  .then(async () => {
+    initSettings();
+    Menu.setApplicationMenu(null);
+    session.defaultSession.setSpellCheckerLanguages(["en-US", "de-DE"]);
+    setPermissions();
+    await setupLocalImageProtocol();
+    ipcMain.on(IPC_CHANNELS.CONFIRM_FLUSH, (event) => {
+      if (flushTimeout) clearTimeout(flushTimeout);
+      flushTimeout = null;
+      isReadyToClose = true;
+      isFlushing = false;
+      const currentWin = BrowserWindow.fromWebContents(event.sender);
+      currentWin?.close();
+    });
+    registerIpc();
+    await createWindow();
+    const backupDir = path.join(app.getPath("userData"), "Backups");
+    initBackupScheduler(backupDir);
+    nativeTheme.on("updated", () => {
+      const currentSettings = settingsService.getSettings();
+      if (win && !win.isDestroyed()) {
+        onOSThemeChange(win, currentSettings.theme);
+      }
+    });
+  })
+  .catch((error) => mainLogger.appError("Error during app start", error));
 
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
@@ -178,8 +193,14 @@ app.on("activate", () => {
 });
 
 app.on("will-quit", () => {
-  db.execPragma("optimize");
-  db.close();
+  if (gotLock) {
+    try {
+      db.execPragma("optimize");
+      db.close();
+    } catch (error) {
+      mainLogger.appError("Error closing DB", error);
+    }
+  }
 });
 
 app.on("window-all-closed", () => {

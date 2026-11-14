@@ -19,9 +19,8 @@ class SettingsService {
    * @returns The loaded settings.
    */
 
-  public initialize(): Readonly<AppSettings> {
+  public initialize() {
     this.cache = db.getAllSettings();
-    return this.cache;
   }
 
   /**

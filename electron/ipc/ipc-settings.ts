@@ -1,3 +1,4 @@
+import { mainLogger } from "@electron/handler/permission-handler";
 import { settingsService } from "@electron/handler/settings-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import {
@@ -11,15 +12,17 @@ import { getClosestZoom, nextZoom } from "@electron/win";
 import { AppBackendError, AppErrorCode } from "@shared/errors";
 import { ZoomActionSchema } from "@shared/schemas/electron-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
-import { type BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow, ipcMain } from "electron";
 
-function registerSettingsIpc(win: BrowserWindow) {
+function registerSettingsIpc() {
   ipcMain.handle(
     IPC_CHANNELS.APP_ZOOM,
     withErrorHandling((e, action: unknown) => {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.APP_ZOOM, LIMITS.READ_LIGHT))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const win = BrowserWindow.fromWebContents(e.sender);
+      if (!win || win.isDestroyed()) throw new AppBackendError(AppErrorCode.UnknownError);
       const validAction = validation(ZoomActionSchema, action);
       const rawCurrent = win.webContents.getZoomFactor();
       const current = getClosestZoom(rawCurrent);
@@ -70,6 +73,7 @@ function registerSettingsIpc(win: BrowserWindow) {
       return validValue;
     }),
   );
+  mainLogger.devLog("[registerIpc]: Settings IPC registered");
 }
 
 export { registerSettingsIpc };

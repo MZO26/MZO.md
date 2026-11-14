@@ -10,6 +10,7 @@ import {
 import { batchExport, singleExport, singlePDFExport } from "@electron/fs/fs-export";
 import { removeUnusedImages } from "@electron/fs/fs-image";
 import { batchImport } from "@electron/fs/fs-import";
+import { mainLogger } from "@electron/handler/permission-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import {
   checkRateLimit,
@@ -35,9 +36,10 @@ import {
   ExportRequestSchema,
   FilePathRequestSchema,
 } from "@shared/schemas/request-schema";
-import { type BrowserWindow, ipcMain } from "electron";
+import { ipcMain } from "electron";
+import { BrowserWindow } from "electron/main";
 
-function registerNoteIpc(win: BrowserWindow) {
+function registerNoteIpc() {
   ipcMain.handle(
     IPC_CHANNELS.GET_ALL_NOTES,
     withErrorHandling((e) => {
@@ -187,6 +189,8 @@ function registerNoteIpc(win: BrowserWindow) {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_IMPORT, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const win = BrowserWindow.fromWebContents(e.sender);
+      if (!win || win.isDestroyed()) throw new AppBackendError(AppErrorCode.UnknownError);
       const validatedData = validation(FilePathRequestSchema, payload);
       const filePaths =
         validatedData.source === "dialog"
@@ -207,6 +211,8 @@ function registerNoteIpc(win: BrowserWindow) {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_EXPORT_MANY, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const win = BrowserWindow.fromWebContents(e.sender);
+      if (!win || win.isDestroyed()) throw new AppBackendError(AppErrorCode.UnknownError);
       const validatedData = validation(ExportManyRequestSchema, payload);
       const selectedFolder = await handleExportManyDialog(win);
       return await batchExport(selectedFolder, validatedData);
@@ -219,6 +225,8 @@ function registerNoteIpc(win: BrowserWindow) {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.NOTE_EXPORT, LIMITS.WRITE_STANDARD))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const win = BrowserWindow.fromWebContents(e.sender);
+      if (!win || win.isDestroyed()) throw new AppBackendError(AppErrorCode.UnknownError);
       const validatedData = validation(ExportRequestSchema, payload);
       const data =
         typeof validatedData.content === "string"
@@ -260,6 +268,8 @@ function registerNoteIpc(win: BrowserWindow) {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.DB_BACKUP, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const win = BrowserWindow.fromWebContents(e.sender);
+      if (!win || win.isDestroyed()) throw new AppBackendError(AppErrorCode.UnknownError);
       const filePath = await handleDBBackupDialog(win);
       return await db.backupDb(filePath);
     }),
@@ -271,11 +281,14 @@ function registerNoteIpc(win: BrowserWindow) {
       validateSender(e);
       if (!checkRateLimit(IPC_CHANNELS.DB_BACKUP_RESTORE, LIMITS.WRITE_HEAVY))
         throw new AppBackendError(AppErrorCode.RateLimitError);
+      const win = BrowserWindow.fromWebContents(e.sender);
+      if (!win || win.isDestroyed()) throw new AppBackendError(AppErrorCode.UnknownError);
       const backupPath = await handleDBRestoreDialog(win);
       if (!backupPath) throw new AppBackendError(AppErrorCode.InvalidData);
       return await restoreFromBackupPath(backupPath);
     }),
   );
+  mainLogger.devLog("[registerIpc]: Note IPC registered");
 }
 
 export { registerNoteIpc };

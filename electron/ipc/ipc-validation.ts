@@ -10,10 +10,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import z, { ZodError } from "zod";
 
-function registerIpc(win: BrowserWindow) {
-  registerElectronIpc(win);
-  registerNoteIpc(win);
-  registerSettingsIpc(win);
+function registerIpc() {
+  registerElectronIpc();
+  registerNoteIpc();
+  registerSettingsIpc();
 }
 
 /**

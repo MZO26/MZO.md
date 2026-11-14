@@ -3,7 +3,7 @@ import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { ExternalUrlSchema } from "@shared/schemas/electron-schema";
 import { type NoteMenuPayload } from "@shared/schemas/note-schema";
 import { TABLE_ACTIONS } from "@shared/shared-constants";
-import { app, clipboard, Menu, shell, type BrowserWindow } from "electron";
+import { app, type BrowserWindow, clipboard, Menu, shell } from "electron";
 import path from "node:path";
 
 const MAX_SPELLING_SUGGESTIONS = 4;
