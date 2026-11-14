@@ -69,20 +69,6 @@ function textConverter(plainText: string): JSONContent[] | undefined {
   }, []);
 }
 
-function isNode(val: unknown): val is JSONContent {
-  return typeof val === "object" && val !== null && !Array.isArray(val) && "type" in val;
-}
-
-function ensureEditorDoc(input: unknown): JSONContent | undefined {
-  if (Array.isArray(input)) {
-    return { type: "doc", content: input.filter(isNode) };
-  }
-  if (isNode(input)) {
-    return input.type === "doc" ? input : { type: "doc", content: [input] };
-  }
-  return undefined;
-}
-
 function titleGenerator(doc: JSONContent) {
   if (!Array.isArray(doc.content) || doc.content.length === 0) {
     return UNTITLED;
@@ -185,12 +171,4 @@ function walkDoc(doc: JSONContent) {
   };
 }
 
-export {
-  ensureEditorDoc,
-  extractText,
-  snippetGenerator,
-  textConverter,
-  titleGenerator,
-  truncateTitle,
-  walkDoc,
-};
+export { extractText, snippetGenerator, textConverter, titleGenerator, truncateTitle, walkDoc };

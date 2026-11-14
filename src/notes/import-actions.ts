@@ -1,6 +1,5 @@
-import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
+import { ensureEditorDoc, getCachedEditorExtensions } from "@/components/editor/editor-actions";
 import {
-  ensureEditorDoc,
   snippetGenerator,
   textConverter,
   titleGenerator,

@@ -10,7 +10,7 @@ import { ALLOWED_TYPES, DOMPURIFY_CONFIG, MAX_DROP_LENGTH } from "@/utils/consta
 import { getExtension, rendererLogger } from "@/utils/helpers";
 import { MAX_CHARACTERS } from "@shared/shared-constants";
 import { Extension } from "@tiptap/core";
-import { Plugin } from "@tiptap/pm/state";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import DOMPurify from "dompurify";
 
 export const PasteHandler = Extension.create({
@@ -21,43 +21,49 @@ export const PasteHandler = Extension.create({
 
     return [
       new Plugin({
+        key: new PluginKey("pasteHandler"),
         props: {
           handlePaste(_view, event) {
             const clipboardData = event.clipboardData;
-            if (!clipboardData || clipboardData.files.length === 0) return false;
-            const pasteCandidates = Iterator.from(clipboardData.files)
-              .filter(
-                (f) => ALLOWED_TYPES.includes(f.type) || isValidExtension(getExtension(f.name)),
-              )
-              .take(MAX_DROP_LENGTH)
-              .toArray();
-            if (pasteCandidates.length > 0) {
-              event.preventDefault();
-              const pastePos = editor.state.selection.from;
-              const { images = [], content = [] } = Object.groupBy(pasteCandidates, (f) =>
-                ALLOWED_TYPES.includes(f.type) ? "images" : "content",
-              );
-              void (async () => {
-                try {
-                  if (images.length > 0) {
-                    await processAndInsertImages(images, editor, pastePos);
-                  }
-                  if (content.length > 0) {
-                    await processDroppedFiles(editor, content, pastePos);
-                  }
-                } catch (error) {
-                  rendererLogger.appError("[PasteHandler]: File paste processing failed:", error);
+            if (!clipboardData) return false;
+            if (clipboardData.files.length > 0) {
+              const pasteCandidates = Iterator.from(clipboardData.files)
+                .filter(
+                  (f) => ALLOWED_TYPES.includes(f.type) || isValidExtension(getExtension(f.name)),
+                )
+                .take(MAX_DROP_LENGTH)
+                .toArray();
+              if (pasteCandidates.length > 0) {
+                event.preventDefault();
+                if (!editor.state.selection.empty) {
+                  editor.commands.deleteSelection();
                 }
-              })();
-              return true;
+                const { images = [], content = [] } = Object.groupBy(pasteCandidates, (f) =>
+                  ALLOWED_TYPES.includes(f.type) ? "images" : "content",
+                );
+                void (async () => {
+                  try {
+                    if (images.length > 0) {
+                      await processAndInsertImages(images, editor, editor.state.selection.from);
+                    }
+                    if (content.length > 0) {
+                      await processDroppedFiles(editor, content, editor.state.selection.from);
+                    }
+                  } catch (error) {
+                    rendererLogger.appError("[PasteHandler]: File paste processing failed:", error);
+                  }
+                })();
+                return true;
+              }
             }
             const html = clipboardData.getData("text/html");
-            const plainText = clipboardData.getData("text/plain") || "";
-            if (plainText.length > MAX_CHARACTERS) {
+            const plainText = clipboardData.getData("text/plain");
+            if (plainText.length > MAX_CHARACTERS || html.length > MAX_CHARACTERS * 5) {
               event.preventDefault();
               return true;
             }
-            if (!html && looksLikeMarkdown(plainText)) {
+            const isCodeEditorHtml = clipboardData.types.includes("vscode-editor-data");
+            if ((!html || isCodeEditorHtml) && looksLikeMarkdown(plainText)) {
               try {
                 const json = getMarkdownManager().parse(plainText);
                 if (!json.content) return false;

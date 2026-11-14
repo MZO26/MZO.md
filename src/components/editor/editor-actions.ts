@@ -142,6 +142,37 @@ function resolveMarkConflicts(nodes: JSONContent[]): JSONContent[] {
   });
 }
 
+function isNode(val: unknown): val is JSONContent {
+  return (
+    typeof val === "object" &&
+    val !== null &&
+    !Array.isArray(val) &&
+    "type" in val &&
+    typeof val.type === "string"
+  );
+}
+
+function isNodeArray(val: unknown): val is JSONContent[] {
+  return Array.isArray(val) && (val.length === 0 || isNode(val[0]));
+}
+
+function ensureEditorDoc(input: unknown): JSONContent | undefined {
+  if (isNodeArray(input)) {
+    return { type: "doc", content: input };
+  }
+  if (isNode(input)) {
+    if (input.type === "doc") {
+      return {
+        ...input,
+        type: "doc",
+        content: isNodeArray(input.content) ? input.content : [],
+      };
+    }
+    return { type: "doc", content: [input] };
+  }
+  return undefined;
+}
+
 function looksLikeMarkdown(text: string) {
   const trimmed = text.trim();
   if (!trimmed) return false;
@@ -193,6 +224,7 @@ const blockPatterns = [
 ];
 
 export {
+  ensureEditorDoc,
   getCachedEditorExtensions,
   getEditorPos,
   getHTMLContentBetween,

@@ -99,6 +99,7 @@ class NotesSearch {
       this.db.exec(`
       INSERT INTO notes_fts(notes_fts) VALUES('optimize');
     `);
+      mainLogger.devLog("[FTS5]: Finished Optimizing");
     } catch (error) {
       mainLogger.devLog("[FTS5]: Optimize skipped or failed", error);
     }

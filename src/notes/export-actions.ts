@@ -35,7 +35,7 @@ function getBatchExportContent(
             created_at: note.created_at,
             fileName: note.title,
             extension: extension,
-            content: generateText(note.content, exts, { blockSeparator: "\n" }),
+            content: generateText(note.content, exts),
           })),
         };
       }

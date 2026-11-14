@@ -9,12 +9,12 @@ import {
   updateNote,
 } from "@/api/api";
 import {
+  ensureEditorDoc,
   getEditorPos,
   recreateEditorState,
   setSelection,
 } from "@/components/editor/editor-actions";
 import {
-  ensureEditorDoc,
   extractText,
   snippetGenerator,
   titleGenerator,
@@ -545,7 +545,7 @@ async function handleSelectNote(
 /**
  * Extracts a content selection into a new standalone note, linking it back to the source.
  *
- * Wraps the provided `content` fragment into a full document (`wrapAsDoc`),
+ * Wraps the provided `content` fragment into a full document (`ensureEditorDoc`),
  * injects the active tag, and builds a create payload. The source note's id is
  * appended to the `links` array so the new note carries a back-reference to
  * where it was extracted from. Calls `createNote`, then on success:
@@ -554,7 +554,7 @@ async function handleSelectNote(
  *
  * Does NOT navigate, update `recentNotes`, or touch the editor.
  *
- * No-op (returns `undefined`) if `wrapAsDoc` cannot produce a valid document.
+ * No-op (returns `undefined`) if `ensureEditorDoc` cannot produce a valid document.
  *
  * @param id – The source note id this content was extracted from; stored as a link in the new note.
  * @param content – The ProseMirror JSON content to extract.
