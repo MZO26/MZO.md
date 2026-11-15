@@ -19,107 +19,6 @@ type ChangeDisplayArgs =
   | [action: "new", esState: EditorSearchState, options?: { focus?: boolean }]
   | [action: Exclude<QueryOptions, "new">, esState: EditorSearchState];
 
-function renderEditorSearch(esState: Readonly<EditorSearchState>) {
-  const { isOpen, isReplaceOpen, query } = esState;
-  const { editor } = useCore("editor");
-  const {
-    inputWrapperEditor,
-    searchInputEditor,
-    replaceInputEditor,
-    replaceInputWrapper,
-    searchCount,
-    chevronButton,
-    searchPrev,
-    searchNext,
-  } = useUI(
-    "inputWrapperEditor",
-    "searchInputEditor",
-    "replaceInputEditor",
-    "replaceInputWrapper",
-    "searchCount",
-    "chevronButton",
-    "searchPrev",
-    "searchNext",
-  );
-  const { results, activeIndex } = editor.storage.docSearch;
-  inputWrapperEditor.classList.toggle("invisible", !isOpen);
-  const showReplace = isOpen && isReplaceOpen;
-  replaceInputWrapper.classList.toggle("invisible", !showReplace);
-  chevronButton.classList.toggle("open", showReplace);
-  if (!isOpen) {
-    searchInputEditor.value = "";
-    replaceInputEditor.value = "";
-  } else if (document.activeElement !== searchInputEditor && searchInputEditor.value !== query) {
-    searchInputEditor.value = query;
-  }
-  const hasResults = query.length > 0 && results.length > 0;
-  searchCount.textContent = hasResults ? `${activeIndex + 1} of ${results.length}` : "0 of 0";
-  const disabled = !hasResults;
-  searchPrev.disabled = disabled;
-  searchNext.disabled = disabled;
-}
-
-function decideQueryOption(options: QueryOptions, esState: Readonly<EditorSearchState>) {
-  const { editor } = useCore("editor");
-  switch (options) {
-    case "new":
-      editor.commands.docSearchSetQuery(esState.query);
-      return;
-    case "prev":
-      editor.commands.docSearchPrev();
-      return;
-    case "next":
-      editor.commands.docSearchNext();
-      return;
-    case "clear":
-      editor.commands.docSearchClear();
-      return;
-    case "replace-one":
-      editor.commands.docSearchSetReplacement(esState.replaceText);
-      editor.commands.docSearchReplaceCurrent();
-      return;
-    case "replace-all":
-      editor.commands.docSearchSetReplacement(esState.replaceText);
-      editor.commands.docSearchReplaceAll();
-      return;
-    default:
-      options satisfies never;
-  }
-}
-
-function createInitialSearchState(): EditorSearchState {
-  return {
-    isOpen: false,
-    isReplaceOpen: false,
-    query: "",
-    replaceText: "",
-  };
-}
-
-function resetEditorSearchState(esState: EditorSearchState) {
-  Object.assign(esState, createInitialSearchState());
-}
-
-function changeDisplay(...[queryOptions, esState, options]: ChangeDisplayArgs) {
-  const { searchInputEditor } = useUI("searchInputEditor");
-  decideQueryOption(queryOptions, esState);
-  if (queryOptions === "new") {
-    esState.isOpen = true;
-  } else if (queryOptions === "clear") {
-    const { editor } = useCore("editor");
-    const { replaceInputEditor } = useUI("replaceInputEditor");
-    resetEditorSearchState(esState);
-    searchInputEditor.value = "";
-    replaceInputEditor.value = "";
-    editor.commands.focus();
-  }
-  renderEditorSearch(esState);
-  if (queryOptions === "new" && options?.focus) {
-    searchInputEditor.focus();
-    searchInputEditor.select();
-  }
-}
-
 function initEditorSearch(editorWrapper: HTMLDivElement) {
   const {
     inputWrapperEditor,
@@ -131,6 +30,7 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
     searchNext,
     replaceOne,
     replaceAll,
+    searchCount,
   } = useUI(
     "inputWrapperEditor",
     "searchInputEditor",
@@ -141,9 +41,92 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
     "searchNext",
     "replaceOne",
     "replaceAll",
+    "searchCount",
   );
 
+  function createInitialSearchState(): EditorSearchState {
+    return {
+      isOpen: false,
+      isReplaceOpen: false,
+      query: "",
+      replaceText: "",
+    };
+  }
+
+  function resetEditorSearchState(esState: EditorSearchState) {
+    Object.assign(esState, createInitialSearchState());
+  }
+
   const esState: EditorSearchState = createInitialSearchState();
+
+  function renderEditorSearch(esState: Readonly<EditorSearchState>) {
+    const { isOpen, isReplaceOpen, query } = esState;
+    const { editor } = useCore("editor");
+    const { results, activeIndex } = editor.storage.docSearch;
+    inputWrapperEditor.classList.toggle("invisible", !isOpen);
+    const showReplace = isOpen && isReplaceOpen;
+    replaceInputWrapper.classList.toggle("invisible", !showReplace);
+    chevronButton.classList.toggle("open", showReplace);
+    if (!isOpen) {
+      searchInputEditor.value = "";
+      replaceInputEditor.value = "";
+    } else if (document.activeElement !== searchInputEditor && searchInputEditor.value !== query) {
+      searchInputEditor.value = query;
+    }
+    const hasResults = query.length > 0 && results.length > 0;
+    searchCount.textContent = hasResults ? `${activeIndex + 1} of ${results.length}` : "0 of 0";
+    const disabled = !hasResults;
+    searchPrev.disabled = disabled;
+    searchNext.disabled = disabled;
+  }
+
+  function decideQueryOption(options: QueryOptions, esState: Readonly<EditorSearchState>) {
+    const { editor } = useCore("editor");
+    switch (options) {
+      case "new":
+        editor.commands.docSearchSetQuery(esState.query);
+        return;
+      case "prev":
+        editor.commands.docSearchPrev();
+        return;
+      case "next":
+        editor.commands.docSearchNext();
+        return;
+      case "clear":
+        editor.commands.docSearchClear();
+        return;
+      case "replace-one":
+        editor.commands.docSearchSetReplacement(esState.replaceText);
+        editor.commands.docSearchReplaceCurrent();
+        return;
+      case "replace-all":
+        editor.commands.docSearchSetReplacement(esState.replaceText);
+        editor.commands.docSearchReplaceAll();
+        return;
+      default:
+        options satisfies never;
+    }
+  }
+
+  function changeDisplay(...[queryOptions, esState, options]: ChangeDisplayArgs) {
+    const { searchInputEditor } = useUI("searchInputEditor");
+    decideQueryOption(queryOptions, esState);
+    if (queryOptions === "new") {
+      esState.isOpen = true;
+    } else if (queryOptions === "clear") {
+      const { editor } = useCore("editor");
+      const { replaceInputEditor } = useUI("replaceInputEditor");
+      resetEditorSearchState(esState);
+      searchInputEditor.value = "";
+      replaceInputEditor.value = "";
+      editor.commands.focus();
+    }
+    renderEditorSearch(esState);
+    if (queryOptions === "new" && options?.focus) {
+      searchInputEditor.focus();
+      searchInputEditor.select();
+    }
+  }
 
   const debouncedSearch = debounce((e: Event) => {
     if (!(e.target instanceof HTMLInputElement)) return;
