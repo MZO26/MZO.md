@@ -1,7 +1,7 @@
 import { handleZoom } from "@/api/api";
+import { appEvents } from "@/api/event-emitter";
 import { stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/helpers";
-import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 function isFocusActive() {

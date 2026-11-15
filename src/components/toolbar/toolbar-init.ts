@@ -1,3 +1,4 @@
+import { appEvents } from "@/api/event-emitter";
 import { TOOLBAR_ACTIONS } from "@/components/toolbar/toolbar-actions";
 import {
   buildToolbarMenu,
@@ -6,7 +7,6 @@ import {
 } from "@/components/toolbar/toolbar-factory";
 import { localStore, stateStore } from "@/state/state";
 import { requireElement } from "@/utils/ui";
-import { appEvents } from "@shared/event-emitter";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 function initToolbar(editorContainer: HTMLDivElement) {

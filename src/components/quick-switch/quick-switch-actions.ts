@@ -1,4 +1,5 @@
 import { getRelatedNotes } from "@/api/api";
+import type { EditorEventStrings } from "@/api/event-emitter";
 import { editorCommands } from "@/components/editor/editor-commands";
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
 import { renderTitleList } from "@/components/quick-switch/quick-switch-ui";
@@ -8,10 +9,9 @@ import { UNTAGGED } from "@/utils/constants";
 import { memoize, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import type { NoteSection, QuickSwitchDisplayBadge, Sections } from "@/utils/types";
-import type { EditorEventStrings } from "@shared/event-emitter";
 import { isNoteID, type Id, type Link, type NoteListItem } from "@shared/schemas/note-schema";
 
-function tokenize(text: string): string[] {
+function tokenize(text: string) {
   if (!text) return [];
   const matches = text.toLowerCase().match(/\p{L}+/gu);
   return matches ?? [];

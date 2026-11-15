@@ -1,3 +1,4 @@
+import { appEvents } from "@/api/event-emitter";
 import { computeDisplayNotes, setDisplay } from "@/components/quick-switch/quick-switch-actions";
 import { handleListKeydown } from "@/components/quick-switch/quick-switch-navigation";
 import { filterTitles } from "@/components/quick-switch/quick-switch-search";
@@ -8,7 +9,6 @@ import { DEBOUNCE_MS } from "@/utils/constants";
 import { createAsyncHandler, debounce, rendererLogger, waitForPaint } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import type { QuickSwitchDisplayBadge } from "@/utils/types";
-import { appEvents } from "@shared/event-emitter";
 import { type SearchQuery } from "@shared/schemas/note-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
 import type { Editor } from "@tiptap/core";

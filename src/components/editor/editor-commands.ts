@@ -1,16 +1,18 @@
-import { type CalloutType } from "@/extensions/callouts";
-import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
-import { promptImageUpload } from "@/extensions/overrides/image/image";
-import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
-import { CALLOUT_LABELS } from "@/utils/constants";
-import type { Action } from "@/utils/types";
 import {
   appEvents,
   type CommandEventMap,
   type EditorEventStrings,
   type ListenerMap,
-} from "@shared/event-emitter";
-import type { EditorCommands } from "@shared/shared-types";
+} from "@/api/event-emitter";
+import { type CalloutType } from "@/extensions/callouts";
+import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
+import { promptImageUpload } from "@/extensions/overrides/image/image";
+import { openMathDialog } from "@/extensions/overrides/mathematics/mathematics-dialog";
+import { keysOf } from "@/state/state";
+import { CALLOUT_LABELS } from "@/utils/constants";
+import type { Action } from "@/utils/types";
+import { EDITOR_EVENTS } from "@shared/shared-constants";
+import type { AppEvent, EditorCommands } from "@shared/shared-types";
 import type { Editor } from "@tiptap/core";
 
 const editorCommands: Record<EditorEventStrings, EditorCommands> = {
@@ -134,7 +136,7 @@ const editorCommands: Record<EditorEventStrings, EditorCommands> = {
 
 function registerCommands(editor: Editor, commands: Record<EditorEventStrings, EditorCommands>) {
   const listenerMap: ListenerMap<CommandEventMap> = {};
-  for (const key of Object.keys(commands) as EditorEventStrings[]) {
+  for (const key of keysOf(commands)) {
     const cmd = commands[key];
     listenerMap[key] = () => {
       if (cmd.isDisabled?.(editor)) return;
@@ -144,11 +146,15 @@ function registerCommands(editor: Editor, commands: Record<EditorEventStrings, E
   return appEvents.onMany(listenerMap);
 }
 
+function isEditorCommand(action: AppEvent): action is EditorEventStrings {
+  return action in editorCommands && !Object.hasOwn(EDITOR_EVENTS, action);
+}
+
 function getCommandState(editor: Editor, action: Action["action"]) {
-  if (!(action in editorCommands)) {
+  if (!isEditorCommand(action)) {
     return { isActive: false, isDisabled: false };
   }
-  const cmd = editorCommands[action as EditorEventStrings];
+  const cmd = editorCommands[action];
   return {
     isActive: cmd.isActive?.(editor) ?? false,
     isDisabled: cmd.isDisabled?.(editor) ?? false,

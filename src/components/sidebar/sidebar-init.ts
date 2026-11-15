@@ -1,3 +1,4 @@
+import { appEvents } from "@/api/event-emitter";
 import { setupSidebarFileDrop } from "@/components/sidebar/sidebar-file-drop";
 import { navigateSidebar } from "@/components/sidebar/sidebar-navigation";
 import { debouncedSearch } from "@/components/sidebar/sidebar-search";
@@ -16,7 +17,6 @@ import { createAsyncHandler, rendererLogger } from "@/utils/helpers";
 import { useUI } from "@/utils/registry";
 import { isEditorFocused, isFocusActive, isSelectionActive } from "@/utils/shortcuts";
 import { createGlobalSpinner } from "@/utils/ui";
-import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { APP_EVENTS } from "@shared/shared-constants";

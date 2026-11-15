@@ -1,10 +1,10 @@
+import { appEvents } from "@/api/event-emitter";
 import { getCommandState } from "@/components/editor/editor-commands";
 import { localStore } from "@/state/state";
 import { withRafSchedule } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import type { Action, ActionMap, ActiveStateParams, ToolbarItem } from "@/utils/types";
 import { createIconButton } from "@/utils/ui";
-import { appEvents } from "@shared/event-emitter";
 
 const buttonMap = new Map<string, HTMLButtonElement>();
 

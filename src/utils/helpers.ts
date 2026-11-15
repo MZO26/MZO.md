@@ -1,3 +1,4 @@
+import { keysOf } from "@/state/state";
 import { createLogger } from "@shared/log";
 import type { Id, NoteListItem } from "@shared/schemas/note-schema";
 
@@ -324,14 +325,15 @@ function memoize<A extends unknown[], R>(
  * omitKeys({ a: 1, b: 2, c: 3 }, new Set(["a", "c"])); // { b: 2 }
  */
 
-function omitKeys<K extends Id, V>(record: Record<K, V>, keysToRemove: Set<Id> | Id): Record<K, V> {
-  const next = {} as Record<K, V>;
-  const isSet = keysToRemove instanceof Set;
-  for (const key in record) {
-    const shouldRemove = isSet ? keysToRemove.has(key) : key === keysToRemove;
-    if (!shouldRemove) {
-      const val = record[key];
-      if (val !== undefined) next[key] = val;
+function omitKeys<K extends Id, V>(
+  record: Record<K, V>,
+  keysToRemove: Set<Id> | Id,
+): Partial<Record<K, V>> {
+  const next: Partial<Record<K, V>> = {};
+  for (const key of keysOf(record)) {
+    const shouldRemove = keysToRemove instanceof Set ? keysToRemove.has(key) : key === keysToRemove;
+    if (!shouldRemove && record[key] !== undefined) {
+      next[key] = record[key];
     }
   }
   return next;

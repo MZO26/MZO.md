@@ -1,4 +1,5 @@
 import { showNotification } from "@/api/api";
+import { appEvents } from "@/api/event-emitter";
 import { recreateEditorState } from "@/components/editor/editor-actions";
 import { editorCommands, registerCommands } from "@/components/editor/editor-commands";
 import { updateStats } from "@/components/editor/editor-ui";
@@ -45,7 +46,6 @@ import { noteStore, stateStore } from "@/state/state";
 import { NODE_BASELINE, SHARED_KATEX_OPTIONS, YIELD_MS } from "@/utils/constants";
 import { rendererLogger, sleep } from "@/utils/helpers";
 import { createGlobalSpinner, requireElement } from "@/utils/ui";
-import { appEvents } from "@shared/event-emitter";
 import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { APP_EVENTS, MAX_CHARACTERS } from "@shared/shared-constants";

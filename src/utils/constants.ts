@@ -170,7 +170,7 @@ const EDITOR_WIDTH_LABELS = {
   comfortable: "SET_EDITOR_WIDTH_COMFORTABLE",
   normal: "SET_EDITOR_WIDTH_NORMAL",
   wide: "SET_EDITOR_WIDTH_WIDE",
-};
+} as const;
 
 const EDITOR_WIDTH = ["comfortable", "normal", "wide"] as const;
 

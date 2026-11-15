@@ -164,7 +164,7 @@ body.is-dragging * {
     box-shadow 0.3s ease,
     border-color 0.3s ease,
     opacity 0.3s ease,
-    visibility 0s linear 0s;
+    visibility 0s linear;
 }
 
 .search-count {

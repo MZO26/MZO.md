@@ -1,8 +1,8 @@
+import { appEvents } from "@/api/event-emitter";
 import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
 import { debounce } from "@/utils/helpers";
 import { useCore, useUI } from "@/utils/registry";
-import { appEvents } from "@shared/event-emitter";
 import type { SearchQuery } from "@shared/schemas/note-schema";
 import { APP_EVENTS, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 

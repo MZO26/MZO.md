@@ -1,8 +1,8 @@
+import type { EditorEventStrings } from "@/api/event-emitter";
 import type { SettingEventStrings } from "@/settings/settings-commands";
 import type { EXPORT_LABELS, NOTE_SECTION } from "@/utils/constants";
 import type { APP_ICONS } from "@/utils/icons";
 import type { WorkerErrorCode } from "@shared/errors";
-import type { EditorEventStrings } from "@shared/event-emitter";
 import type { Id, NoteListItem, SearchResult } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import type { AppEvent } from "@shared/shared-types";

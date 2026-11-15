@@ -9,7 +9,7 @@ const KEY_MAP = {
   '"': '"',
 } as const;
 
-const CLOSERS = Object.values(KEY_MAP) as string[];
+const CLOSERS = Object.keys(KEY_MAP);
 
 const isOpener = (key: string): key is keyof typeof KEY_MAP => key in KEY_MAP;
 

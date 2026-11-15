@@ -45,8 +45,8 @@ const STATE_STORE: Readonly<AppState> = {
 };
 
 interface LocalStore {
-  cursorPos: Record<Id, number>;
-  scrollTop: Record<Id, number>;
+  cursorPos: Partial<Record<Id, number>>;
+  scrollTop: Partial<Record<Id, number>>;
   sidebarWidth: number;
   editorWidth: (typeof EDITOR_WIDTH)[number];
   toolbarCollapsed: boolean;
@@ -400,4 +400,4 @@ function shallowEq<A>(a: A, b: A): boolean {
   return true;
 }
 
-export { localStore, noteStore, settingsStore, shallowEq, stateStore, type AppState };
+export { keysOf, localStore, noteStore, settingsStore, shallowEq, stateStore, type AppState };

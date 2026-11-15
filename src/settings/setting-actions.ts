@@ -30,7 +30,6 @@ import type {
   NoteItemDisplay,
   Theme,
 } from "@shared/schemas/store-schema";
-import type { SETTING_EVENTS } from "@shared/shared-constants";
 import type { ResolvedTheme, Result } from "@shared/shared-types";
 
 const THEME_VALUES = ["system", "light", "light_warm", "dark", "dark_warm", "oled"] as const;
@@ -79,6 +78,12 @@ async function applyAppTheme(
   const result = await setTheme(preference, isFocusActive());
   if (!result.success) {
     rendererLogger.appError("[applyAppTheme]: Failed to apply theme:", result.error);
+    if (!document.documentElement.dataset["theme"]) {
+      const fallbackTheme = resolveTheme(preference);
+      const codePreference = settingsStore.get("code_theme");
+      document.documentElement.dataset["theme"] = fallbackTheme;
+      document.documentElement.dataset["codetheme"] = CODE_THEME_MAP[codePreference][fallbackTheme];
+    }
     return result;
   }
   document.documentElement.dataset["theme"] = result.data;
@@ -202,7 +207,7 @@ function setEditorWidth(width: (typeof EDITOR_WIDTH)[number]) {
       appContainer.setAttribute("data-width", width);
     },
     isActive: () => localStore.get("editorWidth") === width,
-    label: EDITOR_WIDTH_LABELS[width] as keyof typeof SETTING_EVENTS,
+    label: EDITOR_WIDTH_LABELS[width],
   };
 }
 

@@ -61,7 +61,7 @@ function getRequestExtensions() {
   ];
 }
 
-function getHTMLContentBetween(editor: Editor, from: number, to: number): string {
+function getHTMLContentBetween(editor: Editor, from: number, to: number) {
   const { doc } = editor.state;
   const safeFrom = Math.max(0, Math.min(from, doc.content.size));
   const safeTo = Math.max(safeFrom, Math.min(to, doc.content.size));
@@ -77,7 +77,7 @@ function getHTMLContentBetween(editor: Editor, from: number, to: number): string
   }
 }
 
-function getMarkdownContentBetween(editor: Editor, from: number, to: number): string {
+function getMarkdownContentBetween(editor: Editor, from: number, to: number) {
   const { doc } = editor.state;
   const safeFrom = Math.max(0, Math.min(from, doc.content.size));
   const safeTo = Math.max(safeFrom, Math.min(to, doc.content.size));

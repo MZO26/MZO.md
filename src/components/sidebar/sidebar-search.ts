@@ -1,10 +1,10 @@
 import { search } from "@/api/api";
+import { appEvents } from "@/api/event-emitter";
 import { matchesActiveTag, restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
 import { debounce, rendererLogger, withLatestGuard } from "@/utils/helpers";
 import type { MappedMatches } from "@/utils/types";
-import { appEvents } from "@shared/event-emitter";
 import {
   isNoteID,
   type Id,

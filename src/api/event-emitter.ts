@@ -1,5 +1,8 @@
+import { rendererLogger } from "@/utils/helpers";
 import type { Id, Note, SearchQuery } from "@shared/schemas/note-schema";
 import type { APP_EVENTS, EDITOR_EVENTS } from "@shared/shared-constants";
+
+export type ErrorHandler = (message: string, error: unknown) => void;
 
 /**
  * Maps event names to one or more listeners, enabling batch registration.
@@ -63,6 +66,11 @@ type PayloadOverrides = {
 
 class EventManager<T extends Record<string, unknown>> {
   private store = new Map<keyof T, Set<Function>>();
+  private onError: ErrorHandler;
+
+  constructor(onError: ErrorHandler = (msg, err) => console.error(msg, err)) {
+    this.onError = onError;
+  }
 
   /**
    * Registers a listener for an event.
@@ -163,7 +171,9 @@ class EventManager<T extends Record<string, unknown>> {
     const listeners = this.store.get(event);
     if (!listeners || listeners.size === 0) return;
     for (const cb of new Set(listeners)) {
-      cb(...args);
+      Promise.try(() => cb(...args)).catch((error: unknown) => {
+        this.onError(`[EventManager] Error in "${String(event)}":`, error);
+      });
     }
   }
 
@@ -184,8 +194,17 @@ class EventManager<T extends Record<string, unknown>> {
   ): Promise<void> {
     const listeners = this.store.get(event);
     if (!listeners || listeners.size === 0) return;
-    await Promise.allSettled(Array.from(listeners, (cb) => Promise.try(() => cb(...args))));
+    const results = await Promise.allSettled(
+      Array.from(listeners, (cb) => Promise.try(() => cb(...args))),
+    );
+    for (const result of results) {
+      if (result.status === "rejected") {
+        this.onError(`[EventManager] Async error in "${String(event)}":`, result.reason);
+      }
+    }
   }
 }
 
-export const appEvents = new EventManager<AppEventMap>();
+export const appEvents = new EventManager<AppEventMap>((msg, error) =>
+  rendererLogger.appError(msg, error),
+);

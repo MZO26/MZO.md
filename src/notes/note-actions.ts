@@ -8,6 +8,7 @@ import {
   showNotification,
   updateNote,
 } from "@/api/api";
+import { appEvents } from "@/api/event-emitter";
 import {
   ensureEditorDoc,
   getEditorPos,
@@ -32,7 +33,6 @@ import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import { debounce, omitKeys, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
-import { appEvents } from "@shared/event-emitter";
 import {
   type CreateNotePayload,
   type Id,
