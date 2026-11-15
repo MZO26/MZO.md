@@ -104,7 +104,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
       const display = isNoteId
         ? (noteStore.get("noteIndex").get(text)?.title ?? UNTITLED)
         : UNTITLED;
-      return { type: "wikilink", attrs: { id: text as Id, title: display } };
+      return { type: "wikilink", attrs: { id: text, title: display } };
     }
     const normalized = text.toLowerCase();
     const foundNote = noteStore.get("notes").find((n) => n.title.toLowerCase() === normalized);

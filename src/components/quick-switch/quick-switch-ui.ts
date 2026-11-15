@@ -230,7 +230,7 @@ async function selectActive(qsState: QuickSwitchState, event?: KeyboardEvent | M
 
 function updateSelection(qsState: QuickSwitchState) {
   const { switchListEl } = useDialog("switchListEl");
-  const items = [...switchListEl.querySelectorAll<HTMLDivElement>(".quick-switch-item")];
+  const items = switchListEl.querySelectorAll<HTMLDivElement>(".quick-switch-item");
   for (const [index, item] of items.entries()) {
     const isActive = index === qsState.activeIndex;
     item.classList.toggle("active", isActive);

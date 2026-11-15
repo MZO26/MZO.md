@@ -20,11 +20,20 @@ export type QuickSwitchState = {
 };
 
 function initQuickSwitcher(editor: Editor) {
-  const qsState: QuickSwitchState = {
-    activeIndex: 0,
-    currentDisplayNotes: [],
-    lastQuery: "",
-  };
+  function createInitialQuickSwitchState(): QuickSwitchState {
+    return {
+      activeIndex: 0,
+      currentDisplayNotes: [],
+      lastQuery: "",
+    };
+  }
+
+  function resetQuickSwitchState() {
+    Object.assign(qsState, createInitialQuickSwitchState());
+  }
+
+  const qsState: QuickSwitchState = createInitialQuickSwitchState();
+
   const { switchDialog, switchListEl, switchListSearchInput } = useDialog(
     "switchDialog",
     "switchListEl",
@@ -32,12 +41,6 @@ function initQuickSwitcher(editor: Editor) {
   );
 
   setShortcuts(switchDialog);
-
-  function resetQuickSwitchState() {
-    qsState.activeIndex = 0;
-    qsState.currentDisplayNotes = [];
-    qsState.lastQuery = "";
-  }
 
   async function toggleSwitcher() {
     const { activeId, isDirty } = stateStore.getState();

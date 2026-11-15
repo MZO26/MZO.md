@@ -18,6 +18,12 @@ const CALLOUT_CONFIG = {
   info: { label: "Info", icon: "Info" },
 } as const;
 
+const CALLOUT_KEYS = new Set(Object.keys(CALLOUT_CONFIG));
+
+function isCallout(value: unknown): value is CalloutType {
+  return typeof value === "string" && CALLOUT_KEYS.has(value);
+}
+
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     callout: {
@@ -53,8 +59,8 @@ export const Callout = Node.create({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const type = (node.attrs["type"] as CalloutType) || "note";
-    const config = CALLOUT_CONFIG[type] || CALLOUT_CONFIG.note;
+    const type = node.attrs["type"];
+    const config = isCallout(type) ? CALLOUT_CONFIG[type] : CALLOUT_CONFIG.note;
     const iconWrapper = document.createElement("span");
     iconWrapper.className = "callout-icon";
     const iconPlaceholder = document.createElement("i");
@@ -92,8 +98,7 @@ export const Callout = Node.create({
       new InputRule({
         find: CALLOUT_INPUT_REGEX,
         handler: ({ state, range, match }) => {
-          const type =
-            typeof match[1] === "string" ? match[1].toLowerCase() : ("note" as CalloutType);
+          const type = isCallout(match[1]) ? CALLOUT_CONFIG[match[1]] : CALLOUT_CONFIG["note"];
           const { tr } = state;
           const $from = state.doc.resolve(range.from);
           const isInsideBlockquote =
@@ -118,10 +123,7 @@ export const Callout = Node.create({
       new PasteRule({
         find: CALLOUT_PASTE_REGEX,
         handler: ({ state, range, match }) => {
-          const type =
-            typeof match[1] === "string"
-              ? (match[1].toLowerCase() as CalloutType)
-              : ("note" as CalloutType);
+          const type = isCallout(match[1]) ? CALLOUT_CONFIG[match[1]] : CALLOUT_CONFIG["note"];
           const { tr } = state;
           const from = tr.mapping.map(range.from);
           const to = tr.mapping.map(range.to);

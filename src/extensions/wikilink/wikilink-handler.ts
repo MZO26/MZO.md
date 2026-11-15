@@ -4,7 +4,7 @@ import { handleCreateNote } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
 import { memoize, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
-import { type Id, type Note, type NoteListItem } from "@shared/schemas/note-schema";
+import { isNoteID, type Id, type Note, type NoteListItem } from "@shared/schemas/note-schema";
 import type { Editor } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -234,8 +234,8 @@ function downgradeDocLinks(noteIndex: Map<Id, NoteListItem>) {
       if (node.type.spec.code) return false;
       if (node.type !== wikilinkType) return true;
       if (node.marks.some((mark) => mark.type.spec.code)) return false;
-      const nodeId = node.attrs["id"] as Id | null;
-      if (nodeId && !noteIndex.has(nodeId)) {
+      const nodeId = node.attrs["id"];
+      if (nodeId && isNoteID(nodeId) && !noteIndex.has(nodeId)) {
         if (dispatch) {
           tr.setNodeMarkup(pos, undefined, { ...node.attrs, id: null });
         }

@@ -45,7 +45,7 @@ async function navigateSidebar(e: KeyboardEvent) {
 
 function updateHover(activeId: Id | null) {
   const { sidebar } = useCore("sidebar");
-  const items = [...sidebar.querySelectorAll<HTMLDivElement>(".note-item")];
+  const items = sidebar.querySelectorAll<HTMLDivElement>(".note-item");
   for (const item of items) {
     const isHovered = item.dataset["id"] === activeId;
     item.classList.toggle("is-hovered", isHovered);

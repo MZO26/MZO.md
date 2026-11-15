@@ -47,7 +47,7 @@ async function initApp() {
   syncStateStore(settingsResult);
   syncNoteStore(notesResult.data);
   setupEditorListeners(editorWrapper, editor);
-  initEditorSearch(editor, editorContainer, editorWrapper);
+  initEditorSearch(editorWrapper);
   initListeners();
   initToolbar(editorContainer);
   startAppClock();

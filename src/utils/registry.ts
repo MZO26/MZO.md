@@ -27,6 +27,16 @@ interface UIRegistry {
   sidebarHeader: HTMLDivElement;
   sidebarFooter: HTMLDivElement;
   selectionFooter: HTMLDivElement;
+  inputWrapperEditor: HTMLDivElement;
+  searchInputEditor: HTMLInputElement;
+  replaceInputWrapper: HTMLDivElement;
+  replaceInputEditor: HTMLInputElement;
+  searchCount: HTMLSpanElement;
+  chevronButton: HTMLButtonElement;
+  searchPrev: HTMLButtonElement;
+  searchNext: HTMLButtonElement;
+  replaceOne: HTMLButtonElement;
+  replaceAll: HTMLButtonElement;
 }
 
 interface TemplateRegistry {
@@ -106,6 +116,16 @@ function initUIRegistry() {
     searchInput: requireElement<HTMLInputElement>(".search-input"),
     sidebarHeader: requireElement<HTMLDivElement>(".sidebar-header"),
     sidebarFooter: requireElement<HTMLDivElement>(".sidebar-footer"),
+    inputWrapperEditor: requireElement<HTMLDivElement>(".input-wrapper-editor"),
+    searchInputEditor: requireElement<HTMLInputElement>(".search-input-editor"),
+    replaceInputWrapper: requireElement<HTMLInputElement>(".input-wrapper-editor-replace"),
+    replaceInputEditor: requireElement<HTMLInputElement>(".replace-input-editor"),
+    searchCount: requireElement<HTMLSpanElement>(".search-count"),
+    chevronButton: requireElement<HTMLButtonElement>(".input-wrapper-chevron"),
+    searchPrev: requireElement<HTMLButtonElement>(".search-prev"),
+    searchNext: requireElement<HTMLButtonElement>(".search-next"),
+    replaceOne: requireElement<HTMLButtonElement>(".replace-one"),
+    replaceAll: requireElement<HTMLButtonElement>(".replace-all"),
   });
 }
 
@@ -132,9 +152,6 @@ function initDialogRegistry() {
 /**
  * Accesses DOM elements and the editor instance from the core registry.
  *
- * Available keys: `editor`, `appContainer`, `sidebar`, `sidebarContainer`,
- * `editorWrapper`, `editorContainer`.
- *
  * @param keys - One or more keys from {@link CoreRegistry}.
  * @returns A readonly object with the requested entries.
  * @throws If any key has not been registered yet (see {@link initCoreRegistry}).
@@ -147,9 +164,6 @@ const useCore = fromRegistry("core");
 
 /**
  * Accesses UI elements (counters, inputs, layout sections) from the UI registry.
- *
- * Available keys: `wordCountEl`, `charCountEl`, `readingTime`, `searchInput`,
- * `sidebarHeader`, `sidebarFooter`, `selectionFooter`.
  *
  * @param keys - One or more keys from {@link UIRegistry}.
  * @returns A readonly object with the requested entries.
@@ -164,9 +178,6 @@ const useUI = fromRegistry("ui");
 /**
  * Accesses `<template>` elements and the editor view from the template registry.
  *
- * Available keys: `editorEmptyStateTemplate`, `editorView`,
- * `sidebarEmptyStateTemplate`, `noteItemTemplate`.
- *
  * @param keys - One or more keys from {@link TemplateRegistry}.
  * @returns A readonly object with the requested entries.
  * @throws If any key has not been registered yet (see {@link initTemplateRegistry}).
@@ -179,10 +190,6 @@ const useTemplates = fromRegistry("template");
 
 /**
  * Accesses `<dialog>` elements and their inner controls from the dialog registry.
- *
- * Available keys: `deleteDialog`,
- * `switchDialog`, `switchListEl`, `switchListSearchInput`, `mathDialog`,
- * `mathInput`.
  *
  * @param keys - One or more keys from {@link DialogRegistry}.
  * @returns A readonly object with the requested entries.

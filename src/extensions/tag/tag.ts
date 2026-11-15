@@ -103,19 +103,21 @@ const NoteTag = Node.create<NoteTagOptions>({
     return {
       insertNoteTag:
         ({ from, to, id }) =>
-        ({ tr, dispatch }) => {
+        ({ tr, state, dispatch }) => {
           const normalizedId = normalizeTagId(id);
           if (!normalizedId) return false;
-          const node = this.type.create({ id: normalizedId });
           const maxPos = tr.doc.content.size;
           const safeFrom = Math.max(0, Math.min(from, maxPos));
           const safeTo = Math.max(safeFrom, Math.min(to, maxPos));
-          const rawCursorPos = safeFrom + node.nodeSize + 1;
-          const safeCursorPos = Math.max(0, Math.min(rawCursorPos, tr.doc.content.size));
+          const tagNode = this.type.create({ id: normalizedId });
+          const charAfter = tr.doc.textBetween(safeTo, Math.min(safeTo + 1, maxPos));
+          const needsSpace = charAfter !== " ";
+          const content = needsSpace ? [tagNode, state.schema.text(" ")] : [tagNode];
           if (dispatch) {
-            tr.replaceWith(safeFrom, safeTo, node)
-              .insertText(" ", safeFrom + node.nodeSize)
-              .setSelection(TextSelection.near(tr.doc.resolve(safeCursorPos)));
+            tr.replaceWith(safeFrom, safeTo, content);
+            const targetPos = safeFrom + tagNode.nodeSize + 1;
+            const safeCursorPos = Math.max(0, Math.min(targetPos, tr.doc.content.size));
+            tr.setSelection(TextSelection.near(tr.doc.resolve(safeCursorPos)));
           }
           return true;
         },
@@ -127,19 +129,20 @@ const NoteTag = Node.create<NoteTagOptions>({
       new InputRule({
         find: NOTE_TAG_INPUT_REGEX,
         handler: ({ range, match, commands }) => {
-          const matchString = typeof match[0] === "string" ? match[0] : "";
-          const rawTagText = typeof match[1] === "string" ? match[1] : "";
-          const tagText = normalizeTagId(rawTagText);
-          if (!matchString || !tagText) return null;
-          const hashIndex = matchString.lastIndexOf("#");
+          const fullMatch = match[0];
+          const rawTagText = match[1];
+          if (!fullMatch || !rawTagText) return null;
+          const tagId = normalizeTagId(rawTagText);
+          if (!tagId) return null;
+          const hashIndex = fullMatch.lastIndexOf("#");
           if (hashIndex === -1) return null;
           const from = range.from + hashIndex;
           const to = range.to;
-          if (from < 0 || to < from) return null;
+          if (from < 0 || to <= from) return null;
           commands.insertNoteTag({
             from,
             to,
-            id: tagText,
+            id: tagId,
           });
           return;
         },
@@ -150,22 +153,19 @@ const NoteTag = Node.create<NoteTagOptions>({
     return [
       new PasteRule({
         find: NOTE_TAG_PASTE_REGEX,
-        handler: ({ range, match, commands }) => {
+        handler: ({ state, range, match }) => {
           const fullMatch = match[0];
           const rawTagText = match[1];
           if (!fullMatch || !rawTagText) return null;
-          const tagText = normalizeTagId(rawTagText);
-          if (!tagText) return null;
+          const tagId = normalizeTagId(rawTagText);
+          if (!tagId) return null;
           const hashIndex = fullMatch.lastIndexOf("#");
           if (hashIndex === -1) return null;
           const from = range.from + hashIndex;
           const to = range.to;
-          if (from < 0 || to < from) return null;
-          commands.insertNoteTag({
-            from,
-            to,
-            id: tagText,
-          });
+          if (from < 0 || to <= from) return null;
+          const node = this.type.create({ id: tagId });
+          state.tr.replaceWith(from, to, node);
           return;
         },
       }),

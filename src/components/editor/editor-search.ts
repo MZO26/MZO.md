@@ -1,211 +1,293 @@
 import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
 import { debounce } from "@/utils/helpers";
-import { requireElement } from "@/utils/ui";
+import { useCore, useUI } from "@/utils/registry";
 import { appEvents } from "@shared/event-emitter";
 import type { SearchQuery } from "@shared/schemas/note-schema";
 import { APP_EVENTS, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
-import type { Editor } from "@tiptap/core";
 
-function hasSearchMatch(editor: Editor): boolean {
-  const search = editor.storage.docSearch;
-  const hasMatches = search.results.length > 0;
-  return !!hasMatches;
+export type EditorSearchState = {
+  isOpen: boolean;
+  isReplaceOpen: boolean;
+  query: SearchQuery;
+  replaceText: string;
+};
+
+type QueryOptions = "new" | "prev" | "next" | "clear" | "replace-one" | "replace-all";
+
+type ChangeDisplayArgs =
+  | [action: "new", esState: EditorSearchState, options?: { focus?: boolean }]
+  | [action: Exclude<QueryOptions, "new">, esState: EditorSearchState];
+
+function renderEditorSearch(esState: Readonly<EditorSearchState>) {
+  const { isOpen, isReplaceOpen, query } = esState;
+  const { editor } = useCore("editor");
+  const {
+    inputWrapperEditor,
+    searchInputEditor,
+    replaceInputEditor,
+    replaceInputWrapper,
+    searchCount,
+    chevronButton,
+    searchPrev,
+    searchNext,
+  } = useUI(
+    "inputWrapperEditor",
+    "searchInputEditor",
+    "replaceInputEditor",
+    "replaceInputWrapper",
+    "searchCount",
+    "chevronButton",
+    "searchPrev",
+    "searchNext",
+  );
+  const { results, activeIndex } = editor.storage.docSearch;
+  inputWrapperEditor.classList.toggle("invisible", !isOpen);
+  const showReplace = isOpen && isReplaceOpen;
+  replaceInputWrapper.classList.toggle("invisible", !showReplace);
+  chevronButton.classList.toggle("open", showReplace);
+  if (!isOpen) {
+    searchInputEditor.value = "";
+    replaceInputEditor.value = "";
+  } else if (document.activeElement !== searchInputEditor && searchInputEditor.value !== query) {
+    searchInputEditor.value = query;
+  }
+  const hasResults = query.length > 0 && results.length > 0;
+  searchCount.textContent = hasResults ? `${activeIndex + 1} of ${results.length}` : "0 of 0";
+  const disabled = !hasResults;
+  searchPrev.disabled = disabled;
+  searchNext.disabled = disabled;
 }
 
-function initEditorSearch(
-  editor: Editor,
-  editorContainer: HTMLDivElement,
-  editorWrapper: HTMLDivElement,
-) {
-  const inputWrapper = requireElement<HTMLDivElement>(".input-wrapper-editor", editorContainer);
-  const input = requireElement<HTMLInputElement>(".search-input-editor");
-  const replaceInputWrapper = requireElement<HTMLDivElement>(
-    ".input-wrapper-editor-replace",
-    editorContainer,
-  );
-  const replaceInput = requireElement<HTMLInputElement>(
-    ".replace-input-editor",
-    replaceInputWrapper,
-  );
-  const chevronBtn = requireElement<HTMLButtonElement>(".input-wrapper-chevron", inputWrapper);
-  const searchCount = requireElement<HTMLSpanElement>(".search-count", inputWrapper);
-
-  function updateButtons() {
-    const disabled = input.value.trim() === "" || !hasSearchMatch(editor);
-    const buttons = inputWrapper.querySelectorAll<HTMLButtonElement>(".search-prev, .search-next");
-    for (const button of buttons) {
-      button.disabled = disabled;
-    }
-  }
-
-  function syncQuery() {
-    editor.commands.docSearchClear();
-    editor.commands.docSearchSetQuery(input.value);
-    updateCount();
-  }
-
-  function applyQuery(rawQuery: string) {
-    const query = rawQuery.trim();
-    if (query.length > MIN_SEARCH_LENGTH) {
-      input.value = query;
-      editor.commands.docSearchSetQuery(query);
-    } else {
-      input.value = "";
+function decideQueryOption(options: QueryOptions, esState: Readonly<EditorSearchState>) {
+  const { editor } = useCore("editor");
+  switch (options) {
+    case "new":
+      editor.commands.docSearchSetQuery(esState.query);
+      return;
+    case "prev":
+      editor.commands.docSearchPrev();
+      return;
+    case "next":
+      editor.commands.docSearchNext();
+      return;
+    case "clear":
       editor.commands.docSearchClear();
-    }
-    updateCount();
-    updateButtons();
-  }
-
-  function open(focus: boolean = true) {
-    inputWrapper.classList.remove("invisible");
-    if (!input.value) {
-      applyQuery(stateStore.get("searchQuery") ?? "");
-    }
-    if (focus) {
-      input.focus();
-      input.select();
-    }
-  }
-
-  function close() {
-    inputWrapper.classList.add("invisible");
-    replaceInputWrapper.classList.add("invisible");
-    chevronBtn.classList.remove("open");
-    applyQuery("");
-    replaceInput.value = "";
-  }
-
-  function updateCount() {
-    const { results, activeIndex, query } = editor.storage.docSearch;
-    if (!query || results.length === 0) {
-      searchCount.textContent = "0 of 0";
       return;
-    }
-    searchCount.textContent = `${activeIndex + 1} of ${results.length}`;
-  }
-
-  function go(direction: "prev" | "next") {
-    const moved =
-      direction === "prev" ? editor.commands.docSearchPrev() : editor.commands.docSearchNext();
-    if (moved) updateCount();
-  }
-
-  inputWrapper.addEventListener("click", (event: Event) => {
-    if (!(event.target instanceof Element)) return;
-    if (event.target.closest(".search-prev")) {
-      event.preventDefault();
-      go("prev");
+    case "replace-one":
+      editor.commands.docSearchSetReplacement(esState.replaceText);
+      editor.commands.docSearchReplaceCurrent();
       return;
-    } else if (event.target.closest(".search-next")) {
-      event.preventDefault();
-      go("next");
+    case "replace-all":
+      editor.commands.docSearchSetReplacement(esState.replaceText);
+      editor.commands.docSearchReplaceAll();
       return;
-    }
-  });
+    default:
+      options satisfies never;
+  }
+}
 
-  replaceInputWrapper.addEventListener("click", (event: Event) => {
-    if (!(event.target instanceof Element)) return;
-    const isReplaceOne = event.target.closest(".replace-one");
-    const isReplaceAll = event.target.closest(".replace-all");
-    if (isReplaceOne || isReplaceAll) {
-      event.preventDefault();
-      editor.commands.docSearchSetReplacement(replaceInput.value);
-      if (isReplaceOne) {
-        editor.commands.docSearchReplaceCurrent();
-      } else {
-        editor.commands.docSearchReplaceAll();
+function createInitialSearchState(): EditorSearchState {
+  return {
+    isOpen: false,
+    isReplaceOpen: false,
+    query: "",
+    replaceText: "",
+  };
+}
+
+function resetEditorSearchState(esState: EditorSearchState) {
+  Object.assign(esState, createInitialSearchState());
+}
+
+function changeDisplay(...[queryOptions, esState, options]: ChangeDisplayArgs) {
+  const { searchInputEditor } = useUI("searchInputEditor");
+  decideQueryOption(queryOptions, esState);
+  if (queryOptions === "new") {
+    esState.isOpen = true;
+  } else if (queryOptions === "clear") {
+    const { editor } = useCore("editor");
+    const { replaceInputEditor } = useUI("replaceInputEditor");
+    resetEditorSearchState(esState);
+    searchInputEditor.value = "";
+    replaceInputEditor.value = "";
+    editor.commands.focus();
+  }
+  renderEditorSearch(esState);
+  if (queryOptions === "new" && options?.focus) {
+    searchInputEditor.focus();
+    searchInputEditor.select();
+  }
+}
+
+function initEditorSearch(editorWrapper: HTMLDivElement) {
+  const {
+    inputWrapperEditor,
+    searchInputEditor,
+    replaceInputWrapper,
+    replaceInputEditor,
+    chevronButton,
+    searchPrev,
+    searchNext,
+    replaceOne,
+    replaceAll,
+  } = useUI(
+    "inputWrapperEditor",
+    "searchInputEditor",
+    "replaceInputWrapper",
+    "replaceInputEditor",
+    "chevronButton",
+    "searchPrev",
+    "searchNext",
+    "replaceOne",
+    "replaceAll",
+  );
+
+  const esState: EditorSearchState = createInitialSearchState();
+
+  const debouncedSearch = debounce((e: Event) => {
+    if (!(e.target instanceof HTMLInputElement)) return;
+    const value = e.target.value.trim();
+    if (value === esState.query) return;
+    esState.query = value;
+    changeDisplay("new", esState);
+  }, DEBOUNCE_MS.normal);
+
+  const unsubAppEvents = appEvents.onMany({
+    [APP_EVENTS.TOGGLE_EDITOR_SEARCH]: () => {
+      const isHidden = !esState.isOpen;
+      const globalQuery = stateStore.get("searchQuery") ?? "";
+      if (globalQuery.trim().length > MIN_SEARCH_LENGTH && isHidden) {
+        esState.query = globalQuery;
       }
-      updateCount();
-      updateButtons();
+      isHidden ? changeDisplay("new", esState, { focus: true }) : changeDisplay("clear", esState);
+    },
+    [APP_EVENTS.SYNC_EDITOR_SEARCH]: ({ query }: { query: SearchQuery }) => {
+      if (query.trim().length > MIN_SEARCH_LENGTH) {
+        esState.query = query;
+        changeDisplay("new", esState);
+      }
+    },
+  });
+
+  const triggerReplace = (mode: "replace-one" | "replace-all") => {
+    debouncedSearch.cancel();
+    const currentVal = searchInputEditor.value.trim();
+    if (currentVal !== esState.query) {
+      esState.query = currentVal;
+      changeDisplay("new", esState);
     }
-  });
+    if (esState.query.length <= MIN_SEARCH_LENGTH) return;
+    esState.replaceText = replaceInputEditor.value;
+    changeDisplay(mode, esState);
+  };
 
-  chevronBtn.addEventListener("click", () => {
-    const isHidden = replaceInputWrapper.classList.toggle("invisible");
-    chevronBtn.classList.toggle("open", !isHidden);
-    if (!isHidden) replaceInput.focus();
-  });
+  const chevronButtonClickHandler = () => {
+    esState.isReplaceOpen = !esState.isReplaceOpen;
+    renderEditorSearch(esState);
+    if (esState.isReplaceOpen) {
+      replaceInputEditor.focus();
+    }
+  };
 
-  input.addEventListener("keydown", (event) => {
+  const searchInputEditorKeydownHandler = (event: KeyboardEvent) => {
     if (event.repeat) return;
     if (event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
-      event.shiftKey ? go("prev") : go("next");
+      debouncedSearch.cancel();
+      const currentVal = searchInputEditor.value.trim();
+      if (currentVal !== esState.query) {
+        esState.query = currentVal;
+        changeDisplay("new", esState);
+      } else {
+        changeDisplay(event.shiftKey ? "prev" : "next", esState);
+      }
     } else if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
-      close();
+      debouncedSearch.cancel();
+      changeDisplay("clear", esState);
     }
-  });
+  };
 
-  replaceInput.addEventListener("keydown", (event) => {
-    const isMod = event.metaKey || event.ctrlKey;
+  const replaceInputEditorKeydownHandler = (event: KeyboardEvent) => {
+    if (event.repeat) return;
     if (event.key === "Enter") {
       event.preventDefault();
-      if (input.value.trim().length <= MIN_SEARCH_LENGTH) return;
-      editor.commands.docSearchSetReplacement(replaceInput.value);
-      if (event.altKey && isMod) {
-        editor.commands.docSearchReplaceAll();
-      } else {
-        editor.commands.docSearchReplaceCurrent();
-      }
-      updateCount();
-      updateButtons();
+      const isMod = event.metaKey || event.ctrlKey;
+      triggerReplace(event.altKey && isMod ? "replace-all" : "replace-one");
     } else if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
-      close();
+      debouncedSearch.cancel();
+      changeDisplay("clear", esState);
     }
-  });
+  };
 
-  editorWrapper.addEventListener("keydown", (event) => {
+  const replaceInputHandler = () => {
+    esState.replaceText = replaceInputEditor.value;
+  };
+  replaceInputEditor.addEventListener("input", replaceInputHandler);
+
+  const editorWrapperKeydownHandler = (event: KeyboardEvent) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f") {
       event.preventDefault();
-      open();
-    }
-    if (event.key === "Escape") {
+      if (!esState.isOpen) {
+        esState.query = stateStore.get("searchQuery") ?? "";
+      }
+      changeDisplay("new", esState, { focus: true });
+    } else if (event.key === "Escape" && esState.isOpen) {
       event.preventDefault();
-      close();
+      debouncedSearch.cancel();
+      changeDisplay("clear", esState);
     }
-  });
+  };
 
-  document.addEventListener("click", (event) => {
-    if (!(event.target instanceof Element)) return;
-    if (!inputWrapper.classList.contains("invisible")) {
-      const clickedInput = inputWrapper.contains(event.target);
-      const clickedReplace = replaceInputWrapper.contains(event.target);
-      const clickedToolbar = event.target.closest("#toolbar");
-      if (clickedInput || clickedReplace || clickedToolbar) return;
-      event.preventDefault();
-      close();
-      return;
-    }
-  });
+  const documentClickHandler = (event: MouseEvent) => {
+    if (!esState.isOpen || !(event.target instanceof Element)) return;
+    const clickedInput = inputWrapperEditor.contains(event.target);
+    const clickedReplace = replaceInputWrapper.contains(event.target);
+    const clickedToolbar = event.target.closest("#toolbar");
+    if (clickedInput || clickedReplace || clickedToolbar) return;
+    debouncedSearch.cancel();
+    changeDisplay("clear", esState);
+  };
 
-  const debouncedSearch = debounce(() => {
-    syncQuery();
-    updateButtons();
-  }, DEBOUNCE_MS.normal);
+  const navClickHandler = (event: MouseEvent) => {
+    changeDisplay(event.currentTarget === searchPrev ? "prev" : "next", esState);
+  };
 
-  input.addEventListener("input", debouncedSearch);
-  appEvents.on(APP_EVENTS.TOGGLE_EDITOR_SEARCH, () => {
-    const isHidden = inputWrapper.classList.contains("invisible");
-    if (isHidden) {
-      open(true);
-    } else {
-      close();
-    }
-  });
-  appEvents.on(APP_EVENTS.SYNC_EDITOR_SEARCH, ({ query }: { query: SearchQuery }) => {
-    const globalQuery = typeof query === "string" ? query : "";
-    applyQuery(globalQuery);
-    if (query.trim().length > MIN_SEARCH_LENGTH) {
-      open(false);
-    }
-  });
+  const replaceClickHandler = (event: MouseEvent) => {
+    triggerReplace(event.currentTarget === replaceOne ? "replace-one" : "replace-all");
+  };
+
+  chevronButton.addEventListener("click", chevronButtonClickHandler);
+  searchInputEditor.addEventListener("keydown", searchInputEditorKeydownHandler);
+  replaceInputEditor.addEventListener("keydown", replaceInputEditorKeydownHandler);
+  searchPrev.addEventListener("click", navClickHandler);
+  searchNext.addEventListener("click", navClickHandler);
+  replaceOne.addEventListener("click", replaceClickHandler);
+  replaceAll.addEventListener("click", replaceClickHandler);
+  editorWrapper.addEventListener("keydown", editorWrapperKeydownHandler);
+  document.addEventListener("click", documentClickHandler);
+  searchInputEditor.addEventListener("input", debouncedSearch);
+
+  return function unsubscribe() {
+    unsubAppEvents();
+    debouncedSearch.cancel();
+    searchInputEditor.removeEventListener("input", debouncedSearch);
+    replaceInputEditor.removeEventListener("input", replaceInputHandler);
+    chevronButton.removeEventListener("click", chevronButtonClickHandler);
+    searchInputEditor.removeEventListener("keydown", searchInputEditorKeydownHandler);
+    replaceInputEditor.removeEventListener("keydown", replaceInputEditorKeydownHandler);
+    searchPrev.removeEventListener("click", navClickHandler);
+    searchNext.removeEventListener("click", navClickHandler);
+    replaceOne.removeEventListener("click", replaceClickHandler);
+    replaceAll.removeEventListener("click", replaceClickHandler);
+    editorWrapper.removeEventListener("keydown", editorWrapperKeydownHandler);
+    document.removeEventListener("click", documentClickHandler);
+  };
 }
 
 export { initEditorSearch };

@@ -189,6 +189,7 @@ function setupSidebarListeners(
   return function unsubscribe() {
     unsubSidebarResize();
     sidebarHeader.removeEventListener("click", headerClickHandler);
+    debouncedSearch.cancel();
     searchInput.removeEventListener("input", debouncedSearch);
     searchInput.removeEventListener("keydown", inputKeydownHandler);
     sidebar.removeEventListener("contextmenu", contextMenuHandler);
