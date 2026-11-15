@@ -45,7 +45,7 @@ function getSectionLabel(section: Sections, count: Record<Sections, number>) {
   }
 }
 
-function getSectionCount(qsState: QuickSwitchState) {
+function getSectionCount(qsState: Readonly<QuickSwitchState>) {
   const count = {} as Record<Sections, number>;
   for (const note of qsState.currentDisplayNotes) {
     count[note.section] = (count[note.section] ?? 0) + 1;
@@ -53,7 +53,7 @@ function getSectionCount(qsState: QuickSwitchState) {
   return count;
 }
 
-function renderTitleList(qsState: QuickSwitchState) {
+function renderTitleList(qsState: Readonly<QuickSwitchState>) {
   const { switchListEl } = useDialog("switchListEl");
   switchListEl.replaceChildren();
   if (qsState.currentDisplayNotes.length === 0) {
@@ -71,7 +71,7 @@ function renderTitleList(qsState: QuickSwitchState) {
   }
 }
 
-function createSectionHeader(section: Sections, qsState: QuickSwitchState) {
+function createSectionHeader(section: Sections, qsState: Readonly<QuickSwitchState>) {
   const header = document.createElement("div");
   header.className = "quick-switch-section-header";
   header.textContent = getSectionLabel(section, getSectionCount(qsState));
@@ -118,7 +118,10 @@ function createOptionEl(
   return element;
 }
 
-async function selectActive(qsState: QuickSwitchState, event?: KeyboardEvent | MouseEvent) {
+async function selectActive(
+  qsState: Readonly<QuickSwitchState>,
+  event?: KeyboardEvent | MouseEvent,
+) {
   const { switchDialog } = useDialog("switchDialog");
   const selected = qsState.currentDisplayNotes[qsState.activeIndex];
   if (!selected) return;
@@ -228,7 +231,7 @@ async function selectActive(qsState: QuickSwitchState, event?: KeyboardEvent | M
   }
 }
 
-function updateSelection(qsState: QuickSwitchState) {
+function updateSelection(qsState: Readonly<QuickSwitchState>) {
   const { switchListEl } = useDialog("switchListEl");
   const items = switchListEl.querySelectorAll<HTMLDivElement>(".quick-switch-item");
   for (const [index, item] of items.entries()) {
@@ -238,12 +241,6 @@ function updateSelection(qsState: QuickSwitchState) {
       scrollItemIntoView(switchListEl, item);
     }
   }
-}
-
-function setDisplay(notes: readonly QuickSwitchDisplayBadge[], qsState: QuickSwitchState) {
-  qsState.currentDisplayNotes = [...notes];
-  qsState.activeIndex = 0;
-  renderTitleList(qsState);
 }
 
 const KEY_LABELS: Record<ShortcutToken, string> = {
@@ -274,4 +271,4 @@ function setShortcuts(root: ParentNode = document) {
   }
 }
 
-export { selectActive, setDisplay, setShortcuts, updateSelection };
+export { renderTitleList, selectActive, setShortcuts, updateSelection };

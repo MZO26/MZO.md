@@ -153,7 +153,7 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
     },
   });
 
-  const triggerReplace = (mode: "replace-one" | "replace-all") => {
+  function triggerReplace(mode: Extract<QueryOptions, "replace-one" | "replace-all">) {
     debouncedSearch.cancel();
     const currentVal = searchInputEditor.value.trim();
     if (currentVal !== esState.query) {
@@ -163,7 +163,7 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
     if (esState.query.length <= MIN_SEARCH_LENGTH) return;
     esState.replaceText = replaceInputEditor.value;
     changeDisplay(mode, esState);
-  };
+  }
 
   const chevronButtonClickHandler = () => {
     esState.isReplaceOpen = !esState.isReplaceOpen;
@@ -211,7 +211,6 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
   const replaceInputHandler = () => {
     esState.replaceText = replaceInputEditor.value;
   };
-  replaceInputEditor.addEventListener("input", replaceInputHandler);
 
   const editorWrapperKeydownHandler = (event: KeyboardEvent) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f") {
@@ -248,6 +247,7 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
   chevronButton.addEventListener("click", chevronButtonClickHandler);
   searchInputEditor.addEventListener("keydown", searchInputEditorKeydownHandler);
   replaceInputEditor.addEventListener("keydown", replaceInputEditorKeydownHandler);
+  replaceInputEditor.addEventListener("input", replaceInputHandler);
   searchPrev.addEventListener("click", navClickHandler);
   searchNext.addEventListener("click", navClickHandler);
   replaceOne.addEventListener("click", replaceClickHandler);

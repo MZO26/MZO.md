@@ -1,7 +1,7 @@
-import { computeDisplayNotes } from "@/components/quick-switch/quick-switch-actions";
+import { computeDisplayNotes, setDisplay } from "@/components/quick-switch/quick-switch-actions";
 import { handleListKeydown } from "@/components/quick-switch/quick-switch-navigation";
 import { filterTitles } from "@/components/quick-switch/quick-switch-search";
-import { selectActive, setDisplay, setShortcuts } from "@/components/quick-switch/quick-switch-ui";
+import { selectActive, setShortcuts } from "@/components/quick-switch/quick-switch-ui";
 import { waitForFlush } from "@/notes/note-actions";
 import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
@@ -63,23 +63,32 @@ function initQuickSwitcher(editor: Editor) {
     switchListSearchInput.focus();
   }
 
-  function handleDocumentKeydown(event: KeyboardEvent) {
+  const unsubAppEvents = appEvents.on(
+    APP_EVENTS.TOGGLE_QUICK_SWITCH,
+    () => void toggleSwitcher().catch(rendererLogger.appError),
+  );
+
+  const documentKeydownHandler = (event: KeyboardEvent) => {
     const isEscape = switchDialog.open && event.key === "Escape";
     const isCtrlP = (event.ctrlKey || event.metaKey) && (event.key === "p" || event.key === "P");
     if (isEscape || isCtrlP) {
       event.preventDefault();
       void toggleSwitcher().catch(rendererLogger.appError);
     }
-  }
+  };
 
-  function handleListClick(event: MouseEvent) {
+  const listClickHandler = (event: MouseEvent) => {
     if (!switchDialog.open) return;
     if (!(event.target instanceof Element)) return;
     const optionEl = event.target.closest<HTMLDivElement>("[data-index]");
     if (!optionEl?.dataset["index"]) return;
     qsState.activeIndex = Number(optionEl.dataset["index"]);
     void selectActive(qsState, event).catch(rendererLogger.appError);
-  }
+  };
+
+  const listKeydownHandler = createAsyncHandler(async (e: KeyboardEvent) =>
+    handleListKeydown(e, qsState, switchDialog),
+  );
 
   const debouncedTitleFilter = debounce((e: Event) => {
     if (!(e.target instanceof HTMLInputElement)) return;
@@ -88,25 +97,17 @@ function initQuickSwitcher(editor: Editor) {
     void filterTitles(value, qsState).catch(rendererLogger.devLog);
   }, DEBOUNCE_MS.very_fast);
 
-  const onListKeydown = createAsyncHandler(async (e: KeyboardEvent) =>
-    handleListKeydown(e, qsState, switchDialog),
-  );
-
   switchListSearchInput.addEventListener("input", debouncedTitleFilter);
+  document.addEventListener("keydown", listKeydownHandler);
+  switchListEl.addEventListener("click", listClickHandler);
+  document.addEventListener("keydown", documentKeydownHandler);
 
-  document.addEventListener("keydown", onListKeydown);
-  switchListEl.addEventListener("click", handleListClick);
-  document.addEventListener("keydown", handleDocumentKeydown);
-  const unsubAppEvents = appEvents.on(
-    APP_EVENTS.TOGGLE_QUICK_SWITCH,
-    () => void toggleSwitcher().catch(rendererLogger.appError),
-  );
   return function unsubscribe() {
     unsubAppEvents();
     switchListSearchInput.removeEventListener("input", debouncedTitleFilter);
-    switchListEl.removeEventListener("click", handleListClick);
-    document.removeEventListener("keydown", onListKeydown);
-    document.removeEventListener("keydown", handleDocumentKeydown);
+    switchListEl.removeEventListener("click", listClickHandler);
+    document.removeEventListener("keydown", listKeydownHandler);
+    document.removeEventListener("keydown", documentKeydownHandler);
   };
 }
 

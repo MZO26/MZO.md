@@ -3,10 +3,10 @@ import {
   getAllUsableEditorCommands,
   getSettingsCommands,
   getTags,
+  setDisplay,
   toDisplayBadges,
 } from "@/components/quick-switch/quick-switch-actions";
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
-import { setDisplay } from "@/components/quick-switch/quick-switch-ui";
 import { sanitizeSnippets } from "@/components/sidebar/sidebar-note-items";
 import { handleSearch } from "@/components/sidebar/sidebar-search";
 import { noteStore } from "@/state/state";

@@ -1,5 +1,7 @@
 import { getRelatedNotes } from "@/api/api";
 import { editorCommands } from "@/components/editor/editor-commands";
+import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
+import { renderTitleList } from "@/components/quick-switch/quick-switch-ui";
 import { settingsCommands, type SettingEventStrings } from "@/settings/settings-commands";
 import { noteStore, settingsStore, stateStore } from "@/state/state";
 import { UNTAGGED } from "@/utils/constants";
@@ -177,10 +179,17 @@ function computeActiveNoteLinks(activeNote: NoteListItem) {
   return { backlinks, outgoingLinks };
 }
 
+function setDisplay(notes: readonly QuickSwitchDisplayBadge[], qsState: QuickSwitchState) {
+  qsState.currentDisplayNotes = [...notes];
+  qsState.activeIndex = 0;
+  renderTitleList(qsState);
+}
+
 export {
   computeDisplayNotes,
   getAllUsableEditorCommands,
   getSettingsCommands,
   getTags,
+  setDisplay,
   toDisplayBadges,
 };

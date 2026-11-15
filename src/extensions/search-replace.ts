@@ -139,9 +139,18 @@ const getMatchesAndDecorations = (
 
 const scrollMatchIntoView = (editor: CommandProps["editor"], pos: number) => {
   requestAnimationFrame(() => {
-    const { node } = editor.view.domAtPos(pos);
-    const el = node instanceof HTMLElement ? node : node.parentElement;
-    el?.scrollIntoView({ behavior: "auto", block: "center" });
+    const scrollContainer = editor.view.dom.parentElement;
+    if (!scrollContainer) return;
+    const coords = editor.view.coordsAtPos(pos);
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const padding = 60;
+    const isVisible =
+      coords.top >= containerRect.top + padding && coords.bottom <= containerRect.bottom - padding;
+    if (!isVisible) {
+      const matchCenter = (coords.top + coords.bottom) / 2;
+      const containerCenter = containerRect.top + containerRect.height / 2;
+      scrollContainer.scrollTop += matchCenter - containerCenter;
+    }
   });
 };
 

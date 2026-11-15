@@ -93,6 +93,10 @@
   }
 }
 
+.quick-switch-dialog:not([open]) {
+  display: none !important;
+}
+
 .math-dialog::backdrop,
 .quick-switch-dialog::backdrop,
 .delete-dialog::backdrop {
