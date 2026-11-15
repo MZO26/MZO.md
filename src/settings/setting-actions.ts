@@ -47,13 +47,13 @@ const LINE_HEIGHT_VALUES = ["1.4", "1.5", "1.6"] as const;
 
 const NOTE_ITEM_DISPLAY_VALUES = ["preview", "minimal"] as const;
 
-function isValid<T extends readonly string[]>(value: unknown, validValues: T): value is T[number] {
-  return typeof value === "string" && (validValues as readonly string[]).includes(value);
-}
-
 const EXPORT_FORMATS = ["markdown", "text", "html", "pdf"] as const;
 
 const EXPORT_KEYS = EXPORT_FORMATS.map((f) => `setting:export-${f}`);
+
+function isValid<T extends readonly string[]>(value: unknown, validValues: T): value is T[number] {
+  return typeof value === "string" && validValues.includes(value);
+}
 
 function exportCommand(format: ExportFormat) {
   return {
@@ -92,85 +92,79 @@ async function applyAppTheme(
   };
 }
 
-async function updateTheme(newTheme: Theme, options?: { skipUpdate: boolean }) {
+async function updateTheme(newTheme: Theme) {
   if (!isValid(newTheme, THEME_VALUES)) return;
   const result = await applyAppTheme(newTheme);
   if (!result.success) {
     rendererLogger.appError("[applyAppTheme]: Failed to apply theme", result.error);
     return;
   }
-  if (!options?.skipUpdate)
-    await handleUpdateSettings({
-      theme: result.data.theme,
-      code_theme: result.data.codeTheme,
-    });
+  await handleUpdateSettings({
+    theme: result.data.theme,
+    code_theme: result.data.codeTheme,
+  });
 }
 
-async function updateCodeTheme(newTheme: CodeTheme, options?: { skipUpdate: boolean }) {
+async function updateCodeTheme(newTheme: CodeTheme) {
   if (!isValid(newTheme, CODE_THEME_VALUES)) return;
   const resolvedTheme = resolveTheme(settingsStore.get("theme"));
   rendererLogger.devLog(resolvedTheme);
   const mappedCodeTheme = CODE_THEME_MAP[newTheme][resolvedTheme];
   document.documentElement.dataset["codetheme"] = mappedCodeTheme;
-  if (!options?.skipUpdate) await handleUpdateSettings({ code_theme: newTheme });
+  await handleUpdateSettings({ code_theme: newTheme });
 }
 
-async function updateHighlightTheme(newTheme: HighlightTheme, options?: { skipUpdate: boolean }) {
+async function updateHighlightTheme(newTheme: HighlightTheme) {
   if (!isValid(newTheme, HIGHLIGHT_THEME_VALUES)) return;
   document.documentElement.setAttribute("data-highlight", newTheme);
-  if (!options?.skipUpdate)
-    await handleUpdateSettings({
-      highlight: newTheme,
-    });
+  await handleUpdateSettings({
+    highlight: newTheme,
+  });
 }
 
-async function updateFontFamily(newValue: FontFamily, options?: { skipUpdate: boolean }) {
+async function updateFontFamily(newValue: FontFamily) {
   if (!isValid(newValue, FONT_FAMILY_VALUES)) return;
   const { editorWrapper } = useCore("editorWrapper");
-  const current = newValue || "system";
-  editorWrapper.style.setProperty("--editor-font-family", current);
-  editorWrapper.setAttribute("data-font-family", current);
-  if (!options?.skipUpdate) await handleUpdateSettings({ font_family: newValue });
+  editorWrapper.style.setProperty("--editor-font-family", newValue);
+  editorWrapper.setAttribute("data-font-family", newValue);
+  await handleUpdateSettings({ font_family: newValue });
 }
 
-async function updateFontSize(newValue: FontSize, options?: { skipUpdate: boolean }) {
+async function updateFontSize(newValue: FontSize) {
   if (!isValid(newValue, FONT_SIZE_VALUES)) return;
-  let current = Number(newValue) || 18;
+  let current = Number(newValue);
   current = Math.max(16, Math.min(current, 20));
   const strCurrent = String(current);
   const { editorWrapper } = useCore("editorWrapper");
   editorWrapper.style.setProperty("--editor-font-size", `${strCurrent}px`);
   editorWrapper.setAttribute("data-font-size", strCurrent);
-  if (!options?.skipUpdate) await handleUpdateSettings({ font_size: newValue });
+  await handleUpdateSettings({ font_size: newValue });
 }
 
-async function updateLineHeight(newValue: LineHeight, options?: { skipUpdate: boolean }) {
+async function updateLineHeight(newValue: LineHeight) {
   if (!isValid(newValue, LINE_HEIGHT_VALUES)) return;
-  let current = Number(newValue) || 1.5;
+  let current = Number(newValue);
   current = Math.max(1.4, Math.min(current, 1.6));
   const strCurrent = String(current);
   const { editorWrapper } = useCore("editorWrapper");
   editorWrapper.style.setProperty("--editor-line-height", strCurrent);
   editorWrapper.setAttribute("data-line-height", strCurrent);
-  if (!options?.skipUpdate) await handleUpdateSettings({ line_height: newValue });
+  await handleUpdateSettings({ line_height: newValue });
 }
 
-async function updateNoteListItemDisplay(
-  newValue: NoteItemDisplay,
-  options?: { skipUpdate: boolean },
-) {
+async function updateNoteListItemDisplay(newValue: NoteItemDisplay) {
   if (!isValid(newValue, NOTE_ITEM_DISPLAY_VALUES)) return;
   const { sidebar } = useCore("sidebar");
   sidebar.setAttribute("data-noteItem", newValue);
-  if (!options?.skipUpdate) await handleUpdateSettings({ note_item_display: newValue });
+  await handleUpdateSettings({ note_item_display: newValue });
 }
 
-async function updateSpellcheck(newValue: boolean, options?: { skipUpdate: boolean }) {
+async function updateSpellcheck(newValue: boolean) {
   const { editor } = useCore("editor");
   const enabled = newValue === true;
   editor.view.dom.spellcheck = enabled;
   editor.commands.focus();
-  if (!options?.skipUpdate) await handleUpdateSettings({ spellcheck: enabled });
+  await handleUpdateSettings({ spellcheck: enabled });
 }
 
 async function backupDb() {
@@ -222,7 +216,7 @@ function setToolbarCollapsed(collapsed: boolean) {
   appContainer.classList.toggle("toolbar-collapsed", collapsed);
 }
 
-async function applySettings(settings: AppSettings) {
+async function applySettings(settings: Readonly<AppSettings>) {
   const { editor, sidebar, editorWrapper, appContainer } = useCore(
     "editor",
     "sidebar",

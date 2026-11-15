@@ -26,6 +26,7 @@ interface AppState {
   searchQuery: string;
   selectionMode: boolean;
   selectedIds: Set<Id>;
+  appPinned: boolean;
   hoverId: Id | null;
   activeTag: string | null;
   focus: boolean;
@@ -37,6 +38,7 @@ const STATE_STORE: Readonly<AppState> = {
   searchQuery: "",
   selectionMode: false,
   selectedIds: new Set<Id>(),
+  appPinned: false,
   hoverId: null,
   activeTag: null,
   focus: false,

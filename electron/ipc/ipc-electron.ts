@@ -56,9 +56,9 @@ function registerElectronIpc() {
       const decision = processUrl(validatedData);
       switch (decision) {
         case "allow":
-          return shell.openPath(validatedData);
+          return await shell.openPath(validatedData);
         case "external":
-          return shell.openExternal(validatedData);
+          return await shell.openExternal(validatedData);
         case "block":
           return "block";
         default:

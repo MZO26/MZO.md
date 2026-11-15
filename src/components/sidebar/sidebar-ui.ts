@@ -103,13 +103,13 @@ function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
   }
 }
 
-function toggleSidebar(collapsed?: boolean) {
+function toggleSidebar(collapsed: boolean) {
   const { appContainer } = useCore("appContainer");
   appContainer.classList.toggle("collapsed", collapsed);
 }
 
 function handleSidebarChange(sidebarParams: SidebarParams) {
-  if (sidebarParams.visibleNotes.length === 0 && !sidebarParams.activeTag) {
+  if (sidebarParams.visibleNotes.length === 0) {
     renderSidebarEmptyState(sidebarParams);
     return;
   }

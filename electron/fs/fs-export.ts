@@ -123,8 +123,8 @@ async function generatePDFBuffer(params: GeneratePDFParams): Promise<Buffer> {
 
 async function exportPDFNote(params: ExportPDFParams): Promise<string> {
   const { filePath, ...generateParams } = params;
-  const pdfBuffer = await generatePDFBuffer(generateParams);
   try {
+    const pdfBuffer = await generatePDFBuffer(generateParams);
     await withRetry(writeAtomic)(filePath, pdfBuffer);
   } catch (error) {
     mainLogger.appError("Failed to export PDF note", error);

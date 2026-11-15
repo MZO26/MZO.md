@@ -169,8 +169,10 @@ const settingsCommands: Record<SettingEventStrings, SettingCommands> = {
   "setting:toggle-sticky-window": {
     run: async () => {
       await pinWindow().catch(rendererLogger.appError);
+      const prev = stateStore.get("appPinned") === true;
+      stateStore.setState({ appPinned: !prev });
     },
-    isActive: () => false,
+    isActive: () => !!stateStore.get("appPinned"),
     label: "TOGGLE_STICKY_WINDOW",
   },
   "setting:toggle-toolbar": {
