@@ -38,7 +38,7 @@ function getSectionLabel(section: Sections, count: Record<Sections, number>) {
     case "wikilink":
       return `Link note`;
     case "fulltext":
-      return `Full-text matches`;
+      return `Full-text matches (${count.fulltext})`;
     default:
       section satisfies never;
       return "";

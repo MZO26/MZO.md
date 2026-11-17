@@ -318,8 +318,7 @@
 }
 
 [data-theme="dark"] .ProseMirror .callout,
-[data-theme="dark_warm"] .ProseMirror .callout,
-[data-theme="oled"] .ProseMirror .callout {
+[data-theme="dark_warm"] .ProseMirror .callout {
   background: transparent;
 }
 

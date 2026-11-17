@@ -6,7 +6,7 @@ export default defineConfig([
     ignores: ["dist/**", "dist-electron/**", "node_modules/**"],
   },
   {
-    files: ["**/*.{ts,mts,tsx}"],
+    files: ["**/*.{ts,mts}"],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -52,6 +52,7 @@ export default defineConfig([
         "error",
         { prefer: "type-imports", fixStyle: "inline-type-imports" },
       ],
+      "no-useless-catch": "error",
       "no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
       "no-restricted-imports": [
         "error",
@@ -64,6 +65,7 @@ export default defineConfig([
           ],
         },
       ],
+      "no-unassigned-vars": "error",
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",

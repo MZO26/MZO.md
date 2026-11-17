@@ -3,6 +3,7 @@
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
   -webkit-app-region: drag;
+  background-color: transparent;
   width: 100%;
   overflow: visible;
   grid-row: 1;
@@ -14,7 +15,7 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  background-color: var(--bg-sidebar-section);
+  background-color: color-mix(in srgb, var(--bg-sidebar-section) 55%, var(--bg-sidebar));
   border-right: 1px solid var(--border-color);
   transition:
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -313,9 +314,9 @@
   justify-content: safe center;
   gap: 6px;
   height: 42px;
-  padding: 0 8px 2px 0;
-  overflow-y: hidden;
+  padding: 0 2px 0;
   overflow-x: auto;
+  overflow-y: hidden;
   flex-wrap: nowrap;
   flex-direction: row;
   width: 100%;
@@ -862,7 +863,9 @@ svg.empty-state-icon {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 7px 12px;
+  min-height: 20px;
+  margin: auto 0;
+  padding: 10px 10px 5px 10px;
   font-size: 12px;
   line-height: 1;
   white-space: nowrap;
@@ -948,11 +951,6 @@ svg.empty-state-icon {
 
   .editor-empty-state p {
     font-size: 0.8rem;
-  }
-
-  .app-pin-btn {
-    width: 20px;
-    height: 20px;
   }
 
   .input-wrapper-editor {

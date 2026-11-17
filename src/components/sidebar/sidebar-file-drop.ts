@@ -8,7 +8,10 @@ import { ALLOWED_IMPORT_EXTENSIONS } from "@shared/shared-constants";
 import type { ImportExtension } from "@shared/shared-types";
 
 function isValidExtension(extension: unknown): extension is ImportExtension {
-  return ALLOWED_IMPORT_EXTENSIONS.some((e) => e === extension);
+  return (
+    typeof extension === "string" &&
+    (ALLOWED_IMPORT_EXTENSIONS as readonly string[]).includes(extension)
+  );
 }
 
 function setupSidebarFileDrop(sidebar: HTMLDivElement) {

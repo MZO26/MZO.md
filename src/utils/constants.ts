@@ -32,8 +32,6 @@ const UNTAGGED = "_untagged_";
 
 const SIDEBAR_ALL_NOTES_LIMIT = 50;
 
-const QUICK_SWITCH_FTS_LIMIT = 10;
-
 const MAX_WORKER_TIMEOUT_MS = 180_000;
 
 const IMAGE_MAX_WIDTH = 1600;
@@ -46,7 +44,6 @@ const THEME_MAP = {
   dark: "dark",
   light_warm: "light",
   dark_warm: "dark",
-  oled: "dark",
 } as const;
 
 const CODE_THEME_MAP = {
@@ -198,7 +195,6 @@ export {
   NAV_KEYS,
   NODE_BASELINE,
   NOTE_SECTION,
-  QUICK_SWITCH_FTS_LIMIT,
   SHARED_KATEX_OPTIONS,
   SIDEBAR_ALL_NOTES_LIMIT,
   THEME_MAP,

@@ -48,11 +48,6 @@ const settingsCommands: Record<SettingEventStrings, SettingCommands> = {
     isActive: () => settingsStore.get("theme") === "light_warm",
     label: "THEME_LIGHT_WARM",
   },
-  "setting:theme-oled": {
-    run: async () => await updateTheme("oled"),
-    isActive: () => settingsStore.get("theme") === "oled",
-    label: "THEME_OLED",
-  },
   "setting:code-theme-balanced": {
     run: async () => await updateCodeTheme("balanced"),
     isActive: () => settingsStore.get("code_theme") === "balanced",

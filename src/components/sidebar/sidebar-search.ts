@@ -1,76 +1,32 @@
 import { search } from "@/api/api";
-import { appEvents } from "@/api/event-emitter";
-import { matchesActiveTag, restoreSidebarScope } from "@/components/sidebar/sidebar-views";
-import { noteStore, stateStore } from "@/state/state";
+import { noteStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
 import { debounce, rendererLogger, withLatestGuard } from "@/utils/helpers";
 import type { MappedMatches } from "@/utils/types";
-import {
-  isNoteID,
-  type Id,
-  type NoteListItem,
-  type SearchQuery,
-} from "@shared/schemas/note-schema";
-import { APP_EVENTS, MAX_SEARCH_LENGTH } from "@shared/shared-constants";
+import { type Id, type SearchQuery } from "@shared/schemas/note-schema";
+import { MAX_SEARCH_LENGTH } from "@shared/shared-constants";
 import type { Node as PMNode } from "@tiptap/pm/model";
 
-const handleSearch = withLatestGuard(
-  async (isStale, searchInput: SearchQuery, options?: { quickSwitchScope?: boolean }) => {
-    const nextQuery = searchInput.trim();
-    if (nextQuery.length > MAX_SEARCH_LENGTH) return;
-    const isQuickSwitch = !!options?.quickSwitchScope;
-    if (!isQuickSwitch) {
-      const { searchQuery } = stateStore.getState();
-      if (nextQuery === searchQuery) return;
-      stateStore.setState({ searchQuery: nextQuery });
-      if (!nextQuery) {
-        restoreSidebarScope();
-        appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: "" });
-        return;
-      }
-    } else if (!nextQuery) {
-      return [];
-    }
-    const result = await search(nextQuery);
-    if (isStale()) return;
-    if (!result.success) {
-      rendererLogger.appError("[handleSearch]: Failed to search:", result.error);
-      return;
-    }
-    const data: MappedMatches[] = result.data.map((row) => ({
-      id: row.id,
-      title: row.title,
-      snippet: row.search_match,
-      rank: row.rank,
-    }));
-    if (isQuickSwitch) return data;
-    const { activeTag } = stateStore.getState();
-    computeSearchResult(data, noteStore.get("noteIndex"), activeTag);
-    appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, { query: nextQuery });
-    return data;
-  },
-);
-
-function computeSearchResult(
-  matches: MappedMatches[],
-  noteIndex: Map<Id, NoteListItem>,
-  activeTag: string | null,
-) {
-  const searchSnippets: Record<Id, string> = {};
-  const visibleIds: Id[] = [];
-  for (const match of matches) {
-    if (!isNoteID(match.id)) continue;
-    searchSnippets[match.id] = match.snippet;
-    const note = noteIndex.get(match.id);
-    if (note && matchesActiveTag(note, activeTag)) {
-      visibleIds.push(match.id);
-    }
+const handleSearch = withLatestGuard(async (isStale, searchInput: SearchQuery) => {
+  const nextQuery = searchInput.trim();
+  if (nextQuery.length > MAX_SEARCH_LENGTH) return;
+  if (!nextQuery) {
+    return [];
   }
-  noteStore.setState({
-    visibleIds,
-    searchSnippets,
-  });
-}
+  const result = await search(nextQuery);
+  if (isStale()) return;
+  if (!result.success) {
+    rendererLogger.appError("[handleSearch]: Failed to search:", result.error);
+    return;
+  }
+  const data: MappedMatches[] = result.data.map((row) => ({
+    id: row.id,
+    title: row.title,
+    snippet: row.search_match,
+    rank: row.rank,
+  }));
+  return data;
+});
 
 function findExactMatch(id: Id, doc: PMNode, snippet?: string) {
   const raw = snippet ?? noteStore.get("searchSnippets")[id];

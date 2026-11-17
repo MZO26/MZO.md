@@ -1,5 +1,4 @@
 import { appEvents } from "@/api/event-emitter";
-import { stateStore } from "@/state/state";
 import { DEBOUNCE_MS } from "@/utils/constants";
 import { debounce } from "@/utils/helpers";
 import { useCore, useUI } from "@/utils/registry";
@@ -139,10 +138,6 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
   const unsubAppEvents = appEvents.onMany({
     [APP_EVENTS.TOGGLE_EDITOR_SEARCH]: () => {
       const isHidden = !esState.isOpen;
-      const globalQuery = stateStore.get("searchQuery") ?? "";
-      if (globalQuery.trim().length > MIN_SEARCH_LENGTH && isHidden) {
-        esState.query = globalQuery;
-      }
       isHidden ? changeDisplay("new", esState, { focus: true }) : changeDisplay("clear", esState);
     },
     [APP_EVENTS.SYNC_EDITOR_SEARCH]: ({ query }: { query: SearchQuery }) => {
@@ -215,9 +210,6 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
   const editorWrapperKeydownHandler = (event: KeyboardEvent) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f") {
       event.preventDefault();
-      if (!esState.isOpen) {
-        esState.query = stateStore.get("searchQuery") ?? "";
-      }
       changeDisplay("new", esState, { focus: true });
     } else if (event.key === "Escape" && esState.isOpen) {
       event.preventDefault();

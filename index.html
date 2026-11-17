@@ -24,27 +24,15 @@
       <div class="sidebar-container">
         <div class="sidebar-notes">
           <div class="sidebar-header">
-            <div class="input-wrapper">
-              <i data-lucide="search" class="search-icon"></i>
-              <input
-                type="search"
-                class="search-input"
-                spellcheck="false"
-                placeholder="Search Notes..."
-                title="Global Search"
-              />
-            </div>
+            <span class="info-span note-count" title="Total Notes"></span>
             <button class="import-btn" title="Import File">
-              <i data-lucide="file-up"></i>
+              <i data-lucide="file-input"></i>
             </button>
             <button class="add-note-btn" title="New Note">
               <i data-lucide="plus"></i>
             </button>
           </div>
           <div class="notes-container" tabindex="0"></div>
-          <div class="sidebar-footer">
-            <span class="info-span note-count" title="Total Notes"></span>
-          </div>
         </div>
         <div class="resizer-sidebar"></div>
       </div>
@@ -174,9 +162,6 @@
           <i id="sidebar-empty-state-icon" data-lucide="library"></i>
         </div>
         <h3 class="empty-state-title"></h3>
-        <p class="empty-state-description">
-          <strong class="hidden"></strong>
-        </p>
       </div>
     </template>
     <template id="editor-empty-state-template">

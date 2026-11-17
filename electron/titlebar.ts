@@ -89,13 +89,6 @@ const THEME_DATA: Record<
     isDark: true,
     focus: "#1e1b17", // --bg-editor
   },
-  oled: {
-    color: "#000000",
-    symbolColor: "#a1a1aa",
-    background: "#000000",
-    isDark: true,
-    focus: "#000000",
-  },
 } as const;
 
 export { getTitleBarOverlay, initTheme, onOSThemeChange };

@@ -23,7 +23,6 @@ interface Store<T> {
 interface AppState {
   activeId: Id | null;
   isDirty: boolean;
-  searchQuery: string;
   selectionMode: boolean;
   selectedIds: Set<Id>;
   appPinned: boolean;
@@ -35,7 +34,6 @@ interface AppState {
 const STATE_STORE: Readonly<AppState> = {
   activeId: null,
   isDirty: false,
-  searchQuery: "",
   selectionMode: false,
   selectedIds: new Set<Id>(),
   appPinned: false,

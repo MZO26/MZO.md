@@ -32,7 +32,7 @@ import type {
 } from "@shared/schemas/store-schema";
 import type { ResolvedTheme, Result } from "@shared/shared-types";
 
-const THEME_VALUES = ["system", "light", "light_warm", "dark", "dark_warm", "oled"] as const;
+const THEME_VALUES = ["system", "light", "light_warm", "dark", "dark_warm"] as const;
 
 const CODE_THEME_VALUES = ["focus", "balanced", "colorless"] as const;
 

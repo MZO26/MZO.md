@@ -522,12 +522,10 @@ async function handleSelectNote(
     });
   }
   editor.view.dispatch(editor.state.tr.setMeta("duplicateLinkRefresh", true));
-  const globalQuery = stateStore.get("searchQuery");
-  const effectiveQuery = query ?? globalQuery;
-  if (snippet || (effectiveQuery && effectiveQuery.trim().length > MIN_SEARCH_LENGTH)) {
-    if (effectiveQuery) {
+  if (snippet || (query && query.trim().length > MIN_SEARCH_LENGTH)) {
+    if (query) {
       appEvents.emit(APP_EVENTS.SYNC_EDITOR_SEARCH, {
-        query: effectiveQuery,
+        query,
       });
     }
     const pos = findExactMatch(id, editor.state.tr.doc, options?.snippet);

@@ -10,7 +10,6 @@ import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-in
 import { sanitizeSnippets } from "@/components/sidebar/sidebar-note-items";
 import { handleSearch } from "@/components/sidebar/sidebar-search";
 import { noteStore } from "@/state/state";
-import { QUICK_SWITCH_FTS_LIMIT } from "@/utils/constants";
 import { withLatestGuard } from "@/utils/helpers";
 import type { QuickSwitchDisplayBadge, QuickSwitchFullTextItem } from "@/utils/types";
 import {
@@ -66,28 +65,26 @@ const filterTitles = withLatestGuard(
         return;
       }
       if (qsState.lastQuery === query) return;
-      const matches = await handleSearch(query, { quickSwitchScope: true });
+      const matches = await handleSearch(query);
       if (isStale() || !matches) return;
       qsState.lastQuery = query;
       const noteIndex = noteStore.get("noteIndex");
-      const mapped: QuickSwitchFullTextItem[] = matches
-        .slice(0, QUICK_SWITCH_FTS_LIMIT)
-        .flatMap((m) => {
-          const note = noteIndex.get(m.id);
-          if (!note) return [];
-          return [
-            {
-              id: m.id,
-              title: m.title,
-              snippet: sanitizeSnippets({
-                note,
-                snippets: { [m.id]: m.snippet },
-              }),
-              rank: m.rank,
-              section: "fulltext" as const,
-            },
-          ];
-        });
+      const mapped: QuickSwitchFullTextItem[] = matches.flatMap((m) => {
+        const note = noteIndex.get(m.id);
+        if (!note) return [];
+        return [
+          {
+            id: m.id,
+            title: m.title,
+            snippet: sanitizeSnippets({
+              note,
+              snippets: { [m.id]: m.snippet },
+            }),
+            rank: m.rank,
+            section: "fulltext" as const,
+          },
+        ];
+      });
       setDisplay(mapped, qsState);
       return;
     }

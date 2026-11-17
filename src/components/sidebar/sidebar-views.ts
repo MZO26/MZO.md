@@ -90,7 +90,7 @@ function selectSidebarNotes(
  *
  * Early-returns if `nextTag` equals the current `activeTag`.
  * Otherwise:
- * - Sets `activeTag` and clears `searchQuery` in the state store.
+ * - Sets `activeTag` in the state store.
  * - Persists the new tag via `handleUpdateSettings`.
  * - Calls {@link restoreSidebarScope} to recompute `visibleIds` and reset search UI.
  *
@@ -109,7 +109,7 @@ async function applyView(nextTag: string | null, newState?: readonly NoteListIte
     rendererLogger.devLog("[applyView]: Same tag. Early return guard activated");
     return;
   }
-  stateStore.setState({ activeTag: nextTag, searchQuery: "" });
+  stateStore.setState({ activeTag: nextTag });
   await handleUpdateSettings({ active_tag: nextTag });
   restoreSidebarScope(newState);
 }
@@ -117,7 +117,6 @@ async function applyView(nextTag: string | null, newState?: readonly NoteListIte
 /**
  * Resets the sidebar's search state and recomputes `visibleIds` for the active tag.
  *
- * Clears `searchQuery` (store + input element), empties `searchSnippets`,
  * and rebuilds `visibleIds` via {@link computeIdsForTagView} using either
  * the provided note list or the store's current `notes`.
  *
@@ -126,9 +125,6 @@ async function applyView(nextTag: string | null, newState?: readonly NoteListIte
 
 function restoreSidebarScope(newState?: readonly NoteListItem[]) {
   const activeTag = stateStore.get("activeTag");
-  stateStore.setState({ searchQuery: "" });
-  const { searchInput } = useUI("searchInput");
-  searchInput.value = "";
   noteStore.setState((state) => ({
     visibleIds: computeIdsForTagView(newState ?? state.notes, activeTag),
     searchSnippets: {},
@@ -136,14 +132,13 @@ function restoreSidebarScope(newState?: readonly NoteListItem[]) {
 }
 
 function getSidebarParams(): SidebarParams {
-  const { searchQuery, activeTag, activeId } = stateStore.getState();
+  const { activeTag, activeId } = stateStore.getState();
   const { visibleIds, noteIndex, searchSnippets } = noteStore.getState();
   const display = settingsStore.get("note_item_display");
   const visibleNotes = selectSidebarNotes(visibleIds, noteIndex, activeTag);
   return {
     visibleNotes,
     searchSnippets,
-    query: searchQuery,
     activeTag,
     activeId,
     display,
@@ -153,10 +148,10 @@ function getSidebarParams(): SidebarParams {
 function createNoteUpdater() {
   let element: HTMLDivElement | null = null;
   return function updateNoteCount(count: number) {
-    const { sidebarFooter } = useUI("sidebarFooter");
-    element ??= sidebarFooter.querySelector<HTMLDivElement>(".note-count");
+    const { sidebarHeader } = useUI("sidebarHeader");
+    element ??= sidebarHeader.querySelector<HTMLDivElement>(".note-count");
     if (!element) return;
-    element.textContent = `${count} ${count === 1 ? "note" : "notes"}`;
+    element.textContent = `Notes: ${count}`;
   };
 }
 

@@ -61,7 +61,6 @@ type ImageCompressionPayload = {
 type SidebarParams = {
   visibleNotes: readonly NoteListItem[];
   searchSnippets: Record<Id, string>;
-  query: string;
   activeId: Id | null;
   activeTag?: string | null;
   display: AppSettings["note_item_display"];
@@ -121,7 +120,7 @@ type Sections = QuickSwitchDisplayBadge["section"];
 
 type AppIcons = keyof typeof APP_ICONS;
 
-type FilterMode = "recent" | "search" | "tag";
+type FilterMode = "recent" | "tag";
 
 type MappedMatches = Omit<SearchResult, "search_match"> & {
   snippet: string;

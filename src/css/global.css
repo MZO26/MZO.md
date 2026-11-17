@@ -157,41 +157,6 @@
   --callout-info: 52, 175, 225;
 }
 
-[data-theme="oled"] {
-  --bg-editor: #000000;
-  --bg-sidebar: #000000;
-  --bg-sidebar-section: #0a0a0a;
-  --bg-button: #18181b;
-  --text-main: #f4f4f5;
-  --text-muted: #a1a1aa;
-  --accent-primary: #a1a1aa;
-  --accent-hover: #27272a;
-  --border-color: #27272a;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --ui-resizer: #3f3f46;
-  --tag-color: #38bdf8;
-  --tag-bg: rgba(56, 189, 248, 0.15);
-  --tag-border: rgba(56, 189, 248, 0.28);
-  --shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 4px 6px rgba(0, 0, 0, 0.5);
-  --selection-bg: rgba(161, 161, 170, 0.22);
-  --scrollbar-thumb: #52525b;
-  --tooltip-bg: #18181b;
-  --tooltip-text: #f4f4f5;
-  --highlight-context: rgba(96, 165, 250, 0.22);
-  --highlight-insight: rgba(253, 224, 71, 0.24);
-  --highlight-action: rgba(248, 113, 113, 0.18);
-  --search-match-bg: rgba(245, 158, 11, 0.35);
-  --pin-color: #fca5a5;
-  --pin-bg: rgba(252, 165, 165, 0.15);
-  --selection-item-bg: rgba(161, 161, 170, 0.12);
-  --selection-item-border: rgba(161, 161, 170, 0.3);
-  --callout-note: 56, 189, 248;
-  --callout-tip: 45, 212, 191;
-  --callout-warning: 251, 191, 36;
-  --callout-danger: 251, 113, 133;
-  --callout-info: 56, 189, 248;
-}
-
 [data-font="system"] {
   --current-font: var(--font-system);
 }
@@ -247,8 +212,7 @@ button {
   align-items: center;
   background: transparent;
   border: 1px solid transparent;
-  margin: 0 2px;
-  padding: 0;
+  margin: 2px;
   font: inherit;
   color: var(--text-muted);
   cursor: pointer;
@@ -304,7 +268,7 @@ button:disabled {
 
 ::-webkit-scrollbar {
   width: 10px;
-  height: 10px;
+  height: 8px;
   background-color: transparent;
 }
 

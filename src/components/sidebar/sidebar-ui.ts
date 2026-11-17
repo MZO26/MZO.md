@@ -1,9 +1,5 @@
-import {
-  applySnippet,
-  createNoteItem,
-  sanitizeSnippets,
-} from "@/components/sidebar/sidebar-note-items";
-import { localStore } from "@/state/state";
+import { createNoteItem } from "@/components/sidebar/sidebar-note-items";
+import { localStore, settingsStore } from "@/state/state";
 import { SIDEBAR_ALL_NOTES_LIMIT, UNTAGGED } from "@/utils/constants";
 import { rendererLogger } from "@/utils/helpers";
 import { renderIcons } from "@/utils/icons";
@@ -69,8 +65,6 @@ function handleHeaderChange(change: FilterMode, activeTag?: string) {
       return createActiveTagHeader(activeTag);
     case "recent":
       return createInfoHeader("Recent");
-    case "search":
-      return createInfoHeader("Search");
     default:
       change satisfies never;
       return;
@@ -81,26 +75,15 @@ const getSidebarEmptyStateClone = createTemplateCloner("sidebarEmptyStateTemplat
 
 let emptyStateClone: HTMLDivElement | null = null;
 
-function renderSidebarEmptyState(sidebarParams: SidebarParams) {
+function renderSidebarEmptyState() {
   const { sidebar } = useCore("sidebar");
   if (!emptyStateClone) {
     emptyStateClone = getSidebarEmptyStateClone();
     renderIcons(emptyStateClone);
   }
-  updateSidebarEmptyState(emptyStateClone, sidebarParams.query);
+  const titleEl = requireElement<HTMLHeadingElement>(".empty-state-title", emptyStateClone);
+  titleEl.textContent = "No notes here";
   sidebar.replaceChildren(emptyStateClone);
-}
-
-function updateSidebarEmptyState(emptyState: HTMLDivElement, query: string) {
-  const isSearch = !!query;
-  const titleEl = requireElement<HTMLHeadingElement>(".empty-state-title", emptyState);
-  const descEl = requireElement<HTMLParagraphElement>(".empty-state-description", emptyState);
-  if (isSearch) {
-    titleEl.textContent = "No results found";
-    descEl.replaceChildren("No matching notes found");
-  } else {
-    titleEl.textContent = "No notes here";
-  }
 }
 
 function toggleSidebar(collapsed: boolean) {
@@ -110,23 +93,18 @@ function toggleSidebar(collapsed: boolean) {
 
 function handleSidebarChange(sidebarParams: SidebarParams) {
   if (sidebarParams.visibleNotes.length === 0) {
-    renderSidebarEmptyState(sidebarParams);
+    renderSidebarEmptyState();
     return;
   }
   renderNoteList(sidebarParams);
 }
 
-function renderNoteList({
-  visibleNotes,
-  query,
-  searchSnippets,
-  activeTag,
-  activeId,
-}: SidebarParams) {
+function renderNoteList({ visibleNotes, activeTag, activeId }: SidebarParams) {
   const { sidebar } = useCore("sidebar");
   const fragment = document.createDocumentFragment();
   let activeElement: HTMLDivElement | null = null;
-  const currentMode: FilterMode = query ? "search" : activeTag ? "tag" : "recent";
+  const currentMode: FilterMode = activeTag ? "tag" : "recent";
+  const displaySetting = settingsStore.get("note_item_display");
   const headerElement = handleHeaderChange(currentMode, activeTag ?? undefined);
   if (headerElement) {
     fragment.appendChild(headerElement);
@@ -135,10 +113,7 @@ function renderNoteList({
   const isLimited = !isFiltered && visibleNotes.length > SIDEBAR_ALL_NOTES_LIMIT;
   const displayNotes = isFiltered ? visibleNotes : visibleNotes.slice(0, SIDEBAR_ALL_NOTES_LIMIT);
   for (const note of displayNotes) {
-    const item = createNoteItem(note);
-    const safe = sanitizeSnippets({ note, snippets: searchSnippets });
-    const hasSearchSnippet = !!searchSnippets[note.id];
-    applySnippet({ item, searchSnippet: safe, isSearch: hasSearchSnippet });
+    const item = createNoteItem(note, displaySetting);
     if (note.id === activeId) {
       activeElement = item;
     }

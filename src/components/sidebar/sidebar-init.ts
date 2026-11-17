@@ -22,8 +22,8 @@ import type { FilePathRequest } from "@shared/schemas/request-schema";
 import { APP_EVENTS } from "@shared/shared-constants";
 
 function initNotesSidebar(sidebar: HTMLDivElement) {
-  const { searchInput, sidebarHeader } = useUI("searchInput", "sidebarHeader");
-  const unsubListeners = setupSidebarListeners(sidebar, sidebarHeader, searchInput);
+  const { sidebarHeader } = useUI("sidebarHeader");
+  const unsubListeners = setupSidebarListeners(sidebar, sidebarHeader);
   const unsubFileDrop = setupSidebarFileDrop(sidebar);
   const unsubAppEvents = appEvents.onMany({
     [APP_EVENTS.TOGGLE_SIDEBAR]: () => {
@@ -34,7 +34,7 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
     },
     [APP_EVENTS.CREATE_NEW_NOTE]: () =>
       void handleCreateNote({ shouldNavigate: true }).catch(rendererLogger.appError),
-    [APP_EVENTS.FOCUS_GLOBAL_SEARCH]: () => searchInput.focus(),
+    // [APP_EVENTS.FOCUS_GLOBAL_SEARCH]: () => searchInput.focus(),
     [APP_EVENTS.SET_SELECTION_MODE]: () => setSelectionMode(!isSelectionActive()),
     [APP_EVENTS.EXIT_SELECTION_MODE]: () => setSelectionMode(false),
     [APP_EVENTS.DELETE_SELECTED]: () => {
@@ -54,7 +54,7 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
 function setupSidebarListeners(
   sidebar: HTMLDivElement,
   sidebarHeader: HTMLDivElement,
-  searchInput: HTMLInputElement,
+  // searchInput: HTMLInputElement,
 ) {
   const unsubSidebarResize = resizeSidebar();
   const headerClickHandler = createAsyncHandler(async (e: MouseEvent) => {
@@ -70,18 +70,6 @@ function setupSidebarListeners(
       const loading = createGlobalSpinner(0);
       await loading.wrap(() => handleImportNote(request));
       return;
-    }
-  });
-  const inputKeydownHandler = createAsyncHandler(async (e: KeyboardEvent) => {
-    if (e.key !== "Enter") return;
-    if (!(e.target instanceof HTMLInputElement)) return;
-    e.preventDefault();
-    const visibleIds = noteStore.get("visibleIds");
-    if (visibleIds.length === 0) return;
-    const topResult = visibleIds[0];
-    if (topResult) {
-      const loading = createGlobalSpinner();
-      await loading.wrap(() => handleSelectNote(topResult));
     }
   });
   const contextMenuHandler = (e: MouseEvent) => {
@@ -179,8 +167,6 @@ function setupSidebarListeners(
     void navigateSidebar(e).catch(rendererLogger.appError);
   };
   sidebarHeader.addEventListener("click", headerClickHandler);
-  searchInput.addEventListener("input", debouncedSearch);
-  searchInput.addEventListener("keydown", inputKeydownHandler);
   sidebar.addEventListener("contextmenu", contextMenuHandler);
   sidebar.addEventListener("click", noteListClickHandler);
   sidebar.addEventListener("focusout", focusOutHandler);
@@ -190,8 +176,6 @@ function setupSidebarListeners(
     unsubSidebarResize();
     sidebarHeader.removeEventListener("click", headerClickHandler);
     debouncedSearch.cancel();
-    searchInput.removeEventListener("input", debouncedSearch);
-    searchInput.removeEventListener("keydown", inputKeydownHandler);
     sidebar.removeEventListener("contextmenu", contextMenuHandler);
     sidebar.removeEventListener("click", noteListClickHandler);
     sidebar.removeEventListener("focusout", focusOutHandler);

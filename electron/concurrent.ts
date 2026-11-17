@@ -41,22 +41,28 @@ async function processWithLimit<T, R>(
       ? items.size
       : undefined;
   if (knownSize === 0) return [];
+
   const workerCount = knownSize !== undefined ? Math.min(concurrency, knownSize) : concurrency;
   const iterator = Iterator.from(items);
-  const results: R[] = [];
+  const results: R[] = knownSize !== undefined ? new Array<R>(knownSize) : [];
   let nextIndex = 0;
+  let aborted = false;
+
   async function worker(): Promise<void> {
-    while (true) {
+    while (!aborted) {
       const next = iterator.next();
       if (next.done) break;
       const index = nextIndex++;
-      results[index] = await processItem(next.value, index);
+      try {
+        results[index] = await processItem(next.value, index);
+      } catch (error: unknown) {
+        aborted = true;
+        throw error;
+      }
     }
   }
-  const workers: Promise<void>[] = [];
-  for (let i = 0; i < workerCount; i++) {
-    workers.push(worker());
-  }
+
+  const workers = Array.from({ length: workerCount }, () => worker());
   try {
     await Promise.all(workers);
     return results;

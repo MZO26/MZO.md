@@ -23,9 +23,7 @@ interface UIRegistry {
   wordCountEl: HTMLSpanElement;
   charCountEl: HTMLSpanElement;
   readingTime: HTMLSpanElement;
-  searchInput: HTMLInputElement;
   sidebarHeader: HTMLDivElement;
-  sidebarFooter: HTMLDivElement;
   selectionFooter: HTMLDivElement;
   inputWrapperEditor: HTMLDivElement;
   searchInputEditor: HTMLInputElement;
@@ -113,9 +111,7 @@ function initUIRegistry() {
     wordCountEl: requireElement<HTMLSpanElement>("#word-count"),
     charCountEl: requireElement<HTMLSpanElement>("#char-count"),
     readingTime: requireElement<HTMLSpanElement>("#reading-time"),
-    searchInput: requireElement<HTMLInputElement>(".search-input"),
     sidebarHeader: requireElement<HTMLDivElement>(".sidebar-header"),
-    sidebarFooter: requireElement<HTMLDivElement>(".sidebar-footer"),
     inputWrapperEditor: requireElement<HTMLDivElement>(".input-wrapper-editor"),
     searchInputEditor: requireElement<HTMLInputElement>(".search-input-editor"),
     replaceInputWrapper: requireElement<HTMLInputElement>(".input-wrapper-editor-replace"),
