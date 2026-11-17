@@ -23,7 +23,7 @@ import {
 } from "@/components/editor/editor-generators";
 import { initEditorContent } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
-import { findExactMatch } from "@/components/sidebar/sidebar-search";
+import { findExactMatch } from "@/components/quick-switch/quick-switch-search";
 import { applyView } from "@/components/sidebar/sidebar-views";
 import { addHeadingToDoc } from "@/extensions/overrides/headings";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
@@ -528,7 +528,7 @@ async function handleSelectNote(
         query,
       });
     }
-    const pos = findExactMatch(id, editor.state.tr.doc, options?.snippet);
+    const pos = findExactMatch(editor.state.tr.doc, options?.snippet);
     rendererLogger.devLog("Exact match pos:", pos);
     if (pos !== null) {
       const tr = editor.state.tr;

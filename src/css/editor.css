@@ -636,24 +636,33 @@
   background-color: var(--search-match-bg);
   color: var(--text-main);
   border-radius: 3px;
-  padding: 0 2px;
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--search-match-bg) 60%, var(--text-main));
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.15);
   transition:
-    background-color 120ms ease,
-    box-shadow 120ms ease;
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.ProseMirror .doc-search-result-active {
-  background-color: color-mix(in oklab, var(--search-match-bg) 50%, var(--accent-hover));
+.ProseMirror .doc-search-result.doc-search-result-active {
+  background-color: rgba(245, 158, 11, 0.45);
   color: var(--text-main);
   border-radius: 3px;
-  padding: 0 2px;
   box-shadow:
-    inset 0 0 0 1.5px var(--accent-hover),
-    inset 0 0 6px 0 color-mix(in oklab, var(--accent-hover) 25%, transparent);
-  transition:
-    background-color 120ms ease,
-    box-shadow 120ms ease;
+    0 0 0 2px rgba(245, 158, 11, 0.35),
+    0 1px 6px rgba(245, 158, 11, 0.2);
+}
+
+:root[data-theme="light"] .ProseMirror .doc-search-result,
+:root[data-theme="light_warm"] .ProseMirror .doc-search-result {
+  background-color: rgba(245, 158, 11, 0.22);
+  box-shadow: inset 0 -2px 0 rgba(245, 158, 11, 0.45);
+}
+
+:root[data-theme="light"] .ProseMirror .doc-search-result.doc-search-result-active,
+:root[data-theme="light_warm"] .ProseMirror .doc-search-result.doc-search-result-active {
+  background-color: rgba(245, 158, 11, 0.32);
+  box-shadow:
+    inset 0 -2px 0 rgba(245, 158, 11, 0.6),
+    0 0 0 2px rgba(245, 158, 11, 0.3);
 }
 
 .ProseMirror:focus {

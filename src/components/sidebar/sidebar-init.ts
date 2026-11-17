@@ -1,7 +1,6 @@
 import { appEvents } from "@/api/event-emitter";
 import { setupSidebarFileDrop } from "@/components/sidebar/sidebar-file-drop";
 import { navigateSidebar } from "@/components/sidebar/sidebar-navigation";
-import { debouncedSearch } from "@/components/sidebar/sidebar-search";
 import {
   addToSelection,
   deleteSelection,
@@ -175,7 +174,6 @@ function setupSidebarListeners(
   return function unsubscribe() {
     unsubSidebarResize();
     sidebarHeader.removeEventListener("click", headerClickHandler);
-    debouncedSearch.cancel();
     sidebar.removeEventListener("contextmenu", contextMenuHandler);
     sidebar.removeEventListener("click", noteListClickHandler);
     sidebar.removeEventListener("focusout", focusOutHandler);

@@ -60,7 +60,6 @@ type ImageCompressionPayload = {
 
 type SidebarParams = {
   visibleNotes: readonly NoteListItem[];
-  searchSnippets: Record<Id, string>;
   activeId: Id | null;
   activeTag?: string | null;
   display: AppSettings["note_item_display"];

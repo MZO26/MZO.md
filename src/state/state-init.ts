@@ -55,7 +55,6 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     (state) => ({
       visibleIds: state.visibleIds,
       noteIndex: state.noteIndex,
-      searchSnippets: state.searchSnippets,
     }),
     () => {
       sidebarListener();
@@ -65,7 +64,6 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     },
     (prev, next) => {
       if (!shallowEq(prev.visibleIds, next.visibleIds)) return false;
-      if (!shallowEq(prev.searchSnippets, next.searchSnippets)) return false;
       if (prev.noteIndex === next.noteIndex) return true;
       for (const id of next.visibleIds) {
         const prevNote = prev.noteIndex.get(id);

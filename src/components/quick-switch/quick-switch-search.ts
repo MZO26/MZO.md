@@ -1,3 +1,4 @@
+import { search } from "@/api/api";
 import {
   computeDisplayNotes,
   getAllUsableEditorCommands,
@@ -8,10 +9,13 @@ import {
 } from "@/components/quick-switch/quick-switch-actions";
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
 import { sanitizeSnippets } from "@/components/sidebar/sidebar-note-items";
-import { handleSearch } from "@/components/sidebar/sidebar-search";
 import { noteStore } from "@/state/state";
-import { withLatestGuard } from "@/utils/helpers";
-import type { QuickSwitchDisplayBadge, QuickSwitchFullTextItem } from "@/utils/types";
+import { rendererLogger, withLatestGuard } from "@/utils/helpers";
+import type {
+  MappedMatches,
+  QuickSwitchDisplayBadge,
+  QuickSwitchFullTextItem,
+} from "@/utils/types";
 import {
   isNoteID,
   type Id,
@@ -19,6 +23,7 @@ import {
   type SearchQuery,
 } from "@shared/schemas/note-schema";
 import { MAX_SEARCH_LENGTH, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
+import type { Node as PMNode } from "@tiptap/pm/model";
 
 const WORD_BOUNDARY = /[\s\-_/:.|()[\]{}]/;
 
@@ -209,4 +214,47 @@ function computeTitleFilterResults(query: SearchQuery) {
   return displayNotes;
 }
 
-export { filterTitles };
+const handleSearch = withLatestGuard(async (isStale, searchInput: SearchQuery) => {
+  const nextQuery = searchInput.trim();
+  if (nextQuery.length > MAX_SEARCH_LENGTH) return;
+  if (!nextQuery) {
+    return [];
+  }
+  const result = await search(nextQuery);
+  if (isStale()) return;
+  if (!result.success) {
+    rendererLogger.appError("[handleSearch]: Failed to search:", result.error);
+    return;
+  }
+  const data: MappedMatches[] = result.data.map((row) => ({
+    id: row.id,
+    title: row.title,
+    snippet: row.search_match,
+    rank: row.rank,
+  }));
+  return data;
+});
+
+function findExactMatch(doc: PMNode, snippet?: string) {
+  if (!snippet) return null;
+  const marks: string[] = [];
+  for (const [, text] of snippet.matchAll(/<mark[^>]*>(.*?)<\/mark>/g)) {
+    if (text) marks.push(text);
+  }
+  if (marks.length === 0) return null;
+  const searchTerm = marks.reduce((a, b) => (b.length < a.length ? b : a));
+  let foundPos = null as number | null;
+  doc.descendants((node, pos): boolean => {
+    if (foundPos !== null) return false;
+    if (!node.isTextblock) return true;
+    const blockText = node.textBetween(0, node.content.size, "", " ");
+    const index = blockText.indexOf(searchTerm);
+    if (index !== -1) {
+      foundPos = pos + 1 + index;
+    }
+    return false;
+  });
+  return foundPos;
+}
+
+export { filterTitles, findExactMatch, handleSearch };

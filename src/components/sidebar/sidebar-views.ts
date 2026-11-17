@@ -127,18 +127,16 @@ function restoreSidebarScope(newState?: readonly NoteListItem[]) {
   const activeTag = stateStore.get("activeTag");
   noteStore.setState((state) => ({
     visibleIds: computeIdsForTagView(newState ?? state.notes, activeTag),
-    searchSnippets: {},
   }));
 }
 
 function getSidebarParams(): SidebarParams {
   const { activeTag, activeId } = stateStore.getState();
-  const { visibleIds, noteIndex, searchSnippets } = noteStore.getState();
+  const { visibleIds, noteIndex } = noteStore.getState();
   const display = settingsStore.get("note_item_display");
   const visibleNotes = selectSidebarNotes(visibleIds, noteIndex, activeTag);
   return {
     visibleNotes,
-    searchSnippets,
     activeTag,
     activeId,
     display,

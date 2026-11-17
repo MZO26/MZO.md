@@ -72,9 +72,10 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
     } else if (document.activeElement !== searchInputEditor && searchInputEditor.value !== query) {
       searchInputEditor.value = query;
     }
-    const hasResults = query.length > 0 && results.length > 0;
-    searchCount.textContent = hasResults ? `${activeIndex + 1} of ${results.length}` : "0 of 0";
-    const disabled = !hasResults;
+    const currentDisplay = results.length > 0 && activeIndex >= 0 ? activeIndex + 1 : 0;
+    const totalDisplay = results.length;
+    searchCount.textContent = `${currentDisplay} / ${totalDisplay}`;
+    const disabled = results.length === 0;
     searchPrev.disabled = disabled;
     searchNext.disabled = disabled;
   }
@@ -141,8 +142,9 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
       isHidden ? changeDisplay("new", esState, { focus: true }) : changeDisplay("clear", esState);
     },
     [APP_EVENTS.SYNC_EDITOR_SEARCH]: ({ query }: { query: SearchQuery }) => {
-      if (query.trim().length > MIN_SEARCH_LENGTH) {
-        esState.query = query;
+      const trimmed = query.trim();
+      if (trimmed.length > MIN_SEARCH_LENGTH) {
+        esState.query = trimmed;
         changeDisplay("new", esState);
       }
     },
@@ -229,6 +231,13 @@ function initEditorSearch(editorWrapper: HTMLDivElement) {
   };
 
   const navClickHandler = (event: MouseEvent) => {
+    debouncedSearch.cancel();
+    const currentVal = searchInputEditor.value.trim();
+    if (currentVal !== esState.query) {
+      esState.query = currentVal;
+      changeDisplay("new", esState);
+      return;
+    }
     changeDisplay(event.currentTarget === searchPrev ? "prev" : "next", esState);
   };
 

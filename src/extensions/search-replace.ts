@@ -4,7 +4,7 @@ import type { Node as PMNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey, type EditorState } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-export type DocSearchRange = { from: number; to: number };
+export type DocSearchRange = { from: number; to: number; isNode?: boolean };
 
 export type DocSearchOptions = {
   resultClass: string;
@@ -47,16 +47,26 @@ const createDecorations = (
   options: DocSearchOptions,
 ) => {
   if (results.length === 0) return DecorationSet.empty;
+  console.log(
+    "RENDER DECORATIONS -> activeIndex:",
+    activeIndex,
+    "activeRange:",
+    results[activeIndex],
+    "all:",
+    results,
+  );
   return DecorationSet.create(
     doc,
-    results.map((result, i) =>
-      Decoration.inline(result.from, result.to, {
-        class:
-          i === activeIndex
-            ? `${options.resultClass} ${options.activeResultClass}`
-            : options.resultClass,
-      }),
-    ),
+    results.map((result, i) => {
+      const className =
+        i === activeIndex
+          ? `${options.resultClass} ${options.activeResultClass}`
+          : options.resultClass;
+
+      return result.isNode
+        ? Decoration.node(result.from, result.to, { class: className })
+        : Decoration.inline(result.from, result.to, { class: className });
+    }),
   );
 };
 
@@ -99,19 +109,23 @@ const getMatchesAndDecorations = (
     return { results: [], decorations: DecorationSet.empty };
   }
   const r = buildRegex(storage.query, options.caseSensitive ?? false);
-  if (!r) return { results: [], decorations: DecorationSet.empty };
+  if (!r) {
+    storage.activeIndex = -1;
+    return { results: [], decorations: DecorationSet.empty };
+  }
   const results: DocSearchRange[] = [];
+  const { wikilink, noteTag } = state.schema.nodes;
   state.doc.descendants((node, pos) => {
-    const wikilink = node.type.schema.nodes["wikilink"];
-    const noteTag = node.type.schema.nodes["noteTag"];
     if (node.type.name === wikilink?.name || node.type.name === noteTag?.name) {
       const rawText = String(node.attrs["title"] ?? node.attrs["id"] ?? "");
       if (!rawText) return false;
       const searchableText = node.type.name === noteTag?.name ? `#${rawText}` : `[[${rawText}]]`;
-      if (searchableText.search(r) !== -1) {
+      r.lastIndex = 0;
+      if (r.test(searchableText)) {
         results.push({
           from: pos,
           to: pos + node.nodeSize,
+          isNode: true,
         });
       }
       return false;
@@ -298,7 +312,7 @@ export const DocSearch = Extension.create<DocSearchOptions, DocSearchStorage>({
               storage.results = results;
               return decorations;
             }
-            return oldSet;
+            return oldSet.map(tr.mapping, tr.doc);
           },
         },
         props: {

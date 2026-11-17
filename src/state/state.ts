@@ -67,7 +67,6 @@ interface NoteStore {
   visibleIds: Id[];
   noteIndex: Map<Id, NoteListItem>;
   recentNotes: Id[];
-  searchSnippets: Record<Id, string>;
 }
 
 const NOTE_STORE: Readonly<NoteStore> = {
@@ -75,7 +74,6 @@ const NOTE_STORE: Readonly<NoteStore> = {
   visibleIds: [],
   noteIndex: new Map<Id, NoteListItem>(),
   recentNotes: [],
-  searchSnippets: {},
 };
 
 const STATE_STORE_BASE = createStore(STATE_STORE);
