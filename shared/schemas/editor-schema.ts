@@ -2,13 +2,6 @@ import { EMPTY_DOC } from "@shared/shared-constants";
 import type { JSONContent } from "@tiptap/core";
 import z from "zod";
 
-function isEditorDoc(value: unknown): value is JSONContent {
-  if (typeof value !== "object" || value === null) return false;
-  if (!("type" in value) || value.type !== "doc") return false;
-  if (!("content" in value) || !Array.isArray(value.content)) return false;
-  return true;
-}
-
 const EditorDocSchema: z.ZodType<JSONContent> = z
   .object({
     type: z.literal("doc"),
@@ -31,4 +24,4 @@ const DbContentCodec = z.codec(z.string(), EditorDocSchema, {
   encode: (doc) => JSON.stringify(doc),
 });
 
-export { DbContentCodec, EditorDocSchema, isEditorDoc };
+export { DbContentCodec, EditorDocSchema };

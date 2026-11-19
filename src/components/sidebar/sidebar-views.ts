@@ -167,4 +167,4 @@ function sidebarListener() {
   });
 }
 
-export { applyView, matchesActiveTag, restoreSidebarScope, sidebarListener };
+export { applyView, restoreSidebarScope, sidebarListener };

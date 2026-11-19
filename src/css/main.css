@@ -267,10 +267,6 @@
   display: none;
 }
 
-#math-input::selection {
-  background-color: var(--selection-bg);
-}
-
 #math-input::-webkit-scrollbar-corner {
   background: transparent;
 }

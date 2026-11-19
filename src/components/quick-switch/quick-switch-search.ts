@@ -8,7 +8,7 @@ import {
   toDisplayBadges,
 } from "@/components/quick-switch/quick-switch-actions";
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
-import { sanitizeSnippets } from "@/components/sidebar/sidebar-note-items";
+import { sanitizeSnippets } from "@/components/sidebar/sidebar-ui";
 import { noteStore } from "@/state/state";
 import { rendererLogger, withLatestGuard } from "@/utils/helpers";
 import type {
@@ -257,4 +257,4 @@ function findExactMatch(doc: PMNode, snippet?: string) {
   return foundPos;
 }
 
-export { filterTitles, findExactMatch, handleSearch };
+export { filterTitles, findExactMatch };

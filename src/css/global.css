@@ -204,6 +204,10 @@ body,
   overflow: clip;
 }
 
+.app-container::selection {
+  background-color: var(--selection-bg);
+}
+
 button {
   z-index: 1;
   display: flex;
