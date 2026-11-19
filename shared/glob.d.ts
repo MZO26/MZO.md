@@ -47,6 +47,7 @@ declare global {
       openAppPath: () => Promise<Result<boolean>>;
     };
     noteAPI: {
+      getPendingOpen: () => Promise<Result<Id | null>>;
       search: (query: SearchQuery) => Promise<Result<SearchResult[]>>;
       getAll: () => Promise<Result<readonly NoteListItem[]>>;
       getAllBackup: () => Promise<Result<readonly Note[]>>;
@@ -61,6 +62,7 @@ declare global {
       onTriggerExport: (
         callback: (ids: Id[], extension: ExportContent["extension"]) => Promise<void>,
       ) => () => void;
+      onTriggerOpenNoteUri: (callback: (id: Id) => Promise<void>) => () => void;
       onTriggerCopyRichText: (callback: (ids: Id[]) => Promise<void>) => () => void;
       onTriggerCopyMarkdown: (callback: (ids: Id[]) => Promise<void>) => () => void;
       noteExportMany: (payload: ExportContent[]) => Promise<Result<ExportContent[]>>;

@@ -10,6 +10,7 @@ import {
 import { batchExport, singleExport, singlePDFExport } from "@electron/fs/fs-export";
 import { removeUnusedImages } from "@electron/fs/fs-image";
 import { batchImport } from "@electron/fs/fs-import";
+import { LinkAppState } from "@electron/handler/link-handler";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import {
@@ -40,6 +41,19 @@ import { ipcMain } from "electron";
 import { BrowserWindow } from "electron/main";
 
 function registerNoteIpc() {
+  ipcMain.handle(
+    IPC_CHANNELS.GET_PENDING_OPEN,
+    withErrorHandling((e) => {
+      validateSender(e);
+      if (!checkRateLimit(IPC_CHANNELS.GET_PENDING_OPEN, LIMITS.READ_LIGHT))
+        throw new AppBackendError(AppErrorCode.RateLimitError);
+      LinkAppState.rendererReady = true;
+      const pending = LinkAppState.queued;
+      LinkAppState.queued = null;
+      return pending;
+    }),
+  );
+
   ipcMain.handle(
     IPC_CHANNELS.GET_ALL_NOTES,
     withErrorHandling((e) => {

@@ -47,14 +47,6 @@ const createDecorations = (
   options: DocSearchOptions,
 ) => {
   if (results.length === 0) return DecorationSet.empty;
-  console.log(
-    "RENDER DECORATIONS -> activeIndex:",
-    activeIndex,
-    "activeRange:",
-    results[activeIndex],
-    "all:",
-    results,
-  );
   return DecorationSet.create(
     doc,
     results.map((result, i) => {

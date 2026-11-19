@@ -60,6 +60,7 @@ if (process.contextIsolated) {
       openAppPath: () => ipcRenderer.invoke(IPC_CHANNELS.OPEN_APP_PATH),
     });
     contextBridge.exposeInMainWorld("noteAPI", {
+      getPendingOpen: () => ipcRenderer.invoke(IPC_CHANNELS.GET_PENDING_OPEN),
       search: (query: SearchQuery) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_SEARCH, query),
       getAll: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_NOTES),
       getAllBackup: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ALL_NOTES_BACKUP),
@@ -77,6 +78,9 @@ if (process.contextIsolated) {
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_IMPORT, payload),
       onTriggerExport: (callback: (ids: Id[], extension: ExportRequest["extension"]) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_EXPORT, callback);
+      },
+      onTriggerOpenNoteUri: (callback: (id: Id) => void) => {
+        subscribe(IPC_CHANNELS.TRIGGER_OPEN_NOTE_URI, callback);
       },
       onTriggerCopyRichText: (callback: (ids: Id[]) => void) => {
         subscribe(IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT, callback);

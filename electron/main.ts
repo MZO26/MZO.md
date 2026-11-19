@@ -2,6 +2,7 @@ import { setUpEditorMenu } from "@electron/context-menu";
 import db from "@electron/db/database";
 import { initBackupScheduler } from "@electron/fs/fs-backup";
 import { setupGlobalErrorHandling } from "@electron/handler/global-handler";
+import { handleUrl, LinkAppState, PROTOCOL } from "@electron/handler/link-handler";
 import {
   navigationHandler,
   registerCustomProtocol,
@@ -29,7 +30,7 @@ import { fileURLToPath } from "node:url";
 
 const FLUSH_TIMEOUT_MS = 5000;
 
-let win: BrowserWindow | null = null;
+export let win: BrowserWindow | null = null;
 let isReadyToClose = false;
 let isFlushing = false;
 let flushTimeout: NodeJS.Timeout | null = null;
@@ -38,15 +39,22 @@ export function getMainWindow(): BrowserWindow | null {
   return win && !win.isDestroyed() ? win : null;
 }
 
+if (process.defaultApp && process.argv.length >= 2) {
+  const uri = process.argv[1];
+  if (uri) {
+    app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [path.resolve(uri)]);
+  }
+} else app.setAsDefaultProtocolClient(PROTOCOL);
+
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
 } else {
-  app.on("second-instance", () => {
-    if (win) {
-      if (win.isMinimized()) win.restore();
-      win.focus();
-    }
+  app.on("second-instance", (_e, argv) => {
+    const url = argv.find((a) => a.startsWith(`${PROTOCOL}`));
+    if (win?.isMinimized()) win.restore();
+    win?.focus();
+    if (url && win) handleUrl(win, url);
   });
 }
 
@@ -122,9 +130,6 @@ async function createWindow() {
   win.once("ready-to-show", () => {
     win?.show();
   });
-  win.webContents.on("did-finish-load", () => {
-    win?.webContents.setZoomFactor(1.1);
-  });
   win.on("close", (e) => {
     if (win?.isDestroyed()) return;
     if (!isReadyToClose) {
@@ -145,7 +150,14 @@ async function createWindow() {
       return;
     }
   });
+  win.webContents.on("did-start-loading", () => {
+    LinkAppState.rendererReady = false;
+  });
+  win.webContents.on("did-finish-load", () => {
+    win?.webContents.setZoomFactor(1.1);
+  });
   win.on("closed", () => {
+    LinkAppState.rendererReady = false;
     win = null;
   });
   if (!app.isPackaged && process.env["ELECTRON_RENDERER_URL"]) {
@@ -176,12 +188,14 @@ app
       currentWin?.close();
     });
     registerIpc();
-    await createWindow();
+    const win = await createWindow();
+    const url = process.argv.find((a) => a.startsWith(`${PROTOCOL}://`));
+    handleUrl(win, LinkAppState.pendingUrl ?? url ?? "");
     const backupDir = path.join(app.getPath("userData"), "Backups");
     initBackupScheduler(backupDir);
     nativeTheme.on("updated", () => {
-      const currentSettings = settingsService.getSettings();
-      onOSThemeChange(currentSettings.theme);
+      const theme = settingsService.get("theme");
+      onOSThemeChange(theme);
     });
   })
   .catch((error: unknown) => mainLogger.appError("Error during app start", error));
@@ -190,6 +204,12 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     void createWindow();
   }
+});
+
+app.on("open-url", (e, url) => {
+  e.preventDefault();
+  if (app.isReady() && win) handleUrl(win, url);
+  else LinkAppState.pendingUrl = url;
 });
 
 app.on("will-quit", () => {

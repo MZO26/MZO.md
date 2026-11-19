@@ -13,6 +13,7 @@ const IPC_CHANNELS = {
   GET_ALL_SETTINGS: "setting:get-all-settings",
   SET_SETTING: "setting:set-setting",
   // note api
+  GET_PENDING_OPEN: "note:get-pending-open",
   GET_ALL_NOTES: "note:get-all-notes",
   GET_ALL_NOTES_BACKUP: "note:get-all-notes-backup",
   NOTE_SEARCH: "note:note-search",
@@ -43,6 +44,7 @@ const IPC_CHANNELS = {
   TRIGGER_PIN: "callback:trigger-pin",
   TRIGGER_SELECT: "callback:trigger-select",
   REQUEST_FLUSH: "callback:request-flush",
+  TRIGGER_OPEN_NOTE_URI: "callback:open-note-uri",
   TRIGGER_COPY_SELECTION_RICH_TEXT: "callback:copy-selection-rich-text",
   TRIGGER_COPY_SELECTION_MARKDOWN: "callback:copy-selection-markdown",
   TRIGGER_EXTRACT_SELECTION: "callback:trigger-extract",

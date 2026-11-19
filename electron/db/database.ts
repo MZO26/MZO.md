@@ -15,6 +15,7 @@ import {
   NoteListItemFromDB,
   RelatedNotesSchema,
   TagsSchema,
+  TitleAndIdSchema,
   type BoolDb,
   type DbCreateArgs,
   type DbUpdateArgs,
@@ -39,6 +40,7 @@ import {
 import { app } from "electron";
 import { backup, DatabaseSync, type StatementSync } from "node:sqlite";
 import path from "path";
+import z from "zod";
 
 class AppDB {
   private db: DatabaseSync | undefined;
@@ -61,6 +63,7 @@ class AppDB {
   private updateStoreStmt!: StatementSync;
   private getAllSettingsStmt!: StatementSync;
   private getRelatedNotesStmt!: StatementSync;
+  private checkForNotesStmt!: StatementSync;
   constructor() {
     this.dbPath = path.join(app.getPath("userData"), "app.db");
   }
@@ -212,6 +215,11 @@ class AppDB {
       GROUP BY n.id, n.title
       ORDER BY matches DESC, n.title ASC
       LIMIT 5;
+      `);
+    this.checkForNotesStmt = db.prepare(`
+      SELECT id, title 
+      FROM notes
+      WHERE id in (SELECT value FROM json_each($ids))
       `);
     this.updateStoreStmt = db.prepare(`
       UPDATE store SET
@@ -560,6 +568,15 @@ class AppDB {
       $note_id: id,
     }) as ImageRow[];
     return row.map((r) => validation(ImageRowSchema, r).image_hash);
+  }
+
+  public checkForNotes(ids: Id[]) {
+    const row = this.checkForNotesStmt.all({ $ids: JSON.stringify(ids) }) as {
+      id: Id;
+      title: string;
+    }[];
+    const valid = validation(z.array(TitleAndIdSchema), row);
+    return new Map(valid.map((r) => [r.id, r.title]));
   }
 
   public getSearch(): NotesSearch {

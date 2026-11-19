@@ -1,3 +1,4 @@
+import { copyNoteLinks } from "@electron/handler/link-handler";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { ExternalUrlSchema } from "@shared/schemas/electron-schema";
@@ -240,6 +241,10 @@ function setUpNoteMenu(win: BrowserWindow, payload: NoteMenuPayload) {
     {
       label: "Copy...",
       submenu: [
+        {
+          label: "Note URI",
+          click: () => void copyNoteLinks(selectedIds),
+        },
         {
           label: "Rich Text",
           click: () => win.webContents.send(IPC_CHANNELS.TRIGGER_COPY_RICH_TEXT, selectedIds),

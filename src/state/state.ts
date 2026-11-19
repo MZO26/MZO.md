@@ -283,7 +283,12 @@ function withStorage<T extends Record<string, unknown>>(
           for (const stateKey of Object.keys(currentState)) {
             if (Object.hasOwn(currentState, stateKey) && Object.hasOwn(parsed, stateKey)) {
               const incomingValue = parsed[stateKey];
-              if (typeof currentState[stateKey] === typeof incomingValue) {
+              const currentValue = currentState[stateKey];
+              const isSameType = typeof currentValue === typeof incomingValue;
+              const isFallbackAllowed =
+                (currentValue === null || currentValue === undefined) &&
+                incomingValue !== undefined;
+              if (isSameType || isFallbackAllowed) {
                 nextState[stateKey] = incomingValue;
               }
             }

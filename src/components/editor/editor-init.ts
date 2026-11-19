@@ -217,11 +217,13 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
     /* eslint-disable @typescript-eslint/no-misused-promises */
     [APP_EVENTS.APPLY_VIEW]: async (id: string) => {
       const normalizedTag = id.trim().toLowerCase();
-      const { activeId, isDirty } = stateStore.getState();
+      const { activeId, isDirty, activeTag } = stateStore.getState();
       if (!normalizedTag || !activeId) return;
       const saved = isDirty ? await waitForFlush(activeId) : true;
       if (!saved) return;
-      await applyView(normalizedTag);
+      if (!activeTag || activeTag !== normalizedTag) {
+        await applyView(normalizedTag);
+      } else await applyView(null);
     },
     [APP_EVENTS.HANDLE_WIKILINK_CLICK]: async ({
       id,
@@ -237,7 +239,6 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
         if (!noteId) return;
         await handleSelectNote(noteId);
         await waitForFlush(noteId);
-        /* eslint-enable @typescript-eslint/no-misused-promises */
         restoreSidebarScope();
         return;
       }

@@ -43,6 +43,10 @@ async function search(query: SearchQuery): Promise<Result<SearchResult[]>> {
   return invoke(window.noteAPI.search(query));
 }
 
+async function getPendingOpen(): Promise<Result<Id | null>> {
+  return invoke(window.noteAPI.getPendingOpen());
+}
+
 async function getAll(): Promise<Result<readonly NoteListItem[]>> {
   return invoke(window.noteAPI.getAll());
 }
@@ -174,6 +178,7 @@ export {
   getAllSettings,
   getManyById,
   getNoteById,
+  getPendingOpen,
   getRelatedNotes,
   handleZoom,
   imageWriteMany,

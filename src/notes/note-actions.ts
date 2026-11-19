@@ -4,6 +4,7 @@ import {
   deleteManyNotes,
   deleteNote,
   getNoteById,
+  getPendingOpen,
   importNote,
   showNotification,
   updateNote,
@@ -33,7 +34,9 @@ import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
 import { debounce, omitKeys, rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
+import { createGlobalSpinner } from "@/utils/ui";
 import {
+  isNoteID,
   type CreateNotePayload,
   type Id,
   type Note,
@@ -641,6 +644,29 @@ async function handleDuplicateNote(note: Readonly<Note>) {
   stateStore.setState({ hoverId: null });
 }
 
+async function openInitialNote(notes: readonly NoteListItem[]) {
+  const lastOpenId = localStore.get("lastOpenNote");
+  const isAvailable = (id: unknown): id is Id =>
+    !!id && isNoteID(id) && notes.some((n) => n.id === id);
+  let targetId: Id | null = null;
+  const pending = await getPendingOpen();
+  rendererLogger.devLog(
+    "[openInitialNote]: Pending URI request?",
+    pending.success ? pending.data : null,
+  );
+  if (pending.success && isAvailable(pending.data)) {
+    targetId = pending.data;
+  } else {
+    if (isAvailable(lastOpenId)) {
+      targetId = lastOpenId;
+    }
+  }
+  if (targetId) {
+    const loading = createGlobalSpinner();
+    await loading.wrap(() => handleSelectNote(targetId));
+  }
+}
+
 export {
   debouncedSaveNote,
   handleCreateNote,
@@ -650,5 +676,6 @@ export {
   handleExtractToNote,
   handleImportNote,
   handleSelectNote,
+  openInitialNote,
   waitForFlush,
 };

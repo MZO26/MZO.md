@@ -128,10 +128,12 @@ const DbCreateSchema = CreateNotePayloadSchema.omit({
   pinned: true,
 }).extend({ content: z.string(), pinned: BoolDbSchema });
 
-const SearchResultSchema = NoteSchema.pick({
+const TitleAndIdSchema = NoteSchema.pick({
   id: true,
   title: true,
-}).extend({
+});
+
+const SearchResultSchema = TitleAndIdSchema.extend({
   search_match: QuerySchema,
   rank: z.number(),
 });
@@ -166,6 +168,7 @@ type Note = z.infer<typeof NoteSchema>;
 type Id = z.infer<typeof IdSchema>;
 type RelatedNotes = z.infer<typeof RelatedNotesSchema>;
 type ImageRow = z.infer<typeof ImageRowSchema>;
+type TitleAndId = z.infer<typeof TitleAndIdSchema>;
 
 export {
   BoolDbSchema,
@@ -186,6 +189,7 @@ export {
   QuerySchema,
   RelatedNotesSchema,
   TagsSchema,
+  TitleAndIdSchema,
   UpdateNotePayloadSchema,
   type BoolDb,
   type CreateNotePayload,
@@ -205,6 +209,7 @@ export {
   type SearchResult,
   type Tag,
   type TagRow,
+  type TitleAndId,
   type UpdateNotePayload,
   type UpdateTransaction,
 };

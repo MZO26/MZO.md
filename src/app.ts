@@ -6,9 +6,8 @@ import { initQuickSwitcher } from "@/components/quick-switch/quick-switch-init";
 import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { initToolbar } from "@/components/toolbar/toolbar-init";
-import { handleSelectNote } from "@/notes/note-actions";
+import { openInitialNote } from "@/notes/note-actions";
 import { applySettings } from "@/settings/setting-actions";
-import { localStore } from "@/state/state";
 import { initSubscriptions } from "@/state/state-init";
 import { syncNoteStore, syncSettingsStore, syncStateStore } from "@/state/state-sync";
 import { startAppClock } from "@/utils/date";
@@ -22,8 +21,6 @@ import {
   useCore,
 } from "@/utils/registry";
 import { initGlobalShortcuts } from "@/utils/shortcuts";
-import { createGlobalSpinner } from "@/utils/ui";
-import { isNoteID } from "@shared/schemas/note-schema";
 
 async function initApp() {
   const notesResult = await getAll();
@@ -56,11 +53,7 @@ async function initApp() {
   initQuickSwitcher(editor);
   await applySettings(settings);
   renderIcons();
-  const lastOpenNoteId = localStore.get("lastOpenNote");
-  if (isNoteID(lastOpenNoteId) && notesResult.data.some((n) => n.id === lastOpenNoteId)) {
-    const loading = createGlobalSpinner(100);
-    await loading.wrap(() => handleSelectNote(lastOpenNoteId));
-  }
+  await openInitialNote(notesResult.data);
   restoreSidebarScope();
 }
 await withPerformanceLog(initApp)();

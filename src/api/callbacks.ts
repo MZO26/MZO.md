@@ -17,7 +17,7 @@ import {
   triggerSingleExport,
   triggerTableMenu,
 } from "@/components/sidebar/sidebar-triggers";
-import { debouncedSaveNote } from "@/notes/note-actions";
+import { debouncedSaveNote, handleSelectNote } from "@/notes/note-actions";
 import { settingsStore, stateStore } from "@/state/state";
 import { CODE_THEME_MAP } from "@/utils/constants";
 import { rendererLogger } from "@/utils/helpers";
@@ -36,6 +36,11 @@ function initListeners() {
       return;
     }
     await exportSelection(ids, extension);
+  });
+
+  window.noteAPI.onTriggerOpenNoteUri(async (id: Id) => {
+    const loading = createGlobalSpinner();
+    await loading.wrap(() => handleSelectNote(id));
   });
 
   window.noteAPI.onTriggerCopyRichText(async (ids: Id[]) => {
