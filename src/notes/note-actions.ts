@@ -25,16 +25,18 @@ import {
 import { initEditorContent } from "@/components/editor/editor-init";
 import { updateStats } from "@/components/editor/editor-ui";
 import { findExactMatch } from "@/components/quick-switch/quick-switch-search";
-import { applyView } from "@/components/sidebar/sidebar-views";
+import { applyView, restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { addHeadingToDoc } from "@/extensions/overrides/headings";
 import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
 import { downgradeDocLinks } from "@/extensions/wikilink/wikilink-handler";
 import { setImportedContent } from "@/notes/import-actions";
+import type { WelcomeNote } from "@/notes/welcome-note";
 import { localStore, noteStore, stateStore } from "@/state/state";
 import { DEBOUNCE_MS, UNTAGGED } from "@/utils/constants";
-import { debounce, omitKeys, rendererLogger } from "@/utils/helpers";
+import { debounce, omitKeys, rendererLogger, withPerformanceLog } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
 import { createGlobalSpinner } from "@/utils/ui";
+import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
 import {
   isNoteID,
   type CreateNotePayload,
@@ -207,6 +209,8 @@ async function handleImportNote(request: FilePathRequest) {
       noteIndex,
     };
   });
+  const activeTag = stateStore.get("activeTag");
+  if (activeTag) await applyView(null);
   stateStore.setState({ hoverId: null });
 }
 
@@ -389,6 +393,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
   const activeTag = stateStore.get("activeTag");
   const isActiveNote = stateStore.get("activeId") === id;
   const notes = noteStore.get("notes");
+  const prevNote = notes.find((n) => n.id === result.data.id);
   const updatedNotes = notes.map((n) => (n.id === result.data.id ? result.data : n));
   const tagStillExists =
     activeTag === null ||
@@ -404,8 +409,15 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
     };
   });
   stateStore.setState({ isDirty: false });
-  if (!tagStillExists) {
-    await applyView(null, updatedNotes);
+  if (activeTag) {
+    const hadTag = prevNote?.tags.includes(activeTag) ?? false;
+    const hasTag = result.data.tags.includes(activeTag);
+    if (!tagStillExists) {
+      await applyView(null, updatedNotes);
+    } else if (hadTag !== hasTag) {
+      rendererLogger.devLog("[handleSaveNote]: Refreshing sidebar scope for active tag");
+      restoreSidebarScope(updatedNotes);
+    }
   }
   if (isActiveNote) {
     updateStats(editor);
@@ -546,9 +558,8 @@ async function handleSelectNote(
 /**
  * Extracts a content selection into a new standalone note, linking it back to the source.
  *
- * Wraps the provided `content` fragment into a full document (`ensureEditorDoc`),
- * injects the active tag, and builds a create payload. The source note's id is
- * appended to the `links` array so the new note carries a back-reference to
+ * Wraps the provided `content` fragment into a full document (`ensureEditorDoc`) and builds a create payload.
+ *  The source note's id is appended to the `links` array  * so the new note carries a back-reference to
  * where it was extracted from. Calls `createNote`, then on success:
  * - Prepends the new note to `notes`, `visibleIds`, and `noteIndex`.
  * - Clears `hoverId`.
@@ -570,17 +581,15 @@ async function handleSelectNote(
 async function handleExtractToNote(id: Id, content: JSONContent) {
   const doc = ensureEditorDoc(content);
   if (!doc) return;
-  const activeTag = stateStore.get("activeTag");
-  const editorContent = addActiveTagToDoc(doc, activeTag);
-  const text = extractText(editorContent);
-  const extractedData = walkDoc(editorContent);
+  const text = extractText(doc);
+  const extractedData = walkDoc(doc);
   const payload: CreateNotePayload = {
-    content: editorContent,
-    snippet: snippetGenerator(editorContent),
+    content: doc,
+    snippet: snippetGenerator(doc),
     plain_text: text,
     ...extractedData,
     links: [...extractedData.links, id],
-    title: titleGenerator(editorContent) ?? UNTITLED,
+    title: titleGenerator(doc) ?? UNTITLED,
     pinned: false,
   };
   const result = await createNote(payload);
@@ -595,6 +604,86 @@ async function handleExtractToNote(id: Id, content: JSONContent) {
   }));
   stateStore.setState({ hoverId: null });
   return { id: result.data.id, title: result.data.title };
+}
+
+/**
+ * Creates a pinned welcome/onboarding note from raw markdown content.
+ *
+ * Pipeline:
+ * 1. Parses `note.content` (Markdown) into an editor JSON string
+ *    (`workOnMarkdownParsing`, wrapped in performance logging).
+ * 2. Deserialises the string via `JSON.parse`.
+ * 3. Validates & normalises through `ensureEditorDoc`.
+ * 4. Derives `plain_text`, `snippet`, and extracted data (tags, links)
+ *    from the final doc tree.
+ *
+ * All three parsing/validation steps are independent failure points –
+ * each logs an `appError` and returns early (void) without calling the API.
+ *
+ * On success:
+ * - Calls `createNote` with `pinned: true` and the source `note.title`.
+ * - Prepends the new note to `notes`, `visibleIds`, and `noteIndex`.
+ * - If an `activeTag` filter is currently applied, resets it via
+ *   `applyView(null)` so the new pinned note is immediately visible.
+ * - Clears `hoverId` and (in applyView) `activeTag`.
+ *
+ * Does NOT navigate to or select the new note – callers are responsible
+ * for that if desired.
+ *
+ * @param note The welcome note definition (markdown `content` + `title`).
+ *             Treated as read-only; never mutated.
+ *
+ * @returns The id of the newly created note, or `undefined` on any
+ *          parsing/validation/API failure.
+ *
+ * @example
+ * const welcome = { title: "Welcome", content: "..." };
+ * const id = await handleCreateWelcomeNote(welcome);
+ * if (id) handleSelectNote(id); // optional, caller's responsibility
+ */
+
+async function handleCreateWelcomeNote(note: WelcomeNote) {
+  const parsed = await withPerformanceLog(workOnMarkdownParsing)(note.content);
+  if (!parsed.success) {
+    rendererLogger.appError("[handleCreateWelcomeNote]: Failed to parse markdown into json");
+    return;
+  }
+  let rawDoc: unknown;
+  try {
+    rawDoc = JSON.parse(parsed.data);
+  } catch (error) {
+    rendererLogger.appError("[handleCreateWelcomeNote]: Failed to parse editor JSON:", error);
+    return;
+  }
+  const doc = ensureEditorDoc(rawDoc);
+  if (!doc) {
+    rendererLogger.appError("[handleCreateWelcomeNote]: No valid editor doc");
+    return;
+  }
+  const text = extractText(doc);
+  const extractedData = walkDoc(doc);
+  const payload: CreateNotePayload = {
+    content: doc,
+    snippet: snippetGenerator(doc),
+    plain_text: text,
+    ...extractedData,
+    title: note.title,
+    pinned: true,
+  };
+  const result = await createNote(payload);
+  if (!result.success) {
+    rendererLogger.appError("[handleCreateWelcomeNote]: Failed to create note:", result.error);
+    return;
+  }
+  noteStore.setState((state) => ({
+    notes: [result.data, ...state.notes],
+    visibleIds: [result.data.id, ...state.visibleIds],
+    noteIndex: new Map(state.noteIndex).set(result.data.id, result.data),
+  }));
+  const activeTag = stateStore.get("activeTag");
+  if (activeTag) await applyView(null);
+  stateStore.setState({ hoverId: null });
+  return result.data.id;
 }
 
 /**
@@ -644,23 +733,50 @@ async function handleDuplicateNote(note: Readonly<Note>) {
   stateStore.setState({ hoverId: null });
 }
 
-async function openInitialNote(notes: readonly NoteListItem[]) {
+/**
+ * Resolves and opens the initial note on app startup.
+ *
+ * Resolution priority (first match wins):
+ * 1. **Pending URI request** – a deep-link / protocol-handler open that was
+ *    queued before the renderer finished booting (`getPendingOpen`).
+ * 2. **Last opened note** – persisted in `localStore` under `"lastOpenNote"`.
+ *
+ * Both candidates are validated through the same guard: the id must be
+ * truthy, pass `isNoteID`, **and** exist in the provided `notes` list.
+ * A stale or orphaned id is silently discarded (no error, no fallback
+ * beyond the next priority level).
+ *
+ * On success:
+ * - Shows a global loading spinner.
+ * - Awaits `handleSelectNote(targetId)` inside the spinner wrapper.
+ *
+ * Does NOT modify the notes list, update `recentNotes`, or touch the
+ * editor state directly – all of that is delegated to `handleSelectNote`.
+ * If neither candidate resolves to a valid id, the function is a no-op.
+ *
+ * @param notes The current, read-only list of note summaries available in
+ *             this session. Used solely for existence validation; never mutated.
+ *
+ * @example
+ * // Typically called once during renderer bootstrap:
+ * await openInitialNote(noteStore.get("notes"));
+ */
+
+async function openInitialNote(notes: readonly NoteListItem[], fallbackId?: Id) {
   const lastOpenId = localStore.get("lastOpenNote");
   const isAvailable = (id: unknown): id is Id =>
     !!id && isNoteID(id) && notes.some((n) => n.id === id);
-  let targetId: Id | null = null;
   const pending = await getPendingOpen();
   rendererLogger.devLog(
     "[openInitialNote]: Pending URI request?",
     pending.success ? pending.data : null,
   );
-  if (pending.success && isAvailable(pending.data)) {
-    targetId = pending.data;
-  } else {
-    if (isAvailable(lastOpenId)) {
-      targetId = lastOpenId;
-    }
-  }
+  const candidates: readonly unknown[] = [
+    pending.success ? pending.data : null,
+    lastOpenId,
+    fallbackId,
+  ];
+  const targetId = candidates.find(isAvailable);
   if (targetId) {
     const loading = createGlobalSpinner();
     await loading.wrap(() => handleSelectNote(targetId));
@@ -670,6 +786,7 @@ async function openInitialNote(notes: readonly NoteListItem[]) {
 export {
   debouncedSaveNote,
   handleCreateNote,
+  handleCreateWelcomeNote,
   handleDeleteManyNotes,
   handleDeleteNote,
   handleDuplicateNote,

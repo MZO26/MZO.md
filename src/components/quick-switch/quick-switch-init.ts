@@ -93,7 +93,6 @@ function initQuickSwitcher(editor: Editor) {
   const debouncedTitleFilter = debounce((e: Event) => {
     if (!(e.target instanceof HTMLInputElement)) return;
     const value = (e.target.value ?? "").trim();
-    if (value.slice(1).trim() === "?") return;
     void filterTitles(value, qsState).catch(rendererLogger.devLog);
   }, DEBOUNCE_MS.very_fast);
 

@@ -2,6 +2,7 @@ import { pinWindow } from "@/api/api";
 import {
   backupDb,
   exportCommand,
+  handleOpenWelcomeNote,
   openPath,
   restoreDbBackup,
   setEditorWidth,
@@ -155,20 +156,18 @@ const settingsCommands: Record<SettingEventStrings, SettingCommands> = {
   },
   "setting:toggle-focus-mode": {
     run: () => {
-      const newState = !isFocusActive();
-      stateStore.setState({ focus: newState });
+      stateStore.setState({ focus: !isFocusActive() });
     },
     isActive: () => !!stateStore.get("focus"),
     label: "TOGGLE_FOCUS_MODE",
   },
-  "setting:toggle-sticky-window": {
+  "setting:toggle-pin-window": {
     run: async () => {
       await pinWindow().catch(rendererLogger.appError);
-      const prev = stateStore.get("appPinned") === true;
-      stateStore.setState({ appPinned: !prev });
+      stateStore.setState({ appPinned: !stateStore.get("appPinned") });
     },
     isActive: () => !!stateStore.get("appPinned"),
-    label: "TOGGLE_STICKY_WINDOW",
+    label: "TOGGLE_PIN_WINDOW",
   },
   "setting:toggle-toolbar": {
     run: () => {
@@ -197,6 +196,11 @@ const settingsCommands: Record<SettingEventStrings, SettingCommands> = {
   "setting:export-text": exportCommand("txt"),
   "setting:export-html": exportCommand("html"),
   "setting:export-pdf": exportCommand("pdf"),
+  "setting:create-welcome-note": {
+    run: async () => await handleOpenWelcomeNote(),
+    isActive: () => false,
+    label: "CREATE_WELCOME_NOTE",
+  },
 };
 
 export { settingsCommands };

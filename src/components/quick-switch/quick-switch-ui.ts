@@ -9,11 +9,10 @@ import { settingsCommands } from "@/settings/settings-commands";
 import { settingsStore, stateStore } from "@/state/state";
 import { NOTE_SECTION, UNTAGGED } from "@/utils/constants";
 import { useCore, useDialog } from "@/utils/registry";
+import { IS_MAC, KEY_LABELS } from "@/utils/shortcuts";
 import type { QuickSwitchDisplayBadge, Sections, ShortcutToken } from "@/utils/types";
 import { createGlobalSpinner, createInfoSpan, createTooltipContent } from "@/utils/ui";
 import type { Id } from "@shared/schemas/note-schema";
-
-const IS_MAC: boolean = window.env.isMac ?? navigator.userAgent.includes("Mac");
 
 function getSectionLabel(section: Sections, count: Record<Sections, number>) {
   switch (section) {
@@ -79,7 +78,7 @@ function createSectionHeader(section: Sections, qsState: Readonly<QuickSwitchSta
 }
 
 function createOptionEl(
-  item: QuickSwitchDisplayBadge,
+  item: Readonly<QuickSwitchDisplayBadge>,
   index: number,
   activeIndex: number,
   activeId: Id | null,
@@ -151,11 +150,7 @@ async function selectActive(
         editor.chain().focus().insertNoteTag({ from: pos, to: pos, id: normalized }).run();
         return;
       }
-      if (activeTag === clickedTag) {
-        await applyView(null);
-      } else {
-        await applyView(clickedTag);
-      }
+      await applyView(activeTag === clickedTag ? null : clickedTag);
       return;
     }
     case "wikilink": {
@@ -214,7 +209,7 @@ async function selectActive(
     }
     case "fulltext": {
       const { switchListSearchInput } = useDialog("switchListSearchInput");
-      const normalized = switchListSearchInput.value.trim().slice(1);
+      const normalized = switchListSearchInput.value.trim() ?? "";
       const loading = createGlobalSpinner();
       await loading.wrap(() =>
         handleSelectNote(selected.id, {
@@ -243,22 +238,19 @@ function updateSelection(qsState: Readonly<QuickSwitchState>) {
   }
 }
 
-const KEY_LABELS: Record<ShortcutToken, string> = {
-  mod: IS_MAC ? "⌘" : "Ctrl+",
-  alt: IS_MAC ? "⌥" : "Alt+",
-  shift: "⇧",
-  enter: "↵",
-};
+function isShortcutToken(token: string): token is ShortcutToken {
+  return Object.hasOwn(KEY_LABELS, token);
+}
 
-function formatShortcut(combo: string): string {
+function formatShortcut(combo: string) {
   return combo
     .toLowerCase()
     .split("+")
     .map((part) => {
       const k = part.trim();
-      return k in KEY_LABELS ? KEY_LABELS[k as ShortcutToken] : k.toUpperCase();
+      return isShortcutToken(k) ? KEY_LABELS[k] : k.toUpperCase();
     })
-    .join("");
+    .join(IS_MAC ? "" : "+");
 }
 
 function setShortcuts(root: ParentNode = document) {

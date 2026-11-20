@@ -7,7 +7,9 @@ import { initNotesSidebar } from "@/components/sidebar/sidebar-init";
 import { restoreSidebarScope } from "@/components/sidebar/sidebar-views";
 import { initToolbar } from "@/components/toolbar/toolbar-init";
 import { openInitialNote } from "@/notes/note-actions";
+import { maybeSeedWelcomeNote } from "@/notes/welcome-note";
 import { applySettings } from "@/settings/setting-actions";
+import { noteStore } from "@/state/state";
 import { initSubscriptions } from "@/state/state-init";
 import { syncNoteStore, syncSettingsStore, syncStateStore } from "@/state/state-sync";
 import { startAppClock } from "@/utils/date";
@@ -53,8 +55,10 @@ async function initApp() {
   initQuickSwitcher(editor);
   await applySettings(settings);
   renderIcons();
-  await openInitialNote(notesResult.data);
+  const seededId = await maybeSeedWelcomeNote(settings);
+  await openInitialNote(noteStore.get("notes"), seededId);
   restoreSidebarScope();
 }
 await withPerformanceLog(initApp)();
+
 rendererLogger.devLog("App started successfully");

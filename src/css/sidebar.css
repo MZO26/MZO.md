@@ -38,6 +38,10 @@
   contain: content;
 }
 
+.notes-container:has(> .sidebar-empty-state) {
+  overflow-y: hidden;
+}
+
 .sidebar-notes {
   background-color: var(--bg-sidebar);
   overflow: hidden;
@@ -85,7 +89,7 @@
   justify-content: center;
   white-space: normal;
   height: 100%;
-  overflow-wrap: anywhere;
+  overflow: clip;
   margin: 0 auto;
   animation: fadeSlideIn 0.4s ease-out forwards;
   opacity: 0;
@@ -342,7 +346,7 @@ input::-webkit-search-cancel-button {
 
 .note-item .icon-div {
   display: none;
-  margin: 0 4px 12px 0;
+  margin: 0 4px 10px 0;
 }
 
 .note-item[data-pinned="true"] .icon-div {

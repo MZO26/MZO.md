@@ -5,8 +5,6 @@ import {
   titleGenerator,
   walkDoc,
 } from "@/components/editor/editor-generators";
-import { addActiveTagToDoc } from "@/extensions/tag/tag-handler";
-import { stateStore } from "@/state/state";
 import { DOMPURIFY_CONFIG } from "@/utils/constants";
 import { rendererLogger, withPerformanceLog } from "@/utils/helpers";
 import { workOnMarkdownParsing } from "@/utils/workers/worker-init";
@@ -54,25 +52,23 @@ async function normalizeFileContent(file: ImportContent): Promise<JSONContent | 
 async function setImportedContent(files: ImportContent[]): Promise<Result<CreateNotePayload[]>> {
   try {
     const processedPayloads: CreateNotePayload[] = [];
-    const activeTag = stateStore.get("activeTag");
     const extensions = getCachedEditorExtensions();
     for (const file of files) {
       const content = file.content;
       const json = await normalizeFileContent({ ...file, content });
       if (!json) {
         rendererLogger.appError(
-          `[setImportedContent]: Skipping file (${file.extension}), normalizeFileContent returned undefined. Content length: ${content?.length}`,
+          `[setImportedContent]: Skipping file (${file.extension}), normalizeFileContent returned undefined.\nContent length: ${content?.length}`,
         );
         continue;
       }
-      const updatedJson = addActiveTagToDoc(json, activeTag);
-      const text = generateText(updatedJson, extensions);
+      const text = generateText(json, extensions);
       const payload: CreateNotePayload = {
-        title: titleGenerator(updatedJson),
-        snippet: snippetGenerator(updatedJson),
-        content: updatedJson,
+        title: titleGenerator(json),
+        snippet: snippetGenerator(json),
+        content: json,
         plain_text: text,
-        ...walkDoc(updatedJson),
+        ...walkDoc(json),
         pinned: false,
       };
       processedPayloads.push(payload);

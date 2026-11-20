@@ -57,7 +57,7 @@ const LOCAL_STORE: Readonly<LocalStore> = {
   scrollTop: {},
   sidebarWidth: 320,
   editorWidth: "normal",
-  toolbarCollapsed: false,
+  toolbarCollapsed: true,
   sidebarCollapsed: false,
   lastOpenNote: null,
 };

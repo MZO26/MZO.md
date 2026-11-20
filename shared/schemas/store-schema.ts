@@ -21,6 +21,7 @@ const StoreSchema = z.object({
   note_item_display: z.enum(["preview", "minimal"]).catch("preview"),
   window_bounds: WindowBoundsSchema,
   active_tag: z.string().trim().min(1).nullish().catch(null).default(null),
+  welcome_note_seeded: z.boolean().catch(false),
 });
 
 const DbWindowBoundsCodec = z.codec(z.string(), WindowBoundsSchema, {
@@ -39,6 +40,7 @@ const StoreFromDbSchema = z.object({
   note_item_display: StoreSchema.shape["note_item_display"],
   window_bounds: WindowBoundsSchema,
   active_tag: StoreSchema.shape["active_tag"],
+  welcome_note_seeded: BoolSchema,
 });
 
 const StoreRowSchema = z.object({
@@ -52,6 +54,7 @@ const StoreRowSchema = z.object({
   note_item_display: StoreSchema.shape["note_item_display"],
   window_bounds: z.string(),
   active_tag: StoreSchema.shape["active_tag"],
+  welcome_note_seeded: BoolDbSchema,
 });
 
 type StoreRow = z.infer<typeof StoreRowSchema>;
@@ -64,6 +67,7 @@ type FontFamily = AppSettings["font_family"];
 type FontSize = AppSettings["font_size"];
 type LineHeight = AppSettings["line_height"];
 type CodeTheme = AppSettings["code_theme"];
+type WelcomeNoteSeeded = AppSettings["welcome_note_seeded"];
 type AppearanceKeys = Pick<AppSettings, "theme" | "code_theme" | "highlight" | "note_item_display">;
 type EditorKeys = Pick<AppSettings, "font_family" | "font_size" | "line_height" | "spellcheck">;
 
@@ -84,4 +88,5 @@ export {
   type Spellcheck,
   type StoreRow,
   type Theme,
+  type WelcomeNoteSeeded,
 };

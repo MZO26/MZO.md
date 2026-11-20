@@ -1,6 +1,4 @@
-import type { ActionMap } from "@/utils/types";
-
-const TOOLBAR_ACTIONS: ActionMap = {
+const TOOLBAR_ACTIONS = {
   TOGGLE_SIDEBAR: {
     action: "app:toggle-sidebar",
     icon: "SquarePaddingLeft",
@@ -106,6 +104,6 @@ const TOOLBAR_ACTIONS: ActionMap = {
     action: "editor:table",
     icon: "Grid2x2",
   },
-};
+} as const;
 
 export { TOOLBAR_ACTIONS };

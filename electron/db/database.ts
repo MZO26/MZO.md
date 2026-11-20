@@ -232,7 +232,8 @@ class AppDB {
       "highlight" = $highlight,
       "note_item_display" = $note_item_display,
       "window_bounds" = $window_bounds,
-      "active_tag" = $active_tag
+      "active_tag" = $active_tag,
+      "welcome_note_seeded" = $welcome_note_seeded
       WHERE id = 1
       `);
     this.getAllSettingsStmt = db.prepare(`
@@ -294,7 +295,8 @@ class AppDB {
       highlight TEXT NOT NULL DEFAULT 'context',
       note_item_display TEXT NOT NULL DEFAULT 'preview',
       window_bounds TEXT NOT NULL DEFAULT '{"width":1100,"height":800}',
-      active_tag TEXT
+      active_tag TEXT,
+      welcome_note_seeded INTEGER NOT NULL DEFAULT 0
     );
     INSERT OR IGNORE INTO store (id) VALUES (1);
     `);
@@ -371,6 +373,7 @@ class AppDB {
     const encoded = {
       ...mergedSettings,
       spellcheck: DbBoolCodec.encode(mergedSettings.spellcheck),
+      welcome_note_seeded: DbBoolCodec.encode(mergedSettings.welcome_note_seeded),
       window_bounds: DbWindowBoundsCodec.encode(mergedSettings.window_bounds),
     };
     const row = validation(StoreRowSchema, encoded);
@@ -383,6 +386,7 @@ class AppDB {
     const decoded = {
       ...row,
       spellcheck: DbBoolCodec.decode(row.spellcheck),
+      welcome_note_seeded: DbBoolCodec.decode(row.welcome_note_seeded),
       window_bounds: DbWindowBoundsCodec.decode(row.window_bounds),
     };
     return validation(StoreFromDbSchema, decoded);

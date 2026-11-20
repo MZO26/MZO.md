@@ -116,7 +116,7 @@ const SETTING_EVENTS = {
   OPEN_APP_PATH: "setting:open-app-path",
   TOGGLE_SIDEBAR: "setting:toggle-sidebar",
   TOGGLE_FOCUS_MODE: "setting:toggle-focus-mode",
-  TOGGLE_STICKY_WINDOW: "setting:toggle-sticky-window",
+  TOGGLE_PIN_WINDOW: "setting:toggle-pin-window",
   TOGGLE_TOOLBAR: "setting:toggle-toolbar",
   SET_EDITOR_WIDTH_COMFORTABLE: "setting:set-editor-width-comfortable",
   SET_EDITOR_WIDTH_NORMAL: "setting:set-editor-width-normal",
@@ -125,6 +125,7 @@ const SETTING_EVENTS = {
   EXPORT_TEXT: "setting:export-text",
   EXPORT_HTML: "setting:export-html",
   EXPORT_PDF: "setting:export-pdf",
+  CREATE_WELCOME_NOTE: "setting:create-welcome-note",
 } as const;
 
 const DEFAULT_SETTINGS: Readonly<AppSettings> = {
@@ -138,6 +139,7 @@ const DEFAULT_SETTINGS: Readonly<AppSettings> = {
   note_item_display: "preview",
   window_bounds: { width: 800, height: 500 },
   active_tag: null,
+  welcome_note_seeded: false,
 };
 
 export {

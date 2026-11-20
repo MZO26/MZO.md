@@ -10,7 +10,7 @@ import {
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
 import { sanitizeSnippets } from "@/components/sidebar/sidebar-ui";
 import { noteStore } from "@/state/state";
-import { rendererLogger, withLatestGuard } from "@/utils/helpers";
+import { rendererLogger, sleep, withLatestGuard } from "@/utils/helpers";
 import type {
   MappedMatches,
   QuickSwitchDisplayBadge,
@@ -53,6 +53,30 @@ function filterByTitle<T extends { title: string }>(query: string, items: readon
   return matches;
 }
 
+const mapFtsMatches = (
+  matches: MappedMatches[],
+  excludeIds: Set<string>,
+): QuickSwitchFullTextItem[] => {
+  const noteIndex = noteStore.get("noteIndex");
+  return matches.flatMap((m) => {
+    if (excludeIds.has(m.id)) return [];
+    const note = noteIndex.get(m.id);
+    if (!note) return [];
+    return [
+      {
+        id: m.id,
+        title: m.title,
+        snippet: sanitizeSnippets({
+          note,
+          snippets: { [m.id]: m.snippet },
+        }),
+        rank: m.rank,
+        section: "fulltext" as const,
+      },
+    ];
+  });
+};
+
 const filterTitles = withLatestGuard(
   async (isStale, query: SearchQuery, qsState: QuickSwitchState) => {
     const nextQuery = query.trim();
@@ -61,36 +85,6 @@ const filterTitles = withLatestGuard(
       const defaults = await computeDisplayNotes();
       if (isStale()) return;
       setDisplay(defaults, qsState);
-      return;
-    }
-    if (nextQuery.startsWith("?")) {
-      const query = nextQuery.slice(1).trim();
-      if (query.length < MIN_SEARCH_LENGTH) {
-        setDisplay([], qsState);
-        return;
-      }
-      if (qsState.lastQuery === query) return;
-      const matches = await handleSearch(query);
-      if (isStale() || !matches) return;
-      qsState.lastQuery = query;
-      const noteIndex = noteStore.get("noteIndex");
-      const mapped: QuickSwitchFullTextItem[] = matches.flatMap((m) => {
-        const note = noteIndex.get(m.id);
-        if (!note) return [];
-        return [
-          {
-            id: m.id,
-            title: m.title,
-            snippet: sanitizeSnippets({
-              note,
-              snippets: { [m.id]: m.snippet },
-            }),
-            rank: m.rank,
-            section: "fulltext" as const,
-          },
-        ];
-      });
-      setDisplay(mapped, qsState);
       return;
     }
     if (nextQuery === qsState.lastQuery) return;
@@ -143,20 +137,35 @@ const filterTitles = withLatestGuard(
       setDisplay([...matchedCommands, ...matchedSettings], qsState);
       return;
     }
-    const result = computeTitleFilterResults(nextQuery);
-    if (result.length === 0) {
-      const defaults = await computeDisplayNotes();
-      if (isStale()) return;
-      setDisplay(
-        [
-          ...defaults,
-          ...(nextQuery.length > 0 ? [{ title: nextQuery, section: "create" as const }] : []),
-        ],
-        qsState,
-      );
+    const createItem = { title: nextQuery, section: "create" as const };
+    const titleResults = computeTitleFilterResults(nextQuery);
+    if (titleResults.length > 0) {
+      setDisplay([...titleResults, createItem], qsState);
+    }
+    if (nextQuery.length < MIN_SEARCH_LENGTH) {
+      if (titleResults.length === 0) {
+        const defaults = await computeDisplayNotes();
+        if (isStale()) return;
+        setDisplay([...defaults, createItem], qsState);
+      }
       return;
     }
-    setDisplay([...result, { title: nextQuery, section: "create" as const }], qsState);
+    await sleep(100);
+    if (isStale()) return;
+    const ftsResults = await handleFtsSearch(nextQuery);
+    if (isStale()) return;
+    qsState.lastQuery = nextQuery;
+    const titleIds = new Set(titleResults.flatMap((r) => (r.section === "search" ? [r.id] : [])));
+    const mapped = ftsResults ? mapFtsMatches(ftsResults, titleIds) : [];
+    setDisplay([...titleResults, ...mapped], qsState);
+    if (titleResults.length === 0 && mapped.length === 0) {
+      const defaults = await computeDisplayNotes();
+      if (isStale()) return;
+      setDisplay([...defaults, createItem], qsState);
+      return;
+    }
+    if (titleResults.length > 0 && mapped.length === 0) return;
+    setDisplay([...titleResults, ...mapped, createItem], qsState);
   },
 );
 
@@ -214,7 +223,7 @@ function computeTitleFilterResults(query: SearchQuery) {
   return displayNotes;
 }
 
-const handleSearch = withLatestGuard(async (isStale, searchInput: SearchQuery) => {
+const handleFtsSearch = withLatestGuard(async (isStale, searchInput: SearchQuery) => {
   const nextQuery = searchInput.trim();
   if (nextQuery.length > MAX_SEARCH_LENGTH) return;
   if (!nextQuery) {

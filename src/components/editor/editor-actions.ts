@@ -9,6 +9,7 @@ import type { Id } from "@shared/schemas/note-schema";
 import { ALLOWED_PROTOCOLS } from "@shared/shared-constants";
 import { createDocument, getHTMLFromFragment, type Editor, type JSONContent } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
+import { ListKit } from "@tiptap/extension-list";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import { MarkdownManager } from "@tiptap/markdown";
 import { EditorState } from "@tiptap/pm/state";
@@ -58,6 +59,7 @@ function getRequestExtensions() {
     CustomBlockMath,
     CustomInlineMath,
     Callout,
+    ListKit,
   ];
 }
 

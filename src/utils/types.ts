@@ -127,7 +127,7 @@ type MappedMatches = Omit<SearchResult, "search_match"> & {
 
 type ExportFormat = keyof typeof EXPORT_LABELS;
 
-type ShortcutToken = "mod" | "shift" | "alt" | "enter";
+type ShortcutToken = "mod" | "shift" | "alt" | "enter" | "backspace" | "tab";
 
 export type {
   Action,

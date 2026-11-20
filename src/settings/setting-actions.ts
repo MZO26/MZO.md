@@ -7,7 +7,9 @@ import {
   showNotification,
 } from "@/api/api";
 import { triggerSingleExport } from "@/components/sidebar/sidebar-triggers";
-import { localStore, settingsStore, stateStore } from "@/state/state";
+import { handleCreateWelcomeNote, handleSelectNote } from "@/notes/note-actions";
+import { createWelcomeNote } from "@/notes/welcome-note";
+import { localStore, noteStore, settingsStore, stateStore } from "@/state/state";
 import {
   CODE_THEME_MAP,
   type EDITOR_WIDTH,
@@ -251,11 +253,21 @@ async function handleUpdateSettings(settings: Partial<Readonly<AppSettings>>) {
   settingsStore.setState(settings);
 }
 
+async function handleOpenWelcomeNote(): Promise<void> {
+  const note = createWelcomeNote();
+  const normalized = note.title.toLowerCase();
+  const existing = noteStore.get("notes").find((n) => n.title.toLowerCase() === normalized);
+  const id = existing?.id ?? (await handleCreateWelcomeNote(note));
+  if (!id) return;
+  await handleSelectNote(id);
+}
+
 export {
   applySettings,
   backupDb,
   EXPORT_KEYS,
   exportCommand,
+  handleOpenWelcomeNote,
   handleUpdateSettings,
   openPath,
   restoreDbBackup,

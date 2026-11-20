@@ -111,7 +111,7 @@ function getTags(notes: readonly NoteListItem[]): QuickSwitchDisplayBadge[] {
   const activeTag = settingsStore.get("active_tag");
   const badge = (title: string, count: number, isActive: boolean): QuickSwitchDisplayBadge => ({
     title,
-    section: "tag",
+    section: "tag" as const,
     count,
     isActive,
   });

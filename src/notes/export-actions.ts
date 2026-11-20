@@ -1,6 +1,5 @@
 import { getNoteById } from "@/api/api";
 import { getCachedEditorExtensions } from "@/components/editor/editor-actions";
-import { titleGenerator } from "@/components/editor/editor-generators";
 import { DOMPURIFY_CONFIG, NODE_BASELINE } from "@/utils/constants";
 import { rendererLogger } from "@/utils/helpers";
 import { useCore } from "@/utils/registry";
@@ -8,86 +7,90 @@ import { AppErrorCode } from "@shared/errors";
 import type { Id, Note } from "@shared/schemas/note-schema";
 import type { ExportRequest } from "@shared/schemas/request-schema";
 import type { Result } from "@shared/shared-types";
-import { generateHTML, generateText } from "@tiptap/core";
+import { generateHTML } from "@tiptap/core";
 import DOMPurify from "dompurify";
+
+type BaseOpts = { fileName?: string };
+
+type PdfOpts = BaseOpts & { landscape?: boolean };
+
+type BuildRequestArgs =
+  | [note: Note, extension: "pdf", content: string, opts?: PdfOpts]
+  | [
+      note: Note,
+      extension: Exclude<ExportRequest["extension"], "pdf">,
+      content: string,
+      opts?: BaseOpts,
+    ];
+
+function buildRequest(...args: BuildRequestArgs): ExportRequest {
+  const [note, extension, content, opts] = args;
+  if (extension === "pdf") {
+    return {
+      created_at: note.created_at,
+      fileName: opts?.fileName ?? note.title,
+      extension,
+      content,
+      landscape: opts?.landscape ?? false,
+    };
+  }
+  return {
+    created_at: note.created_at,
+    fileName: opts?.fileName ?? note.title,
+    extension,
+    content,
+  };
+}
+
+function shouldUseLandscape(note: Note, html: string): boolean {
+  const noteSize = note.content.content?.length ?? 0;
+  return noteSize > NODE_BASELINE ? false : needsLandscape(html);
+}
+
+function createNoteExporter(extension: ExportRequest["extension"]): (note: Note) => ExportRequest {
+  switch (extension) {
+    case "json":
+      return (note) => buildRequest(note, "json", JSON.stringify(note.content, null, 2));
+
+    case "txt":
+      return (note) => buildRequest(note, "txt", note.plain_text);
+
+    case "html": {
+      const exts = getCachedEditorExtensions();
+      return (note) => {
+        const html = DOMPurify.sanitize(generateHTML(note.content, exts), DOMPURIFY_CONFIG);
+        return buildRequest(note, "html", html);
+      };
+    }
+
+    case "pdf": {
+      const exts = getCachedEditorExtensions();
+      return (note) => {
+        const rawHtml = generateHTML(note.content, exts);
+        const landscape = shouldUseLandscape(note, rawHtml);
+        const html = DOMPurify.sanitize(rawHtml, DOMPURIFY_CONFIG);
+        return buildRequest(note, "pdf", html, { landscape });
+      };
+    }
+
+    case "md": {
+      const { editor } = useCore("editor");
+      return (note) => buildRequest(note, "md", editor.markdown?.serialize(note.content) ?? "");
+    }
+
+    default:
+      extension satisfies never;
+      throw new Error(`Unsupported export format: ${String(extension)}`);
+  }
+}
 
 function getBatchExportContent(
   notes: readonly Note[],
   extension: ExportRequest["extension"],
 ): Result<ExportRequest[]> {
   try {
-    switch (extension) {
-      case "json":
-        return {
-          success: true,
-          data: notes.map((note) => ({
-            created_at: note.created_at,
-            fileName: note.title,
-            extension: extension,
-            content: JSON.stringify(note.content, null, 2),
-          })),
-        };
-      case "txt": {
-        const exts = getCachedEditorExtensions();
-        return {
-          success: true,
-          data: notes.map((note) => ({
-            created_at: note.created_at,
-            fileName: note.title,
-            extension: extension,
-            content: generateText(note.content, exts),
-          })),
-        };
-      }
-      case "html": {
-        const exts = getCachedEditorExtensions();
-        return {
-          success: true,
-          data: notes.map((note) => ({
-            created_at: note.created_at,
-            fileName: note.title,
-            extension: extension,
-            content: generateHTML(note.content, exts),
-          })),
-        };
-      }
-      case "pdf": {
-        const exts = getCachedEditorExtensions();
-        return {
-          success: true,
-          data: notes.map((note) => {
-            const html = generateHTML(note.content, exts);
-            const noteSize = note.content.content?.length;
-            const landscape =
-              typeof noteSize === "number" && noteSize > NODE_BASELINE
-                ? false
-                : needsLandscape(html);
-            return {
-              created_at: note.created_at,
-              fileName: note.title,
-              extension: extension,
-              content: html,
-              landscape,
-            };
-          }),
-        };
-      }
-      case "md": {
-        const { editor } = useCore("editor");
-        return {
-          success: true,
-          data: notes.map((note) => ({
-            created_at: note.created_at,
-            fileName: note.title,
-            extension: extension,
-            content: editor.markdown?.serialize(note.content) ?? "",
-          })),
-        };
-      }
-      default:
-        extension satisfies never;
-        return { success: false, error: AppErrorCode.InvalidData };
-    }
+    const toRequest = createNoteExporter(extension);
+    return { success: true, data: notes.map(toRequest) };
   } catch (error) {
     rendererLogger.appError(
       `[getBatchExportContent]: Failed batch export for ${extension.toUpperCase()}:`,
@@ -97,8 +100,6 @@ function getBatchExportContent(
   }
 }
 
-// single export content function triggered by callback on note menu interaction
-
 async function getExportContent(
   id: Id,
   extension: ExportRequest["extension"],
@@ -107,78 +108,15 @@ async function getExportContent(
   if (!result.success) {
     return { success: false, error: result.error };
   }
-  const note = result.data;
-  switch (extension) {
-    case "json": {
-      return {
-        success: true,
-        data: {
-          created_at: note.created_at,
-          extension,
-          fileName: titleGenerator(note.content),
-          content: JSON.stringify(note.content),
-        },
-      };
-    }
-    case "html": {
-      const html = generateHTML(note.content, getCachedEditorExtensions());
-      return {
-        success: true,
-        data: {
-          created_at: note.created_at,
-          extension,
-          fileName: titleGenerator(note.content),
-          content: DOMPurify.sanitize(html, DOMPURIFY_CONFIG),
-        },
-      };
-    }
-    case "pdf": {
-      const html = generateHTML(note.content, getCachedEditorExtensions());
-      const noteSize = note.content.content?.length;
-      const landscape =
-        typeof noteSize === "number" && noteSize > NODE_BASELINE ? false : needsLandscape(html);
-      rendererLogger.devLog(landscape);
-      return {
-        success: true,
-        data: {
-          created_at: note.created_at,
-          extension,
-          fileName: titleGenerator(note.content),
-          content: DOMPurify.sanitize(html, DOMPURIFY_CONFIG),
-          landscape,
-        },
-      };
-    }
-    case "md": {
-      const { editor } = useCore("editor");
-      return {
-        success: true,
-        data: {
-          created_at: note.created_at,
-          extension,
-          fileName: titleGenerator(note.content),
-          content: editor.markdown?.serialize(note.content) ?? "",
-        },
-      };
-    }
-    case "txt": {
-      return {
-        success: true,
-        data: {
-          created_at: note.created_at,
-          extension,
-          fileName: titleGenerator(note.content),
-          content: note.plain_text,
-        },
-      };
-    }
-    default:
-      extension satisfies never;
-      rendererLogger.appError("[getExportContent]: Unsupported export format:", extension);
-      return {
-        success: false,
-        error: AppErrorCode.InvalidData,
-      };
+  try {
+    const toRequest = createNoteExporter(extension);
+    return { success: true, data: toRequest(result.data) };
+  } catch (error) {
+    rendererLogger.appError(
+      `[getExportContent]: Failed export for ${extension.toUpperCase()}:`,
+      error,
+    );
+    return { success: false, error: AppErrorCode.InvalidData };
   }
 }
 

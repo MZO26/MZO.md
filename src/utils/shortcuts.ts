@@ -2,7 +2,19 @@ import { handleZoom } from "@/api/api";
 import { appEvents } from "@/api/event-emitter";
 import { stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/helpers";
+import type { ShortcutToken } from "@/utils/types";
 import { APP_EVENTS } from "@shared/shared-constants";
+
+const IS_MAC: boolean = window.env.isMac ?? navigator.userAgent.includes("Mac");
+
+const KEY_LABELS: Record<ShortcutToken, string> = {
+  mod: IS_MAC ? "⌘" : "Ctrl",
+  alt: IS_MAC ? "⌥" : "Alt",
+  shift: IS_MAC ? "⇧" : "Shift",
+  backspace: IS_MAC ? "⌫" : "Backspace",
+  tab: IS_MAC ? "⇥" : "Tab",
+  enter: "↵",
+};
 
 function isFocusActive() {
   return stateStore.get("focus") === true;
@@ -96,4 +108,11 @@ function initGlobalShortcuts() {
   window.addEventListener("keydown", keydownHandler);
 }
 
-export { initGlobalShortcuts, isEditorFocused, isFocusActive, isSelectionActive };
+export {
+  initGlobalShortcuts,
+  IS_MAC,
+  isEditorFocused,
+  isFocusActive,
+  isSelectionActive,
+  KEY_LABELS,
+};
