@@ -75,22 +75,24 @@ const registry: RegistryState = {
 };
 
 function fromRegistry<T extends keyof AppRegistry>(registryKey: T) {
-  return function <K extends keyof AppRegistry[T]>(
-    ...keys: K[]
-  ): Required<Readonly<Pick<AppRegistry[T], K>>> {
-    const result = {} as Partial<Pick<AppRegistry[T], K>>;
+  return function <const K extends readonly [keyof AppRegistry[T], ...(keyof AppRegistry[T])[]]>(
+    ...keys: K
+  ): Required<Readonly<Pick<AppRegistry[T], K[number]>>> {
+    const result: Record<PropertyKey, unknown> = {};
     const entryObject = registry[registryKey];
     for (const key of keys) {
       const item = entryObject[key];
-      if (!item) throw new Error(`Element "${String(key)}" is missing from the registry.`);
+      if (!item) {
+        throw new Error(`Element "${String(key)}" is missing from the registry.`);
+      }
       result[key] = item;
     }
-    return result as Required<Readonly<Pick<AppRegistry[T], K>>>;
+    return result as Required<Readonly<Pick<AppRegistry[T], K[number]>>>;
   };
 }
 
 function toRegistry<T extends keyof AppRegistry>(registryKey: T) {
-  return function (...entries: readonly AppRegistry[T][]): void {
+  return function (...entries: readonly AppRegistry[T][]) {
     Object.assign(registry[registryKey], ...entries);
   };
 }

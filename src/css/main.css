@@ -948,8 +948,4 @@ svg.empty-state-icon {
   .editor-empty-state p {
     font-size: 0.8rem;
   }
-
-  .input-wrapper-editor {
-    width: 250px;
-  }
 }

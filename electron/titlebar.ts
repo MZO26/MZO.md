@@ -4,7 +4,6 @@ import type { AppSettings, Theme } from "@shared/schemas/store-schema";
 import type { NativeWindowColors } from "@shared/shared-types";
 import { BrowserWindow, nativeTheme } from "electron";
 
-// updates the title bar overlay accordingly
 function getTitleBarOverlay(
   themeName: Exclude<Theme, "system">,
   focus?: boolean,

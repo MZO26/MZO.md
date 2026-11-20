@@ -18,7 +18,6 @@ import { type AppSettings } from "@shared/schemas/store-schema";
 import {
   app,
   BrowserWindow,
-  ipcMain,
   Menu,
   nativeTheme,
   session,
@@ -30,10 +29,32 @@ import { fileURLToPath } from "node:url";
 
 const FLUSH_TIMEOUT_MS = 5000;
 
+interface FlushState {
+  timeout: NodeJS.Timeout | null;
+  isReadyToClose: boolean;
+  isFlushing: boolean;
+}
+
+export const FlushAppState: FlushState = {
+  timeout: null,
+  isReadyToClose: false,
+  isFlushing: false,
+};
+
 export let win: BrowserWindow | null = null;
-let isReadyToClose = false;
-let isFlushing = false;
-let flushTimeout: NodeJS.Timeout | null = null;
+
+function resetFlushState() {
+  clearFlushTimeout();
+  FlushAppState.isFlushing = false;
+  FlushAppState.isReadyToClose = false;
+}
+
+export function clearFlushTimeout() {
+  if (FlushAppState.timeout) {
+    clearTimeout(FlushAppState.timeout);
+    FlushAppState.timeout = null;
+  }
+}
 
 export function getMainWindow(): BrowserWindow | null {
   return win && !win.isDestroyed() ? win : null;
@@ -83,8 +104,7 @@ function initSettings(): Readonly<AppSettings> {
 const isMac = process.platform === "darwin";
 
 async function createWindow() {
-  isReadyToClose = false;
-  isFlushing = false;
+  resetFlushState();
   const settings = settingsService.getSettings();
   const preloadPath = path.join(__dirname, "../preload/preload.js");
   const activeTheme = initTheme(settings.theme);
@@ -131,23 +151,30 @@ async function createWindow() {
     win?.show();
   });
   win.on("close", (e) => {
-    if (win?.isDestroyed()) return;
-    if (!isReadyToClose) {
+    if (!win || win.isDestroyed()) return;
+    if (!FlushAppState.isReadyToClose) {
       e.preventDefault();
-      if (!isFlushing) {
-        isFlushing = true;
+      if (!FlushAppState.isFlushing) {
+        FlushAppState.isFlushing = true;
         try {
           saveWindowBounds();
         } catch {}
-        if (!win?.isDestroyed()) win?.webContents.send(IPC_CHANNELS.REQUEST_FLUSH);
-        flushTimeout = setTimeout(() => {
+        if (win.isDestroyed() || win.webContents.isDestroyed()) {
+          FlushAppState.isFlushing = false;
+          FlushAppState.isReadyToClose = true;
+          return;
+        }
+        clearFlushTimeout();
+        win.webContents.send(IPC_CHANNELS.REQUEST_FLUSH);
+        FlushAppState.timeout = setTimeout(() => {
+          FlushAppState.timeout = null;
           mainLogger.devLog("Flush timeout - forced close");
-          isReadyToClose = true;
-          isFlushing = false;
-          if (!win?.isDestroyed()) win?.close();
+          FlushAppState.isReadyToClose = true;
+          FlushAppState.isFlushing = false;
+          if (win && !win.isDestroyed()) win.close();
         }, FLUSH_TIMEOUT_MS);
+        FlushAppState.timeout.unref();
       }
-      return;
     }
   });
   win.webContents.on("did-start-loading", () => {
@@ -157,6 +184,7 @@ async function createWindow() {
     win?.webContents.setZoomFactor(1.1);
   });
   win.on("closed", () => {
+    resetFlushState();
     LinkAppState.rendererReady = false;
     win = null;
   });
@@ -179,14 +207,6 @@ app
     session.defaultSession.setSpellCheckerLanguages(["en-US", "de-DE"]);
     setPermissions();
     await setupLocalImageProtocol();
-    ipcMain.on(IPC_CHANNELS.CONFIRM_FLUSH, (event) => {
-      if (flushTimeout) clearTimeout(flushTimeout);
-      flushTimeout = null;
-      isReadyToClose = true;
-      isFlushing = false;
-      const currentWin = BrowserWindow.fromWebContents(event.sender);
-      currentWin?.close();
-    });
     registerIpc();
     const win = await createWindow();
     const url = process.argv.find((a) => a.startsWith(`${PROTOCOL}://`));

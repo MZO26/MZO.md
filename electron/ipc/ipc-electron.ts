@@ -20,7 +20,7 @@ import {
 import { ImagePayloadsSchema } from "@shared/schemas/image-schema";
 import { NoteMenuPayloadSchema } from "@shared/schemas/note-schema";
 import { StoreSchema } from "@shared/schemas/store-schema";
-import { app, BrowserWindow, ipcMain, type Menu, Notification, shell } from "electron";
+import { app, BrowserWindow, ipcMain, Notification, shell } from "electron";
 
 function registerElectronIpc() {
   ipcMain.on(
@@ -33,15 +33,10 @@ function registerElectronIpc() {
       const validMenuType = validation(MenuTypeSchema, type);
       const win = BrowserWindow.fromWebContents(e.sender);
       if (!win) return;
-      let menu: Menu;
-      if (validMenuType === "table") {
-        menu = setUpTableMenu(win);
-      } else if (validMenuType === "note") {
-        const validatedData = validation(NoteMenuPayloadSchema, payload);
-        menu = setUpNoteMenu(win, validatedData);
-      } else {
-        return;
-      }
+      const menu =
+        validMenuType === "table"
+          ? setUpTableMenu(win)
+          : setUpNoteMenu(win, validation(NoteMenuPayloadSchema, payload));
       menu.popup({ window: win });
     }),
   );

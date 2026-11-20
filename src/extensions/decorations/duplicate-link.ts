@@ -34,7 +34,6 @@ const checkForDuplicates = memoize(
       const note = noteIndex.get(id);
       if (!note) continue;
       const title = note.title.trim().toLowerCase();
-      // active id shouldn't count itself as duplicate
       const matching = (titleIndex.get(title) ?? []).filter((n) => n.id !== activeId);
       if (matching.length > 1) {
         const targetIds = matching.map((n) => n.id);

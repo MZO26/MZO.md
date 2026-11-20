@@ -2,6 +2,7 @@ import { handleZoom } from "@/api/api";
 import { appEvents } from "@/api/event-emitter";
 import { stateStore } from "@/state/state";
 import { createAsyncHandler } from "@/utils/helpers";
+import { useCore } from "@/utils/registry";
 import type { ShortcutToken } from "@/utils/types";
 import { APP_EVENTS } from "@shared/shared-constants";
 
@@ -85,6 +86,13 @@ function initGlobalShortcuts() {
       if (isEditorFocused(e.target)) return;
       e.preventDefault();
       appEvents.emit(APP_EVENTS.SELECT_ALL_VISIBLE);
+      return;
+    }
+    if (key === "Home" || key === "End") {
+      const { editor, editorWrapper } = useCore("editor", "editorWrapper");
+      const edge = key === "Home" ? "start" : "end";
+      editor.chain().focus(edge).run();
+      editorWrapper.scrollTop = edge === "start" ? 0 : editorWrapper.scrollHeight;
       return;
     }
     if (key === "Escape") {

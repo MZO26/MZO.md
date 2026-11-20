@@ -20,6 +20,7 @@ import {
   validation,
   withErrorHandling,
 } from "@electron/ipc/ipc-validation";
+import { clearFlushTimeout, FlushAppState, win } from "@electron/main";
 import { AppBackendError, AppErrorCode } from "@shared/errors";
 import { DbContentCodec } from "@shared/schemas/editor-schema";
 import {
@@ -41,6 +42,16 @@ import { ipcMain } from "electron";
 import { BrowserWindow } from "electron/main";
 
 function registerNoteIpc() {
+  ipcMain.on(IPC_CHANNELS.CONFIRM_FLUSH, (event) => {
+    const currentWin = BrowserWindow.fromWebContents(event.sender);
+    if (!currentWin || currentWin.isDestroyed() || currentWin !== win) return;
+    if (!FlushAppState.isFlushing) return;
+    clearFlushTimeout();
+    FlushAppState.isReadyToClose = true;
+    FlushAppState.isFlushing = false;
+    currentWin.close();
+  });
+
   ipcMain.handle(
     IPC_CHANNELS.GET_PENDING_OPEN,
     withErrorHandling((e) => {
