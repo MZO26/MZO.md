@@ -4,6 +4,7 @@ import { updateSelectionUI } from "@/components/sidebar/sidebar-ui";
 import { getBatchExportContent } from "@/notes/export-actions";
 import { handleDeleteManyNotes } from "@/notes/note-actions";
 import { noteStore, stateStore } from "@/state/state";
+import { SIDEBAR_ALL_NOTES_LIMIT } from "@/utils/constants";
 import { confirmWithDialog, rendererLogger } from "@/utils/helpers";
 import { useDialog } from "@/utils/registry";
 import { requireElement } from "@/utils/ui";
@@ -25,7 +26,7 @@ function setSelectionMode(enabled: boolean) {
 
 function selectAllVisibleNotes() {
   const visibleIds = noteStore.get("visibleIds");
-  const selectedIds = new Set(visibleIds);
+  const selectedIds = new Set(visibleIds.slice(0, SIDEBAR_ALL_NOTES_LIMIT));
   const selectionMode = true;
   stateStore.setState({
     selectedIds,
@@ -159,13 +160,10 @@ async function copyRichTextSelection(selectedIds: Id[]) {
 
 async function exportSelection(selectedIds: Id[], extension: ExportRequest["extension"]) {
   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-  const { notes, noteIndex } = noteStore.getState();
-  const allSelected =
-    selectedIds.length === notes.length && selectedIds.every((id) => noteIndex.has(id));
-  const exportResult = allSelected ? await getAllBackup() : await getManyById(selectedIds);
+  const exportResult = await getManyById(selectedIds);
   if (!exportResult.success) {
     rendererLogger.appError(
-      "[exportSelection -> getAllBackup | getManyById]: Failed to get notes by id:",
+      "[exportSelection -> getManyById]: Failed to get notes by id:",
       exportResult.error,
     );
     return;

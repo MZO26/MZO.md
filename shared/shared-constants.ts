@@ -125,6 +125,10 @@ const SETTING_EVENTS = {
   EXPORT_TEXT: "setting:export-text",
   EXPORT_HTML: "setting:export-html",
   EXPORT_PDF: "setting:export-pdf",
+  BACKUP_MARKDOWN: "setting:backup-markdown",
+  BACKUP_TEXT: "setting:backup-text",
+  BACKUP_HTML: "setting:backup-html",
+  BACKUP_PDF: "setting:backup-pdf",
   CREATE_WELCOME_NOTE: "setting:create-welcome-note",
 } as const;
 

@@ -1,4 +1,5 @@
 import { NotesSearch } from "@electron/db/fts";
+import { Migrations } from "@electron/db/migration";
 import { Transactions } from "@electron/db/transactions";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { validation } from "@electron/ipc/ipc-validation";
@@ -47,6 +48,7 @@ class AppDB {
   private dbPath: string;
   public transactions: Transactions | undefined;
   public search: NotesSearch | undefined;
+  public migrations: Migrations | undefined;
   private getAllNotesStmt!: StatementSync;
   private getAllBackupStmt!: StatementSync;
   private getNoteByIdStmt!: StatementSync;
@@ -81,12 +83,14 @@ class AppDB {
       this.execPragma("busy_timeout = 5000", db);
       this.execPragma("synchronous = NORMAL", db);
       this.execPragma("cache_size = -32000", db);
-      this.createTables(db);
-      this.createIndexes(db);
       const integrity = this.queryPragma<{ quick_check: string }>("quick_check", db);
       if (integrity?.quick_check !== "ok") {
         throw new AppBackendError(AppErrorCode.DBError);
       }
+      this.createTables(db);
+      this.migrations = new Migrations(db);
+      this.migrations.init();
+      this.createIndexes(db);
       this.search = new NotesSearch(db);
       this.search.init();
       this.transactions = new Transactions(db);

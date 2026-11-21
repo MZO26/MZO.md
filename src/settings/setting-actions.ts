@@ -1,16 +1,20 @@
 import {
   databaseBackup,
   databaseBackupRestore,
+  exportManyNotes,
+  getAllBackup,
   openAppPath,
   setSettings,
   setTheme,
   showNotification,
 } from "@/api/api";
 import { triggerSingleExport } from "@/components/sidebar/sidebar-triggers";
+import { getBatchExportContent } from "@/notes/export-actions";
 import { handleCreateWelcomeNote, handleSelectNote } from "@/notes/note-actions";
 import { createWelcomeNote } from "@/notes/welcome-note";
 import { localStore, noteStore, settingsStore, stateStore } from "@/state/state";
 import {
+  BACKUP_LABELS,
   CODE_THEME_MAP,
   type EDITOR_WIDTH,
   EDITOR_WIDTH_LABELS,
@@ -65,6 +69,14 @@ function exportCommand(format: ExportFormat) {
     },
     isActive: () => false,
     label: EXPORT_LABELS[format],
+  };
+}
+
+function backupFileCommand(format: ExportFormat) {
+  return {
+    run: async () => await backupFiles(format),
+    isActive: () => false,
+    label: BACKUP_LABELS[format],
   };
 }
 
@@ -174,6 +186,35 @@ async function updateSpellcheck(newValue: boolean) {
   await handleUpdateSettings({ spellcheck: enabled });
 }
 
+async function backupFiles(format: ExportFormat) {
+  const exportResult = await getAllBackup();
+  if (!exportResult.success) {
+    rendererLogger.appError(
+      "[backupFiles -> getAllBackup]: Failed to get notes for backup:",
+      exportResult.error,
+    );
+    return;
+  }
+  const exportContent = getBatchExportContent(exportResult.data, format);
+  if (!exportContent.success) {
+    rendererLogger.appError(
+      "[backupFiles -> getBatchExportContent]: Failed to get export format",
+      exportContent.error,
+    );
+    return;
+  }
+  if (exportResult.data.length === 0) return;
+  const result = await exportManyNotes(exportContent.data);
+  if (!result.success) {
+    rendererLogger.appError(
+      "[backupFiles -> exportManyNotes]: Export failed or Operation got cancelled:",
+      result.error,
+    );
+    return;
+  }
+  await showNotification("Export Complete", `Exported ${result.data.length} files to .${format}`);
+}
+
 async function backupDb() {
   const dbBackup = await databaseBackup();
   if (!dbBackup.success) {
@@ -253,7 +294,7 @@ async function handleUpdateSettings(settings: Partial<Readonly<AppSettings>>) {
   settingsStore.setState(settings);
 }
 
-async function handleOpenWelcomeNote(): Promise<void> {
+async function handleOpenWelcomeNote() {
   const note = createWelcomeNote();
   const normalized = note.title.toLowerCase();
   const existing = noteStore.get("notes").find((n) => n.title.toLowerCase() === normalized);
@@ -265,6 +306,7 @@ async function handleOpenWelcomeNote(): Promise<void> {
 export {
   applySettings,
   backupDb,
+  backupFileCommand,
   EXPORT_KEYS,
   exportCommand,
   handleOpenWelcomeNote,

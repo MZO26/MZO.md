@@ -33,7 +33,6 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
     },
     [APP_EVENTS.CREATE_NEW_NOTE]: () =>
       void handleCreateNote({ shouldNavigate: true }).catch(rendererLogger.appError),
-    // [APP_EVENTS.FOCUS_GLOBAL_SEARCH]: () => searchInput.focus(),
     [APP_EVENTS.SET_SELECTION_MODE]: () => setSelectionMode(!isSelectionActive()),
     [APP_EVENTS.EXIT_SELECTION_MODE]: () => setSelectionMode(false),
     [APP_EVENTS.DELETE_SELECTED]: () => {
@@ -50,11 +49,7 @@ function initNotesSidebar(sidebar: HTMLDivElement) {
   };
 }
 
-function setupSidebarListeners(
-  sidebar: HTMLDivElement,
-  sidebarHeader: HTMLDivElement,
-  // searchInput: HTMLInputElement,
-) {
+function setupSidebarListeners(sidebar: HTMLDivElement, sidebarHeader: HTMLDivElement) {
   const unsubSidebarResize = resizeSidebar();
   const headerClickHandler = createAsyncHandler(async (e: MouseEvent) => {
     if (!(e.target instanceof Element)) return;

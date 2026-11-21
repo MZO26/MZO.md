@@ -155,6 +155,13 @@ const EXPORT_LABELS = {
   pdf: "EXPORT_PDF",
 } as const;
 
+const BACKUP_LABELS = {
+  md: "BACKUP_MARKDOWN",
+  txt: "BACKUP_TEXT",
+  html: "BACKUP_HTML",
+  pdf: "BACKUP_PDF",
+} as const;
+
 const CALLOUT_LABELS = {
   note: "CALLOUT_NOTE",
   tip: "CALLOUT_TIP",
@@ -175,6 +182,7 @@ const NOTE_SECTION = ["search", "recent", "backlink", "outgoing", "related"] as 
 
 export {
   ALLOWED_TYPES,
+  BACKUP_LABELS,
   CALLOUT_LABELS,
   CODE_THEME_MAP,
   DEBOUNCE_MS,

@@ -1,6 +1,7 @@
 import { pinWindow } from "@/api/api";
 import {
   backupDb,
+  backupFileCommand,
   exportCommand,
   handleOpenWelcomeNote,
   openPath,
@@ -196,6 +197,10 @@ const settingsCommands: Record<SettingEventStrings, SettingCommands> = {
   "setting:export-text": exportCommand("txt"),
   "setting:export-html": exportCommand("html"),
   "setting:export-pdf": exportCommand("pdf"),
+  "setting:backup-markdown": backupFileCommand("md"),
+  "setting:backup-text": backupFileCommand("txt"),
+  "setting:backup-html": backupFileCommand("html"),
+  "setting:backup-pdf": backupFileCommand("pdf"),
   "setting:create-welcome-note": {
     run: async () => await handleOpenWelcomeNote(),
     isActive: () => false,

@@ -729,6 +729,7 @@ svg.empty-state-icon {
   flex-direction: column;
   margin: 12vh auto auto;
   width: 400px;
+  min-height: 0;
   max-height: 70vh;
   padding: 0 5px 10px 5px;
   background: var(--bg-sidebar);
@@ -754,11 +755,8 @@ svg.empty-state-icon {
 
 .quick-switch-list {
   flex: 1 1 auto;
-  padding: 10px 5px;
-  height: auto;
-  max-height: 400px;
-  min-height: 150px;
   min-height: 0;
+  padding: 10px 5px;
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
@@ -771,8 +769,12 @@ svg.empty-state-icon {
 }
 
 .quick-switch-dialog-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
   overflow: hidden;
-  height: 100%;
   padding: 10px 0 0 0;
   color: var(--text-main);
 }
@@ -821,6 +823,10 @@ svg.empty-state-icon {
   line-height: 1.35;
   color: var(--text-muted);
   overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .quick-switch-item > span:first-child {
@@ -860,7 +866,6 @@ svg.empty-state-icon {
   justify-content: space-between;
   align-items: center;
   min-height: 20px;
-  margin: auto 0;
   padding: 10px 10px 5px 10px;
   font-size: 12px;
   line-height: 1;

@@ -10,7 +10,7 @@ import {
 import type { QuickSwitchState } from "@/components/quick-switch/quick-switch-init";
 import { sanitizeSnippets } from "@/components/sidebar/sidebar-ui";
 import { noteStore } from "@/state/state";
-import { rendererLogger, sleep, withLatestGuard } from "@/utils/helpers";
+import { rendererLogger, withLatestGuard } from "@/utils/helpers";
 import type {
   MappedMatches,
   QuickSwitchDisplayBadge,
@@ -150,21 +150,18 @@ const filterTitles = withLatestGuard(
       }
       return;
     }
-    await sleep(100);
     if (isStale()) return;
     const ftsResults = await handleFtsSearch(nextQuery);
     if (isStale()) return;
     qsState.lastQuery = nextQuery;
     const titleIds = new Set(titleResults.flatMap((r) => (r.section === "search" ? [r.id] : [])));
     const mapped = ftsResults ? mapFtsMatches(ftsResults, titleIds) : [];
-    setDisplay([...titleResults, ...mapped], qsState);
     if (titleResults.length === 0 && mapped.length === 0) {
       const defaults = await computeDisplayNotes();
       if (isStale()) return;
       setDisplay([...defaults, createItem], qsState);
       return;
     }
-    if (titleResults.length > 0 && mapped.length === 0) return;
     setDisplay([...titleResults, ...mapped, createItem], qsState);
   },
 );
