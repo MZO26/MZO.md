@@ -338,6 +338,7 @@ class AppDB {
     const allLinks = this.getAllLinksStmt.all() as LinkRow[];
     const linkMap = new Map<Id, Link[]>();
     for (const { source_id, target_id } of allLinks) {
+      if (source_id === target_id) continue;
       const sourceLinks = linkMap.get(source_id) ?? [];
       sourceLinks.push({ id: target_id, dir: "out" });
       linkMap.set(source_id, sourceLinks);

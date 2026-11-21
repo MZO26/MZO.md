@@ -10,7 +10,7 @@ export type WelcomeNote = {
   content: string;
 };
 
-export const WELCOME_NOTE_TITLE = "Welcome";
+const WELCOME_NOTE_TITLE = "Welcome";
 
 type KeyPart = ShortcutToken | (string & {});
 
@@ -123,6 +123,7 @@ $$
 | ${k("mod", "I")} | \`*text*\` | Italic |
 | ${k("mod", "S")} | \`~~text~~\` | Strikethrough |
 | ${k("mod", "H")} | \`==text==\` | Highlight |
+| ${k("mod", "U")} | \`++text++\` | Underline |
 | ${k("mod", "E")} | \`\` \`code\` \`\` | Inline code |
 | ${k("mod", "shift", "E")} | \`$math$\` | Inline math |
 

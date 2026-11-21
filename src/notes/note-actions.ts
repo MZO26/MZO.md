@@ -642,7 +642,7 @@ async function handleExtractToNote(id: Id, content: JSONContent) {
  * if (id) handleSelectNote(id); // optional, caller's responsibility
  */
 
-async function handleCreateWelcomeNote(note: WelcomeNote) {
+async function handleCreateWelcomeNote(note: Readonly<WelcomeNote>) {
   const parsed = await withPerformanceLog(workOnMarkdownParsing)(note.content);
   if (!parsed.success) {
     rendererLogger.appError("[handleCreateWelcomeNote]: Failed to parse markdown into json");

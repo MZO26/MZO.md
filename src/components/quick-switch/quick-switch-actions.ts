@@ -143,7 +143,7 @@ async function computeDisplayNotes() {
   const recentBadges = toDisplayBadges(recentNotes, "recent", noteIndex);
   const activeNote = activeId ? noteIndex.get(activeId) : undefined;
   if (!activeNote) return recentBadges;
-  const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote);
+  const { backlinks, outgoingLinks } = computeActiveNoteLinks(activeNote, notes);
   const relatedNotes = await getSimilarityMatching(activeNote.id, notes, noteIndex);
   return [
     ...recentBadges,
@@ -165,19 +165,43 @@ async function computeDisplayNotes() {
   ];
 }
 
-function computeActiveNoteLinks(activeNote: NoteListItem) {
-  const backlinks: Link[] = [];
-  const outgoingLinks: Link[] = [];
-  for (const link of activeNote.links) {
-    if (link.id === activeNote.id) continue;
-    if (link.dir === "in") {
-      backlinks.push(link);
-    } else {
-      outgoingLinks.push(link);
-    }
+function sameLinkInputs(
+  [a1, n1]: [NoteListItem, readonly NoteListItem[]],
+  [a2, n2]: [NoteListItem, readonly NoteListItem[]],
+) {
+  if (a1.id !== a2.id || a1.links !== a2.links) return false;
+  if (n1 === n2) return true;
+  if (n1.length !== n2.length) return false;
+  for (let i = 0; i < n1.length; i++) {
+    const r1 = n1[i];
+    const r2 = n2[i];
+    if (!r1 || !r2) return false;
+    if (r1.id !== r2.id || r1.links !== r2.links) return false;
   }
-  return { backlinks, outgoingLinks };
+  return true;
 }
+
+const computeActiveNoteLinks = memoize(
+  (activeNote: NoteListItem, notes: readonly NoteListItem[]) => {
+    const activeId = activeNote.id;
+    const backlinks: Link[] = [];
+    const outgoingLinks: Link[] = [];
+    for (const link of activeNote.links) {
+      if (link.dir === "out" && link.id !== activeId) outgoingLinks.push(link);
+    }
+    for (const n of notes) {
+      if (n.id === activeId) continue;
+      for (const link of n.links) {
+        if (link.dir === "out" && link.id === activeId) {
+          backlinks.push({ id: n.id, dir: "in" });
+          break;
+        }
+      }
+    }
+    return { backlinks, outgoingLinks };
+  },
+  sameLinkInputs,
+);
 
 function setDisplay(notes: readonly QuickSwitchDisplayBadge[], qsState: QuickSwitchState) {
   qsState.currentDisplayNotes = [...notes];

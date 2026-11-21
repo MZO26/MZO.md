@@ -42,12 +42,14 @@ function buildRequest(...args: BuildRequestArgs): ExportRequest {
   };
 }
 
-function shouldUseLandscape(note: Note, html: string): boolean {
+function shouldUseLandscape(note: Readonly<Note>, html: string): boolean {
   const noteSize = note.content.content?.length ?? 0;
   return noteSize > NODE_BASELINE ? false : needsLandscape(html);
 }
 
-function createNoteExporter(extension: ExportRequest["extension"]): (note: Note) => ExportRequest {
+function createNoteExporter(
+  extension: ExportRequest["extension"],
+): (note: Readonly<Note>) => ExportRequest {
   switch (extension) {
     case "json":
       return (note) => buildRequest(note, "json", JSON.stringify(note.content, null, 2));

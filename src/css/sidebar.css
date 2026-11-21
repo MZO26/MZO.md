@@ -118,8 +118,6 @@ body.is-dragging * {
 
 .sidebar-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
   background-color: color-mix(in srgb, var(--bg-sidebar-section) 55%, var(--bg-sidebar));
   padding: 2px 10px;
   gap: 5px;
