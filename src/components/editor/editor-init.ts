@@ -24,6 +24,7 @@ import {
 } from "@/extensions/editor-handler/selection-wrappers";
 import { Highlight } from "@/extensions/highlight";
 import { InputRules } from "@/extensions/input-rules";
+import { CustomBlockquote } from "@/extensions/overrides/blockquote";
 import { CodeblockHandler } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { lowlight } from "@/extensions/overrides/codeblock/lowlight";
 import { CustomHeading, TitleEnforcer } from "@/extensions/overrides/headings";
@@ -135,6 +136,7 @@ function getNoteEditorExtensions() {
       codeBlock: false,
       heading: false,
       underline: false,
+      blockquote: false,
       undoRedo: {
         depth: 20,
       },
@@ -185,6 +187,7 @@ function getNoteEditorExtensions() {
       onClick: handleMathClick,
       katexOptions: SHARED_KATEX_OPTIONS,
     }),
+    CustomBlockquote,
     DocSearch,
     SelectionWrapper,
     SelectionMetrics,

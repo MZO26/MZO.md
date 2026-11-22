@@ -1,5 +1,6 @@
 import { Callout } from "@/extensions/callouts";
 import { Highlight } from "@/extensions/highlight";
+import { CustomBlockquote } from "@/extensions/overrides/blockquote";
 import { CustomBlockMath, CustomInlineMath } from "@/extensions/overrides/mathematics/mathematics";
 import { NoteTag } from "@/extensions/tag/tag";
 import { WikiLink } from "@/extensions/wikilink/wikilinks";
@@ -55,9 +56,23 @@ function getRequestExtensions() {
     TableCell,
     TableHeader,
     NoteTag,
-    StarterKit,
+    StarterKit.configure({
+      codeBlock: false,
+      heading: false,
+      underline: false,
+      blockquote: false,
+      undoRedo: {
+        depth: 20,
+      },
+      link: false,
+      dropcursor: {
+        width: 2,
+        class: "editor-dropcursor",
+      },
+    }),
     CustomBlockMath,
     CustomInlineMath,
+    CustomBlockquote,
     Callout,
     ListKit,
   ];

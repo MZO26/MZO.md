@@ -1,6 +1,6 @@
 import { toggleSingleCodeBlock } from "@/extensions/overrides/codeblock/codeblock-handler";
 import { noteStore } from "@/state/state";
-import { MOVEABLE_BLOCKS, MOVEABLE_CONTAINERS } from "@/utils/constants";
+import { MOVEABLE_CONTAINERS } from "@/utils/constants";
 import { type Editor, Extension } from "@tiptap/core";
 import type { ResolvedPos } from "@tiptap/pm/model";
 import { NodeSelection, TextSelection } from "@tiptap/pm/state";
@@ -151,49 +151,6 @@ const KbSelectionCommands = Extension.create({
       }
       return 1;
     }
-
-    const moveBlock = (direction: "up" | "down") => {
-      return this.editor.commands.command(({ tr, state, dispatch }) => {
-        const { selection, doc } = state;
-        const { $from } = selection;
-        let blockStart: number;
-        let blockEnd: number;
-        let node = selection instanceof NodeSelection ? selection.node : null;
-        if (node) {
-          blockStart = selection.from;
-          blockEnd = selection.to;
-        } else {
-          const depth = getMovableDepth($from);
-          if (depth === null) return false;
-          blockStart = $from.before(depth);
-          blockEnd = $from.after(depth);
-          node = $from.node(depth);
-        }
-        if (!MOVEABLE_BLOCKS.has(node.type.name)) return false;
-        const neighborNode =
-          direction === "up" ? doc.resolve(blockStart).nodeBefore : doc.resolve(blockEnd).nodeAfter;
-        if (!neighborNode) return false;
-        const insertPos =
-          direction === "up"
-            ? blockStart - neighborNode.nodeSize
-            : blockStart + neighborNode.nodeSize;
-        const anchorOffset = selection.anchor - blockStart;
-        const headOffset = selection.head - blockStart;
-        if (dispatch) {
-          tr.delete(blockStart, blockEnd).insert(insertPos, node);
-          if (selection instanceof NodeSelection) {
-            tr.setSelection(NodeSelection.create(tr.doc, insertPos));
-          } else {
-            tr.setSelection(
-              TextSelection.create(tr.doc, insertPos + anchorOffset, insertPos + headOffset),
-            );
-          }
-          tr.scrollIntoView();
-        }
-        return true;
-      });
-    };
-
     const duplicateContent = (direction: "up" | "down") => {
       return this.editor.commands.command(({ tr, state, dispatch }) => {
         const { selection, doc } = state;
@@ -244,8 +201,6 @@ const KbSelectionCommands = Extension.create({
     return {
       "Shift-Alt-ArrowUp": () => duplicateContent("up"),
       "Shift-Alt-ArrowDown": () => duplicateContent("down"),
-      "Alt-ArrowUp": () => moveBlock("up"),
-      "Alt-ArrowDown": () => moveBlock("down"),
     };
   },
 });

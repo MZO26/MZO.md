@@ -1,14 +1,10 @@
 import { renderIcons } from "@/utils/icons";
-import { InputRule, Node, PasteRule, mergeAttributes } from "@tiptap/core";
-import type { EditorState } from "@tiptap/pm/state";
+import { InputRule, Node, mergeAttributes } from "@tiptap/core";
+import { TextSelection } from "@tiptap/pm/state";
 
-export type CalloutType = keyof typeof CALLOUT_CONFIG;
+const CALLOUT_TYPES = ["note", "tip", "warning", "danger", "info"] as const;
 
-const CALLOUT_REGEX =
-  /^>[ \t]*\[!(note|tip|warning|danger|info)\][ \t]*\n((?:>[ \t]?.*(?:\n|$))*)/i;
-const CALLOUT_INPUT_REGEX = /^(?:>\s?)?\[!(note|tip|warning|danger|info)\][\s\n]$/i;
-const CALLOUT_PASTE_REGEX = /^(?:>\s?)?\[!(note|tip|warning|danger|info)\][ \t]*/gim;
-const CALLOUT_PREFIX_REGEX = /^>\s*\[!(?:note|tip|warning|danger|info)\]/im;
+export type CalloutType = (typeof CALLOUT_TYPES)[number];
 
 const CALLOUT_CONFIG = {
   note: { label: "Note", icon: "Pencil" },
@@ -16,12 +12,26 @@ const CALLOUT_CONFIG = {
   warning: { label: "Warning", icon: "TriangleAlert" },
   danger: { label: "Danger", icon: "Zap" },
   info: { label: "Info", icon: "Info" },
-} as const;
+} satisfies Record<CalloutType, { label: string; icon: string }>;
 
-const CALLOUT_KEYS = new Set(Object.keys(CALLOUT_CONFIG));
+const typePattern = CALLOUT_TYPES.join("|");
 
-function isCallout(value: unknown): value is CalloutType {
-  return typeof value === "string" && CALLOUT_KEYS.has(value);
+const CALLOUT_INPUT_REGEX = new RegExp(`^(?:>\\s?)?\\[!(${typePattern})\\][\\s\\n]$`, "i");
+
+const CALLOUT_PREFIX_REGEX = new RegExp(`^>[ \\t]*\\[!(?:${typePattern})\\]`, "im");
+
+const CALLOUT_REGEX = new RegExp(
+  `^>[ \\t]*\\[!(${typePattern})\\][ \\t]*(?:\\n((?:>[ \\t]?.*(?:\\n|$))*)|$)`,
+  "i",
+);
+
+function toCalloutType(value: unknown): CalloutType {
+  const type = typeof value === "string" ? value.toLowerCase() : "";
+  return CALLOUT_TYPES.find((t) => t === type) ?? "note";
+}
+
+function getCalloutConfig(type: unknown) {
+  return CALLOUT_CONFIG[toCalloutType(type)];
 }
 
 declare module "@tiptap/core" {
@@ -36,15 +46,17 @@ declare module "@tiptap/core" {
 export const Callout = Node.create({
   name: "callout",
   group: "block",
-  content: "block+",
+  content: "(paragraph | bulletList | orderedList | taskList)+",
   defining: true,
 
   addAttributes() {
     return {
       type: {
         default: "note",
-        parseHTML: (el) => el.getAttribute("data-callout-type") || "note",
-        renderHTML: (attrs) => ({ "data-callout-type": attrs["type"] }),
+        parseHTML: (element) => toCalloutType(element.getAttribute("data-callout-type")),
+        renderHTML: ({ type }) => ({
+          "data-callout-type": type,
+        }),
       },
     };
   },
@@ -53,28 +65,22 @@ export const Callout = Node.create({
     return [
       {
         tag: "div[data-callout-type]",
-        contentElement: ".callout-content",
+        contentElement: (element) => element.querySelector(".callout-content") ?? element,
       },
     ];
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const type = node.attrs["type"];
-    const config = isCallout(type) ? CALLOUT_CONFIG[type] : CALLOUT_CONFIG.note;
-    const iconWrapper = document.createElement("span");
-    iconWrapper.className = "callout-icon";
-    const iconPlaceholder = document.createElement("i");
-    iconPlaceholder.setAttribute("data-lucide", config.icon);
-    iconWrapper.appendChild(iconPlaceholder);
-    renderIcons(iconWrapper);
+    const { label, icon } = getCalloutConfig(node.attrs["type"]);
+
     return [
       "div",
       mergeAttributes(HTMLAttributes, { class: "callout" }),
       [
         "div",
         { class: "callout-header", contenteditable: "false" },
-        iconWrapper,
-        ["span", { class: "callout-title" }, config.label],
+        createIcon(icon),
+        ["span", { class: "callout-title" }, label],
       ],
       ["div", { class: "callout-content" }, 0],
     ];
@@ -85,11 +91,26 @@ export const Callout = Node.create({
       setCallout:
         (attributes) =>
         ({ commands }) =>
-          commands.wrapIn(this.name, attributes),
+          commands.insertContent({
+            type: this.name,
+            attrs: { type: toCalloutType(attributes?.type) },
+            content: [{ type: "paragraph" }],
+          }),
       toggleCallout:
         (attributes) =>
-        ({ commands }) =>
-          commands.toggleWrap(this.name, attributes),
+        ({ editor, tr, commands }) => {
+          const type = toCalloutType(attributes?.type);
+          if (editor.isActive(this.name, { type })) {
+            return commands.lift(this.name);
+          }
+          if (editor.isActive(this.name)) {
+            return commands.updateAttributes(this.name, { type });
+          }
+          if (tr.selection.empty) {
+            return commands.setCallout({ type });
+          }
+          return commands.wrapIn(this.name, { type });
+        },
     };
   },
 
@@ -97,117 +118,97 @@ export const Callout = Node.create({
     return [
       new InputRule({
         find: CALLOUT_INPUT_REGEX,
-        handler: ({ state, range, match }) => {
-          const type = isCallout(match[1]) ? CALLOUT_CONFIG[match[1]] : CALLOUT_CONFIG["note"];
-          const { tr } = state;
-          const $from = state.doc.resolve(range.from);
-          const isInsideBlockquote =
-            $from.depth >= 2 && $from.node($from.depth - 1).type.name === "blockquote";
-          tr.delete(range.from, range.to);
-          if (isInsideBlockquote) {
-            const blockquotePos = $from.before($from.depth - 1);
-            tr.setNodeMarkup(blockquotePos, this.type, { type });
-          } else {
-            const blockRange = tr.doc.resolve(range.from).blockRange();
-            if (blockRange) {
-              tr.wrap(blockRange, [{ type: this.type, attrs: { type } }]);
-            }
-          }
-        },
-      }),
-    ];
-  },
-
-  addPasteRules() {
-    return [
-      new PasteRule({
-        find: CALLOUT_PASTE_REGEX,
-        handler: ({ state, range, match }) => {
-          const type = isCallout(match[1]) ? CALLOUT_CONFIG[match[1]] : CALLOUT_CONFIG["note"];
-          const { tr } = state;
-          const from = tr.mapping.map(range.from);
-          const to = tr.mapping.map(range.to);
-          const $from = tr.doc.resolve(from);
-          const isInsideBlockquote =
-            $from.depth >= 2 && $from.node($from.depth - 1).type.name === "blockquote";
-          tr.delete(from, to);
-          if (isInsideBlockquote) {
-            const blockquotePos = $from.before($from.depth - 1);
-            tr.setNodeMarkup(blockquotePos, this.type, { type });
-          } else {
-            const blockRange = tr.doc.resolve(from).blockRange();
-            if (blockRange) {
-              tr.wrap(blockRange, [{ type: this.type, attrs: { type } }]);
-            }
-          }
+        handler: ({ state, range, match, commands }) => {
+          const { $from } = state.selection;
+          if ($from.depth !== 1 || $from.parent.type.name !== "paragraph") return;
+          commands.insertContentAt(range, {
+            type: this.name,
+            attrs: { type: toCalloutType(match[1]) },
+            content: [{ type: "paragraph" }],
+          });
         },
       }),
     ];
   },
 
   addKeyboardShortcuts() {
-    const isBetweenCallouts = (state: EditorState) => {
-      const $pos = state.selection.$anchor;
-      if ($pos.parent.type.name !== "paragraph" || $pos.parent.content.size > 0) {
-        return false;
-      }
-      const parent = $pos.node($pos.depth - 1);
-      const index = $pos.index($pos.depth - 1);
-      const prev = parent.maybeChild(index - 1);
-      const next = parent.maybeChild(index + 1);
-      return prev?.type.name === this.name && next?.type.name === this.name;
-    };
     return {
-      Backspace: ({ editor }) => {
-        const { selection } = editor.state;
-        const { $anchor, empty } = selection;
-        if (!empty) return false;
-        if (isBetweenCallouts(editor.state)) return true;
-        if ($anchor.parentOffset !== 0) return false;
-        for (let depth = $anchor.depth; depth > 0; depth--) {
-          const node = $anchor.node(depth);
-          if (node.type.name === this.name) {
-            const isAtFirstChild = $anchor.index(depth - 1) === 0;
-            if (isAtFirstChild) {
-              return editor.commands.lift(this.name);
-            }
-          }
+      Enter: ({ editor }) => {
+        const { state } = editor;
+        const { $from, empty } = state.selection;
+        if (!empty || $from.parent.type.name !== "paragraph" || $from.parent.content.size > 0) {
+          return false;
         }
-        return false;
+        const calloutDepth = $from.depth - 1;
+        if (calloutDepth < 1 || $from.node(calloutDepth).type.name !== this.name) {
+          return false;
+        }
+        const calloutNode = $from.node(calloutDepth);
+        const isLastChild = $from.index(calloutDepth) === calloutNode.childCount - 1;
+        if (!isLastChild) {
+          return false;
+        }
+        const emptyP = state.schema.nodes["paragraph"];
+        if (!emptyP) return false;
+        return editor.commands.command(({ tr, dispatch }) => {
+          if (!dispatch) return true;
+          const afterCallout = $from.after(calloutDepth);
+          if (calloutNode.childCount > 1) {
+            tr.delete($from.before($from.depth), $from.after($from.depth));
+          }
+          const insertPos = tr.mapping.map(afterCallout);
+          tr.insert(insertPos, emptyP.create());
+          tr.setSelection(TextSelection.create(tr.doc, insertPos + 1));
+          tr.scrollIntoView();
+          return true;
+        });
       },
     };
   },
+
   markdownTokenizer: {
     name: "callout",
     level: "block",
-    start: (src) => src.search(CALLOUT_PREFIX_REGEX),
-    tokenize: (src, _tokens, lexer) => {
-      const match = CALLOUT_REGEX.exec(src);
-      if (!match) return undefined;
-      const calloutType = match[1]?.toLowerCase();
-      const innerMarkdown = match[2]?.replace(/^>[ \t]?/gm, "").trim();
+    start: (source) => source.search(CALLOUT_PREFIX_REGEX),
+    tokenize: (source, _tokens, lexer) => {
+      const match = CALLOUT_REGEX.exec(source);
+      if (!match) return;
+      const content = match[2]?.replace(/^>[ \t]?/gm, "").trim() ?? "";
       return {
         type: "callout",
         raw: match[0],
-        calloutType,
-        tokens: innerMarkdown ? lexer.blockTokens(innerMarkdown) : [],
+        calloutType: match[1]?.toLowerCase(),
+        tokens: content ? lexer.blockTokens(content) : [],
       };
     },
   },
 
   parseMarkdown: (token, helpers) => {
-    const content = helpers.parseChildren(token.tokens || []);
+    const content = helpers.parseChildren(token.tokens ?? []);
     return {
       type: "callout",
-      attrs: { type: token["calloutType"] || "note" },
+      attrs: { type: toCalloutType(token["calloutType"]) },
       content: content.length ? content : [{ type: "paragraph" }],
     };
   },
 
   renderMarkdown: (node, helpers) => {
-    const type = (node.attrs?.["type"] || "note").toUpperCase();
-    const children = helpers.renderChildren(node.content || [], "\n\n").trim();
+    const type = toCalloutType(node.attrs?.["type"]).toUpperCase();
+    const children = helpers.renderChildren(node.content ?? [], "\n\n").trim();
     const body = children ? `\n${children}` : "";
     return `${helpers.wrapInBlock("> ", `[!${type}]${body}`)}\n\n`;
   },
 });
+
+function createIcon(icon: string) {
+  if (typeof document === "undefined") {
+    return ["span", { class: "callout-icon" }, ["i", { "data-lucide": icon }]];
+  }
+  const wrapper = document.createElement("span");
+  wrapper.className = "callout-icon";
+  const placeholder = document.createElement("i");
+  placeholder.setAttribute("data-lucide", icon);
+  wrapper.appendChild(placeholder);
+  renderIcons(wrapper);
+  return wrapper;
+}

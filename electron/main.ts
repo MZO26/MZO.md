@@ -197,8 +197,6 @@ async function createWindow() {
   return win;
 }
 
-// app start
-
 app
   .whenReady()
   .then(async () => {
