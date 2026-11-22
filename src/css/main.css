@@ -730,7 +730,7 @@ svg.empty-state-icon {
   margin: 12vh auto auto;
   width: 400px;
   min-height: 0;
-  max-height: 70vh;
+  max-height: clamp(300px, 70vh, 600px);
   padding: 0 5px 10px 5px;
   background: var(--bg-sidebar);
   border: 1px solid var(--border-color);

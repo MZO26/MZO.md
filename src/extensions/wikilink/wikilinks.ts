@@ -142,10 +142,11 @@ const WikiLink = Node.create<WikiLinkOptions>({
             .deleteRange({ from, to })
             .command(({ state, commands }) => {
               const { $from } = state.selection;
-              const empty =
-                $from.parent.content.size === 0 &&
-                ($from.parent.type.name !== "paragraph" || $from.depth > 1);
-              if (empty) return commands.clearNodes();
+              const isEmptyNonParagraph =
+                $from.parent.content.size === 0 && $from.parent.type.name !== "paragraph";
+              if (isEmptyNonParagraph) {
+                return commands.setParagraph();
+              }
               return true;
             })
             .insertContent([

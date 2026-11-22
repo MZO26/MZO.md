@@ -21,6 +21,7 @@ const autocompleteKey = new PluginKey<AutocompleteState>("wikilinkAutocomplete")
 const wikilinkClickHandlerKey = new PluginKey("wikilinkClickHandler");
 
 const WikilinkHandler = WikiLink.extend({
+  priority: 150,
   addKeyboardShortcuts() {
     return {
       Tab: ({ editor }) => {

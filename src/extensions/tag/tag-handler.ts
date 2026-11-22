@@ -20,6 +20,7 @@ const tagAutocompleteKey = new PluginKey<TagAutocompleteState>("tagAutocomplete"
 const tagClickHandlerKey = new PluginKey("tagClickHandler");
 
 const NoteTagHandler = NoteTag.extend({
+  priority: 150,
   addKeyboardShortcuts() {
     return {
       Tab: ({ editor }) => {
