@@ -8,6 +8,8 @@ import { CustomHeading, TitleEnforcer } from "@/extensions/overrides/headings";
 import { LinkWithTitle } from "@/extensions/overrides/link";
 import { CustomBlockMath, CustomInlineMath } from "@/extensions/overrides/mathematics/mathematics";
 import { CustomUnderline } from "@/extensions/overrides/underline";
+import { NoteTag } from "@/extensions/tag/tag";
+import { WikiLink } from "@/extensions/wikilink/wikilinks";
 import { localStore } from "@/state/state";
 import { clearAllMemoizedCaches, rendererLogger } from "@/utils/helpers";
 import type { Id } from "@shared/schemas/note-schema";
@@ -57,6 +59,8 @@ function getRequestExtensions() {
     CustomUnderline,
     Highlight,
     Placeholder,
+    WikiLink,
+    NoteTag,
     Image.configure({
       allowBase64: true,
       resize: {
