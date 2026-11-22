@@ -90,15 +90,24 @@ export const Callout = Node.create({
     return {
       setCallout:
         (attributes) =>
-        ({ commands }) =>
-          commands.insertContent({
+        ({ state, commands }) => {
+          const type = toCalloutType(attributes?.type);
+          const { $from, $to, empty } = state.selection;
+          const calloutNode = {
             type: this.name,
-            attrs: { type: toCalloutType(attributes?.type) },
+            attrs: { type },
             content: [{ type: "paragraph" }],
-          }),
+          };
+          if (empty && $from.depth === 1 && $from.parent.type.name === "paragraph") {
+            return commands.insertContent(calloutNode);
+          }
+          const insertPos = $to.depth > 0 ? $to.after(1) : $to.pos;
+          return commands.insertContentAt(insertPos, calloutNode);
+        },
+
       toggleCallout:
         (attributes) =>
-        ({ editor, tr, commands }) => {
+        ({ editor, state, commands }) => {
           const type = toCalloutType(attributes?.type);
           if (editor.isActive(this.name, { type })) {
             return commands.lift(this.name);
@@ -106,10 +115,10 @@ export const Callout = Node.create({
           if (editor.isActive(this.name)) {
             return commands.updateAttributes(this.name, { type });
           }
-          if (tr.selection.empty) {
-            return commands.setCallout({ type });
+          if (!state.selection.empty && commands.wrapIn(this.name, { type })) {
+            return true;
           }
-          return commands.wrapIn(this.name, { type });
+          return commands.setCallout({ type });
         },
     };
   },

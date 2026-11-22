@@ -4,6 +4,37 @@ import { TextSelection } from "@tiptap/pm/state";
 const CustomBlockquote = Blockquote.extend({
   content: "(paragraph | bulletList | orderedList | taskList)+",
 
+  addCommands() {
+    return {
+      ...this.parent?.(),
+      setBlockquote:
+        () =>
+        ({ state, commands }) => {
+          const { $from, $to, empty } = state.selection;
+          const blockquoteNode = {
+            type: this.name,
+            content: [{ type: "paragraph" }],
+          };
+          if (empty && $from.depth === 1 && $from.parent.type.name === "paragraph") {
+            return commands.insertContent(blockquoteNode);
+          }
+          const insertPos = $to.depth > 0 ? $to.after(1) : $to.pos;
+          return commands.insertContentAt(insertPos, blockquoteNode);
+        },
+      toggleBlockquote:
+        () =>
+        ({ editor, state, commands }) => {
+          if (editor.isActive(this.name)) {
+            return commands.lift(this.name);
+          }
+          if (!state.selection.empty && commands.wrapIn(this.name)) {
+            return true;
+          }
+          return commands.setBlockquote();
+        },
+    };
+  },
+
   addKeyboardShortcuts() {
     return {
       ...this.parent?.(),
