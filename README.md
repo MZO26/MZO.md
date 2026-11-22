@@ -63,11 +63,9 @@ npm install
 | Shortcut                                                      | Action              |
 | ------------------------------------------------------------- | ------------------- |
 | <kbd>Mod</kbd> + <kbd>N</kbd>                                 | Create new note     |
-| <kbd>Mod</kbd> + <kbd>G</kbd>                                 | Open global search  |
 | <kbd>Mod</kbd> + <kbd>F</kbd>                                 | Open doc search     |
 | <kbd>Mod</kbd> + <kbd>O</kbd>                                 | Toggle sidebar      |
 | <kbd>Mod</kbd> + <kbd>.</kbd>                                 | Toggle toolbar      |
-| <kbd>Mod</kbd> + <kbd>W</kbd>                                 | Set editor width    |
 | <kbd>Mod</kbd> + <kbd>,</kbd>                                 | Open settings       |
 | <kbd>Mod</kbd> + <kbd>+</kbd> / <kbd>Mod</kbd> + <kbd>=</kbd> | Zoom in             |
 | <kbd>Mod</kbd> + <kbd>-</kbd>                                 | Zoom out            |
@@ -129,7 +127,6 @@ npm install
 | **Editor Controls**                                    |              |                                |
 | <kbd>Mod</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>       |              | Paste without formatting       |
 | <kbd>Escape</kbd>                                      |              | Remove focus from editor       |
-| <kbd>Mod</kbd> + <kbd>Shift</kbd>+<kbd>Enter</kbd>     |              | Insert Space at end of a block |
 
 </details>
 
