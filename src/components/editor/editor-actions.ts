@@ -1,18 +1,23 @@
 import { Callout } from "@/extensions/callouts";
+import { Placeholder } from "@/extensions/decorations/placeholder";
 import { Highlight } from "@/extensions/highlight";
 import { CustomBlockquote } from "@/extensions/overrides/blockquote";
+import { CodeblockHandler } from "@/extensions/overrides/codeblock/codeblock-handler";
+import { lowlight } from "@/extensions/overrides/codeblock/lowlight";
+import { CustomHeading, TitleEnforcer } from "@/extensions/overrides/headings";
+import { LinkWithTitle } from "@/extensions/overrides/link";
 import { CustomBlockMath, CustomInlineMath } from "@/extensions/overrides/mathematics/mathematics";
-import { NoteTag } from "@/extensions/tag/tag";
-import { WikiLink } from "@/extensions/wikilink/wikilinks";
+import { CustomUnderline } from "@/extensions/overrides/underline";
 import { localStore } from "@/state/state";
 import { clearAllMemoizedCaches, rendererLogger } from "@/utils/helpers";
 import type { Id } from "@shared/schemas/note-schema";
 import { ALLOWED_PROTOCOLS } from "@shared/shared-constants";
 import { createDocument, getHTMLFromFragment, type Editor, type JSONContent } from "@tiptap/core";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
-import { MarkdownManager } from "@tiptap/markdown";
+import { Markdown, MarkdownManager } from "@tiptap/markdown";
 import { EditorState } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
 
@@ -48,14 +53,38 @@ function getMarkdownManager() {
 
 function getRequestExtensions() {
   return [
+    Markdown,
+    CustomUnderline,
     Highlight,
-    WikiLink,
-    Image,
-    Table,
+    Placeholder,
+    Image.configure({
+      allowBase64: true,
+      resize: {
+        enabled: true,
+        directions: ["bottom-right"],
+        minWidth: 50,
+        minHeight: 50,
+        alwaysPreserveAspectRatio: true,
+      },
+      HTMLAttributes: { loading: "lazy" },
+    }),
+    Table.configure({
+      resizable: true,
+      allowTableNodeSelection: true,
+      lastColumnResizable: true,
+      handleWidth: 5,
+      HTMLAttributes: { class: "table" },
+    }),
     TableRow,
-    TableCell,
-    TableHeader,
-    NoteTag,
+    TableHeader.configure({
+      HTMLAttributes: { class: "th" },
+    }),
+    TableCell.configure({
+      HTMLAttributes: { class: "td" },
+    }),
+    CustomHeading.configure({
+      levels: [1, 2, 3, 4, 5, 6],
+    }),
     StarterKit.configure({
       codeBlock: false,
       heading: false,
@@ -70,11 +99,44 @@ function getRequestExtensions() {
         class: "editor-dropcursor",
       },
     }),
-    CustomBlockMath,
+    ListKit.configure({
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
+      listKeymap: false,
+      taskItem: {
+        nested: false,
+      },
+    }),
+    LinkWithTitle.configure({
+      openOnClick: false,
+      defaultProtocol: "https",
+      autolink: true,
+      linkOnPaste: true,
+      HTMLAttributes: {
+        target: "_blank",
+        rel: "noopener noreferrer",
+      },
+      isAllowedUri: (url, ctx) => {
+        if (!ctx.defaultValidate(url)) return false;
+        return true;
+      },
+    }),
+    CodeBlockLowlight.configure({
+      lowlight,
+      enableTabIndentation: true,
+      tabSize: 2,
+      defaultLanguage: "text",
+      HTMLAttributes: {
+        spellcheck: false,
+      },
+    }),
+    CodeblockHandler,
     CustomInlineMath,
+    CustomBlockMath,
     CustomBlockquote,
+    TitleEnforcer,
     Callout,
-    ListKit,
   ];
 }
 

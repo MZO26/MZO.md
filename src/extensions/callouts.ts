@@ -1,6 +1,7 @@
 import { renderIcons } from "@/utils/icons";
-import { InputRule, Node, mergeAttributes } from "@tiptap/core";
+import { InputRule, Node, PasteRule, mergeAttributes } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
+import { findWrapping } from "@tiptap/pm/transform";
 
 const CALLOUT_TYPES = ["note", "tip", "warning", "danger", "info"] as const;
 
@@ -17,6 +18,8 @@ const CALLOUT_CONFIG = {
 const typePattern = CALLOUT_TYPES.join("|");
 
 const CALLOUT_INPUT_REGEX = new RegExp(`^(?:>\\s?)?\\[!(${typePattern})\\][\\s\\n]$`, "i");
+
+const CALLOUT_PASTE_REGEX = new RegExp(`^(?:>\\s?)?\\[!(${typePattern})\\][ \\t]*`, "gim");
 
 const CALLOUT_PREFIX_REGEX = new RegExp(`^>[ \\t]*\\[!(?:${typePattern})\\]`, "im");
 
@@ -135,6 +138,29 @@ export const Callout = Node.create({
             attrs: { type: toCalloutType(match[1]) },
             content: [{ type: "paragraph" }],
           });
+        },
+      }),
+    ];
+  },
+
+  addPasteRules() {
+    return [
+      new PasteRule({
+        find: CALLOUT_PASTE_REGEX,
+        handler: ({ state, range, match }) => {
+          const { tr } = state;
+          const start = tr.mapping.map(range.from);
+          const end = tr.mapping.map(range.to);
+          const probeRange = tr.doc.resolve(start).blockRange(tr.doc.resolve(end));
+          if (!probeRange) return;
+          const attrs = { type: toCalloutType(match[1]) };
+          if (!findWrapping(probeRange, this.type, attrs)) return;
+          tr.delete(start, end);
+          const wrapRange = tr.doc.resolve(start).blockRange();
+          const wrapping = wrapRange && findWrapping(wrapRange, this.type, attrs);
+          if (wrapping) {
+            tr.wrap(wrapRange, wrapping);
+          }
         },
       }),
     ];
