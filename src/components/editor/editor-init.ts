@@ -51,7 +51,7 @@ import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
 import { APP_EVENTS, EMPTY_DOC, MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
-import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ListKit } from "@tiptap/extension-list";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
@@ -228,13 +228,7 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
         await applyView(normalizedTag);
       } else await applyView(null);
     },
-    [APP_EVENTS.HANDLE_WIKILINK_CLICK]: async ({
-      id,
-      title,
-    }: {
-      id: Id | null;
-      title: Note["title"];
-    }) => {
+    [APP_EVENTS.HANDLE_WIKILINK_CLICK]: async ({ id, title }: { id: Id | null; title: string }) => {
       if (!id || !isNoteID(id)) {
         const activeId = stateStore.get("activeId") as Id | null;
         if (!activeId) return;

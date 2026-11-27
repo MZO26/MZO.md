@@ -16,12 +16,7 @@ import type {
   QuickSwitchDisplayBadge,
   QuickSwitchFullTextItem,
 } from "@/utils/types";
-import {
-  isNoteID,
-  type Id,
-  type NoteListItem,
-  type SearchQuery,
-} from "@shared/schemas/note-schema";
+import { isNoteID, type Id, type SearchQuery } from "@shared/schemas/note-schema";
 import { MAX_SEARCH_LENGTH, MIN_SEARCH_LENGTH } from "@shared/shared-constants";
 import type { Node as PMNode } from "@tiptap/pm/model";
 
@@ -36,7 +31,7 @@ function normalizeText(str: string): string {
 }
 
 function filterByTitle<T extends { title: string }>(query: string, items: readonly T[]): T[] {
-  const normalizedQuery = normalizeText(query).trim();
+  const normalizedQuery = normalizeText(query);
   if (!normalizedQuery) return [...items];
   const tokens = normalizedQuery.split(/\s+/);
   const matches: T[] = [];
@@ -173,7 +168,7 @@ function computeTitleFilterResults(query: SearchQuery) {
   const notes = noteStore.get("notes");
   const results: {
     id: Id;
-    title: NoteListItem["title"];
+    title: string;
     score: number;
     index: number;
     updatedAtMs: number;

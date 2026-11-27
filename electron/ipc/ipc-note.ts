@@ -131,7 +131,7 @@ function registerNoteIpc() {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_UPDATE,
-    withErrorHandling(async (e, payload: unknown, options: { flush?: boolean }) => {
+    withErrorHandling(async (e, payload: unknown, options: unknown) => {
       validateSender(e);
       const flush = isFlush(options);
       if (!flush) {
