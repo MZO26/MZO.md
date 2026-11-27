@@ -15,18 +15,14 @@ const CALLOUT_CONFIG = {
   info: { label: "Info", icon: "Info" },
 } satisfies Record<CalloutType, { label: string; icon: string }>;
 
-const typePattern = CALLOUT_TYPES.join("|");
+const CALLOUT_INPUT_REGEX = /^(?:>\s?)?\[!(note|tip|warning|danger|info)\]\s$/i;
 
-const CALLOUT_INPUT_REGEX = new RegExp(`^(?:>\\s?)?\\[!(${typePattern})\\][\\s\\n]$`, "i");
+const CALLOUT_PASTE_REGEX = /^(?:>[ \t]*)?\[!(note|tip|warning|danger|info)\][ \t]*/gim;
 
-const CALLOUT_PASTE_REGEX = new RegExp(`^(?:>\\s?)?\\[!(${typePattern})\\][ \\t]*`, "gim");
+const CALLOUT_PREFIX_REGEX = /^>[ \t]*\[!(?:note|tip|warning|danger|info)\]/im;
 
-const CALLOUT_PREFIX_REGEX = new RegExp(`^>[ \\t]*\\[!(?:${typePattern})\\]`, "im");
-
-const CALLOUT_REGEX = new RegExp(
-  `^>[ \\t]*\\[!(${typePattern})\\][ \\t]*(?:\\n((?:>[ \\t]?.*(?:\\n|$))*)|$)`,
-  "i",
-);
+const CALLOUT_REGEX =
+  /^>[ \t]*\[!(note|tip|warning|danger|info)\][ \t]*((?:\n>[ \t]?.*)*)(?=\n|$)/i;
 
 function toCalloutType(value: unknown): CalloutType {
   const type = typeof value === "string" ? value.toLowerCase() : "";
@@ -149,18 +145,13 @@ export const Callout = Node.create({
         find: CALLOUT_PASTE_REGEX,
         handler: ({ state, range, match }) => {
           const { tr } = state;
-          const start = tr.mapping.map(range.from);
-          const end = tr.mapping.map(range.to);
-          const probeRange = tr.doc.resolve(start).blockRange(tr.doc.resolve(end));
-          if (!probeRange) return;
-          const attrs = { type: toCalloutType(match[1]) };
-          if (!findWrapping(probeRange, this.type, attrs)) return;
-          tr.delete(start, end);
-          const wrapRange = tr.doc.resolve(start).blockRange();
-          const wrapping = wrapRange && findWrapping(wrapRange, this.type, attrs);
-          if (wrapping) {
-            tr.wrap(wrapRange, wrapping);
-          }
+          const calloutAttrs = { type: toCalloutType(match[1]) };
+          const matchedBlock = tr.doc.resolve(range.from).blockRange(tr.doc.resolve(range.to));
+          const wrapperNodes = matchedBlock && findWrapping(matchedBlock, this.type, calloutAttrs);
+          if (!wrapperNodes) return;
+          tr.delete(range.from, range.to);
+          const blockToWrap = tr.doc.resolve(range.from).blockRange();
+          if (blockToWrap) tr.wrap(blockToWrap, wrapperNodes);
         },
       }),
     ];

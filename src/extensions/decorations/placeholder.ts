@@ -1,3 +1,4 @@
+import { UNTITLED } from "@shared/shared-constants";
 import { Extension } from "@tiptap/core";
 import { type EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -10,7 +11,7 @@ export const Placeholder = Extension.create<PlaceHolderOptions>({
   name: "placeholder",
   addOptions() {
     return {
-      placeholder: "Untitled",
+      placeholder: UNTITLED,
     };
   },
   addProseMirrorPlugins() {

@@ -49,7 +49,7 @@ import { rendererLogger, sleep } from "@/utils/helpers";
 import { createGlobalSpinner, requireElement } from "@/utils/ui";
 import { isNoteID, type Id, type Note } from "@shared/schemas/note-schema";
 import type { AppSettings } from "@shared/schemas/store-schema";
-import { APP_EVENTS, MAX_CHARACTERS } from "@shared/shared-constants";
+import { APP_EVENTS, EMPTY_DOC, MAX_CHARACTERS } from "@shared/shared-constants";
 import { Editor } from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
@@ -291,6 +291,7 @@ async function initEditorContent({ note, editor }: { note: Readonly<Note>; edito
     updateStats(editor);
   } catch (error) {
     rendererLogger.appError("Invalid Editor content:", error);
+    recreateEditorState(editor, EMPTY_DOC);
     editor.setEditable(false, false);
     updateStats(editor, { override: true });
     await showNotification("Invalid content detected", "Couldn't load content");

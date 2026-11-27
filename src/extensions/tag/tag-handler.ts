@@ -7,7 +7,7 @@ import type { JSONContent } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-const TAG_REGEX = /(?:^|\s)#([\p{L}\p{N}_-]+)$/u;
+const TAG_REGEX = /(?:^|\s)#(\p{L}[\p{L}\p{N}_-]{0,99})$/u;
 
 export interface TagAutocompleteState {
   from: number;

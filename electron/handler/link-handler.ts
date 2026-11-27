@@ -2,6 +2,7 @@ import db from "@electron/db/database";
 import { mainLogger } from "@electron/handler/permission-handler";
 import { IPC_CHANNELS } from "@electron/ipc/ipc-channels";
 import { isNoteID, type Id } from "@shared/schemas/note-schema";
+import { UNTITLED } from "@shared/shared-constants";
 import { clipboard, ClipboardItem, Notification, type BrowserWindow } from "electron";
 
 interface LinkState {
@@ -45,7 +46,7 @@ function getUriContent(id: Id, title: string) {
   const url = new URL(`${PROTOCOL}://open`);
   url.searchParams.set("note", id);
   const uri = url.toString();
-  const html = `<a href="${escapeHtml(uri)}">${escapeHtml(title || "Untitled")}</a>`;
+  const html = `<a href="${escapeHtml(uri)}">${escapeHtml(title || UNTITLED)}</a>`;
   return { uri, html };
 }
 

@@ -3,11 +3,10 @@ import { isNoteID, type Id } from "@shared/schemas/note-schema";
 import { UNTITLED } from "@shared/shared-constants";
 import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
 
-const WIKILINK_REGEX = /^\[\[([^\]]+)\]\]/;
-const UUID_PATTERN = "([a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12})";
-const INPUT_REGEX = /(?<!!)\[\[([^\]]+)\]\]$/;
-const PASTE_REGEX = /\[\[([^\]]+)\]\]/g;
-const EXACT_UUID_REGEX = new RegExp(`^${UUID_PATTERN}$`, "i");
+const WIKILINK_REGEX = /^\[\[([^\]\n]+)\]\]/;
+const UUID_REGEX = /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
+const INPUT_REGEX = /\[\[([^\]\n]+)\]\]$/;
+const PASTE_REGEX = /\[\[([^\]\n]+)\]\]/g;
 
 export interface WikiLinkOptions {
   onClick: (id: Id | null, title: string) => void | Promise<void>;
@@ -99,7 +98,7 @@ const WikiLink = Node.create<WikiLinkOptions>({
   parseMarkdown(token) {
     const text = String(token.text ?? "").trim();
     if (!text) return { type: "text", text: token.raw || "" };
-    if (EXACT_UUID_REGEX.test(text)) {
+    if (UUID_REGEX.test(text)) {
       const isNoteId = isNoteID(text);
       const display = isNoteId
         ? (noteStore.get("noteIndex").get(text)?.title ?? UNTITLED)

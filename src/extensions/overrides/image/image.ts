@@ -7,7 +7,7 @@ import type { Editor, JSONContent } from "@tiptap/core";
 
 async function processAndInsertImages(files: File[], editor: Editor, dropPos: number) {
   const validFiles = files.filter(
-    (file) => file.size <= MAX_SIZE && ALLOWED_TYPES.includes(file.type),
+    (file) => file.size <= MAX_SIZE && Object.hasOwn(ALLOWED_TYPES, file.type),
   );
   if (validFiles.length === 0) return;
   try {
@@ -62,7 +62,9 @@ async function processAndInsertImages(files: File[], editor: Editor, dropPos: nu
         updateSelection: true,
       })
       .run();
-  } catch {}
+  } catch (error) {
+    rendererLogger.appError("[processAndInsertImages]: Unexpected error:", error);
+  }
 }
 
 function promptImageUpload(editor: Editor) {

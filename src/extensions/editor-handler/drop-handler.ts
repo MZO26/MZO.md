@@ -5,11 +5,11 @@ import { normalizeFileContent } from "@/notes/import-actions";
 import { ALLOWED_TYPES, MAX_DROP_LENGTH, MAX_DROP_PASTE_CHARACTERS } from "@/utils/constants";
 import { getExtension, rendererLogger } from "@/utils/helpers";
 import { MAX_BYTES_FILE } from "@shared/shared-constants";
-import { type Editor, Extension } from "@tiptap/core";
+import { type Editor, Extension, type JSONContent } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 
 async function processDroppedFiles(editor: Editor, files: File[], pos: number) {
-  const nodesToInsert: Record<string, unknown>[] = [];
+  const nodesToInsert: JSONContent[] = [];
   for (const file of files) {
     const extension = getExtension(file.name);
     if (!isValidExtension(extension)) continue;
@@ -22,7 +22,7 @@ async function processDroppedFiles(editor: Editor, files: File[], pos: number) {
         content,
         extension,
       });
-      if (!json) return;
+      if (!json) continue;
       if (Array.isArray(json)) {
         nodesToInsert.push(...json);
       } else if (json.type === "doc" && Array.isArray(json.content)) {

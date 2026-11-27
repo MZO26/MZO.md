@@ -1,11 +1,11 @@
 import { InputRule, mergeAttributes, Node, PasteRule } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
-const NOTE_TAG_REGEX = /^#([\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?)(?![\p{L}\p{N}_-])/u;
-const NOTE_TAG_INPUT_REGEX = /(?:^|\s)#([\p{L}\p{N}_-]+)\s$/u;
-const NOTE_TAG_PASTE_REGEX = /(?:^|\s)#(?=[\p{N}_-]*[\p{L}_])([\p{L}\p{N}_-]+)(?![\p{L}\p{N}_-])/gu;
-const HEADING_REGEX = /^#{1,6}(?:\s|\t)/;
-const HEX_REGEX = /^([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/;
+const NOTE_TAG_REGEX = /^#(\p{L}[\p{L}\p{N}_-]{0,99})(?![\p{L}\p{N}_-])/u;
+const NOTE_TAG_INPUT_REGEX = /(?:^|\s)#(\p{L}[\p{L}\p{N}_-]{0,99})\s$/u;
+const NOTE_TAG_PASTE_REGEX = /(?:^|\s)#(\p{L}[\p{L}\p{N}_-]{0,99})(?![\p{L}\p{N}_-])/gu;
+const HEADING_REGEX = /^#{1,6}\s/;
+const HEX_REGEX = /^(?:[a-f0-9]{3}){1,2}$/i;
 
 export interface NoteTagOptions {
   onClick: (id: string) => void | Promise<void>;

@@ -65,7 +65,7 @@ async function triggerSingleExport(id: Id, extension: ExportRequest["extension"]
   if (!exported.success) {
     rendererLogger.appError("[exportTrigger]: Failed to write file:", exported.error);
     if (exported.error === "CANCELLED_OPERATION") return;
-    await showNotification("Export Failed", "");
+    await showNotification("Export Failed", ERROR_MESSAGES.EXPORT_ERROR);
     return;
   }
   await showNotification("Export Complete", `Exported file as .${extension.toUpperCase()}`);

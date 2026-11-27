@@ -1,8 +1,8 @@
 import { Mark, markInputRule, markPasteRule, mergeAttributes } from "@tiptap/core";
 
-const HIGHLIGHT_REGEX = /^==([^=\n][^=\n]*?)==/;
-const HIGHLIGHT_PASTE_REGEX = /(?:==)([^=\n][^=\n]*?)(?:==)/g;
-const HIGHLIGHT_INPUT_REGEX = /(?:==)([^=\n][^=\n]*?)(?:==)$/;
+const HIGHLIGHT_REGEX = /^==((?!\s)[^=\n]+(?<!\s))==/;
+const HIGHLIGHT_PASTE_REGEX = /==((?!\s)[^=\n]+(?<!\s))==/g;
+const HIGHLIGHT_INPUT_REGEX = /==((?!\s)[^=\n]+(?<!\s))==$/;
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {

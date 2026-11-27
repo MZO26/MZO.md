@@ -120,8 +120,9 @@ function createTooltipContent(baseText: string): string {
     .replace(/[\s_]+/g, " ")
     .trim()
     .toLowerCase()
-    .replace(/(^|\s)\p{L}/gu, (match) => match.toUpperCase());
+    .replace(/(?<=^|\s)\p{L}/gu, (match) => match.toUpperCase());
 }
+
 /**
  * Creates a global loading-spinner controller with a configurable show-delay.
  *

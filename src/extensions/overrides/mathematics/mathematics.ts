@@ -1,13 +1,12 @@
-import { InputRule, PasteRule } from "@tiptap/core";
+import { InputRule, nodePasteRule, PasteRule } from "@tiptap/core";
 import { BlockMath, InlineMath } from "@tiptap/extension-mathematics";
 
-const INLINE_MATH_INPUT_REGEX = /(?<!\$)\$([^$\n]+?)\$(?!\$)$/;
-const INLINE_MATH_PASTE_REGEX = /(?<!\$)\$([^$\n]+?)\$(?!\$)/g;
-const INLINE_MATH_TOKENIZER_REGEX = /^\$(?!\$)(?!\s)([^$\r\n]+?)(?<!\s)\$(?!\$)/;
-
-const BLOCK_MATH_INPUT_REGEX = /(?<!\$)\$\$([\s\S]+?)\$\$$/;
-const BLOCK_MATH_PASTE_REGEX = /(?<!\$)\$\$([\s\S]+?)\$\$(?!\$)/g;
-const BLOCK_MATH_TOKENIZER_REGEX = /^\$\$\r?\n?([\s\S]+?)\r?\n?\$\$(?:\r?\n|$)/;
+const INLINE_MATH_INPUT_REGEX = /(?<!\$)\$(?!\s)([^$\n]+)(?<!\s)\$$/;
+const INLINE_MATH_PASTE_REGEX = /(?<!\$)\$(?!\s)([^$\n]+)(?<!\s)\$(?!\$)/g;
+const BLOCK_MATH_INPUT_REGEX = /(?<!\$)\$\$(.+?)\$\$$/s;
+const BLOCK_MATH_PASTE_REGEX = /(?<!\$)\$\$(.+?)\$\$(?!\$)/gs;
+const INLINE_MATH_REGEX = /^\$(?!\s)([^$\n]+)(?<!\s)\$(?!\$)/;
+const BLOCK_MATH_REGEX = /^\$\$\n?(.+?)\n?\$\$(?:\n|$)/s;
 
 const CustomInlineMath = InlineMath.extend({
   addInputRules() {
@@ -49,7 +48,7 @@ const CustomInlineMath = InlineMath.extend({
     level: "inline",
     start: (src: string) => src.indexOf("$"),
     tokenize: (src: string) => {
-      const match = INLINE_MATH_TOKENIZER_REGEX.exec(src);
+      const match = INLINE_MATH_REGEX.exec(src);
       if (!match) return undefined;
       const latex = typeof match[1] === "string" ? match[1].trim() : "";
       if (!latex) return undefined;
@@ -90,16 +89,12 @@ const CustomBlockMath = BlockMath.extend({
 
   addPasteRules() {
     return [
-      new PasteRule({
+      nodePasteRule({
         find: BLOCK_MATH_PASTE_REGEX,
-        handler: ({ range, match, commands }) => {
+        type: this.type,
+        getAttributes: (match) => {
           const latex = typeof match[1] === "string" ? match[1].trim() : "";
-          if (!latex) return null;
-          commands.insertContentAt(range, {
-            type: this.type.name,
-            attrs: { latex },
-          });
-          return;
+          return latex ? { latex } : false;
         },
       }),
     ];
@@ -110,7 +105,7 @@ const CustomBlockMath = BlockMath.extend({
     level: "block",
     start: (src) => src.indexOf("$$"),
     tokenize: (src) => {
-      const match = BLOCK_MATH_TOKENIZER_REGEX.exec(src);
+      const match = BLOCK_MATH_REGEX.exec(src);
       if (!match) return undefined;
       const latex = typeof match[1] === "string" ? match[1].trim() : "";
       if (!latex) return undefined;

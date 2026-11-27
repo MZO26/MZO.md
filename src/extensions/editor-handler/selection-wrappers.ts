@@ -5,7 +5,7 @@ import { type Editor, Extension } from "@tiptap/core";
 import type { ResolvedPos } from "@tiptap/pm/model";
 import { NodeSelection, TextSelection } from "@tiptap/pm/state";
 
-const SELECTION_TAG_REGEX = /^[\p{L}](?:[\p{L}\p{N}_-]*[\p{L}\p{N}])?$/u;
+const SELECTION_TAG_REGEX = /^\p{L}[\p{L}\p{N}_-]{0,99}$/u;
 
 function wrapSelection(editor: Editor, openChar: string, closeChar: string): boolean {
   const { state } = editor;

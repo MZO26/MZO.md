@@ -207,21 +207,21 @@ function isSafeExternalUrl(url: string) {
   return ALLOWED_PROTOCOLS.has(parsed.protocol);
 }
 
+const EXCLUSIVE_MARK = new Set(["code"]);
+
 function resolveMarkConflicts(nodes: JSONContent[]): JSONContent[] {
-  return nodes.map((node) => {
-    if (node.type === "text" && node.marks?.some((mark) => mark.type === "code")) {
-      return {
-        ...node,
-        marks: node.marks.filter((mark) => mark.type !== "bold"),
-      };
+  return nodes.flatMap((node) => {
+    if (node.type === "text" && !node.text) return [];
+    if (node.type === "text" && node.marks?.length) {
+      const exclusive = node.marks.find((m) => EXCLUSIVE_MARK.has(m.type));
+      if (exclusive) {
+        return [{ ...node, marks: [exclusive] }];
+      }
     }
     if (node.content) {
-      return {
-        ...node,
-        content: resolveMarkConflicts(node.content),
-      };
+      return [{ ...node, content: resolveMarkConflicts(node.content) }];
     }
-    return node;
+    return [node];
   });
 }
 
@@ -281,12 +281,15 @@ function looksLikeMarkdown(text: string) {
 
 const strongSignals = [
   /^#{1,6}\s+\S/m,
-  /^```/m,
+  /^```|~~~/m,
   /!\[[^\]\n]*\]\([^)\n]+\)/,
   /\[[^\]\n]+\]\([^)\n]+\)/,
   /^\S[^\r\n]*\r?\n(?:={3,}|-{3,})$/m,
   /^---\r?\n(?:\w[\w-]*:\s?.*\r?\n)+---$/m,
   /^\s*(?:[-*+]|\d{1,3}[.)])\s+\[[ xX]\]\s+\S/m,
+  /\$\$.+?\$\$/s,
+  /\[\[[^\]\n]+\]\]/,
+  /^>[ \t]*\[!(?:note|tip|warning|danger|info)\]/im,
 ];
 
 const inlinePatterns = [
@@ -296,6 +299,9 @@ const inlinePatterns = [
   /(?:^|[^\w_])_[^_\n]+_(?!\w)/g,
   /~~[^~\n]+~~/g,
   /`[^`\n]+`/g,
+  /(?<!\$)\$(?!\s)[^$\n]+(?<!\s)\$(?!\$)/g,
+  /==(?!\s)[^=\n]+(?<!\s)==/g,
+  /\+\+(?!\s)[^+\n]+(?<!\s)\+\+/g,
 ];
 
 const blockPatterns = [
@@ -303,7 +309,7 @@ const blockPatterns = [
   /^\s*[-*+]\s+\S/,
   /^\s*\d{1,3}[.)]\s+\S/,
   /^\|.+\|$/,
-  /^(-{3,}|\*{3,}|_{3,})$/,
+  /^(?:-{3,}|\*{3,}|_{3,})$/,
 ];
 
 export {
