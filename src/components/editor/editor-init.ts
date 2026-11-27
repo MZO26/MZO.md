@@ -209,7 +209,7 @@ function setupEditorListeners(editorWrapper: HTMLDivElement, editor: Editor) {
       const activeId = stateStore.get("activeId") as Id | null;
       if (!activeId) return;
       if (!stateStore.get("isDirty")) stateStore.setState({ isDirty: true });
-      debouncedSaveNote(activeId, false);
+      debouncedSaveNote(activeId, { flush: false });
     },
     [APP_EVENTS.UNSET_HOVER]: () => {
       if (stateStore.get("hoverId") !== null) {

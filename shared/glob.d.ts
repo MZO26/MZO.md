@@ -55,7 +55,10 @@ declare global {
       getManyById: (ids: Id[]) => Promise<Result<readonly Note[]>>;
       create: (payload: CreateNotePayload) => Promise<Result<NoteListItem>>;
       createMany: (payload: CreateNotePayload[]) => Promise<Result<readonly NoteListItem[]>>;
-      update: (payload: UpdateNotePayload, flush: boolean) => Promise<Result<NoteListItem>>;
+      update: (
+        payload: UpdateNotePayload,
+        options: { flush?: boolean } = {},
+      ) => Promise<Result<NoteListItem>>;
       delete: (id: Id) => Promise<Result<void>>;
       deleteMany: (ids: Id[]) => Promise<Result<void>>;
       noteExport: (payload: ExportRequest) => Promise<Result<ExportRequest>>;

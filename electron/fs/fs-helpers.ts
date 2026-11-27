@@ -237,10 +237,10 @@ async function getFilePath(
 async function isInsideDirectory(
   baseDir: string,
   absoluteFilePath: string,
-  options?: { skipBaseRealpath?: boolean },
+  options: { skipBaseRealpath?: boolean } = {},
 ): Promise<boolean> {
   try {
-    const basePath = options?.skipBaseRealpath
+    const basePath = options.skipBaseRealpath
       ? path.resolve(baseDir)
       : await fs.promises.realpath(baseDir);
     let targetPath: string;
@@ -287,10 +287,10 @@ async function isInsideDirectory(
 function isInsideDirectorySync(
   baseDir: string,
   absoluteFilePath: string,
-  options?: { skipBaseRealpath?: boolean },
+  options: { skipBaseRealpath?: boolean } = {},
 ): boolean {
   try {
-    const basePath = options?.skipBaseRealpath ? baseDir : fs.realpathSync(baseDir);
+    const basePath = options.skipBaseRealpath ? baseDir : fs.realpathSync(baseDir);
     let targetPath: string;
     try {
       targetPath = fs.realpathSync(absoluteFilePath);

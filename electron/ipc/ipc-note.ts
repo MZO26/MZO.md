@@ -29,6 +29,7 @@ import {
   DbBoolCodec,
   IdSchema,
   IdsSchema,
+  isFlush,
   QuerySchema,
   RelatedNotesSchema,
   UpdateNotePayloadSchema,
@@ -130,8 +131,9 @@ function registerNoteIpc() {
 
   ipcMain.handle(
     IPC_CHANNELS.NOTE_UPDATE,
-    withErrorHandling(async (e, payload: unknown, flush: unknown) => {
+    withErrorHandling(async (e, payload: unknown, options: { flush?: boolean }) => {
       validateSender(e);
+      const flush = isFlush(options);
       if (!flush) {
         if (!checkRateLimit(IPC_CHANNELS.NOTE_UPDATE, LIMITS.WRITE_LIGHT))
           throw new AppBackendError(AppErrorCode.RateLimitError);

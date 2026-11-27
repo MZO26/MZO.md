@@ -7,6 +7,11 @@ import { DEFAULT_SETTINGS } from "@shared/shared-constants";
 
 const STORAGE_KEY = "app_store";
 
+type SubscribeSelOptions<S> = {
+  isEqual?: (previous: S, next: S) => boolean;
+  fireImmediately?: boolean;
+};
+
 interface Store<T> {
   getState: () => Readonly<T>;
   get: <K extends keyof T>(key: K) => Readonly<T[K]>;
@@ -15,8 +20,7 @@ interface Store<T> {
   subscribeSel: <S>(
     selector: (state: Readonly<T>) => S,
     listener: (selected: S, previous: S) => void,
-    isEqual?: (previous: S, next: S) => boolean,
-    options?: { fireImmediately?: boolean },
+    options?: SubscribeSelOptions<S>,
   ) => () => void;
 }
 
@@ -230,11 +234,10 @@ function createStore<T extends Record<string, unknown>>(initialState: T): Store<
   function subscribeSel<S>(
     selector: (state: Readonly<T>) => S,
     listener: (selected: S, previous: S) => void,
-    isEqual: (previous: S, next: S) => boolean = Object.is,
-    options?: { fireImmediately?: boolean },
+    { isEqual = Object.is, fireImmediately = false }: SubscribeSelOptions<S> = {},
   ) {
     let previousSelected = selector(state);
-    if (options?.fireImmediately) {
+    if (fireImmediately) {
       listener(previousSelected, previousSelected);
     }
     return subscribe((state) => {

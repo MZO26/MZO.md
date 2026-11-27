@@ -65,8 +65,11 @@ async function createManyNotes(
   return invoke(window.noteAPI.createMany(payload));
 }
 
-async function updateNote(note: UpdateNotePayload, flush: boolean): Promise<Result<NoteListItem>> {
-  return invoke(window.noteAPI.update(note, flush));
+async function updateNote(
+  note: UpdateNotePayload,
+  options: { flush?: boolean } = {},
+): Promise<Result<NoteListItem>> {
+  return invoke(window.noteAPI.update(note, options));
 }
 
 async function deleteNote(id: Id): Promise<Result<void>> {

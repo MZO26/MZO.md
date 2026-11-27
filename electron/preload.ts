@@ -67,8 +67,8 @@ if (process.contextIsolated) {
       create: (payload: CreateNotePayload) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_CREATE, payload),
       createMany: (payload: CreateNotePayload[]) =>
         ipcRenderer.invoke(IPC_CHANNELS.NOTE_CREATE_MANY, payload),
-      update: (payload: UpdateNotePayload, flush: boolean) =>
-        ipcRenderer.invoke(IPC_CHANNELS.NOTE_UPDATE, payload, flush),
+      update: (payload: UpdateNotePayload, options: { flush?: boolean } = {}) =>
+        ipcRenderer.invoke(IPC_CHANNELS.NOTE_UPDATE, payload, options),
       delete: (id: Id) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_DELETE, id),
       deleteMany: (ids: Id[]) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_DELETE_MANY, ids),
       noteExport: (payload: ExportRequest) => ipcRenderer.invoke(IPC_CHANNELS.NOTE_EXPORT, payload),

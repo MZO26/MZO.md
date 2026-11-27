@@ -81,18 +81,21 @@ import { TextSelection } from "@tiptap/pm/state";
  * const id3 = await handleCreateNote({ shouldNavigate: true }); // blank + switch to it
  */
 
-async function handleCreateNote(options?: {
-  activeTitle?: NoteListItem["title"];
-  shouldNavigate?: boolean;
-}) {
+async function handleCreateNote(
+  options: {
+    activeTitle?: NoteListItem["title"];
+    shouldNavigate?: boolean;
+  } = {},
+) {
+  const { activeTitle, shouldNavigate } = options;
   const { activeTag, activeId } = stateStore.getState();
-  if (options?.shouldNavigate && activeId) {
+  if (shouldNavigate && activeId) {
     await waitForFlush(activeId);
   }
   const { editor, editorWrapper } = useCore("editor", "editorWrapper");
   let editorContent = addActiveTagToDoc(EMPTY_DOC, activeTag);
-  if (options?.activeTitle) {
-    editorContent = addHeadingToDoc(editorContent, options.activeTitle);
+  if (activeTitle) {
+    editorContent = addHeadingToDoc(editorContent, activeTitle);
   }
   const text = extractText(editorContent);
   const payload: CreateNotePayload = {
@@ -100,7 +103,7 @@ async function handleCreateNote(options?: {
     snippet: snippetGenerator(editorContent),
     plain_text: text,
     ...walkDoc(editorContent),
-    title: options?.activeTitle ?? UNTITLED,
+    title: activeTitle ?? UNTITLED,
     pinned: false,
   };
   const result = await createNote(payload);
@@ -119,7 +122,7 @@ async function handleCreateNote(options?: {
       recentNotes: [result.data.id, ...recentNotes].slice(0, 5),
     };
   });
-  if (options?.shouldNavigate) {
+  if (shouldNavigate) {
     stateStore.setState({ activeId: result.data.id, hoverId: null });
     recreateEditorState(editor, editorContent);
     updateStats(editor);
@@ -368,7 +371,7 @@ async function handleDeleteNote(id: Id) {
  * await handleSaveNote("note-abc123", true);    // forced immediate save
  */
 
-async function handleSaveNote(id: Id, flush: boolean = false) {
+async function handleSaveNote(id: Id, options: { flush?: boolean } = {}) {
   const activeId = stateStore.get("activeId") as Id | null;
   if (activeId !== id) return;
   const activeNote = noteStore.get("noteIndex").get(activeId);
@@ -385,7 +388,7 @@ async function handleSaveNote(id: Id, flush: boolean = false) {
     plain_text: text,
     ...walkDoc(content),
   };
-  const result = await updateNote(payload, flush);
+  const result = await updateNote(payload, options);
   if (!result.success) {
     rendererLogger.appError("[handleSaveNote]: Save failed.", result.error);
     return;
@@ -462,7 +465,7 @@ async function waitForFlush(id: Id | null) {
     return false;
   }
   debouncedSaveNote.cancel();
-  await handleSaveNote(id, true);
+  await handleSaveNote(id, { flush: true });
   return stateStore.get("activeId") === id;
 }
 
@@ -493,9 +496,9 @@ async function waitForFlush(id: Id | null) {
 
 async function handleSelectNote(
   id: Id,
-  options?: { skipRecent?: boolean; snippet?: string; query?: string },
+  options: { skipRecent?: boolean; snippet?: string; query?: string } = {},
 ) {
-  const { skipRecent = false, snippet, query } = options ?? {};
+  const { skipRecent = false, snippet, query } = options;
   const { editor, editorWrapper } = useCore("editor", "editorWrapper");
   const activeId = stateStore.get("activeId") as Id | null;
   debouncedSaveNote.flush()?.catch(rendererLogger.appError);

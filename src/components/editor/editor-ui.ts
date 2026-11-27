@@ -34,19 +34,19 @@ function estimateReadingTime(wordCount: number, wpm = 238) {
   return s < 30 ? "< 1 min read" : s < 60 ? "1 min read" : `${m} min read`;
 }
 
-function updateStats(editor: Editor, options?: { override: boolean }) {
+function updateStats(editor: Editor, options: { override?: boolean } = {}) {
   const { wordCountEl, charCountEl, readingTime } = useUI(
     "wordCountEl",
     "charCountEl",
     "readingTime",
   );
-  const { characters, words } = options?.override
+  const { characters, words } = options.override
     ? { characters: 0, words: 0 }
     : getTextMetrics(editor);
   charCountEl.textContent = characters === 1 ? "1 character" : `${characters} characters`;
   wordCountEl.textContent = words === 1 ? "1 word" : `${words} words`;
   readingTime.textContent = estimateReadingTime(words);
-  const headings = options?.override ? [] : getTableOfContents(editor);
+  const headings = options.override ? [] : getTableOfContents(editor);
   updateToc(headings);
 }
 

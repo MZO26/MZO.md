@@ -148,6 +148,12 @@ function isNoteID(id: unknown): id is Id {
   return typeof id === "string" && id.length === 36;
 }
 
+function isFlush(options: unknown): boolean {
+  return (
+    typeof options === "object" && options !== null && "flush" in options && options.flush === true
+  );
+}
+
 type BoolDb = z.infer<typeof BoolDbSchema>;
 type DbUpdateArgs = z.infer<typeof DbUpdateSchema>;
 type DbCreateArgs = z.infer<typeof DbCreateSchema>;
@@ -181,6 +187,7 @@ export {
   IdSchema,
   IdsSchema,
   ImageRowSchema,
+  isFlush,
   isNoteID,
   LinksSchema,
   NoteFromDB,

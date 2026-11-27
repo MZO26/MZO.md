@@ -16,22 +16,21 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     (state) => state.activeId,
     (activeId) => {
       handleEditorEmptyState(activeId);
-      if (!activeId) return;
-      const noteElement = sidebar.querySelector<HTMLDivElement>(
-        `.note-item[data-id="${CSS.escape(activeId)}"]`,
-      );
-      if (noteElement) setActiveItem(noteElement, sidebar);
       const { mathDialog } = useDialog("mathDialog");
       if (mathDialog.open) {
         mathDialog.returnValue = "cancel";
         mathDialog.close();
       }
+      if (!activeId) return;
+      const noteElement = sidebar.querySelector<HTMLDivElement>(
+        `.note-item[data-id="${CSS.escape(activeId)}"]`,
+      );
+      if (noteElement) setActiveItem(noteElement, sidebar);
     },
-    shallowEq,
     { fireImmediately: true },
   );
 
-  stateStore.subscribeSel((state) => state.selectionMode, updateSelection, shallowEq);
+  stateStore.subscribeSel((state) => state.selectionMode, updateSelection, { isEqual: shallowEq });
 
   stateStore.subscribeSel(
     (state) => state.hoverId,
@@ -47,7 +46,7 @@ function initSubscriptions(sidebar: HTMLDivElement) {
     },
   );
 
-  stateStore.subscribeSel((state) => state.activeTag, sidebarListener, shallowEq);
+  stateStore.subscribeSel((state) => state.activeTag, sidebarListener);
 
   const SIDEBAR_KEYS = ["title", "snippet", "pinned", "tags"] as const;
 
@@ -62,23 +61,25 @@ function initSubscriptions(sidebar: HTMLDivElement) {
       if (!selectionMode || selectedIds.size === 0) return;
       updateSelection();
     },
-    (prev, next) => {
-      if (!shallowEq(prev.visibleIds, next.visibleIds)) return false;
-      if (prev.noteIndex === next.noteIndex) return true;
-      for (const id of next.visibleIds) {
-        const prevNote = prev.noteIndex.get(id);
-        const nextNote = next.noteIndex.get(id);
-        if (prevNote === nextNote) continue;
-        if (!prevNote || !nextNote) return false;
-        const hasChanged = SIDEBAR_KEYS.some((key) => !shallowEq(prevNote[key], nextNote[key]));
-        if (hasChanged) return false;
-      }
-      return true;
+    {
+      isEqual: (prev, next) => {
+        if (!shallowEq(prev.visibleIds, next.visibleIds)) return false;
+        if (prev.noteIndex === next.noteIndex) return true;
+        for (const id of next.visibleIds) {
+          const prevNote = prev.noteIndex.get(id);
+          const nextNote = next.noteIndex.get(id);
+          if (prevNote === nextNote) continue;
+          if (!prevNote || !nextNote) return false;
+          const hasChanged = SIDEBAR_KEYS.some((key) => !shallowEq(prevNote[key], nextNote[key]));
+          if (hasChanged) return false;
+        }
+        return true;
+      },
+      fireImmediately: true,
     },
-    { fireImmediately: true },
   );
 
-  settingsStore.subscribeSel((state) => state.note_item_display, sidebarListener, shallowEq);
+  settingsStore.subscribeSel((state) => state.note_item_display, sidebarListener);
 
   localStore.subscribeSel(
     (state) => state.sidebarCollapsed,
@@ -88,7 +89,6 @@ function initSubscriptions(sidebar: HTMLDivElement) {
         toggleSidebar(collapsed);
       }
     },
-    shallowEq,
     { fireImmediately: true },
   );
 
@@ -105,7 +105,6 @@ function initSubscriptions(sidebar: HTMLDivElement) {
         });
       }
     },
-    shallowEq,
     { fireImmediately: true },
   );
 }
